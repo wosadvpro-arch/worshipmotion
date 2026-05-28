@@ -23557,6 +23557,117 @@ function initEditor() {
    * @param {Object} tpl - Template a aplicar
    * @param {'estrofe'|'todas'} escopo - Onde aplicar
    */
+  /**
+   * Extrai o "schema por linha" de um template: pra cada linha visual
+   * (agrupada por coordenada Y das palavras), determina a fonte e o
+   * fontSizeScale dominante. Isso permite aplicar o ESTILO do template
+   * (fonte por linha) de forma ADAPTÁVEL — independente do número de
+   * palavras que a letra do usuário tem.
+   *
+   * Retorna: [{ font, scale, isForca }, ...] na ordem topo→base.
+   */
+  function _extrairLineSchema(tpl) {
+    const cfg = tpl.config || {};
+    if (!cfg.parsed || !cfg.wordOverrides) return null;
+
+    // Coleta (y, override) de cada palavra do template, na ordem de leitura
+    const items = [];
+    cfg.parsed.stanzas?.forEach(st =>
+      st.lines?.forEach(ln =>
+        ln.words?.forEach(w => {
+          const ov = cfg.wordOverrides[w.id];
+          if (ov && ov.position) {
+            items.push({
+              y: ov.position.y,
+              font: ov.style?.fontFamily || cfg.style?.fontFamily || null,
+              scale: ov.style?.fontSizeScale || 1,
+            });
+          }
+        })
+      )
+    );
+    if (!items.length) return null;
+
+    // Agrupa por Y aproximado (tolerância 0.04 = palavras na mesma linha visual)
+    items.sort((a, b) => a.y - b.y);
+    const linhas = [];
+    items.forEach(it => {
+      const ultima = linhas[linhas.length - 1];
+      if (ultima && Math.abs(it.y - ultima.yRef) < 0.06) {
+        ultima.items.push(it);
+      } else {
+        linhas.push({ yRef: it.y, items: [it] });
+      }
+    });
+
+    // Pra cada linha, fonte dominante + scale máximo (palavra de força)
+    return linhas.map(linha => {
+      // Fonte: a mais comum na linha
+      const fontCount = {};
+      let maxScale = 1;
+      linha.items.forEach(it => {
+        if (it.font) fontCount[it.font] = (fontCount[it.font] || 0) + 1;
+        if (it.scale > maxScale) maxScale = it.scale;
+      });
+      let font = null, max = 0;
+      Object.keys(fontCount).forEach(f => {
+        if (fontCount[f] > max) { max = fontCount[f]; font = f; }
+      });
+      return {
+        font,
+        scale: maxScale,
+        isForca: maxScale > 1.5,
+      };
+    });
+  }
+
+  /**
+   * Distribui as palavras de uma estrofe em N "linhas lógicas" pra
+   * casar com o número de linhas do schema do template.
+   *
+   * MODO HÍBRIDO:
+   *  - Se a estrofe já tem quebras de linha (várias lines), usa elas.
+   *  - Se a estrofe é uma linha só, distribui as palavras igualmente
+   *    entre N linhas (N = número de linhas do schema).
+   *
+   * Retorna: array de arrays de palavras [[w,w],[w],[w,w,w]]
+   */
+  function _distribuirEmLinhas(stanza, numLinhasSchema) {
+    const linhasReais = (stanza.lines || []).filter(ln => ln.words && ln.words.length);
+
+    // Se já tem o mesmo número de linhas (ou mais), usa as quebras do usuário
+    if (linhasReais.length >= 2) {
+      return linhasReais.map(ln => ln.words.slice());
+    }
+
+    // Linha única: distribui as palavras igualmente entre numLinhasSchema
+    const todasPalavras = [];
+    linhasReais.forEach(ln => ln.words.forEach(w => todasPalavras.push(w)));
+    if (todasPalavras.length === 0) return [];
+
+    const n = Math.min(numLinhasSchema, todasPalavras.length);
+    if (n <= 1) return [todasPalavras];
+
+    // Divide o mais uniforme possível
+    const grupos = Array.from({ length: n }, () => []);
+    const base = Math.floor(todasPalavras.length / n);
+    const resto = todasPalavras.length % n;
+    let idx = 0;
+    for (let i = 0; i < n; i++) {
+      // Distribui o resto nas linhas do MEIO primeiro (fica mais bonito
+      // pra palavra de força central)
+      const tamanho = base + (i >= Math.floor((n - resto) / 2) && i < Math.floor((n - resto) / 2) + resto ? 1 : 0);
+      for (let k = 0; k < tamanho && idx < todasPalavras.length; k++) {
+        grupos[i].push(todasPalavras[idx++]);
+      }
+    }
+    // Garante que sobras (por arredondamento) vão pra última
+    while (idx < todasPalavras.length) {
+      grupos[n - 1].push(todasPalavras[idx++]);
+    }
+    return grupos.filter(g => g.length > 0);
+  }
+
   function _applyTemplateToStanzas(tpl, escopo) {
     const cfg = tpl.config || {};
     const parsed = engine.parsed;
@@ -23587,45 +23698,11 @@ function initEditor() {
       );
     }
 
-    // AVISO DE INCOMPATIBILIDADE: se template foi feito pra N palavras
-    // e a(s) estrofe(s) tem M palavras diferente, avisa antes — sobras
-    // ficam sem override (no centro auto-layout) ou faltantes ficam
-    // sem layout do template.
-    const palavrasTemplate = templateOverridesSeq.length;
-    if (palavrasTemplate > 0) {
-      const incompatibilidades = [];
-      targetIndices.forEach(idx => {
-        const st = parsed.stanzas[idx];
-        if (!st) return;
-        let count = 0;
-        st.lines?.forEach(ln => ln.words?.forEach(() => count++));
-        if (count !== palavrasTemplate) {
-          incompatibilidades.push({
-            idx,
-            count,
-            diff: count - palavrasTemplate,
-          });
-        }
-      });
-
-      if (incompatibilidades.length > 0) {
-        const continuar = _confirmTemplateMismatch(
-          tpl.name,
-          palavrasTemplate,
-          incompatibilidades,
-          escopo
-        );
-        // Se _confirmTemplateMismatch retorna Promise (UI custom), aguarda
-        if (continuar && typeof continuar.then === 'function') {
-          continuar.then(ok => {
-            if (ok) _doApplyTemplateToStanzas(tpl, escopo, targetIndices, templateOverridesSeq);
-          });
-          return;
-        }
-        if (!continuar) return;
-      }
-    }
-
+    // AVISO DE INCOMPATIBILIDADE: DESABILITADO no modo adaptável.
+    // Antes, o template tinha posições fixas pra N palavras e avisava
+    // quando a letra tinha número diferente. Agora a aplicação é
+    // ADAPTÁVEL (fonte por linha + auto-layout), então qualquer número
+    // de palavras funciona — não precisa avisar.
     _doApplyTemplateToStanzas(tpl, escopo, targetIndices, templateOverridesSeq);
   }
 
@@ -23712,33 +23789,77 @@ function initEditor() {
     if (!engine.wordOverrides) engine.wordOverrides = {};
     if (!engine.sceneOverrides) engine.sceneOverrides = {};
 
+    // Extrai o schema por linha do template (fonte + scale de cada linha).
+    // Se conseguir, aplica de forma ADAPTÁVEL (fonte por linha, sem position
+    // fixa → o auto-layout posiciona). Senão, cai no modo antigo (posição
+    // fixa palavra-a-palavra).
+    const lineSchema = _extrairLineSchema(tpl);
+
     // Aplica em cada estrofe alvo
     targetIndices.forEach(stanzaIdx => {
       const stanza = parsed.stanzas[stanzaIdx];
       if (!stanza) return;
 
-      // 1) Lista plana das palavras DESTA estrofe em ordem
+      // Lista plana das palavras DESTA estrofe em ordem
       const flatPalavras = [];
       stanza.lines?.forEach(ln =>
         ln.words?.forEach(w => flatPalavras.push(w))
       );
 
-      // 2) Mapeia override[i] do template pra palavra[i] da estrofe
-      // (limitado ao menor dos dois — sobras descartadas, faltantes
-      // ficam sem override)
-      const limit = Math.min(templateOverridesSeq.length, flatPalavras.length);
-
-      // Antes: limpa overrides anteriores DESTAS palavras (pra não
-      // acumular overrides de templates aplicados antes)
+      // Limpa overrides anteriores DESTAS palavras (pra não acumular
+      // overrides de templates aplicados antes)
       flatPalavras.forEach(w => {
         if (engine.wordOverrides[w.id]) delete engine.wordOverrides[w.id];
       });
 
-      // Aplica novos
-      for (let i = 0; i < limit; i++) {
-        engine.wordOverrides[flatPalavras[i].id] = JSON.parse(
-          JSON.stringify(templateOverridesSeq[i])
-        );
+      if (lineSchema && lineSchema.length > 0) {
+        // === MODO ADAPTÁVEL (fonte por linha, sem position fixa) ===
+        // Distribui as palavras da estrofe em N linhas lógicas (híbrido:
+        // usa quebras do usuário ou divide automático).
+        const linhasPalavras = _distribuirEmLinhas(stanza, lineSchema.length);
+
+        // Aplica o schema de cada linha nas palavras correspondentes.
+        // Se a letra tem MAIS linhas que o schema, as linhas extras
+        // repetem o schema da última. Se tem MENOS, usa as primeiras.
+        linhasPalavras.forEach((palavrasDaLinha, li) => {
+          // Mapeia índice de linha → schema (clamp na última)
+          const schemaIdx = Math.min(li, lineSchema.length - 1);
+          const sch = lineSchema[schemaIdx];
+          palavrasDaLinha.forEach(w => {
+            const ov = { style: {} };
+            if (sch.font) ov.style.fontFamily = sch.font;
+            // fontSizeScale só pra linha de força (palavra grande central)
+            if (sch.isForca) {
+              ov.style.fontSizeScale = sch.scale;
+              ov.style.textTransform = 'capitalize';
+            }
+            // SEM position → cai no auto-layout (mode-flow), que distribui
+            // as linhas e centraliza horizontalmente com espaçamento natural.
+            engine.wordOverrides[w.id] = ov;
+          });
+        });
+
+        // REESTRUTURA stanza.lines pra refletir a distribuição lógica.
+        // Mantém os MESMOS word objects (com IDs e overrides já aplicados),
+        // só reorganiza em quantas linhas o schema definiu. Assim o
+        // mode-flow renderiza cada linha visual corretamente, sem precisar
+        // re-parsear (que perderia os IDs/overrides).
+        if (linhasPalavras.length >= 1) {
+          const novasLines = linhasPalavras.map((palavras, li) => ({
+            id: (stanza.lines[li]?.id) || ('ln_adapt_' + stanzaIdx + '_' + li + '_' + Date.now()),
+            words: palavras,
+            label: null,
+          }));
+          stanza.lines = novasLines;
+        }
+      } else {
+        // === MODO ANTIGO (posição fixa) — fallback se schema falhar ===
+        const limit = Math.min(templateOverridesSeq.length, flatPalavras.length);
+        for (let i = 0; i < limit; i++) {
+          engine.wordOverrides[flatPalavras[i].id] = JSON.parse(
+            JSON.stringify(templateOverridesSeq[i])
+          );
+        }
       }
 
       // 3) Aplica sceneOverride (animConfig, cor, efeitos) — mas NÃO fundo
