@@ -11666,6 +11666,149 @@ const TEMPLATES = [
     },
   },
 
+  // ====== TEMPLATE CINEMATOGRÁFICO (3 linhas, força em cima e embaixo) ======
+  {
+    id: 'tpl-user-3-linhas-cinematografico',
+    name: '3 Linhas — Cinematográfico',
+    description: 'Estilo épico de cinema: linhas de cima e de baixo GRANDES em Timber Slice, linha do meio menor em sans itálica. Força nas extremidades.',
+    tags: ['3 linhas', 'cinematográfico', 'timber slice', 'épico', 'multifonte'],
+    accent: '#fbbf24',
+    config: {
+      lyrics: 'QUANDO\nA MEIA NOITE\nCHEGAR',
+      style: {
+        fontFamily: 'Causten-LightOblique',
+        fontSize: 61,
+        fontWeight: 400,
+        letterSpacing: 0.02,
+        lineHeight: 1.05,
+        color: '#f4f4f7',
+        textAlign: 'center',
+        glow: 0,
+        glowColor: '#fbbf24',
+        outline: 0,
+        outlineColor: '#000000',
+        shadow: 0.35,
+        shadowColor: '#000000',
+        shadowOffsetX: 2,
+        shadowOffsetY: 3,
+        shadowBlur: 10,
+        textTransform: 'uppercase',
+        backgroundType: 'gradient',
+        emphasisColor: '#fbbf24',
+        emphasisSizeScale: 1,
+        emphasisBold: false,
+        emphasisGlow: 0,
+        effects: {
+          echo:  { on: false, intensity: 0.4 },
+          bloom: { on: true,  intensity: 0.2 },
+          depth: { on: true,  intensity: 0.55 },
+          halo:  { on: false, intensity: 0.5 },
+        },
+        cinemaPreset: 'stadium',
+      },
+      animConfig: {
+        entrance: 'fade-in-soft',
+        exit: 'fade-out-soft',
+        target: 'word',
+        stagger: 0.3,
+        transition: 'cut',
+        transitionDuration: 0.5,
+        duration: 1.2,
+      },
+      bg: 'brand',
+      aspect: '16:9',
+      parsed: {
+        stanzas: [
+          {
+            id: 'stz_cinema1',
+            label: 'Estrofe 1',
+            lines: [
+              {
+                id: 'ln_cin_l1',
+                words: [
+                  { id: 'w_cin_quando', text: 'QUANDO', chars: [
+                    { id: 'ch_cq1', text: 'Q' },
+                    { id: 'ch_cq2', text: 'U' },
+                    { id: 'ch_cq3', text: 'A' },
+                    { id: 'ch_cq4', text: 'N' },
+                    { id: 'ch_cq5', text: 'D' },
+                    { id: 'ch_cq6', text: 'O' },
+                  ], emphasized: false },
+                ],
+              },
+              {
+                id: 'ln_cin_l2',
+                words: [
+                  { id: 'w_cin_a', text: 'A', chars: [{ id: 'ch_ca1', text: 'A' }], emphasized: false },
+                  { id: 'w_cin_meia', text: 'MEIA', chars: [
+                    { id: 'ch_cm1', text: 'M' },
+                    { id: 'ch_cm2', text: 'E' },
+                    { id: 'ch_cm3', text: 'I' },
+                    { id: 'ch_cm4', text: 'A' },
+                  ], emphasized: false },
+                  { id: 'w_cin_noite', text: 'NOITE', chars: [
+                    { id: 'ch_cn1', text: 'N' },
+                    { id: 'ch_cn2', text: 'O' },
+                    { id: 'ch_cn3', text: 'I' },
+                    { id: 'ch_cn4', text: 'T' },
+                    { id: 'ch_cn5', text: 'E' },
+                  ], emphasized: false },
+                ],
+              },
+              {
+                id: 'ln_cin_l3',
+                words: [
+                  { id: 'w_cin_chegar', text: 'CHEGAR', chars: [
+                    { id: 'ch_cc1', text: 'C' },
+                    { id: 'ch_cc2', text: 'H' },
+                    { id: 'ch_cc3', text: 'E' },
+                    { id: 'ch_cc4', text: 'G' },
+                    { id: 'ch_cc5', text: 'A' },
+                    { id: 'ch_cc6', text: 'R' },
+                  ], emphasized: false },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+      wordOverrides: {
+        // Linha 1 - "QUANDO" (topo, força grande em Timber Slice, dourado)
+        w_cin_quando: {
+          position: { x: 0.5, y: 0.22 },
+          style: {
+            fontFamily: 'Timber Slice',
+            fontSizeScale: 2.6,
+            color: '#fbbf24',
+          },
+        },
+        // Linha 2 - "A MEIA NOITE" (meio, menor, Causten-LightOblique itálica, branco)
+        w_cin_a: {
+          position: { x: 0.40, y: 0.5 },
+          style: { fontFamily: 'Causten-LightOblique' },
+        },
+        w_cin_meia: {
+          position: { x: 0.48, y: 0.5 },
+          style: { fontFamily: 'Causten-LightOblique' },
+        },
+        w_cin_noite: {
+          position: { x: 0.60, y: 0.5 },
+          style: { fontFamily: 'Causten-LightOblique' },
+        },
+        // Linha 3 - "CHEGAR" (base, força grande em Timber Slice, branco)
+        w_cin_chegar: {
+          position: { x: 0.5, y: 0.78 },
+          style: {
+            fontFamily: 'Timber Slice',
+            fontSizeScale: 2.6,
+            color: '#f4f4f7',
+          },
+        },
+      },
+      sceneOverrides: {},
+    },
+  },
+
   // ====== TEMPLATES DO USUÁRIO (2 linhas) ======
   {
     id: 'tpl-user-2-linhas-tipografia',
@@ -23581,6 +23724,8 @@ function initEditor() {
               y: ov.position.y,
               font: ov.style?.fontFamily || cfg.style?.fontFamily || null,
               scale: ov.style?.fontSizeScale || 1,
+              color: ov.style?.color || null,
+              textTransform: ov.style?.textTransform || null,
             });
           }
         })
@@ -23588,7 +23733,7 @@ function initEditor() {
     );
     if (!items.length) return null;
 
-    // Agrupa por Y aproximado (tolerância 0.04 = palavras na mesma linha visual)
+    // Agrupa por Y aproximado (tolerância 0.06 = palavras na mesma linha visual)
     items.sort((a, b) => a.y - b.y);
     const linhas = [];
     items.forEach(it => {
@@ -23600,14 +23745,18 @@ function initEditor() {
       }
     });
 
-    // Pra cada linha, fonte dominante + scale máximo (palavra de força)
+    // Pra cada linha, fonte dominante + scale máximo (palavra de força) +
+    // cor e textTransform dominantes
     return linhas.map(linha => {
-      // Fonte: a mais comum na linha
       const fontCount = {};
       let maxScale = 1;
+      let cor = null;
+      let tt = null;
       linha.items.forEach(it => {
         if (it.font) fontCount[it.font] = (fontCount[it.font] || 0) + 1;
         if (it.scale > maxScale) maxScale = it.scale;
+        if (it.color && !cor) cor = it.color;
+        if (it.textTransform && !tt) tt = it.textTransform;
       });
       let font = null, max = 0;
       Object.keys(fontCount).forEach(f => {
@@ -23617,6 +23766,8 @@ function initEditor() {
         font,
         scale: maxScale,
         isForca: maxScale > 1.5,
+        color: cor,
+        textTransform: tt,
       };
     });
   }
@@ -23831,8 +23982,12 @@ function initEditor() {
             // fontSizeScale só pra linha de força (palavra grande central)
             if (sch.isForca) {
               ov.style.fontSizeScale = sch.scale;
-              ov.style.textTransform = 'capitalize';
+              ov.style.textTransform = sch.textTransform || 'capitalize';
+            } else if (sch.textTransform) {
+              ov.style.textTransform = sch.textTransform;
             }
+            // Cor por linha (ex: template Cinematográfico tem linha 1 dourada)
+            if (sch.color) ov.style.color = sch.color;
             // SEM position → cai no auto-layout (mode-flow), que distribui
             // as linhas e centraliza horizontalmente com espaçamento natural.
             engine.wordOverrides[w.id] = ov;
