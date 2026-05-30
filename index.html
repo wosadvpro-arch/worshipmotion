@@ -11809,6 +11809,1213 @@ const TEMPLATES = [
     },
   },
 
+  // ====== TEMPLATE VERTICAL 5 LINHAS (força nas linhas 2 e 4, Montserrat) ======
+  {
+    id: 'tpl-user-5-linhas-vertical',
+    name: '5 Linhas — Vertical',
+    description: 'Composição vertical em 5 níveis com alternancia de pesos. Linhas 2 e 4 grossas em Montserrat Black Italic; linhas 1, 3 e 5 finas. Estilo cinematográfico/poético.',
+    tags: ['5 linhas', 'montserrat', 'vertical', 'poético', 'multifonte', 'cinematográfico'],
+    accent: '#fbbf24',
+    config: {
+      lyrics: 'É NECESSÁRIO\nESTAR\nCOM A\nCHAMA\nACESA',
+      style: {
+        fontFamily: 'Montserrat Light',
+        fontSize: 48,
+        fontWeight: 300,
+        letterSpacing: 0.02,
+        lineHeight: 1.05,
+        color: '#f4f4f7',
+        textAlign: 'center',
+        glow: 0,
+        glowColor: '#fbbf24',
+        outline: 0,
+        outlineColor: '#000000',
+        shadow: 0.3,
+        shadowColor: '#000000',
+        shadowOffsetX: 2,
+        shadowOffsetY: 3,
+        shadowBlur: 10,
+        textTransform: 'uppercase',
+        backgroundType: 'gradient',
+        emphasisColor: '#fbbf24',
+        emphasisSizeScale: 1,
+        emphasisBold: false,
+        emphasisGlow: 0,
+        effects: {
+          echo:  { on: false, intensity: 0.4 },
+          bloom: { on: true,  intensity: 0.2 },
+          depth: { on: true,  intensity: 0.55 },
+          halo:  { on: false, intensity: 0.5 },
+        },
+        cinemaPreset: 'stadium',
+      },
+      animConfig: {
+        entrance: 'fade-in-soft',
+        exit: 'fade-out-soft',
+        target: 'word',
+        stagger: 0.25,
+        transition: 'cut',
+        transitionDuration: 0.5,
+        duration: 1.2,
+      },
+      bg: 'brand',
+      aspect: '16:9',
+      parsed: {
+        stanzas: [
+          {
+            id: 'stz_vert1',
+            label: 'Estrofe 1',
+            lines: [
+              {
+                id: 'ln_v5_l1',
+                words: [
+                  { id: 'w_v5_e', text: 'É', chars: [{ id: 'ch_v5e1', text: 'É' }], emphasized: false },
+                  { id: 'w_v5_necessario', text: 'NECESSÁRIO', chars: [
+                    { id: 'ch_v5n1', text: 'N' },
+                    { id: 'ch_v5n2', text: 'E' },
+                    { id: 'ch_v5n3', text: 'C' },
+                    { id: 'ch_v5n4', text: 'E' },
+                    { id: 'ch_v5n5', text: 'S' },
+                    { id: 'ch_v5n6', text: 'S' },
+                    { id: 'ch_v5n7', text: 'Á' },
+                    { id: 'ch_v5n8', text: 'R' },
+                    { id: 'ch_v5n9', text: 'I' },
+                    { id: 'ch_v5n10', text: 'O' },
+                  ], emphasized: false },
+                ],
+              },
+              {
+                id: 'ln_v5_l2',
+                words: [
+                  { id: 'w_v5_estar', text: 'ESTAR', chars: [
+                    { id: 'ch_v5es1', text: 'E' },
+                    { id: 'ch_v5es2', text: 'S' },
+                    { id: 'ch_v5es3', text: 'T' },
+                    { id: 'ch_v5es4', text: 'A' },
+                    { id: 'ch_v5es5', text: 'R' },
+                  ], emphasized: false },
+                ],
+              },
+              {
+                id: 'ln_v5_l3',
+                words: [
+                  { id: 'w_v5_com', text: 'COM', chars: [
+                    { id: 'ch_v5c1', text: 'C' },
+                    { id: 'ch_v5c2', text: 'O' },
+                    { id: 'ch_v5c3', text: 'M' },
+                  ], emphasized: false },
+                  { id: 'w_v5_a', text: 'A', chars: [{ id: 'ch_v5a1', text: 'A' }], emphasized: false },
+                ],
+              },
+              {
+                id: 'ln_v5_l4',
+                words: [
+                  { id: 'w_v5_chama', text: 'CHAMA', chars: [
+                    { id: 'ch_v5ch1', text: 'C' },
+                    { id: 'ch_v5ch2', text: 'H' },
+                    { id: 'ch_v5ch3', text: 'A' },
+                    { id: 'ch_v5ch4', text: 'M' },
+                    { id: 'ch_v5ch5', text: 'A' },
+                  ], emphasized: false },
+                ],
+              },
+              {
+                id: 'ln_v5_l5',
+                words: [
+                  { id: 'w_v5_acesa', text: 'ACESA', chars: [
+                    { id: 'ch_v5ac1', text: 'A' },
+                    { id: 'ch_v5ac2', text: 'C' },
+                    { id: 'ch_v5ac3', text: 'E' },
+                    { id: 'ch_v5ac4', text: 'S' },
+                    { id: 'ch_v5ac5', text: 'A' },
+                  ], emphasized: false },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+      wordOverrides: {
+        // Linha 1 - "É NECESSÁRIO" (média, fina itálica)
+        w_v5_e: {
+          position: { x: 0.44, y: 0.13 },
+          style: { fontFamily: 'Montserrat Light Italic' },
+        },
+        w_v5_necessario: {
+          position: { x: 0.56, y: 0.13 },
+          style: { fontFamily: 'Montserrat Light Italic' },
+        },
+        // Linha 2 - "ESTAR" (GRANDE, grossa itálica) - FORÇA
+        w_v5_estar: {
+          position: { x: 0.5, y: 0.30 },
+          style: {
+            fontFamily: 'Montserrat Black Italic',
+            fontSizeScale: 1.9,
+          },
+        },
+        // Linha 3 - "COM A" (GRANDE, fina reta)
+        w_v5_com: {
+          position: { x: 0.45, y: 0.50 },
+          style: {
+            fontFamily: 'Montserrat Light',
+            fontSizeScale: 1.6,
+          },
+        },
+        w_v5_a: {
+          position: { x: 0.56, y: 0.50 },
+          style: {
+            fontFamily: 'Montserrat Light',
+            fontSizeScale: 1.6,
+          },
+        },
+        // Linha 4 - "CHAMA" (GRANDE, grossa itálica) - FORÇA
+        w_v5_chama: {
+          position: { x: 0.5, y: 0.70 },
+          style: {
+            fontFamily: 'Montserrat Black Italic',
+            fontSizeScale: 1.9,
+          },
+        },
+        // Linha 5 - "ACESA" (GRANDE, fina itálica)
+        w_v5_acesa: {
+          position: { x: 0.5, y: 0.87 },
+          style: {
+            fontFamily: 'Montserrat Light Italic',
+            fontSizeScale: 1.4,
+          },
+        },
+      },
+      sceneOverrides: {},
+    },
+  },
+
+  // ====== TEMPLATE 4 LINHAS BLACKIRON (serifada grossa, lowercase, força na L2) ======
+  {
+    id: 'tpl-user-4-linhas-blackiron',
+    name: '4 Linhas — Blackiron',
+    description: 'Composição editorial em 4 níveis com fonte Blackiron serifada grossa. L1 menor (introdução), L2-L4 grandes. Tudo em minúsculas, estilo manifesto/poético.',
+    tags: ['4 linhas', 'blackiron', 'serifada', 'editorial', 'lowercase'],
+    accent: '#e5e7eb',
+    config: {
+      lyrics: 'falsos\nmestres\npra si\nmesmos',
+      style: {
+        fontFamily: 'Blackiron',
+        fontSize: 54,
+        fontWeight: 900,
+        letterSpacing: 0,
+        lineHeight: 1.0,
+        color: '#f4f4f7',
+        textAlign: 'center',
+        glow: 0,
+        glowColor: '#8b5cf6',
+        outline: 0,
+        outlineColor: '#000000',
+        shadow: 0.4,
+        shadowColor: '#000000',
+        shadowOffsetX: 2,
+        shadowOffsetY: 3,
+        shadowBlur: 12,
+        textTransform: 'lowercase',
+        backgroundType: 'gradient',
+        emphasisColor: '#fbbf24',
+        emphasisSizeScale: 1,
+        emphasisBold: false,
+        emphasisGlow: 0,
+        effects: {
+          echo:  { on: false, intensity: 0.4 },
+          bloom: { on: true,  intensity: 0.15 },
+          depth: { on: true,  intensity: 0.5 },
+          halo:  { on: false, intensity: 0.5 },
+        },
+        cinemaPreset: 'stadium',
+      },
+      animConfig: {
+        entrance: 'fade-in-soft',
+        exit: 'fade-out-soft',
+        target: 'word',
+        stagger: 0.25,
+        transition: 'cut',
+        transitionDuration: 0.5,
+        duration: 1.2,
+      },
+      bg: 'brand',
+      aspect: '16:9',
+      parsed: {
+        stanzas: [
+          {
+            id: 'stz_bi1',
+            label: 'Estrofe 1',
+            lines: [
+              {
+                id: 'ln_bi_l1',
+                words: [
+                  { id: 'w_bi_falsos', text: 'falsos', chars: [
+                    { id: 'ch_bif1', text: 'f' },
+                    { id: 'ch_bif2', text: 'a' },
+                    { id: 'ch_bif3', text: 'l' },
+                    { id: 'ch_bif4', text: 's' },
+                    { id: 'ch_bif5', text: 'o' },
+                    { id: 'ch_bif6', text: 's' },
+                  ], emphasized: false },
+                ],
+              },
+              {
+                id: 'ln_bi_l2',
+                words: [
+                  { id: 'w_bi_mestres', text: 'mestres', chars: [
+                    { id: 'ch_bim1', text: 'm' },
+                    { id: 'ch_bim2', text: 'e' },
+                    { id: 'ch_bim3', text: 's' },
+                    { id: 'ch_bim4', text: 't' },
+                    { id: 'ch_bim5', text: 'r' },
+                    { id: 'ch_bim6', text: 'e' },
+                    { id: 'ch_bim7', text: 's' },
+                  ], emphasized: false },
+                ],
+              },
+              {
+                id: 'ln_bi_l3',
+                words: [
+                  { id: 'w_bi_pra', text: 'pra', chars: [
+                    { id: 'ch_bip1', text: 'p' },
+                    { id: 'ch_bip2', text: 'r' },
+                    { id: 'ch_bip3', text: 'a' },
+                  ], emphasized: false },
+                  { id: 'w_bi_si', text: 'si', chars: [
+                    { id: 'ch_bis1', text: 's' },
+                    { id: 'ch_bis2', text: 'i' },
+                  ], emphasized: false },
+                ],
+              },
+              {
+                id: 'ln_bi_l4',
+                words: [
+                  { id: 'w_bi_mesmos', text: 'mesmos', chars: [
+                    { id: 'ch_bimm1', text: 'm' },
+                    { id: 'ch_bimm2', text: 'e' },
+                    { id: 'ch_bimm3', text: 's' },
+                    { id: 'ch_bimm4', text: 'm' },
+                    { id: 'ch_bimm5', text: 'o' },
+                    { id: 'ch_bimm6', text: 's' },
+                  ], emphasized: false },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+      wordOverrides: {
+        // L1 "falsos" - menor, introdução
+        w_bi_falsos: {
+          position: { x: 0.5, y: 0.18 },
+          style: {
+            fontFamily: 'Blackiron',
+            fontSizeScale: 1.0,
+            textTransform: 'lowercase',
+          },
+        },
+        // L2 "mestres" - GRANDE força
+        w_bi_mestres: {
+          position: { x: 0.5, y: 0.40 },
+          style: {
+            fontFamily: 'Blackiron',
+            fontSizeScale: 2.2,
+            textTransform: 'lowercase',
+          },
+        },
+        // L3 "pra si" - GRANDE
+        w_bi_pra: {
+          position: { x: 0.43, y: 0.62 },
+          style: {
+            fontFamily: 'Blackiron',
+            fontSizeScale: 1.8,
+            textTransform: 'lowercase',
+          },
+        },
+        w_bi_si: {
+          position: { x: 0.58, y: 0.62 },
+          style: {
+            fontFamily: 'Blackiron',
+            fontSizeScale: 1.8,
+            textTransform: 'lowercase',
+          },
+        },
+        // L4 "mesmos" - GRANDE
+        w_bi_mesmos: {
+          position: { x: 0.5, y: 0.83 },
+          style: {
+            fontFamily: 'Blackiron',
+            fontSizeScale: 1.9,
+            textTransform: 'lowercase',
+          },
+        },
+      },
+      sceneOverrides: {},
+    },
+  },
+
+  // ====== TEMPLATE 2 LINHAS MONT + BLACKIRON (contraste sans+serifada) ======
+  {
+    id: 'tpl-user-2-linhas-mont-blackiron',
+    name: 'Mont + Blackiron',
+    description: 'Composição editorial em 2 níveis: linha de apoio em Montserrat pequena, linha principal em Blackiron grande. Contraste tipográfico sans+serifada.',
+    tags: ['2 linhas', 'montserrat', 'blackiron', 'editorial', 'contraste'],
+    accent: '#e5e7eb',
+    config: {
+      lyrics: 'PARA SACIAR SEUS\nEGOS E DESEJOS',
+      style: {
+        fontFamily: 'Montserrat',
+        fontSize: 48,
+        fontWeight: 400,
+        letterSpacing: 0.02,
+        lineHeight: 1.1,
+        color: '#f4f4f7',
+        textAlign: 'center',
+        glow: 0,
+        glowColor: '#8b5cf6',
+        outline: 0,
+        outlineColor: '#000000',
+        shadow: 0.35,
+        shadowColor: '#000000',
+        shadowOffsetX: 2,
+        shadowOffsetY: 3,
+        shadowBlur: 10,
+        textTransform: 'uppercase',
+        backgroundType: 'gradient',
+        emphasisColor: '#fbbf24',
+        emphasisSizeScale: 1,
+        emphasisBold: false,
+        emphasisGlow: 0,
+        effects: {
+          echo:  { on: false, intensity: 0.4 },
+          bloom: { on: true,  intensity: 0.15 },
+          depth: { on: true,  intensity: 0.5 },
+          halo:  { on: false, intensity: 0.5 },
+        },
+        cinemaPreset: 'stadium',
+      },
+      animConfig: {
+        entrance: 'fade-in-soft',
+        exit: 'fade-out-soft',
+        target: 'word',
+        stagger: 0.25,
+        transition: 'cut',
+        transitionDuration: 0.5,
+        duration: 1.2,
+      },
+      bg: 'brand',
+      aspect: '16:9',
+      parsed: {
+        stanzas: [
+          {
+            id: 'stz_mb1',
+            label: 'Estrofe 1',
+            lines: [
+              {
+                id: 'ln_mb_l1',
+                words: [
+                  { id: 'w_mb_para', text: 'PARA', chars: [
+                    { id: 'ch_mbp1', text: 'P' },
+                    { id: 'ch_mbp2', text: 'A' },
+                    { id: 'ch_mbp3', text: 'R' },
+                    { id: 'ch_mbp4', text: 'A' },
+                  ], emphasized: false },
+                  { id: 'w_mb_saciar', text: 'SACIAR', chars: [
+                    { id: 'ch_mbs1', text: 'S' },
+                    { id: 'ch_mbs2', text: 'A' },
+                    { id: 'ch_mbs3', text: 'C' },
+                    { id: 'ch_mbs4', text: 'I' },
+                    { id: 'ch_mbs5', text: 'A' },
+                    { id: 'ch_mbs6', text: 'R' },
+                  ], emphasized: false },
+                  { id: 'w_mb_seus', text: 'SEUS', chars: [
+                    { id: 'ch_mbse1', text: 'S' },
+                    { id: 'ch_mbse2', text: 'E' },
+                    { id: 'ch_mbse3', text: 'U' },
+                    { id: 'ch_mbse4', text: 'S' },
+                  ], emphasized: false },
+                ],
+              },
+              {
+                id: 'ln_mb_l2',
+                words: [
+                  { id: 'w_mb_egos', text: 'EGOS', chars: [
+                    { id: 'ch_mbe1', text: 'E' },
+                    { id: 'ch_mbe2', text: 'G' },
+                    { id: 'ch_mbe3', text: 'O' },
+                    { id: 'ch_mbe4', text: 'S' },
+                  ], emphasized: false },
+                  { id: 'w_mb_e', text: 'E', chars: [{ id: 'ch_mbeu1', text: 'E' }], emphasized: false },
+                  { id: 'w_mb_desejos', text: 'DESEJOS', chars: [
+                    { id: 'ch_mbd1', text: 'D' },
+                    { id: 'ch_mbd2', text: 'E' },
+                    { id: 'ch_mbd3', text: 'S' },
+                    { id: 'ch_mbd4', text: 'E' },
+                    { id: 'ch_mbd5', text: 'J' },
+                    { id: 'ch_mbd6', text: 'O' },
+                    { id: 'ch_mbd7', text: 'S' },
+                  ], emphasized: false },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+      wordOverrides: {
+        // L1 "PARA SACIAR SEUS" - Montserrat pequena (apoio)
+        w_mb_para: {
+          position: { x: 0.34, y: 0.30 },
+          style: {
+            fontFamily: 'Montserrat',
+            fontSizeScale: 0.9,
+          },
+        },
+        w_mb_saciar: {
+          position: { x: 0.50, y: 0.30 },
+          style: {
+            fontFamily: 'Montserrat',
+            fontSizeScale: 0.9,
+          },
+        },
+        w_mb_seus: {
+          position: { x: 0.66, y: 0.30 },
+          style: {
+            fontFamily: 'Montserrat',
+            fontSizeScale: 0.9,
+          },
+        },
+        // L2 "EGOS E DESEJOS" - Blackiron GRANDE (toda preenchida)
+        w_mb_egos: {
+          position: { x: 0.32, y: 0.60 },
+          style: {
+            fontFamily: 'Blackiron',
+            fontSizeScale: 2.4,
+          },
+        },
+        w_mb_e: {
+          position: { x: 0.50, y: 0.60 },
+          style: {
+            fontFamily: 'Blackiron',
+            fontSizeScale: 2.4,
+          },
+        },
+        w_mb_desejos: {
+          position: { x: 0.68, y: 0.60 },
+          style: {
+            fontFamily: 'Blackiron',
+            fontSizeScale: 2.4,
+          },
+        },
+      },
+      sceneOverrides: {},
+    },
+  },
+
+  // ====== TEMPLATE 2 LINHAS BLACKIRON DUPLO (mesma fonte grande nas 2 linhas) ======
+  {
+    id: 'tpl-user-2-linhas-blackiron-duplo',
+    name: '2 Linhas — Blackiron Duplo',
+    description: 'Bloco tipográfico em 2 linhas com Blackiron grande e maiúsculas. Composição centralizada, espaçamento compacto, alto contraste.',
+    tags: ['2 linhas', 'blackiron', 'serifada', 'maiúsculas', 'duplo'],
+    accent: '#fbbf24',
+    config: {
+      lyrics: 'DA MINHA ALMA\nATÉ A DEUS',
+      style: {
+        fontFamily: 'Blackiron',
+        fontSize: 60,
+        fontWeight: 900,
+        letterSpacing: 0.02,
+        lineHeight: 1.05,
+        color: '#f4f4f7',
+        textAlign: 'center',
+        glow: 0,
+        glowColor: '#fbbf24',
+        outline: 0,
+        outlineColor: '#000000',
+        shadow: 0.4,
+        shadowColor: '#000000',
+        shadowOffsetX: 2,
+        shadowOffsetY: 3,
+        shadowBlur: 12,
+        textTransform: 'uppercase',
+        backgroundType: 'gradient',
+        emphasisColor: '#fbbf24',
+        emphasisSizeScale: 1,
+        emphasisBold: false,
+        emphasisGlow: 0,
+        effects: {
+          echo:  { on: false, intensity: 0.4 },
+          bloom: { on: true,  intensity: 0.2 },
+          depth: { on: true,  intensity: 0.55 },
+          halo:  { on: false, intensity: 0.5 },
+        },
+        cinemaPreset: 'stadium',
+      },
+      animConfig: {
+        entrance: 'fade-in-soft',
+        exit: 'fade-out-soft',
+        target: 'word',
+        stagger: 0.25,
+        transition: 'cut',
+        transitionDuration: 0.5,
+        duration: 1.2,
+      },
+      bg: 'brand',
+      aspect: '16:9',
+      parsed: {
+        stanzas: [
+          {
+            id: 'stz_bd1',
+            label: 'Estrofe 1',
+            lines: [
+              {
+                id: 'ln_bd_l1',
+                words: [
+                  { id: 'w_bd_da', text: 'DA', chars: [
+                    { id: 'ch_bdda1', text: 'D' },
+                    { id: 'ch_bdda2', text: 'A' },
+                  ], emphasized: false },
+                  { id: 'w_bd_minha', text: 'MINHA', chars: [
+                    { id: 'ch_bdm1', text: 'M' },
+                    { id: 'ch_bdm2', text: 'I' },
+                    { id: 'ch_bdm3', text: 'N' },
+                    { id: 'ch_bdm4', text: 'H' },
+                    { id: 'ch_bdm5', text: 'A' },
+                  ], emphasized: false },
+                  { id: 'w_bd_alma', text: 'ALMA', chars: [
+                    { id: 'ch_bdal1', text: 'A' },
+                    { id: 'ch_bdal2', text: 'L' },
+                    { id: 'ch_bdal3', text: 'M' },
+                    { id: 'ch_bdal4', text: 'A' },
+                  ], emphasized: false },
+                ],
+              },
+              {
+                id: 'ln_bd_l2',
+                words: [
+                  { id: 'w_bd_ate', text: 'ATÉ', chars: [
+                    { id: 'ch_bdat1', text: 'A' },
+                    { id: 'ch_bdat2', text: 'T' },
+                    { id: 'ch_bdat3', text: 'É' },
+                  ], emphasized: false },
+                  { id: 'w_bd_a', text: 'A', chars: [{ id: 'ch_bda1', text: 'A' }], emphasized: false },
+                  { id: 'w_bd_deus', text: 'DEUS', chars: [
+                    { id: 'ch_bdd1', text: 'D' },
+                    { id: 'ch_bdd2', text: 'E' },
+                    { id: 'ch_bdd3', text: 'U' },
+                    { id: 'ch_bdd4', text: 'S' },
+                  ], emphasized: false },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+      wordOverrides: {
+        // L1 "DA MINHA ALMA" - Blackiron GRANDE
+        w_bd_da: {
+          position: { x: 0.30, y: 0.38 },
+          style: {
+            fontFamily: 'Blackiron',
+            fontSizeScale: 2.4,
+          },
+        },
+        w_bd_minha: {
+          position: { x: 0.50, y: 0.38 },
+          style: {
+            fontFamily: 'Blackiron',
+            fontSizeScale: 2.4,
+          },
+        },
+        w_bd_alma: {
+          position: { x: 0.70, y: 0.38 },
+          style: {
+            fontFamily: 'Blackiron',
+            fontSizeScale: 2.4,
+          },
+        },
+        // L2 "ATÉ A DEUS" - Blackiron GRANDE
+        w_bd_ate: {
+          position: { x: 0.32, y: 0.62 },
+          style: {
+            fontFamily: 'Blackiron',
+            fontSizeScale: 2.4,
+          },
+        },
+        w_bd_a: {
+          position: { x: 0.50, y: 0.62 },
+          style: {
+            fontFamily: 'Blackiron',
+            fontSizeScale: 2.4,
+          },
+        },
+        w_bd_deus: {
+          position: { x: 0.68, y: 0.62 },
+          style: {
+            fontFamily: 'Blackiron',
+            fontSizeScale: 2.4,
+          },
+        },
+      },
+      sceneOverrides: {},
+    },
+  },
+
+  // ====== TEMPLATE 3 LINHAS MONTANHAS (Montserrat + Blackiron, hierarquia ascendente) ======
+  {
+    id: 'tpl-user-3-linhas-montanhas',
+    name: '3 Linhas — Montanhas',
+    description: 'Composição vertical com hierarquia ascendente. L1 Montserrat grossa, L2 Montserrat fina (conector), L3 Blackiron muito grande (destaque). Tudo em maiúsculas.',
+    tags: ['3 linhas', 'montserrat', 'blackiron', 'multifonte', 'hierarquia'],
+    accent: '#e5e7eb',
+    config: {
+      lyrics: 'VEM SOBRE\nAS\nMONTANHAS',
+      style: {
+        fontFamily: 'Montserrat',
+        fontSize: 52,
+        fontWeight: 400,
+        letterSpacing: 0.02,
+        lineHeight: 1.05,
+        color: '#f4f4f7',
+        textAlign: 'center',
+        glow: 0,
+        glowColor: '#fbbf24',
+        outline: 0,
+        outlineColor: '#000000',
+        shadow: 0.35,
+        shadowColor: '#000000',
+        shadowOffsetX: 2,
+        shadowOffsetY: 3,
+        shadowBlur: 10,
+        textTransform: 'uppercase',
+        backgroundType: 'gradient',
+        emphasisColor: '#fbbf24',
+        emphasisSizeScale: 1,
+        emphasisBold: false,
+        emphasisGlow: 0,
+        effects: {
+          echo:  { on: false, intensity: 0.4 },
+          bloom: { on: true,  intensity: 0.2 },
+          depth: { on: true,  intensity: 0.55 },
+          halo:  { on: false, intensity: 0.5 },
+        },
+        cinemaPreset: 'stadium',
+      },
+      animConfig: {
+        entrance: 'fade-in-soft',
+        exit: 'fade-out-soft',
+        target: 'word',
+        stagger: 0.25,
+        transition: 'cut',
+        transitionDuration: 0.5,
+        duration: 1.2,
+      },
+      bg: 'brand',
+      aspect: '16:9',
+      parsed: {
+        stanzas: [
+          {
+            id: 'stz_mt1',
+            label: 'Estrofe 1',
+            lines: [
+              {
+                id: 'ln_mt_l1',
+                words: [
+                  { id: 'w_mt_vem', text: 'VEM', chars: [
+                    { id: 'ch_mtv1', text: 'V' },
+                    { id: 'ch_mtv2', text: 'E' },
+                    { id: 'ch_mtv3', text: 'M' },
+                  ], emphasized: false },
+                  { id: 'w_mt_sobre', text: 'SOBRE', chars: [
+                    { id: 'ch_mts1', text: 'S' },
+                    { id: 'ch_mts2', text: 'O' },
+                    { id: 'ch_mts3', text: 'B' },
+                    { id: 'ch_mts4', text: 'R' },
+                    { id: 'ch_mts5', text: 'E' },
+                  ], emphasized: false },
+                ],
+              },
+              {
+                id: 'ln_mt_l2',
+                words: [
+                  { id: 'w_mt_as', text: 'AS', chars: [
+                    { id: 'ch_mtas1', text: 'A' },
+                    { id: 'ch_mtas2', text: 'S' },
+                  ], emphasized: false },
+                ],
+              },
+              {
+                id: 'ln_mt_l3',
+                words: [
+                  { id: 'w_mt_montanhas', text: 'MONTANHAS', chars: [
+                    { id: 'ch_mtm1', text: 'M' },
+                    { id: 'ch_mtm2', text: 'O' },
+                    { id: 'ch_mtm3', text: 'N' },
+                    { id: 'ch_mtm4', text: 'T' },
+                    { id: 'ch_mtm5', text: 'A' },
+                    { id: 'ch_mtm6', text: 'N' },
+                    { id: 'ch_mtm7', text: 'H' },
+                    { id: 'ch_mtm8', text: 'A' },
+                    { id: 'ch_mtm9', text: 'S' },
+                  ], emphasized: false },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+      wordOverrides: {
+        // L1 "VEM SOBRE" - Montserrat Black GRANDE
+        w_mt_vem: {
+          position: { x: 0.42, y: 0.22 },
+          style: {
+            fontFamily: 'Montserrat Black',
+            fontSizeScale: 1.8,
+          },
+        },
+        w_mt_sobre: {
+          position: { x: 0.58, y: 0.22 },
+          style: {
+            fontFamily: 'Montserrat Black',
+            fontSizeScale: 1.8,
+          },
+        },
+        // L2 "AS" - Montserrat Light média (conector entre L1 e L3)
+        w_mt_as: {
+          position: { x: 0.5, y: 0.43 },
+          style: {
+            fontFamily: 'Montserrat Light',
+            fontSizeScale: 1.0,
+          },
+        },
+        // L3 "MONTANHAS" - Blackiron MUITO GRANDE (destaque principal)
+        w_mt_montanhas: {
+          position: { x: 0.5, y: 0.72 },
+          style: {
+            fontFamily: 'Blackiron',
+            fontSizeScale: 2.8,
+          },
+        },
+      },
+      sceneOverrides: {},
+    },
+  },
+
+  // ====== TEMPLATE 1 LINHA MARAVILHOSO (Candlescript grande, branco) ======
+  {
+    id: 'tpl-user-1-linha-maravilhoso',
+    name: '1 Linha — Maravilhoso',
+    description: 'Linha única com fonte cursiva Candlescript em destaque, capitalizada. Composição minimalista focada em uma palavra principal.',
+    tags: ['1 linha', 'candlescript', 'cursiva', 'minimalista'],
+    accent: '#f4f4f7',
+    config: {
+      lyrics: 'Maravilhoso',
+      style: {
+        fontFamily: 'Candlescript',
+        fontSize: 96,
+        fontWeight: 400,
+        letterSpacing: 0,
+        lineHeight: 1.05,
+        color: '#f4f4f7',
+        textAlign: 'center',
+        glow: 0,
+        glowColor: '#fbbf24',
+        outline: 0,
+        outlineColor: '#000000',
+        shadow: 0.3,
+        shadowColor: '#000000',
+        shadowOffsetX: 2,
+        shadowOffsetY: 3,
+        shadowBlur: 10,
+        textTransform: 'capitalize',
+        backgroundType: 'gradient',
+        emphasisColor: '#fbbf24',
+        emphasisSizeScale: 1,
+        emphasisBold: false,
+        emphasisGlow: 0,
+        effects: {
+          echo:  { on: false, intensity: 0.4 },
+          bloom: { on: true,  intensity: 0.2 },
+          depth: { on: true,  intensity: 0.5 },
+          halo:  { on: false, intensity: 0.5 },
+        },
+        cinemaPreset: 'stadium',
+      },
+      animConfig: {
+        entrance: 'fade-in-soft',
+        exit: 'fade-out-soft',
+        target: 'word',
+        stagger: 0.3,
+        transition: 'cut',
+        transitionDuration: 0.5,
+        duration: 1.2,
+      },
+      bg: 'brand',
+      aspect: '16:9',
+      parsed: {
+        stanzas: [
+          {
+            id: 'stz_mv1',
+            label: 'Estrofe 1',
+            lines: [
+              {
+                id: 'ln_mv_l1',
+                words: [
+                  { id: 'w_mv_maravilhoso', text: 'Maravilhoso', chars: [
+                    { id: 'ch_mv1', text: 'M' },
+                    { id: 'ch_mv2', text: 'a' },
+                    { id: 'ch_mv3', text: 'r' },
+                    { id: 'ch_mv4', text: 'a' },
+                    { id: 'ch_mv5', text: 'v' },
+                    { id: 'ch_mv6', text: 'i' },
+                    { id: 'ch_mv7', text: 'l' },
+                    { id: 'ch_mv8', text: 'h' },
+                    { id: 'ch_mv9', text: 'o' },
+                    { id: 'ch_mv10', text: 's' },
+                    { id: 'ch_mv11', text: 'o' },
+                  ], emphasized: false },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+      wordOverrides: {
+        w_mv_maravilhoso: {
+          position: { x: 0.5, y: 0.5 },
+          style: {
+            fontFamily: 'Candlescript',
+            fontSizeScale: 2.8,
+            textTransform: 'capitalize',
+          },
+        },
+      },
+      sceneOverrides: {},
+    },
+  },
+
+  // ====== TEMPLATE 4 LINHAS A FONTE DA VIDA (Mont + Blackiron alternados) ======
+  {
+    id: 'tpl-user-4-linhas-fonte-vida',
+    name: '4 Linhas — A Fonte da Vida',
+    description: 'Composição tipográfica em 4 níveis alternando Montserrat e Blackiron. L1 apoio, L2 destaque grande, L3 conector fino, L4 fechamento minúsculas.',
+    tags: ['4 linhas', 'montserrat', 'blackiron', 'multifonte', 'editorial'],
+    accent: '#f4f4f7',
+    config: {
+      lyrics: 'A FONTE DA\nVIDA\nQUE ME\nencontrou',
+      style: {
+        fontFamily: 'Montserrat',
+        fontSize: 48,
+        fontWeight: 400,
+        letterSpacing: 0.02,
+        lineHeight: 1.05,
+        color: '#f4f4f7',
+        textAlign: 'center',
+        glow: 0,
+        glowColor: '#fbbf24',
+        outline: 0,
+        outlineColor: '#000000',
+        shadow: 0.35,
+        shadowColor: '#000000',
+        shadowOffsetX: 2,
+        shadowOffsetY: 3,
+        shadowBlur: 10,
+        textTransform: 'none',
+        backgroundType: 'gradient',
+        emphasisColor: '#fbbf24',
+        emphasisSizeScale: 1,
+        emphasisBold: false,
+        emphasisGlow: 0,
+        effects: {
+          echo:  { on: false, intensity: 0.4 },
+          bloom: { on: true,  intensity: 0.15 },
+          depth: { on: true,  intensity: 0.5 },
+          halo:  { on: false, intensity: 0.5 },
+        },
+        cinemaPreset: 'stadium',
+      },
+      animConfig: {
+        entrance: 'fade-in-soft',
+        exit: 'fade-out-soft',
+        target: 'word',
+        stagger: 0.25,
+        transition: 'cut',
+        transitionDuration: 0.5,
+        duration: 1.2,
+      },
+      bg: 'brand',
+      aspect: '16:9',
+      parsed: {
+        stanzas: [
+          {
+            id: 'stz_fv1',
+            label: 'Estrofe 1',
+            lines: [
+              {
+                id: 'ln_fv_l1',
+                words: [
+                  { id: 'w_fv_a', text: 'A', chars: [{ id: 'ch_fva1', text: 'A' }], emphasized: false },
+                  { id: 'w_fv_fonte', text: 'FONTE', chars: [
+                    { id: 'ch_fvf1', text: 'F' },
+                    { id: 'ch_fvf2', text: 'O' },
+                    { id: 'ch_fvf3', text: 'N' },
+                    { id: 'ch_fvf4', text: 'T' },
+                    { id: 'ch_fvf5', text: 'E' },
+                  ], emphasized: false },
+                  { id: 'w_fv_da', text: 'DA', chars: [
+                    { id: 'ch_fvd1', text: 'D' },
+                    { id: 'ch_fvd2', text: 'A' },
+                  ], emphasized: false },
+                ],
+              },
+              {
+                id: 'ln_fv_l2',
+                words: [
+                  { id: 'w_fv_vida', text: 'VIDA', chars: [
+                    { id: 'ch_fvv1', text: 'V' },
+                    { id: 'ch_fvv2', text: 'I' },
+                    { id: 'ch_fvv3', text: 'D' },
+                    { id: 'ch_fvv4', text: 'A' },
+                  ], emphasized: false },
+                ],
+              },
+              {
+                id: 'ln_fv_l3',
+                words: [
+                  { id: 'w_fv_que', text: 'QUE', chars: [
+                    { id: 'ch_fvq1', text: 'Q' },
+                    { id: 'ch_fvq2', text: 'U' },
+                    { id: 'ch_fvq3', text: 'E' },
+                  ], emphasized: false },
+                  { id: 'w_fv_me', text: 'ME', chars: [
+                    { id: 'ch_fvm1', text: 'M' },
+                    { id: 'ch_fvm2', text: 'E' },
+                  ], emphasized: false },
+                ],
+              },
+              {
+                id: 'ln_fv_l4',
+                words: [
+                  { id: 'w_fv_encontrou', text: 'encontrou', chars: [
+                    { id: 'ch_fve1', text: 'e' },
+                    { id: 'ch_fve2', text: 'n' },
+                    { id: 'ch_fve3', text: 'c' },
+                    { id: 'ch_fve4', text: 'o' },
+                    { id: 'ch_fve5', text: 'n' },
+                    { id: 'ch_fve6', text: 't' },
+                    { id: 'ch_fve7', text: 'r' },
+                    { id: 'ch_fve8', text: 'o' },
+                    { id: 'ch_fve9', text: 'u' },
+                  ], emphasized: false },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+      wordOverrides: {
+        // L1 "A FONTE DA" - Montserrat normal, média, MAIÚSCULAS
+        w_fv_a: {
+          position: { x: 0.35, y: 0.15 },
+          style: { fontFamily: 'Montserrat', fontSizeScale: 1.0, textTransform: 'uppercase' },
+        },
+        w_fv_fonte: {
+          position: { x: 0.50, y: 0.15 },
+          style: { fontFamily: 'Montserrat', fontSizeScale: 1.0, textTransform: 'uppercase' },
+        },
+        w_fv_da: {
+          position: { x: 0.65, y: 0.15 },
+          style: { fontFamily: 'Montserrat', fontSizeScale: 1.0, textTransform: 'uppercase' },
+        },
+        // L2 "VIDA" - Blackiron MUITO GRANDE (destaque)
+        w_fv_vida: {
+          position: { x: 0.5, y: 0.40 },
+          style: {
+            fontFamily: 'Blackiron',
+            fontSizeScale: 3.0,
+            textTransform: 'uppercase',
+          },
+        },
+        // L3 "QUE ME" - Montserrat Light fina, média, MAIÚSCULAS
+        w_fv_que: {
+          position: { x: 0.43, y: 0.62 },
+          style: { fontFamily: 'Montserrat Light', fontSizeScale: 1.0, textTransform: 'uppercase' },
+        },
+        w_fv_me: {
+          position: { x: 0.57, y: 0.62 },
+          style: { fontFamily: 'Montserrat Light', fontSizeScale: 1.0, textTransform: 'uppercase' },
+        },
+        // L4 "encontrou" - Blackiron grossa, GRANDE, minúsculas
+        w_fv_encontrou: {
+          position: { x: 0.5, y: 0.83 },
+          style: {
+            fontFamily: 'Blackiron',
+            fontSizeScale: 1.8,
+            textTransform: 'lowercase',
+          },
+        },
+      },
+      sceneOverrides: {},
+    },
+  },
+
+  // ====== TEMPLATE 4 LINHAS TRONOS (Mont + Blackiron, destaque central) ======
+  {
+    id: 'tpl-user-4-linhas-tronos',
+    name: '4 Linhas — Tronos',
+    description: 'Composição em 4 níveis com destaque central. L1 apoio, L2 Blackiron muito grande (destaque), L3 conector, L4 fechamento Montserrat grossa. Tudo em maiúsculas.',
+    tags: ['4 linhas', 'montserrat', 'blackiron', 'multifonte', 'central'],
+    accent: '#f4f4f7',
+    config: {
+      lyrics: 'VEJA OS\nTRONOS\nDE OUTROS\nREIS',
+      style: {
+        fontFamily: 'Montserrat',
+        fontSize: 48,
+        fontWeight: 400,
+        letterSpacing: 0.02,
+        lineHeight: 1.05,
+        color: '#f4f4f7',
+        textAlign: 'center',
+        glow: 0,
+        glowColor: '#fbbf24',
+        outline: 0,
+        outlineColor: '#000000',
+        shadow: 0.35,
+        shadowColor: '#000000',
+        shadowOffsetX: 2,
+        shadowOffsetY: 3,
+        shadowBlur: 10,
+        textTransform: 'uppercase',
+        backgroundType: 'gradient',
+        emphasisColor: '#fbbf24',
+        emphasisSizeScale: 1,
+        emphasisBold: false,
+        emphasisGlow: 0,
+        effects: {
+          echo:  { on: false, intensity: 0.4 },
+          bloom: { on: true,  intensity: 0.15 },
+          depth: { on: true,  intensity: 0.5 },
+          halo:  { on: false, intensity: 0.5 },
+        },
+        cinemaPreset: 'stadium',
+      },
+      animConfig: {
+        entrance: 'fade-in-soft',
+        exit: 'fade-out-soft',
+        target: 'word',
+        stagger: 0.25,
+        transition: 'cut',
+        transitionDuration: 0.5,
+        duration: 1.2,
+      },
+      bg: 'brand',
+      aspect: '16:9',
+      parsed: {
+        stanzas: [
+          {
+            id: 'stz_tr1',
+            label: 'Estrofe 1',
+            lines: [
+              {
+                id: 'ln_tr_l1',
+                words: [
+                  { id: 'w_tr_veja', text: 'VEJA', chars: [
+                    { id: 'ch_trv1', text: 'V' },
+                    { id: 'ch_trv2', text: 'E' },
+                    { id: 'ch_trv3', text: 'J' },
+                    { id: 'ch_trv4', text: 'A' },
+                  ], emphasized: false },
+                  { id: 'w_tr_os', text: 'OS', chars: [
+                    { id: 'ch_tros1', text: 'O' },
+                    { id: 'ch_tros2', text: 'S' },
+                  ], emphasized: false },
+                ],
+              },
+              {
+                id: 'ln_tr_l2',
+                words: [
+                  { id: 'w_tr_tronos', text: 'TRONOS', chars: [
+                    { id: 'ch_trt1', text: 'T' },
+                    { id: 'ch_trt2', text: 'R' },
+                    { id: 'ch_trt3', text: 'O' },
+                    { id: 'ch_trt4', text: 'N' },
+                    { id: 'ch_trt5', text: 'O' },
+                    { id: 'ch_trt6', text: 'S' },
+                  ], emphasized: false },
+                ],
+              },
+              {
+                id: 'ln_tr_l3',
+                words: [
+                  { id: 'w_tr_de', text: 'DE', chars: [
+                    { id: 'ch_trde1', text: 'D' },
+                    { id: 'ch_trde2', text: 'E' },
+                  ], emphasized: false },
+                  { id: 'w_tr_outros', text: 'OUTROS', chars: [
+                    { id: 'ch_tro1', text: 'O' },
+                    { id: 'ch_tro2', text: 'U' },
+                    { id: 'ch_tro3', text: 'T' },
+                    { id: 'ch_tro4', text: 'R' },
+                    { id: 'ch_tro5', text: 'O' },
+                    { id: 'ch_tro6', text: 'S' },
+                  ], emphasized: false },
+                ],
+              },
+              {
+                id: 'ln_tr_l4',
+                words: [
+                  { id: 'w_tr_reis', text: 'REIS', chars: [
+                    { id: 'ch_trr1', text: 'R' },
+                    { id: 'ch_trr2', text: 'E' },
+                    { id: 'ch_trr3', text: 'I' },
+                    { id: 'ch_trr4', text: 'S' },
+                  ], emphasized: false },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+      wordOverrides: {
+        // L1 "VEJA OS" - Montserrat normal, média (apoio)
+        w_tr_veja: {
+          position: { x: 0.42, y: 0.18 },
+          style: { fontFamily: 'Montserrat', fontSizeScale: 1.0 },
+        },
+        w_tr_os: {
+          position: { x: 0.58, y: 0.18 },
+          style: { fontFamily: 'Montserrat', fontSizeScale: 1.0 },
+        },
+        // L2 "TRONOS" - Blackiron MUITO GRANDE (destaque principal)
+        w_tr_tronos: {
+          position: { x: 0.5, y: 0.42 },
+          style: {
+            fontFamily: 'Blackiron',
+            fontSizeScale: 3.0,
+          },
+        },
+        // L3 "DE OUTROS" - Montserrat normal, média (conector)
+        w_tr_de: {
+          position: { x: 0.42, y: 0.65 },
+          style: { fontFamily: 'Montserrat', fontSizeScale: 1.0 },
+        },
+        w_tr_outros: {
+          position: { x: 0.58, y: 0.65 },
+          style: { fontFamily: 'Montserrat', fontSizeScale: 1.0 },
+        },
+        // L4 "REIS" - Montserrat Black GRANDE (fechamento)
+        w_tr_reis: {
+          position: { x: 0.5, y: 0.85 },
+          style: {
+            fontFamily: 'Montserrat Black',
+            fontSizeScale: 1.7,
+          },
+        },
+      },
+      sceneOverrides: {},
+    },
+  },
+
   // ====== TEMPLATES DO USUÁRIO (2 linhas) ======
   {
     id: 'tpl-user-2-linhas-tipografia',
@@ -15416,7 +16623,59 @@ class RenderEngineV2 {
 
   playEntrance() {
     const lib = window.WM_ANIM_V2;
-    if (!lib) return;
+    if (!lib) {
+      try {
+        let db = document.getElementById('wm-anim-diag');
+        if (!db) {
+          db = document.createElement('div');
+          db.id = 'wm-anim-diag';
+          db.style.cssText = 'position:fixed;bottom:8px;right:8px;z-index:9999999;background:#1a0a00;color:#fb0;font:10px/1.4 monospace;padding:10px;max-width:560px;max-height:55vh;overflow:auto;border:2px solid #fb0;border-radius:6px;white-space:pre;';
+          document.body.appendChild(db);
+          db.onclick = () => db.remove();
+        }
+        db.textContent = 'ANIM DIAG: WM_ANIM_V2 não está disponível! Sem lib, sem animação.';
+      } catch(e) {}
+      return;
+    }
+
+    // DIAG TEMPORÁRIO
+    try {
+      let db = document.getElementById('wm-anim-diag');
+      if (!db) {
+        db = document.createElement('div');
+        db.id = 'wm-anim-diag';
+        db.style.cssText = 'position:fixed;bottom:8px;right:8px;z-index:9999999;background:#1a0a00;color:#fb0;font:10px/1.4 monospace;padding:10px;max-width:560px;max-height:55vh;overflow:auto;border:2px solid #fb0;border-radius:6px;white-space:pre;';
+        document.body.appendChild(db);
+        db.onclick = () => db.remove();
+      }
+      const _st = this.parsed?.stanzas?.[this.currentStanzaIndex];
+      const _sceneCfg = _st ? this.getSceneConfig(_st.id) : null;
+      const _entrance = _sceneCfg?.entrance || this.animConfig.entrance;
+      const _target = _sceneCfg?.target || this.animConfig.target;
+      const _anim = lib.byId(_entrance);
+      const _words = this.canvas.querySelectorAll('.lyric-word');
+      let txt = 'ANIM DIAG (toque fecha)\n';
+      txt += 'currentStanzaIndex: ' + this.currentStanzaIndex + '\n';
+      txt += 'stanza.id: ' + (_st?.id || '(none)') + '\n';
+      txt += 'sceneConfig.entrance: ' + (_sceneCfg?.entrance || '(none)') + '\n';
+      txt += 'engine.animConfig.entrance: ' + this.animConfig.entrance + '\n';
+      txt += 'entrance EFETIVA: ' + _entrance + '\n';
+      txt += 'target: ' + _target + '\n';
+      txt += 'lib.byId(entrance): ' + (_anim ? 'OK' : 'NULL — anim não encontrada!') + '\n';
+      if (_anim) {
+        txt += '  isolatedEngine: ' + (_anim.isolatedEngine || '(none)') + '\n';
+        txt += '  category: ' + (_anim.category || '(none)') + '\n';
+      }
+      txt += '\n=== Palavras no DOM ===\n';
+      txt += 'total .lyric-word: ' + _words.length + '\n';
+      _words.forEach((w, i) => {
+        if (i < 5) {
+          const wo = (this.wordOverrides[w.dataset.wordId] || {});
+          txt += '  [' + i + '] "' + w.textContent.slice(0,15) + '" opacity=' + (w.style.opacity || '(auto)') + ' wordOv.entrance=' + (wo.entrance || '(none)') + '\n';
+        }
+      });
+      db.textContent = txt;
+    } catch(e) { console.warn('anim diag:', e); }
 
     // Pega config efetiva da scene atual
     const stanza = this.parsed?.stanzas?.[this.currentStanzaIndex];
@@ -23750,21 +25009,26 @@ function initEditor() {
     return linhas.map(linha => {
       const fontCount = {};
       let maxScale = 1;
+      let sumScale = 0;
+      let countScale = 0;
       let cor = null;
       let tt = null;
       linha.items.forEach(it => {
         if (it.font) fontCount[it.font] = (fontCount[it.font] || 0) + 1;
         if (it.scale > maxScale) maxScale = it.scale;
+        sumScale += it.scale;
+        countScale++;
         if (it.color && !cor) cor = it.color;
         if (it.textTransform && !tt) tt = it.textTransform;
       });
+      const avgScale = countScale > 0 ? sumScale / countScale : 1;
       let font = null, max = 0;
       Object.keys(fontCount).forEach(f => {
         if (fontCount[f] > max) { max = fontCount[f]; font = f; }
       });
       return {
         font,
-        scale: maxScale,
+        scale: avgScale,
         isForca: maxScale > 1.5,
         color: cor,
         textTransform: tt,
@@ -23979,9 +25243,14 @@ function initEditor() {
           palavrasDaLinha.forEach(w => {
             const ov = { style: {} };
             if (sch.font) ov.style.fontFamily = sch.font;
-            // fontSizeScale só pra linha de força (palavra grande central)
-            if (sch.isForca) {
+            // SEMPRE aplica o scale (mesmo se não for força), pra preservar
+            // proporções de linhas pequenas (ex: linha de apoio em 0.9).
+            // Se for ~1.0 (default), não faz diferença visual mas mantém consistência.
+            if (sch.scale && sch.scale !== 1) {
               ov.style.fontSizeScale = sch.scale;
+            }
+            // textTransform: aplica se vier do template
+            if (sch.isForca) {
               ov.style.textTransform = sch.textTransform || 'capitalize';
             } else if (sch.textTransform) {
               ov.style.textTransform = sch.textTransform;
