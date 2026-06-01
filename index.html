@@ -16081,13 +16081,18 @@ class RenderEngineV2 {
     // no teto). O default sadio é 1.3. Resetamos qualquer valor acima
     // de 1.6 (já bem espaçado; acima disso é exagero/resíduo de bug)
     // e qualquer valor inválido, de volta ao padrão 1.3.
+    // Saneamento de lineHeight: aceita o range do slider (1.0 a 2.0).
+    // Valores inválidos (NaN, negativos, ou absurdos > 2.5) caem no
+    // padrão. Antes o teto era 1.6 (resíduo de um bug antigo que inflava
+    // pra 2.0), mas isso impedia o usuário de usar 2.0 legitimamente —
+    // o slider VAI até 2.0, então 2.0 é um valor válido.
     if (typeof this.style.lineHeight === 'number'
         && isFinite(this.style.lineHeight)
         && this.style.lineHeight >= 1
-        && this.style.lineHeight <= 1.6) {
+        && this.style.lineHeight <= 2.5) {
       // valor plausível escolhido pelo usuário — mantém
     } else {
-      this.style.lineHeight = 1.12; // inválido/inflado → padrão sadio compacto
+      this.style.lineHeight = 1.3; // inválido/absurdo → padrão sadio
     }
     this.applyStyleToExisting();
   }
@@ -19490,15 +19495,14 @@ function initEditor() {
     engine.wordOverrides = data.wordOverrides;
     engine.sceneOverrides = data.sceneOverrides;
     engine.style = data.style;
-    // Saneamento do lineHeight (mesmo critério do setStyle): só mantém
-    // valor plausível do usuário (1..1.6). Acima disso ou inválido é
-    // resíduo do bug antigo → volta ao padrão sadio 1.3.
+    // Saneamento do lineHeight (mesmo critério do setStyle): aceita o
+    // range do slider (1.0 a 2.0). Acima de 2.5 ou inválido → padrão 1.3.
     if (engine.style) {
       const lh = engine.style.lineHeight;
-      if (typeof lh === 'number' && isFinite(lh) && lh >= 1 && lh <= 1.6) {
+      if (typeof lh === 'number' && isFinite(lh) && lh >= 1 && lh <= 2.5) {
         // mantém
       } else {
-        engine.style.lineHeight = 1.12;
+        engine.style.lineHeight = 1.3;
       }
     }
     engine.animConfig = data.animConfig;
@@ -21268,6 +21272,13 @@ function initEditor() {
       const preview = card.querySelector('.anim-card-preview');
 
       card.addEventListener('mouseenter', () => previewAnimInCard(id, preview));
+      card.addEventListener('mouseleave', () => {
+        // Para a instância do motor isolado (se houver) pra não acumular RAF
+        if (preview && preview._wmPreviewInst) {
+          try { preview._wmPreviewInst.stop(); } catch (e) {}
+          preview._wmPreviewInst = null;
+        }
+      });
       card.addEventListener('click', () => {
         // CONTEXTUAL: se tem palavra selecionada, aplica NELA.
         // Senão, aplica na estrofe (comportamento default).
@@ -21321,26 +21332,52 @@ function initEditor() {
           return;
         }
 
-        // Default: aplica na estrofe
-        engine.animConfig[category] = id;
-        // Se o target estava preso em 'word' (de um uso anterior de
-        // animação por palavra), aplicar animação na ESTROFE deve voltar
-        // pro modo de slide/estrofe — senão a animação roda palavra por
-        // palavra (com stagger), o slide "não funciona" e as palavras do
-        // fim parecem sumir esperando o delay.
-        if (engine.animConfig.target === 'word') {
-          engine.setAnimConfig({ target: 'stanza' });
-          // Sincroniza os botões de granularidade do painel Motion
-          $$('.granularity-choice button').forEach(b => {
-            b.classList.toggle('active', b.dataset.grain === 'stanza');
+        // Default: aplica na estrofe — mas PERGUNTA o escopo primeiro
+        // (só este slide ou todos), pra entrance/exit/loop.
+        if (category === 'entrance' || category === 'exit' || category === 'loop') {
+          _askAnimScope(id, category, (escopo) => {
+            if (escopo === 'cancel') return;
+
+            // Garante target = stanza (animação de slide, não por palavra)
+            if (engine.animConfig.target === 'word') {
+              engine.setAnimConfig({ target: 'stanza' });
+              $$('.granularity-choice button').forEach(b => {
+                b.classList.toggle('active', b.dataset.grain === 'stanza');
+              });
+            }
+
+            if (escopo === 'todos') {
+              // Global: aplica em todas as estrofes
+              engine.animConfig[category] = id;
+              // Limpa overrides de cena dessa categoria (pra todas seguirem o global)
+              if (engine.sceneOverrides) {
+                Object.keys(engine.sceneOverrides).forEach(sid => {
+                  if (engine.sceneOverrides[sid] && engine.sceneOverrides[sid][category]) {
+                    delete engine.sceneOverrides[sid][category];
+                  }
+                });
+              }
+            } else {
+              // Só este slide: salva no sceneOverride da estrofe atual
+              const st = engine.parsed?.stanzas?.[engine.currentStanzaIndex];
+              if (st) {
+                if (!engine.sceneOverrides) engine.sceneOverrides = {};
+                if (!engine.sceneOverrides[st.id]) engine.sceneOverrides[st.id] = {};
+                engine.sceneOverrides[st.id][category] = id;
+              }
+            }
+
+            $$('.anim-card').forEach(c => c.classList.remove('selected'));
+            card.classList.add('selected');
+            updateCurrentAnimDisplay(id);
+            markDirty();
+            engine.playFull();
           });
+          return;
         }
-        $$('.anim-card').forEach(c => c.classList.remove('selected'));
-        card.classList.add('selected');
-        updateCurrentAnimDisplay(id);
-        if (category === 'entrance' || category === 'loop' || category === 'exit') {
-          engine.playFull();
-        }
+
+        // Outras categorias (caso existam): comportamento global simples
+        engine.animConfig[category] = id;
       });
     });
   }
@@ -21356,6 +21393,49 @@ function initEditor() {
     const scaler = document.createElement('div');
     scaler.style.cssText = 'display:inline-block; transform: scale(0.6); transform-origin: center;';
     container.appendChild(scaler);
+
+    // ANIMAÇÕES ISOLADAS: rodam via motor JS separado e NÃO têm keyframe
+    // CSS. Pra mostrar a animação REAL na preview:
+    //  - 'wm-imported' (com presetData): roda o WMAnimate de verdade no card
+    //  - outras (ex: máquina de escrever): fallback fade genérico
+    if (animDef.isolatedEngine) {
+      // Cancela instância anterior nesse container (replay limpo no re-hover)
+      if (container._wmPreviewInst) {
+        try { container._wmPreviewInst.stop(); } catch (e) {}
+        container._wmPreviewInst = null;
+      }
+
+      if (animDef.isolatedEngine === 'wm-imported'
+          && animDef.presetData
+          && typeof window.WMAnimate === 'function') {
+        // Roda o motor REAL no elemento do card
+        const lineEl = document.createElement('span');
+        lineEl.style.cssText = 'display:inline-block; font-family:Sora; font-size:18px; color:#f4f4f7;';
+        scaler.appendChild(lineEl);
+        try {
+          const inst = window.WMAnimate(lineEl, animDef.presetData, { text: 'Aa' });
+          container._wmPreviewInst = inst;
+          inst.play();
+        } catch (e) {
+          // Se falhar, fallback fade
+          lineEl.textContent = 'Aa';
+          lineEl.style.opacity = '0';
+          void lineEl.offsetHeight;
+          lineEl.style.animation = 'tplPreviewWordIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0s both';
+        }
+        return;
+      }
+
+      // Outras isoladas (máquina de escrever, etc): fallback fade genérico
+      const word = document.createElement('span');
+      word.className = 'lyric-word';
+      word.style.cssText = 'display:inline-block; font-family:Sora; opacity:0; font-size:18px;';
+      word.textContent = 'Aa';
+      scaler.appendChild(word);
+      void word.offsetHeight;
+      word.style.animation = 'tplPreviewWordIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0s both';
+      return;
+    }
 
     if (animDef.charStagger) {
       const text = 'Aa';
@@ -21478,6 +21558,13 @@ function initEditor() {
       const preview = card.querySelector('.word-anim-card-preview');
       if (preview && id && typeof previewAnimInCard === 'function') {
         card.addEventListener('mouseenter', () => previewAnimInCard(id, preview));
+      card.addEventListener('mouseleave', () => {
+        // Para a instância do motor isolado (se houver) pra não acumular RAF
+        if (preview && preview._wmPreviewInst) {
+          try { preview._wmPreviewInst.stop(); } catch (e) {}
+          preview._wmPreviewInst = null;
+        }
+      });
       }
       card.addEventListener('click', () => {
         applyWordAnimFromInline(id);
@@ -25484,6 +25571,61 @@ function initEditor() {
    *   preservando a letra atual do projeto
    * - "cancel": fecha sem aplicar
    */
+  function _askAnimScope(animId, category, callback) {
+    // Modal pra escolher escopo da animação: só este slide ou todos.
+    // category é 'entrance', 'exit' ou 'loop'. callback recebe 'slide',
+    // 'todos' ou 'cancel'.
+    const catLabel = category === 'exit' ? 'saída' : (category === 'loop' ? 'loop' : 'entrada');
+
+    const overlay = document.createElement('div');
+    overlay.id = 'anim-scope-overlay';
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
+
+    const card = document.createElement('div');
+    card.style.cssText = 'background:#1a1a1f;border:1px solid #333;border-radius:12px;padding:24px;max-width:440px;width:90%;color:#f4f4f7;font-family:Inter,sans-serif;box-shadow:0 20px 60px rgba(0,0,0,0.5);';
+
+    card.innerHTML = '<h3 style="margin:0 0 8px;font-size:18px;font-weight:600;">Aplicar animação de ' + catLabel + '</h3>'
+      + '<p style="margin:0 0 20px;font-size:14px;color:#a0a0aa;line-height:1.5;">Onde quer aplicar essa animação?</p>'
+      + '<div style="display:flex;flex-direction:column;gap:8px;">'
+      + '  <button id="anim-scope-slide" style="text-align:left;padding:14px;background:#2a2a35;border:2px solid #4a8;border-radius:8px;color:#f4f4f7;cursor:pointer;font-family:inherit;">'
+      + '    <div style="font-weight:600;font-size:14px;margin-bottom:4px;color:#9fd;">★ Só neste slide (recomendado)</div>'
+      + '    <div style="font-size:12px;color:#a0a0aa;line-height:1.4;">Aplica a animação apenas na estrofe/slide atual. Os outros slides mantêm suas animações.</div>'
+      + '  </button>'
+      + '  <button id="anim-scope-todos" style="text-align:left;padding:14px;background:#2a2a35;border:1px solid #444;border-radius:8px;color:#f4f4f7;cursor:pointer;font-family:inherit;">'
+      + '    <div style="font-weight:600;font-size:14px;margin-bottom:4px;">Todos os slides</div>'
+      + '    <div style="font-size:12px;color:#a0a0aa;line-height:1.4;">Aplica a mesma animação em todos os slides do projeto.</div>'
+      + '  </button>'
+      + '  <button id="anim-scope-cancel" style="margin-top:8px;padding:10px;background:transparent;border:1px solid #444;border-radius:8px;color:#a0a0aa;cursor:pointer;font-family:inherit;font-size:13px;">'
+      + '    Cancelar'
+      + '  </button>'
+      + '</div>';
+
+    overlay.appendChild(card);
+    document.body.appendChild(overlay);
+
+    ['anim-scope-slide', 'anim-scope-todos'].forEach(id => {
+      const btn = card.querySelector('#' + id);
+      if (!btn) return;
+      const isPrincipal = (id === 'anim-scope-slide');
+      const baseBorder = isPrincipal ? '#4a8' : '#444';
+      const hoverBorder = isPrincipal ? '#5fa' : '#666';
+      btn.addEventListener('mouseenter', () => {
+        btn.style.background = '#3a3a48';
+        btn.style.borderColor = hoverBorder;
+      });
+      btn.addEventListener('mouseleave', () => {
+        btn.style.background = '#2a2a35';
+        btn.style.borderColor = baseBorder;
+      });
+    });
+
+    const fechar = () => overlay.remove();
+    card.querySelector('#anim-scope-slide').addEventListener('click', () => { fechar(); callback('slide'); });
+    card.querySelector('#anim-scope-todos').addEventListener('click', () => { fechar(); callback('todos'); });
+    card.querySelector('#anim-scope-cancel').addEventListener('click', () => { fechar(); callback('cancel'); });
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) { fechar(); callback('cancel'); } });
+  }
+
   function _askApplyTemplateMode(tpl, callback) {
     // Se o projeto atual NÃO tem letra (textarea vazio), aplica direto
     // o exemplo — sem perguntar (não tem o que preservar).
