@@ -1023,19 +1023,51 @@ h1, h2, h3, h4, h5, h6 {
   overflow: hidden;
 }
 .template-preview-text {
-  font-family: 'Sora', sans-serif;
-  font-size: 30px;
-  font-weight: 700;
-  color: #f4f4f7;
-  letter-spacing: -0.02em;
   position: relative;
   z-index: 2;
   text-align: center;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Animação no hover do card: palavras aparecem em sequência (stagger).
+ * Cada palavra tem data-word-idx 0,1,2... e o delay é calculado por
+ * variável CSS (--wi). Anima fade-in + slight translate up. Volta ao
+ * estado inicial quando sai do hover. */
+.template-preview-text [data-word-idx] {
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.35s ease-out, transform 0.45s cubic-bezier(0.34, 1.2, 0.64, 1);
+  transition-delay: 0s;
+}
+.template-card:hover .template-preview-text [data-word-idx] {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: calc(var(--wi, 0) * 0.08s);
+}
+/* Quando NÃO está hovering, palavras visíveis em estado normal
+ * (não pisca quando carrega a grid) */
+.template-card .template-preview-text [data-word-idx] {
+  opacity: 1;
+  transform: translateY(0);
+}
+/* O hover REINICIA a animação: zera opacity primeiro, depois anima.
+ * Hack via :hover + animation-name pra disparar de novo a cada mouse-enter. */
+@keyframes tplPreviewWordIn {
+  0% { opacity: 0; transform: translateY(8px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+.template-card:hover .template-preview-text [data-word-idx] {
+  animation: tplPreviewWordIn 0.45s cubic-bezier(0.34, 1.2, 0.64, 1) both;
+  animation-delay: calc(var(--wi, 0) * 0.08s);
 }
 .template-preview-bg {
   position: absolute;
   inset: 0;
-  opacity: 0.5;
+  opacity: 1;
 }
 
 .template-info {
@@ -10966,7 +10998,7 @@ const TEMPLATES = [
         duration: 1.2,
       },
       // bg neutro: o usuário escolhe o fundo que quiser depois
-      bg: 'brand',
+      bg: 'black',
       // aspect 16:9 padrão (1920×1080) — TV/projetor de igreja
       aspect: '16:9',
       parsed: {
@@ -11056,7 +11088,7 @@ const TEMPLATES = [
         transitionDuration: 0.5,
         duration: 1.2,
       },
-      bg: 'brand',
+      bg: 'black',
       aspect: '16:9',
       parsed: {
         stanzas: [
@@ -11152,7 +11184,7 @@ const TEMPLATES = [
         transitionDuration: 0.5,
         duration: 1.2,
       },
-      bg: 'brand',
+      bg: 'black',
       aspect: '16:9',
       parsed: {
         stanzas: [
@@ -11247,7 +11279,7 @@ const TEMPLATES = [
         transitionDuration: 0.5,
         duration: 1.2,
       },
-      bg: 'brand',
+      bg: 'black',
       aspect: '16:9',
       parsed: {
         stanzas: [
@@ -11340,7 +11372,7 @@ const TEMPLATES = [
         transitionDuration: 0.5,
         duration: 1.2,
       },
-      bg: 'brand',
+      bg: 'black',
       // Aspect normalizado pra 16:9 (era 3072×1152 no original)
       aspect: '16:9',
       parsed: {
@@ -11396,7 +11428,7 @@ const TEMPLATES = [
     tags: ['3 linhas', 'brush', 'cinematográfico', 'multifonte'],
     accent: '#60a5fa',
     config: {
-      lyrics: 'O meu\nfôlego\ntu és',
+      lyrics: 'Tu és\nSanto\nem mim',
       style: {
         fontFamily: 'Peter Test Variable Italic Light',
         fontSize: 61,
@@ -11437,7 +11469,7 @@ const TEMPLATES = [
         transitionDuration: 0.5,
         duration: 1.2,
       },
-      bg: 'brand',
+      bg: 'black',
       aspect: '16:9',
       parsed: {
         stanzas: [
@@ -11448,37 +11480,39 @@ const TEMPLATES = [
               {
                 id: 'ln_02wszd9',
                 words: [
-                  { id: 'w_z8iy2vm', text: 'O',   chars: [{ id: 'ch_m4ca1z5', text: 'O' }], emphasized: false },
-                  { id: 'w_jc5h55l', text: 'meu', chars: [
-                    { id: 'ch_fw73zbk', text: 'm' },
-                    { id: 'ch_5mld0vj', text: 'e' },
-                    { id: 'ch_wjd5dok', text: 'u' },
+                  { id: 'w_z8iy2vm', text: 'Tu', chars: [
+                    { id: 'ch_m4ca1z5', text: 'T' },
+                    { id: 'ch_mbambkg', text: 'u' }
+                  ], emphasized: false },
+                  { id: 'w_jc5h55l', text: 'és', chars: [
+                    { id: 'ch_fw73zbk', text: 'é' },
+                    { id: 'ch_5mld0vj', text: 's' }
                   ], emphasized: false },
                 ],
               },
               {
                 id: 'ln_73wma0s',
                 words: [
-                  { id: 'w_ue95vsn', text: 'fôlego', chars: [
-                    { id: 'ch_zaejvrz', text: 'f' },
-                    { id: 'ch_x6gle1q', text: 'ô' },
-                    { id: 'ch_qtkiv5p', text: 'l' },
-                    { id: 'ch_x9w19ss', text: 'e' },
-                    { id: 'ch_qix1cel', text: 'g' },
-                    { id: 'ch_pnuscgj', text: 'o' },
+                  { id: 'w_ue95vsn', text: 'Santo', chars: [
+                    { id: 'ch_zaejvrz', text: 'S' },
+                    { id: 'ch_x6gle1q', text: 'a' },
+                    { id: 'ch_qtkiv5p', text: 'n' },
+                    { id: 'ch_x9w19ss', text: 't' },
+                    { id: 'ch_qix1cel', text: 'o' }
                   ], emphasized: false },
                 ],
               },
               {
                 id: 'ln_h7fwuan',
                 words: [
-                  { id: 'w_glvkols', text: 'tu', chars: [
-                    { id: 'ch_lb9lrhn', text: 't' },
-                    { id: 'ch_aqdklhi', text: 'u' },
+                  { id: 'w_glvkols', text: 'em', chars: [
+                    { id: 'ch_lb9lrhn', text: 'e' },
+                    { id: 'ch_aqdklhi', text: 'm' }
                   ], emphasized: false },
-                  { id: 'w_l24q4d3', text: 'és', chars: [
-                    { id: 'ch_rval9bg', text: 'é' },
-                    { id: 'ch_1dxe577', text: 's' },
+                  { id: 'w_l24q4d3', text: 'mim', chars: [
+                    { id: 'ch_rval9bg', text: 'm' },
+                    { id: 'ch_1dxe577', text: 'i' },
+                    { id: 'ch_l7e6du7', text: 'm' }
                   ], emphasized: false },
                 ],
               },
@@ -11526,7 +11560,7 @@ const TEMPLATES = [
     tags: ['3 linhas', 'script', 'cursiva', 'compacto'],
     accent: '#60a5fa',
     config: {
-      lyrics: 'Em Teus\nbraços\né o meu lugar ',
+      lyrics: 'No Teu\namor\neu sou de Ti',
       style: {
         fontFamily: 'Peter Test Variable Italic Light',
         fontSize: 61,
@@ -11567,7 +11601,7 @@ const TEMPLATES = [
         transitionDuration: 0.5,
         duration: 1.2,
       },
-      bg: 'brand',
+      bg: 'black',
       aspect: '16:9',
       parsed: {
         stanzas: [
@@ -11578,47 +11612,47 @@ const TEMPLATES = [
               {
                 id: 'ln_5fillm4',
                 words: [
-                  { id: 'w_e0gwr8s', text: 'Em', chars: [
-                    { id: 'ch_xrguid6', text: 'E' },
-                    { id: 'ch_djbmfej', text: 'm' },
+                  { id: 'w_e0gwr8s', text: 'No', chars: [
+                    { id: 'ch_xrguid6', text: 'N' },
+                    { id: 'ch_djbmfej', text: 'o' }
                   ], emphasized: false },
-                  { id: 'w_3ip6a67', text: 'Teus', chars: [
+                  { id: 'w_3ip6a67', text: 'Teu', chars: [
                     { id: 'ch_93lb3nl', text: 'T' },
                     { id: 'ch_xqjw4vn', text: 'e' },
-                    { id: 'ch_0u83wvo', text: 'u' },
-                    { id: 'ch_txmw9fn', text: 's' },
+                    { id: 'ch_0u83wvo', text: 'u' }
                   ], emphasized: false },
                 ],
               },
               {
                 id: 'ln_w1q2ei3',
                 words: [
-                  { id: 'w_487awsh', text: 'braços', chars: [
-                    { id: 'ch_evcek0i', text: 'b' },
-                    { id: 'ch_7gypcaf', text: 'r' },
-                    { id: 'ch_z9g7117', text: 'a' },
-                    { id: 'ch_gy4thv1', text: 'ç' },
-                    { id: 'ch_6ujv887', text: 'o' },
-                    { id: 'ch_l75n8af', text: 's' },
+                  { id: 'w_487awsh', text: 'amor', chars: [
+                    { id: 'ch_evcek0i', text: 'a' },
+                    { id: 'ch_7gypcaf', text: 'm' },
+                    { id: 'ch_z9g7117', text: 'o' },
+                    { id: 'ch_gy4thv1', text: 'r' }
                   ], emphasized: false },
                 ],
               },
               {
                 id: 'ln_7o2mhir',
                 words: [
-                  { id: 'w_i3q4tao', text: 'é', chars: [{ id: 'ch_atuico1', text: 'é' }], emphasized: false },
-                  { id: 'w_ns6k9e6', text: 'o', chars: [{ id: 'ch_xobzcr3', text: 'o' }], emphasized: false },
-                  { id: 'w_apl3js6', text: 'meu', chars: [
-                    { id: 'ch_e8y2xg2', text: 'm' },
-                    { id: 'ch_wsqw2e6', text: 'e' },
-                    { id: 'ch_3f512gg', text: 'u' },
+                  { id: 'w_i3q4tao', text: 'eu', chars: [
+                    { id: 'ch_atuico1', text: 'e' },
+                    { id: 'ch_6lzfsdg', text: 'u' }
                   ], emphasized: false },
-                  { id: 'w_eph9cch', text: 'lugar', chars: [
-                    { id: 'ch_6iztb4i', text: 'l' },
-                    { id: 'ch_hi9eeeg', text: 'u' },
-                    { id: 'ch_mnb5w8m', text: 'g' },
-                    { id: 'ch_gctou81', text: 'a' },
-                    { id: 'ch_xbnnlgo', text: 'r' },
+                  { id: 'w_ns6k9e6', text: 'sou', chars: [
+                    { id: 'ch_xobzcr3', text: 's' },
+                    { id: 'ch_dbisg0o', text: 'o' },
+                    { id: 'ch_17o403f', text: 'u' }
+                  ], emphasized: false },
+                  { id: 'w_apl3js6', text: 'de', chars: [
+                    { id: 'ch_e8y2xg2', text: 'd' },
+                    { id: 'ch_wsqw2e6', text: 'e' }
+                  ], emphasized: false },
+                  { id: 'w_eph9cch', text: 'Ti', chars: [
+                    { id: 'ch_6iztb4i', text: 'T' },
+                    { id: 'ch_hi9eeeg', text: 'i' }
                   ], emphasized: false },
                 ],
               },
@@ -11674,7 +11708,7 @@ const TEMPLATES = [
     tags: ['3 linhas', 'cinematográfico', 'timber slice', 'épico', 'multifonte'],
     accent: '#fbbf24',
     config: {
-      lyrics: 'QUANDO\nA MEIA NOITE\nCHEGAR',
+      lyrics: 'REINAS\nEM TODA TERRA\nSEMPRE',
       style: {
         fontFamily: 'Causten-LightOblique',
         fontSize: 61,
@@ -11715,7 +11749,7 @@ const TEMPLATES = [
         transitionDuration: 0.5,
         duration: 1.2,
       },
-      bg: 'brand',
+      bg: 'black',
       aspect: '16:9',
       parsed: {
         stanzas: [
@@ -11726,45 +11760,48 @@ const TEMPLATES = [
               {
                 id: 'ln_cin_l1',
                 words: [
-                  { id: 'w_cin_quando', text: 'QUANDO', chars: [
-                    { id: 'ch_cq1', text: 'Q' },
-                    { id: 'ch_cq2', text: 'U' },
-                    { id: 'ch_cq3', text: 'A' },
+                  { id: 'w_cin_quando', text: 'REINAS', chars: [
+                    { id: 'ch_cq1', text: 'R' },
+                    { id: 'ch_cq2', text: 'E' },
+                    { id: 'ch_cq3', text: 'I' },
                     { id: 'ch_cq4', text: 'N' },
-                    { id: 'ch_cq5', text: 'D' },
-                    { id: 'ch_cq6', text: 'O' },
+                    { id: 'ch_cq5', text: 'A' },
+                    { id: 'ch_cq6', text: 'S' }
                   ], emphasized: false },
                 ],
               },
               {
                 id: 'ln_cin_l2',
                 words: [
-                  { id: 'w_cin_a', text: 'A', chars: [{ id: 'ch_ca1', text: 'A' }], emphasized: false },
-                  { id: 'w_cin_meia', text: 'MEIA', chars: [
-                    { id: 'ch_cm1', text: 'M' },
-                    { id: 'ch_cm2', text: 'E' },
-                    { id: 'ch_cm3', text: 'I' },
-                    { id: 'ch_cm4', text: 'A' },
+                  { id: 'w_cin_a', text: 'EM', chars: [
+                    { id: 'ch_ca1', text: 'E' },
+                    { id: 'ch_45a942p', text: 'M' }
                   ], emphasized: false },
-                  { id: 'w_cin_noite', text: 'NOITE', chars: [
-                    { id: 'ch_cn1', text: 'N' },
-                    { id: 'ch_cn2', text: 'O' },
-                    { id: 'ch_cn3', text: 'I' },
-                    { id: 'ch_cn4', text: 'T' },
-                    { id: 'ch_cn5', text: 'E' },
+                  { id: 'w_cin_meia', text: 'TODA', chars: [
+                    { id: 'ch_cm1', text: 'T' },
+                    { id: 'ch_cm2', text: 'O' },
+                    { id: 'ch_cm3', text: 'D' },
+                    { id: 'ch_cm4', text: 'A' }
+                  ], emphasized: false },
+                  { id: 'w_cin_noite', text: 'TERRA', chars: [
+                    { id: 'ch_cn1', text: 'T' },
+                    { id: 'ch_cn2', text: 'E' },
+                    { id: 'ch_cn3', text: 'R' },
+                    { id: 'ch_cn4', text: 'R' },
+                    { id: 'ch_cn5', text: 'A' }
                   ], emphasized: false },
                 ],
               },
               {
                 id: 'ln_cin_l3',
                 words: [
-                  { id: 'w_cin_chegar', text: 'CHEGAR', chars: [
-                    { id: 'ch_cc1', text: 'C' },
-                    { id: 'ch_cc2', text: 'H' },
-                    { id: 'ch_cc3', text: 'E' },
-                    { id: 'ch_cc4', text: 'G' },
-                    { id: 'ch_cc5', text: 'A' },
-                    { id: 'ch_cc6', text: 'R' },
+                  { id: 'w_cin_chegar', text: 'SEMPRE', chars: [
+                    { id: 'ch_cc1', text: 'S' },
+                    { id: 'ch_cc2', text: 'E' },
+                    { id: 'ch_cc3', text: 'M' },
+                    { id: 'ch_cc4', text: 'P' },
+                    { id: 'ch_cc5', text: 'R' },
+                    { id: 'ch_cc6', text: 'E' }
                   ], emphasized: false },
                 ],
               },
@@ -11817,7 +11854,7 @@ const TEMPLATES = [
     tags: ['5 linhas', 'montserrat', 'vertical', 'poético', 'multifonte', 'cinematográfico'],
     accent: '#fbbf24',
     config: {
-      lyrics: 'É NECESSÁRIO\nESTAR\nCOM A\nCHAMA\nACESA',
+      lyrics: 'TODA HONRA\nDEVE\nSER DO\nNOME\nSANTO',
       style: {
         fontFamily: 'Montserrat Light',
         fontSize: 48,
@@ -11858,7 +11895,7 @@ const TEMPLATES = [
         transitionDuration: 0.5,
         duration: 1.2,
       },
-      bg: 'brand',
+      bg: 'black',
       aspect: '16:9',
       parsed: {
         stanzas: [
@@ -11869,65 +11906,66 @@ const TEMPLATES = [
               {
                 id: 'ln_v5_l1',
                 words: [
-                  { id: 'w_v5_e', text: 'É', chars: [{ id: 'ch_v5e1', text: 'É' }], emphasized: false },
-                  { id: 'w_v5_necessario', text: 'NECESSÁRIO', chars: [
-                    { id: 'ch_v5n1', text: 'N' },
-                    { id: 'ch_v5n2', text: 'E' },
-                    { id: 'ch_v5n3', text: 'C' },
-                    { id: 'ch_v5n4', text: 'E' },
-                    { id: 'ch_v5n5', text: 'S' },
-                    { id: 'ch_v5n6', text: 'S' },
-                    { id: 'ch_v5n7', text: 'Á' },
-                    { id: 'ch_v5n8', text: 'R' },
-                    { id: 'ch_v5n9', text: 'I' },
-                    { id: 'ch_v5n10', text: 'O' },
+                  { id: 'w_v5_e', text: 'TODA', chars: [
+                    { id: 'ch_v5e1', text: 'T' },
+                    { id: 'ch_nxyjl4e', text: 'O' },
+                    { id: 'ch_q5zjb3p', text: 'D' },
+                    { id: 'ch_eh20k59', text: 'A' }
+                  ], emphasized: false },
+                  { id: 'w_v5_necessario', text: 'HONRA', chars: [
+                    { id: 'ch_v5n1', text: 'H' },
+                    { id: 'ch_v5n2', text: 'O' },
+                    { id: 'ch_v5n3', text: 'N' },
+                    { id: 'ch_v5n4', text: 'R' },
+                    { id: 'ch_v5n5', text: 'A' }
                   ], emphasized: false },
                 ],
               },
               {
                 id: 'ln_v5_l2',
                 words: [
-                  { id: 'w_v5_estar', text: 'ESTAR', chars: [
-                    { id: 'ch_v5es1', text: 'E' },
-                    { id: 'ch_v5es2', text: 'S' },
-                    { id: 'ch_v5es3', text: 'T' },
-                    { id: 'ch_v5es4', text: 'A' },
-                    { id: 'ch_v5es5', text: 'R' },
+                  { id: 'w_v5_estar', text: 'DEVE', chars: [
+                    { id: 'ch_v5es1', text: 'D' },
+                    { id: 'ch_v5es2', text: 'E' },
+                    { id: 'ch_v5es3', text: 'V' },
+                    { id: 'ch_v5es4', text: 'E' }
                   ], emphasized: false },
                 ],
               },
               {
                 id: 'ln_v5_l3',
                 words: [
-                  { id: 'w_v5_com', text: 'COM', chars: [
-                    { id: 'ch_v5c1', text: 'C' },
-                    { id: 'ch_v5c2', text: 'O' },
-                    { id: 'ch_v5c3', text: 'M' },
+                  { id: 'w_v5_com', text: 'SER', chars: [
+                    { id: 'ch_v5c1', text: 'S' },
+                    { id: 'ch_v5c2', text: 'E' },
+                    { id: 'ch_v5c3', text: 'R' }
                   ], emphasized: false },
-                  { id: 'w_v5_a', text: 'A', chars: [{ id: 'ch_v5a1', text: 'A' }], emphasized: false },
+                  { id: 'w_v5_a', text: 'DO', chars: [
+                    { id: 'ch_v5a1', text: 'D' },
+                    { id: 'ch_krurhhl', text: 'O' }
+                  ], emphasized: false },
                 ],
               },
               {
                 id: 'ln_v5_l4',
                 words: [
-                  { id: 'w_v5_chama', text: 'CHAMA', chars: [
-                    { id: 'ch_v5ch1', text: 'C' },
-                    { id: 'ch_v5ch2', text: 'H' },
-                    { id: 'ch_v5ch3', text: 'A' },
-                    { id: 'ch_v5ch4', text: 'M' },
-                    { id: 'ch_v5ch5', text: 'A' },
+                  { id: 'w_v5_chama', text: 'NOME', chars: [
+                    { id: 'ch_v5ch1', text: 'N' },
+                    { id: 'ch_v5ch2', text: 'O' },
+                    { id: 'ch_v5ch3', text: 'M' },
+                    { id: 'ch_v5ch4', text: 'E' }
                   ], emphasized: false },
                 ],
               },
               {
                 id: 'ln_v5_l5',
                 words: [
-                  { id: 'w_v5_acesa', text: 'ACESA', chars: [
-                    { id: 'ch_v5ac1', text: 'A' },
-                    { id: 'ch_v5ac2', text: 'C' },
-                    { id: 'ch_v5ac3', text: 'E' },
-                    { id: 'ch_v5ac4', text: 'S' },
-                    { id: 'ch_v5ac5', text: 'A' },
+                  { id: 'w_v5_acesa', text: 'SANTO', chars: [
+                    { id: 'ch_v5ac1', text: 'S' },
+                    { id: 'ch_v5ac2', text: 'A' },
+                    { id: 'ch_v5ac3', text: 'N' },
+                    { id: 'ch_v5ac4', text: 'T' },
+                    { id: 'ch_v5ac5', text: 'O' }
                   ], emphasized: false },
                 ],
               },
@@ -11997,7 +12035,7 @@ const TEMPLATES = [
     tags: ['4 linhas', 'blackiron', 'serifada', 'editorial', 'lowercase'],
     accent: '#e5e7eb',
     config: {
-      lyrics: 'falsos\nmestres\npra si\nmesmos',
+      lyrics: 'fonte\neterna\nde toda\ngraça',
       style: {
         fontFamily: 'Blackiron',
         fontSize: 54,
@@ -12038,7 +12076,7 @@ const TEMPLATES = [
         transitionDuration: 0.5,
         duration: 1.2,
       },
-      bg: 'brand',
+      bg: 'black',
       aspect: '16:9',
       parsed: {
         stanzas: [
@@ -12049,54 +12087,52 @@ const TEMPLATES = [
               {
                 id: 'ln_bi_l1',
                 words: [
-                  { id: 'w_bi_falsos', text: 'falsos', chars: [
+                  { id: 'w_bi_falsos', text: 'fonte', chars: [
                     { id: 'ch_bif1', text: 'f' },
-                    { id: 'ch_bif2', text: 'a' },
-                    { id: 'ch_bif3', text: 'l' },
-                    { id: 'ch_bif4', text: 's' },
-                    { id: 'ch_bif5', text: 'o' },
-                    { id: 'ch_bif6', text: 's' },
+                    { id: 'ch_bif2', text: 'o' },
+                    { id: 'ch_bif3', text: 'n' },
+                    { id: 'ch_bif4', text: 't' },
+                    { id: 'ch_bif5', text: 'e' }
                   ], emphasized: false },
                 ],
               },
               {
                 id: 'ln_bi_l2',
                 words: [
-                  { id: 'w_bi_mestres', text: 'mestres', chars: [
-                    { id: 'ch_bim1', text: 'm' },
-                    { id: 'ch_bim2', text: 'e' },
-                    { id: 'ch_bim3', text: 's' },
-                    { id: 'ch_bim4', text: 't' },
-                    { id: 'ch_bim5', text: 'r' },
-                    { id: 'ch_bim6', text: 'e' },
-                    { id: 'ch_bim7', text: 's' },
+                  { id: 'w_bi_mestres', text: 'eterna', chars: [
+                    { id: 'ch_bim1', text: 'e' },
+                    { id: 'ch_bim2', text: 't' },
+                    { id: 'ch_bim3', text: 'e' },
+                    { id: 'ch_bim4', text: 'r' },
+                    { id: 'ch_bim5', text: 'n' },
+                    { id: 'ch_bim6', text: 'a' }
                   ], emphasized: false },
                 ],
               },
               {
                 id: 'ln_bi_l3',
                 words: [
-                  { id: 'w_bi_pra', text: 'pra', chars: [
-                    { id: 'ch_bip1', text: 'p' },
-                    { id: 'ch_bip2', text: 'r' },
-                    { id: 'ch_bip3', text: 'a' },
+                  { id: 'w_bi_pra', text: 'de', chars: [
+                    { id: 'ch_bip1', text: 'd' },
+                    { id: 'ch_bip2', text: 'e' }
                   ], emphasized: false },
-                  { id: 'w_bi_si', text: 'si', chars: [
-                    { id: 'ch_bis1', text: 's' },
-                    { id: 'ch_bis2', text: 'i' },
+                  { id: 'w_bi_si', text: 'toda', chars: [
+                    { id: 'ch_bis1', text: 't' },
+                    { id: 'ch_bis2', text: 'o' },
+                    { id: 'ch_82bufz1', text: 'd' },
+                    { id: 'ch_a7me0bm', text: 'a' }
                   ], emphasized: false },
                 ],
               },
               {
                 id: 'ln_bi_l4',
                 words: [
-                  { id: 'w_bi_mesmos', text: 'mesmos', chars: [
-                    { id: 'ch_bimm1', text: 'm' },
-                    { id: 'ch_bimm2', text: 'e' },
-                    { id: 'ch_bimm3', text: 's' },
-                    { id: 'ch_bimm4', text: 'm' },
-                    { id: 'ch_bimm5', text: 'o' },
-                    { id: 'ch_bimm6', text: 's' },
+                  { id: 'w_bi_mesmos', text: 'graça', chars: [
+                    { id: 'ch_bimm1', text: 'g' },
+                    { id: 'ch_bimm2', text: 'r' },
+                    { id: 'ch_bimm3', text: 'a' },
+                    { id: 'ch_bimm4', text: 'ç' },
+                    { id: 'ch_bimm5', text: 'a' }
                   ], emphasized: false },
                 ],
               },
@@ -12162,7 +12198,7 @@ const TEMPLATES = [
     tags: ['2 linhas', 'montserrat', 'blackiron', 'editorial', 'contraste'],
     accent: '#e5e7eb',
     config: {
-      lyrics: 'PARA SACIAR SEUS\nEGOS E DESEJOS',
+      lyrics: 'SOBRE TODOS OS\nNOMES O TEU',
       style: {
         fontFamily: 'Montserrat',
         fontSize: 48,
@@ -12203,7 +12239,7 @@ const TEMPLATES = [
         transitionDuration: 0.5,
         duration: 1.2,
       },
-      bg: 'brand',
+      bg: 'black',
       aspect: '16:9',
       parsed: {
         stanzas: [
@@ -12214,46 +12250,43 @@ const TEMPLATES = [
               {
                 id: 'ln_mb_l1',
                 words: [
-                  { id: 'w_mb_para', text: 'PARA', chars: [
-                    { id: 'ch_mbp1', text: 'P' },
-                    { id: 'ch_mbp2', text: 'A' },
-                    { id: 'ch_mbp3', text: 'R' },
-                    { id: 'ch_mbp4', text: 'A' },
+                  { id: 'w_mb_para', text: 'SOBRE', chars: [
+                    { id: 'ch_mbp1', text: 'S' },
+                    { id: 'ch_mbp2', text: 'O' },
+                    { id: 'ch_mbp3', text: 'B' },
+                    { id: 'ch_mbp4', text: 'R' },
+                    { id: 'ch_1nnw4xt', text: 'E' }
                   ], emphasized: false },
-                  { id: 'w_mb_saciar', text: 'SACIAR', chars: [
-                    { id: 'ch_mbs1', text: 'S' },
-                    { id: 'ch_mbs2', text: 'A' },
-                    { id: 'ch_mbs3', text: 'C' },
-                    { id: 'ch_mbs4', text: 'I' },
-                    { id: 'ch_mbs5', text: 'A' },
-                    { id: 'ch_mbs6', text: 'R' },
+                  { id: 'w_mb_saciar', text: 'TODOS', chars: [
+                    { id: 'ch_mbs1', text: 'T' },
+                    { id: 'ch_mbs2', text: 'O' },
+                    { id: 'ch_mbs3', text: 'D' },
+                    { id: 'ch_mbs4', text: 'O' },
+                    { id: 'ch_mbs5', text: 'S' }
                   ], emphasized: false },
-                  { id: 'w_mb_seus', text: 'SEUS', chars: [
-                    { id: 'ch_mbse1', text: 'S' },
-                    { id: 'ch_mbse2', text: 'E' },
-                    { id: 'ch_mbse3', text: 'U' },
-                    { id: 'ch_mbse4', text: 'S' },
+                  { id: 'w_mb_seus', text: 'OS', chars: [
+                    { id: 'ch_mbse1', text: 'O' },
+                    { id: 'ch_mbse2', text: 'S' }
                   ], emphasized: false },
                 ],
               },
               {
                 id: 'ln_mb_l2',
                 words: [
-                  { id: 'w_mb_egos', text: 'EGOS', chars: [
-                    { id: 'ch_mbe1', text: 'E' },
-                    { id: 'ch_mbe2', text: 'G' },
-                    { id: 'ch_mbe3', text: 'O' },
-                    { id: 'ch_mbe4', text: 'S' },
+                  { id: 'w_mb_egos', text: 'NOMES', chars: [
+                    { id: 'ch_mbe1', text: 'N' },
+                    { id: 'ch_mbe2', text: 'O' },
+                    { id: 'ch_mbe3', text: 'M' },
+                    { id: 'ch_mbe4', text: 'E' },
+                    { id: 'ch_qqz16r6', text: 'S' }
                   ], emphasized: false },
-                  { id: 'w_mb_e', text: 'E', chars: [{ id: 'ch_mbeu1', text: 'E' }], emphasized: false },
-                  { id: 'w_mb_desejos', text: 'DESEJOS', chars: [
-                    { id: 'ch_mbd1', text: 'D' },
+                  { id: 'w_mb_e', text: 'O', chars: [
+                    { id: 'ch_mbeu1', text: 'O' }
+                  ], emphasized: false },
+                  { id: 'w_mb_desejos', text: 'TEU', chars: [
+                    { id: 'ch_mbd1', text: 'T' },
                     { id: 'ch_mbd2', text: 'E' },
-                    { id: 'ch_mbd3', text: 'S' },
-                    { id: 'ch_mbd4', text: 'E' },
-                    { id: 'ch_mbd5', text: 'J' },
-                    { id: 'ch_mbd6', text: 'O' },
-                    { id: 'ch_mbd7', text: 'S' },
+                    { id: 'ch_mbd3', text: 'U' }
                   ], emphasized: false },
                 ],
               },
@@ -12319,7 +12352,7 @@ const TEMPLATES = [
     tags: ['2 linhas', 'blackiron', 'serifada', 'maiúsculas', 'duplo'],
     accent: '#fbbf24',
     config: {
-      lyrics: 'DA MINHA ALMA\nATÉ A DEUS',
+      lyrics: 'TODA HONRA E\nGLÓRIA AO REI',
       style: {
         fontFamily: 'Blackiron',
         fontSize: 60,
@@ -12360,7 +12393,7 @@ const TEMPLATES = [
         transitionDuration: 0.5,
         duration: 1.2,
       },
-      bg: 'brand',
+      bg: 'black',
       aspect: '16:9',
       parsed: {
         stanzas: [
@@ -12371,39 +12404,43 @@ const TEMPLATES = [
               {
                 id: 'ln_bd_l1',
                 words: [
-                  { id: 'w_bd_da', text: 'DA', chars: [
-                    { id: 'ch_bdda1', text: 'D' },
-                    { id: 'ch_bdda2', text: 'A' },
+                  { id: 'w_bd_da', text: 'TODA', chars: [
+                    { id: 'ch_bdda1', text: 'T' },
+                    { id: 'ch_bdda2', text: 'O' },
+                    { id: 'ch_33yph03', text: 'D' },
+                    { id: 'ch_mw4ra4q', text: 'A' }
                   ], emphasized: false },
-                  { id: 'w_bd_minha', text: 'MINHA', chars: [
-                    { id: 'ch_bdm1', text: 'M' },
-                    { id: 'ch_bdm2', text: 'I' },
+                  { id: 'w_bd_minha', text: 'HONRA', chars: [
+                    { id: 'ch_bdm1', text: 'H' },
+                    { id: 'ch_bdm2', text: 'O' },
                     { id: 'ch_bdm3', text: 'N' },
-                    { id: 'ch_bdm4', text: 'H' },
-                    { id: 'ch_bdm5', text: 'A' },
+                    { id: 'ch_bdm4', text: 'R' },
+                    { id: 'ch_bdm5', text: 'A' }
                   ], emphasized: false },
-                  { id: 'w_bd_alma', text: 'ALMA', chars: [
-                    { id: 'ch_bdal1', text: 'A' },
-                    { id: 'ch_bdal2', text: 'L' },
-                    { id: 'ch_bdal3', text: 'M' },
-                    { id: 'ch_bdal4', text: 'A' },
+                  { id: 'w_bd_alma', text: 'E', chars: [
+                    { id: 'ch_bdal1', text: 'E' }
                   ], emphasized: false },
                 ],
               },
               {
                 id: 'ln_bd_l2',
                 words: [
-                  { id: 'w_bd_ate', text: 'ATÉ', chars: [
-                    { id: 'ch_bdat1', text: 'A' },
-                    { id: 'ch_bdat2', text: 'T' },
-                    { id: 'ch_bdat3', text: 'É' },
+                  { id: 'w_bd_ate', text: 'GLÓRIA', chars: [
+                    { id: 'ch_bdat1', text: 'G' },
+                    { id: 'ch_bdat2', text: 'L' },
+                    { id: 'ch_bdat3', text: 'Ó' },
+                    { id: 'ch_lhe5spj', text: 'R' },
+                    { id: 'ch_je5xh1m', text: 'I' },
+                    { id: 'ch_p0i8jr0', text: 'A' }
                   ], emphasized: false },
-                  { id: 'w_bd_a', text: 'A', chars: [{ id: 'ch_bda1', text: 'A' }], emphasized: false },
-                  { id: 'w_bd_deus', text: 'DEUS', chars: [
-                    { id: 'ch_bdd1', text: 'D' },
+                  { id: 'w_bd_a', text: 'AO', chars: [
+                    { id: 'ch_bda1', text: 'A' },
+                    { id: 'ch_55pun19', text: 'O' }
+                  ], emphasized: false },
+                  { id: 'w_bd_deus', text: 'REI', chars: [
+                    { id: 'ch_bdd1', text: 'R' },
                     { id: 'ch_bdd2', text: 'E' },
-                    { id: 'ch_bdd3', text: 'U' },
-                    { id: 'ch_bdd4', text: 'S' },
+                    { id: 'ch_bdd3', text: 'I' }
                   ], emphasized: false },
                 ],
               },
@@ -12469,7 +12506,7 @@ const TEMPLATES = [
     tags: ['3 linhas', 'montserrat', 'blackiron', 'multifonte', 'hierarquia'],
     accent: '#e5e7eb',
     config: {
-      lyrics: 'VEM SOBRE\nAS\nMONTANHAS',
+      lyrics: 'REINA SOBRE\nOS\nCÉUS',
       style: {
         fontFamily: 'Montserrat',
         fontSize: 52,
@@ -12510,7 +12547,7 @@ const TEMPLATES = [
         transitionDuration: 0.5,
         duration: 1.2,
       },
-      bg: 'brand',
+      bg: 'black',
       aspect: '16:9',
       parsed: {
         stanzas: [
@@ -12521,42 +12558,39 @@ const TEMPLATES = [
               {
                 id: 'ln_mt_l1',
                 words: [
-                  { id: 'w_mt_vem', text: 'VEM', chars: [
-                    { id: 'ch_mtv1', text: 'V' },
+                  { id: 'w_mt_vem', text: 'REINA', chars: [
+                    { id: 'ch_mtv1', text: 'R' },
                     { id: 'ch_mtv2', text: 'E' },
-                    { id: 'ch_mtv3', text: 'M' },
+                    { id: 'ch_mtv3', text: 'I' },
+                    { id: 'ch_v5508tg', text: 'N' },
+                    { id: 'ch_5f8byhe', text: 'A' }
                   ], emphasized: false },
                   { id: 'w_mt_sobre', text: 'SOBRE', chars: [
                     { id: 'ch_mts1', text: 'S' },
                     { id: 'ch_mts2', text: 'O' },
                     { id: 'ch_mts3', text: 'B' },
                     { id: 'ch_mts4', text: 'R' },
-                    { id: 'ch_mts5', text: 'E' },
+                    { id: 'ch_mts5', text: 'E' }
                   ], emphasized: false },
                 ],
               },
               {
                 id: 'ln_mt_l2',
                 words: [
-                  { id: 'w_mt_as', text: 'AS', chars: [
-                    { id: 'ch_mtas1', text: 'A' },
-                    { id: 'ch_mtas2', text: 'S' },
+                  { id: 'w_mt_as', text: 'OS', chars: [
+                    { id: 'ch_mtas1', text: 'O' },
+                    { id: 'ch_mtas2', text: 'S' }
                   ], emphasized: false },
                 ],
               },
               {
                 id: 'ln_mt_l3',
                 words: [
-                  { id: 'w_mt_montanhas', text: 'MONTANHAS', chars: [
-                    { id: 'ch_mtm1', text: 'M' },
-                    { id: 'ch_mtm2', text: 'O' },
-                    { id: 'ch_mtm3', text: 'N' },
-                    { id: 'ch_mtm4', text: 'T' },
-                    { id: 'ch_mtm5', text: 'A' },
-                    { id: 'ch_mtm6', text: 'N' },
-                    { id: 'ch_mtm7', text: 'H' },
-                    { id: 'ch_mtm8', text: 'A' },
-                    { id: 'ch_mtm9', text: 'S' },
+                  { id: 'w_mt_montanhas', text: 'CÉUS', chars: [
+                    { id: 'ch_mtm1', text: 'C' },
+                    { id: 'ch_mtm2', text: 'É' },
+                    { id: 'ch_mtm3', text: 'U' },
+                    { id: 'ch_mtm4', text: 'S' }
                   ], emphasized: false },
                 ],
               },
@@ -12650,7 +12684,7 @@ const TEMPLATES = [
         transitionDuration: 0.5,
         duration: 1.2,
       },
-      bg: 'brand',
+      bg: 'black',
       aspect: '16:9',
       parsed: {
         stanzas: [
@@ -12702,7 +12736,7 @@ const TEMPLATES = [
     tags: ['4 linhas', 'montserrat', 'blackiron', 'multifonte', 'editorial'],
     accent: '#f4f4f7',
     config: {
-      lyrics: 'A FONTE DA\nVIDA\nQUE ME\nencontrou',
+      lyrics: 'DEUS QUE É\nSANTO\nFOI QUE\ncriou',
       style: {
         fontFamily: 'Montserrat',
         fontSize: 48,
@@ -12743,7 +12777,7 @@ const TEMPLATES = [
         transitionDuration: 0.5,
         duration: 1.2,
       },
-      bg: 'brand',
+      bg: 'black',
       aspect: '16:9',
       parsed: {
         stanzas: [
@@ -12754,58 +12788,58 @@ const TEMPLATES = [
               {
                 id: 'ln_fv_l1',
                 words: [
-                  { id: 'w_fv_a', text: 'A', chars: [{ id: 'ch_fva1', text: 'A' }], emphasized: false },
-                  { id: 'w_fv_fonte', text: 'FONTE', chars: [
-                    { id: 'ch_fvf1', text: 'F' },
-                    { id: 'ch_fvf2', text: 'O' },
-                    { id: 'ch_fvf3', text: 'N' },
-                    { id: 'ch_fvf4', text: 'T' },
-                    { id: 'ch_fvf5', text: 'E' },
+                  { id: 'w_fv_a', text: 'DEUS', chars: [
+                    { id: 'ch_fva1', text: 'D' },
+                    { id: 'ch_g6zimli', text: 'E' },
+                    { id: 'ch_d84kjor', text: 'U' },
+                    { id: 'ch_kmaueo2', text: 'S' }
                   ], emphasized: false },
-                  { id: 'w_fv_da', text: 'DA', chars: [
-                    { id: 'ch_fvd1', text: 'D' },
-                    { id: 'ch_fvd2', text: 'A' },
+                  { id: 'w_fv_fonte', text: 'QUE', chars: [
+                    { id: 'ch_fvf1', text: 'Q' },
+                    { id: 'ch_fvf2', text: 'U' },
+                    { id: 'ch_fvf3', text: 'E' }
+                  ], emphasized: false },
+                  { id: 'w_fv_da', text: 'É', chars: [
+                    { id: 'ch_fvd1', text: 'É' }
                   ], emphasized: false },
                 ],
               },
               {
                 id: 'ln_fv_l2',
                 words: [
-                  { id: 'w_fv_vida', text: 'VIDA', chars: [
-                    { id: 'ch_fvv1', text: 'V' },
-                    { id: 'ch_fvv2', text: 'I' },
-                    { id: 'ch_fvv3', text: 'D' },
-                    { id: 'ch_fvv4', text: 'A' },
+                  { id: 'w_fv_vida', text: 'SANTO', chars: [
+                    { id: 'ch_fvv1', text: 'S' },
+                    { id: 'ch_fvv2', text: 'A' },
+                    { id: 'ch_fvv3', text: 'N' },
+                    { id: 'ch_fvv4', text: 'T' },
+                    { id: 'ch_t0hiwyi', text: 'O' }
                   ], emphasized: false },
                 ],
               },
               {
                 id: 'ln_fv_l3',
                 words: [
-                  { id: 'w_fv_que', text: 'QUE', chars: [
-                    { id: 'ch_fvq1', text: 'Q' },
-                    { id: 'ch_fvq2', text: 'U' },
-                    { id: 'ch_fvq3', text: 'E' },
+                  { id: 'w_fv_que', text: 'FOI', chars: [
+                    { id: 'ch_fvq1', text: 'F' },
+                    { id: 'ch_fvq2', text: 'O' },
+                    { id: 'ch_fvq3', text: 'I' }
                   ], emphasized: false },
-                  { id: 'w_fv_me', text: 'ME', chars: [
-                    { id: 'ch_fvm1', text: 'M' },
-                    { id: 'ch_fvm2', text: 'E' },
+                  { id: 'w_fv_me', text: 'QUE', chars: [
+                    { id: 'ch_fvm1', text: 'Q' },
+                    { id: 'ch_fvm2', text: 'U' },
+                    { id: 'ch_nxwozzp', text: 'E' }
                   ], emphasized: false },
                 ],
               },
               {
                 id: 'ln_fv_l4',
                 words: [
-                  { id: 'w_fv_encontrou', text: 'encontrou', chars: [
-                    { id: 'ch_fve1', text: 'e' },
-                    { id: 'ch_fve2', text: 'n' },
-                    { id: 'ch_fve3', text: 'c' },
+                  { id: 'w_fv_encontrou', text: 'criou', chars: [
+                    { id: 'ch_fve1', text: 'c' },
+                    { id: 'ch_fve2', text: 'r' },
+                    { id: 'ch_fve3', text: 'i' },
                     { id: 'ch_fve4', text: 'o' },
-                    { id: 'ch_fve5', text: 'n' },
-                    { id: 'ch_fve6', text: 't' },
-                    { id: 'ch_fve7', text: 'r' },
-                    { id: 'ch_fve8', text: 'o' },
-                    { id: 'ch_fve9', text: 'u' },
+                    { id: 'ch_fve5', text: 'u' }
                   ], emphasized: false },
                 ],
               },
@@ -12867,7 +12901,7 @@ const TEMPLATES = [
     tags: ['4 linhas', 'montserrat', 'blackiron', 'multifonte', 'central'],
     accent: '#f4f4f7',
     config: {
-      lyrics: 'VEJA OS\nTRONOS\nDE OUTROS\nREIS',
+      lyrics: 'REINA NOS\nCÉUS\nE NA\nTERRA',
       style: {
         fontFamily: 'Montserrat',
         fontSize: 48,
@@ -12908,7 +12942,7 @@ const TEMPLATES = [
         transitionDuration: 0.5,
         duration: 1.2,
       },
-      bg: 'brand',
+      bg: 'black',
       aspect: '16:9',
       parsed: {
         stanzas: [
@@ -12919,56 +12953,52 @@ const TEMPLATES = [
               {
                 id: 'ln_tr_l1',
                 words: [
-                  { id: 'w_tr_veja', text: 'VEJA', chars: [
-                    { id: 'ch_trv1', text: 'V' },
+                  { id: 'w_tr_veja', text: 'REINA', chars: [
+                    { id: 'ch_trv1', text: 'R' },
                     { id: 'ch_trv2', text: 'E' },
-                    { id: 'ch_trv3', text: 'J' },
-                    { id: 'ch_trv4', text: 'A' },
+                    { id: 'ch_trv3', text: 'I' },
+                    { id: 'ch_trv4', text: 'N' },
+                    { id: 'ch_uqdo7ql', text: 'A' }
                   ], emphasized: false },
-                  { id: 'w_tr_os', text: 'OS', chars: [
-                    { id: 'ch_tros1', text: 'O' },
-                    { id: 'ch_tros2', text: 'S' },
+                  { id: 'w_tr_os', text: 'NOS', chars: [
+                    { id: 'ch_tros1', text: 'N' },
+                    { id: 'ch_tros2', text: 'O' },
+                    { id: 'ch_b5zke28', text: 'S' }
                   ], emphasized: false },
                 ],
               },
               {
                 id: 'ln_tr_l2',
                 words: [
-                  { id: 'w_tr_tronos', text: 'TRONOS', chars: [
-                    { id: 'ch_trt1', text: 'T' },
-                    { id: 'ch_trt2', text: 'R' },
-                    { id: 'ch_trt3', text: 'O' },
-                    { id: 'ch_trt4', text: 'N' },
-                    { id: 'ch_trt5', text: 'O' },
-                    { id: 'ch_trt6', text: 'S' },
+                  { id: 'w_tr_tronos', text: 'CÉUS', chars: [
+                    { id: 'ch_trt1', text: 'C' },
+                    { id: 'ch_trt2', text: 'É' },
+                    { id: 'ch_trt3', text: 'U' },
+                    { id: 'ch_trt4', text: 'S' }
                   ], emphasized: false },
                 ],
               },
               {
                 id: 'ln_tr_l3',
                 words: [
-                  { id: 'w_tr_de', text: 'DE', chars: [
-                    { id: 'ch_trde1', text: 'D' },
-                    { id: 'ch_trde2', text: 'E' },
+                  { id: 'w_tr_de', text: 'E', chars: [
+                    { id: 'ch_trde1', text: 'E' }
                   ], emphasized: false },
-                  { id: 'w_tr_outros', text: 'OUTROS', chars: [
-                    { id: 'ch_tro1', text: 'O' },
-                    { id: 'ch_tro2', text: 'U' },
-                    { id: 'ch_tro3', text: 'T' },
-                    { id: 'ch_tro4', text: 'R' },
-                    { id: 'ch_tro5', text: 'O' },
-                    { id: 'ch_tro6', text: 'S' },
+                  { id: 'w_tr_outros', text: 'NA', chars: [
+                    { id: 'ch_tro1', text: 'N' },
+                    { id: 'ch_tro2', text: 'A' }
                   ], emphasized: false },
                 ],
               },
               {
                 id: 'ln_tr_l4',
                 words: [
-                  { id: 'w_tr_reis', text: 'REIS', chars: [
-                    { id: 'ch_trr1', text: 'R' },
+                  { id: 'w_tr_reis', text: 'TERRA', chars: [
+                    { id: 'ch_trr1', text: 'T' },
                     { id: 'ch_trr2', text: 'E' },
-                    { id: 'ch_trr3', text: 'I' },
-                    { id: 'ch_trr4', text: 'S' },
+                    { id: 'ch_trr3', text: 'R' },
+                    { id: 'ch_trr4', text: 'R' },
+                    { id: 'ch_ybqvano', text: 'A' }
                   ], emphasized: false },
                 ],
               },
@@ -13016,6 +13046,95 @@ const TEMPLATES = [
     },
   },
 
+  // ====== TEMPLATE 1 PALAVRA ANTARAS (Antara Nodes, palavra única gigante) ======
+  {
+    id: 'tpl-user-1-linha-antaras',
+    name: '1 Palavra — Antaras',
+    description: 'Linha única com fonte Antara Nodes em destaque máximo (scale 4.5). Animação de entrada "borrar" com duração aumentada. Estilo cinematográfico com halo ativo.',
+    tags: ['1 linha', 'antara nodes', 'destaque', 'cinematográfico', 'borrar'],
+    accent: '#60a5fa',
+    config: {
+      lyrics: 'Santo',
+      style: {
+        fontFamily: 'Antara Nodes',
+        fontSize: 61,
+        fontWeight: 400,
+        letterSpacing: 0.01,
+        lineHeight: 1,
+        color: '#f4f4f7',
+        textAlign: 'center',
+        glow: 0,
+        glowColor: '#60a5fa',
+        outline: 0,
+        outlineColor: '#000000',
+        shadow: 0,
+        shadowColor: '#000000',
+        shadowOffsetX: 4,
+        shadowOffsetY: 4,
+        shadowBlur: 8,
+        textTransform: 'uppercase',
+        backgroundType: 'gradient',
+        emphasisColor: '#fbbf24',
+        emphasisSizeScale: 1,
+        emphasisBold: false,
+        emphasisGlow: 0,
+        effects: {
+          echo:  { on: false, intensity: 0.41 },
+          bloom: { on: true,  intensity: 0.24 },
+          depth: { on: true,  intensity: 0.6 },
+          halo:  { on: true,  intensity: 0.6 },
+        },
+        cinemaPreset: 'stadium',
+      },
+      animConfig: {
+        entrance: 'fade-in-soft',
+        exit: 'fade-out-soft',
+        target: 'word',
+        stagger: 0.3,
+        transition: 'cut',
+        transitionDuration: 0.5,
+        duration: 1.2,
+      },
+      bg: 'black',
+      aspect: '16:9',
+      parsed: {
+        stanzas: [
+          {
+            id: 'stz_ant1',
+            label: 'Estrofe 1',
+            lines: [
+              {
+                id: 'ln_ant_l1',
+                words: [
+                  { id: 'w_ant_santo', text: 'Santo', chars: [
+                    { id: 'ch_ants1', text: 'S' },
+                    { id: 'ch_ants2', text: 'a' },
+                    { id: 'ch_ants3', text: 'n' },
+                    { id: 'ch_ants4', text: 't' },
+                    { id: 'ch_ants5', text: 'o' },
+                  ], emphasized: false },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+      wordOverrides: {
+        w_ant_santo: {
+          position: { x: 0.5, y: 0.5 },
+          style: {
+            fontFamily: 'Antara Nodes',
+            textTransform: 'capitalize',
+            fontSizeScale: 4.477602381199272,
+          },
+          entrance: 'borrar',
+          durationScale: 3,
+        },
+      },
+      sceneOverrides: {},
+    },
+  },
+
   // ====== TEMPLATES DO USUÁRIO (2 linhas) ======
   {
     id: 'tpl-user-2-linhas-tipografia',
@@ -13024,7 +13143,7 @@ const TEMPLATES = [
     tags: ['2 linhas', 'tipografia', 'contraste', 'cursiva'],
     accent: '#60a5fa',
     config: {
-      lyrics: 'Estou\naqui',
+      lyrics: 'Glória\nSenhor',
       style: {
         fontFamily: 'Peter Test Variable Italic Light',
         fontSize: 61,
@@ -13065,7 +13184,7 @@ const TEMPLATES = [
         transitionDuration: 0.5,
         duration: 1.2,
       },
-      bg: 'brand',
+      bg: 'black',
       aspect: '16:9',
       parsed: {
         stanzas: [
@@ -13076,23 +13195,26 @@ const TEMPLATES = [
               {
                 id: 'ln_2uex8o4',
                 words: [
-                  { id: 'w_u0tigg3', text: 'Estou', chars: [
-                    { id: 'ch_c56h664', text: 'E' },
-                    { id: 'ch_bwcf2td', text: 's' },
-                    { id: 'ch_cz0w4ta', text: 't' },
-                    { id: 'ch_vi4e5ri', text: 'o' },
-                    { id: 'ch_ovdzmo1', text: 'u' },
+                  { id: 'w_u0tigg3', text: 'Glória', chars: [
+                    { id: 'ch_c56h664', text: 'G' },
+                    { id: 'ch_bwcf2td', text: 'l' },
+                    { id: 'ch_cz0w4ta', text: 'ó' },
+                    { id: 'ch_vi4e5ri', text: 'r' },
+                    { id: 'ch_ovdzmo1', text: 'i' },
+                    { id: 'ch_6vegdci', text: 'a' }
                   ], emphasized: false },
                 ],
               },
               {
                 id: 'ln_bfzodcb',
                 words: [
-                  { id: 'w_eosl00s', text: 'aqui', chars: [
-                    { id: 'ch_4eyiduk', text: 'a' },
-                    { id: 'ch_37otaod', text: 'q' },
-                    { id: 'ch_3fw7itw', text: 'u' },
-                    { id: 'ch_9qgif6u', text: 'i' },
+                  { id: 'w_eosl00s', text: 'Senhor', chars: [
+                    { id: 'ch_4eyiduk', text: 'S' },
+                    { id: 'ch_37otaod', text: 'e' },
+                    { id: 'ch_3fw7itw', text: 'n' },
+                    { id: 'ch_9qgif6u', text: 'h' },
+                    { id: 'ch_4cnazvn', text: 'o' },
+                    { id: 'ch_0vfoiqt', text: 'r' }
                   ], emphasized: false },
                 ],
               },
@@ -16623,59 +16745,7 @@ class RenderEngineV2 {
 
   playEntrance() {
     const lib = window.WM_ANIM_V2;
-    if (!lib) {
-      try {
-        let db = document.getElementById('wm-anim-diag');
-        if (!db) {
-          db = document.createElement('div');
-          db.id = 'wm-anim-diag';
-          db.style.cssText = 'position:fixed;bottom:8px;right:8px;z-index:9999999;background:#1a0a00;color:#fb0;font:10px/1.4 monospace;padding:10px;max-width:560px;max-height:55vh;overflow:auto;border:2px solid #fb0;border-radius:6px;white-space:pre;';
-          document.body.appendChild(db);
-          db.onclick = () => db.remove();
-        }
-        db.textContent = 'ANIM DIAG: WM_ANIM_V2 não está disponível! Sem lib, sem animação.';
-      } catch(e) {}
-      return;
-    }
-
-    // DIAG TEMPORÁRIO
-    try {
-      let db = document.getElementById('wm-anim-diag');
-      if (!db) {
-        db = document.createElement('div');
-        db.id = 'wm-anim-diag';
-        db.style.cssText = 'position:fixed;bottom:8px;right:8px;z-index:9999999;background:#1a0a00;color:#fb0;font:10px/1.4 monospace;padding:10px;max-width:560px;max-height:55vh;overflow:auto;border:2px solid #fb0;border-radius:6px;white-space:pre;';
-        document.body.appendChild(db);
-        db.onclick = () => db.remove();
-      }
-      const _st = this.parsed?.stanzas?.[this.currentStanzaIndex];
-      const _sceneCfg = _st ? this.getSceneConfig(_st.id) : null;
-      const _entrance = _sceneCfg?.entrance || this.animConfig.entrance;
-      const _target = _sceneCfg?.target || this.animConfig.target;
-      const _anim = lib.byId(_entrance);
-      const _words = this.canvas.querySelectorAll('.lyric-word');
-      let txt = 'ANIM DIAG (toque fecha)\n';
-      txt += 'currentStanzaIndex: ' + this.currentStanzaIndex + '\n';
-      txt += 'stanza.id: ' + (_st?.id || '(none)') + '\n';
-      txt += 'sceneConfig.entrance: ' + (_sceneCfg?.entrance || '(none)') + '\n';
-      txt += 'engine.animConfig.entrance: ' + this.animConfig.entrance + '\n';
-      txt += 'entrance EFETIVA: ' + _entrance + '\n';
-      txt += 'target: ' + _target + '\n';
-      txt += 'lib.byId(entrance): ' + (_anim ? 'OK' : 'NULL — anim não encontrada!') + '\n';
-      if (_anim) {
-        txt += '  isolatedEngine: ' + (_anim.isolatedEngine || '(none)') + '\n';
-        txt += '  category: ' + (_anim.category || '(none)') + '\n';
-      }
-      txt += '\n=== Palavras no DOM ===\n';
-      txt += 'total .lyric-word: ' + _words.length + '\n';
-      _words.forEach((w, i) => {
-        if (i < 5) {
-          const wo = (this.wordOverrides[w.dataset.wordId] || {});
-          txt += '  [' + i + '] "' + w.textContent.slice(0,15) + '" opacity=' + (w.style.opacity || '(auto)') + ' wordOv.entrance=' + (wo.entrance || '(none)') + '\n';
-        }
-      });
-      db.textContent = txt;
-    } catch(e) { console.warn('anim diag:', e); }
+    if (!lib) return;
 
     // Pega config efetiva da scene atual
     const stanza = this.parsed?.stanzas?.[this.currentStanzaIndex];
@@ -24900,6 +24970,74 @@ function initEditor() {
     }
   }
 
+  /**
+   * Gera HTML da preview rica de um template: mostra a letra COMPLETA
+   * em linhas separadas, cada palavra com sua fonte/tamanho/cor real
+   * do template. Escala global pra caber na altura do card (~140px).
+   *
+   * Reaproveita parsed.stanzas[0].lines + wordOverrides do template.
+   * Pra palavras sem wordOverride, usa o estilo global (config.style).
+   */
+  function _renderTemplatePreviewContent(t) {
+    const cfg = t.config || {};
+    const parsed = cfg.parsed;
+    const wordOverrides = cfg.wordOverrides || {};
+    const globalStyle = cfg.style || {};
+
+    // Fallback: se não tem parsed estruturado, mostra a primeira linha plana
+    if (!parsed || !parsed.stanzas || !parsed.stanzas.length) {
+      const fallback = (cfg.lyrics || 'Worship').split('\n').filter(l => l.trim())[0] || 'Worship';
+      return `<div class="tpl-prev-line" style="font-family:'${globalStyle.fontFamily || 'Sora'}';color:${globalStyle.color || '#f4f4f7'};">${escapeHtml(fallback)}</div>`;
+    }
+
+    // Calcula o scale máximo entre todas as palavras pra normalizar
+    // (preview tem espaço limitado, então mapeia o maior pra um teto fixo)
+    let maxScale = 1;
+    parsed.stanzas[0].lines.forEach(ln =>
+      ln.words.forEach(w => {
+        const ov = wordOverrides[w.id];
+        const s = ov?.style?.fontSizeScale || 1;
+        if (s > maxScale) maxScale = s;
+      })
+    );
+
+    // Base font-size da preview: 14px pra texto normal.
+    // Palavra com scale 4.5 vira ~38px (limitado pelo height do card).
+    // Pra evitar palavras gigantes estourando, normalizamos:
+    //   scaleEfetivo = (scale / maxScale) * 2.5 + 0.5
+    // Assim a maior fica em ~3x e a menor em ~0.5x do tamanho base.
+    const previewBase = 14; // px
+
+    function scaleParaPx(scale) {
+      // Se maxScale é 1 (template uniforme), todos os scales viram 1
+      if (maxScale <= 1.01) return previewBase * Math.max(0.6, Math.min(scale, 1.4));
+      // Senão, escala proporcional limitada
+      const norm = scale / maxScale; // 0.0 a 1.0
+      const factor = 0.45 + norm * 2.1; // ~0.45x a ~2.55x
+      return Math.round(previewBase * factor);
+    }
+
+    // Monta as linhas com data-word-idx + --wi pra animação stagger no hover
+    let wordCounter = 0;
+    const linhasHTML = parsed.stanzas[0].lines.map(ln => {
+      const palavrasHTML = ln.words.map(w => {
+        const ov = wordOverrides[w.id] || {};
+        const st = ov.style || {};
+        const font = st.fontFamily || globalStyle.fontFamily || 'Sora';
+        const color = st.color || globalStyle.color || '#f4f4f7';
+        const tt = st.textTransform || globalStyle.textTransform || 'none';
+        const scale = st.fontSizeScale || 1;
+        const px = scaleParaPx(scale);
+        const wIdx = wordCounter++;
+        // data-word-idx + --wi: usados pelo CSS pra fazer animação stagger no hover
+        return `<span data-word-idx="${wIdx}" style="--wi:${wIdx};font-family:'${font}';font-size:${px}px;color:${color};text-transform:${tt};line-height:1.05;display:inline-block;margin:0 0.18em;">${escapeHtml(w.text)}</span>`;
+      }).join('');
+      return `<div style="display:flex;justify-content:center;align-items:baseline;flex-wrap:nowrap;white-space:nowrap;">${palavrasHTML}</div>`;
+    }).join('');
+
+    return `<div style="display:flex;flex-direction:column;justify-content:center;align-items:center;gap:0.15em;width:100%;height:100%;padding:6px;box-sizing:border-box;">${linhasHTML}</div>`;
+  }
+
   function renderTemplateGrid() {
     const grid = $('#template-grid');
     const BG_CSS = {
@@ -24910,12 +25048,12 @@ function initEditor() {
       black: '#050507',
     };
     grid.innerHTML = WM_TEMPLATES.all.map(t => {
-      const previewWord = t.config.lyrics.split('\n').filter(l => l.trim() && !l.match(/^\[|^\(/))[0]?.split(' ').slice(0, 3).join(' ') || 'Worship';
+      const previewContent = _renderTemplatePreviewContent(t);
       return `
         <div class="template-card" data-template-id="${t.id}">
           <div class="template-preview">
             <div class="template-preview-bg" style="background: ${BG_CSS[t.config.bg] || BG_CSS.brand};"></div>
-            <div class="template-preview-text" style="font-family: '${t.config.style.fontFamily}'; color: ${t.config.style.color}; text-shadow: 0 0 ${t.config.style.glow}px ${t.config.style.glowColor};">${escapeHtml(previewWord)}</div>
+            <div class="template-preview-text">${previewContent}</div>
           </div>
           <div class="template-info">
             <div class="template-name">${escapeHtml(t.name)}</div>
