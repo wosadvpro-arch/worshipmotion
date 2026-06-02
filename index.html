@@ -25619,17 +25619,33 @@ function initEditor() {
         // - "exemplo": substitui projeto inteiro pela letra de exemplo do template
         _askApplyTemplateMode(tpl, (mode) => {
           if (mode === 'cancel') return;
-          if (mode === 'estrofe' || mode === 'todas') {
-            // Aplicação ESCOPADA por estrofe (não substitui projeto)
-            _applyTemplateToStanzas(tpl, mode);
-          } else {
-            // Modo legacy "exemplo": substitui projeto inteiro
-            const projeto = _buildProjectFromTemplate(tpl, mode);
-            applyProjectToEditor(projeto);
+          try {
+            if (mode === 'estrofe' || mode === 'todas') {
+              // Aplicação ESCOPADA por estrofe (não substitui projeto)
+              _applyTemplateToStanzas(tpl, mode);
+            } else {
+              // Modo legacy "exemplo": substitui projeto inteiro
+              const projeto = _buildProjectFromTemplate(tpl, mode);
+              applyProjectToEditor(projeto);
+            }
+            window.__currentProjectId = null;
+            markDirty();
+            closeModal();
+          } catch (err) {
+            // Captura qualquer erro na aplicação do template pra não deixar
+            // o modal preso e as letras sumidas sem explicação.
+            console.error('Erro ao aplicar template:', err);
+            if (typeof showToast === 'function') {
+              showToast('Erro ao aplicar template: ' + (err && err.message ? err.message : err));
+            }
+            closeModal();
+            // Tenta re-renderizar a estrofe atual pra recuperar as letras
+            try { engine.renderStanza(engine.currentStanzaIndex); } catch (e) {}
+            try {
+              const stz = getStanzaEl && getStanzaEl();
+              if (stz) stz.querySelectorAll('.lyric-word').forEach(el => { el.style.opacity = '1'; el.style.animation = 'none'; });
+            } catch (e) {}
           }
-          window.__currentProjectId = null;
-          markDirty();
-          closeModal();
         });
       });
     });
