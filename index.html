@@ -17742,6 +17742,15 @@ function initEditor() {
         confirmDeleteStanza(idx);
       });
     });
+
+    // Como a lista foi RECRIADA do zero, o destaque do slide ativo se
+    // perde. Restaura marcando o slide atual do engine (senão, depois de
+    // aplicar template, o indicador ficava preso/sem acompanhar).
+    if (typeof updateActiveStanzaInList === 'function') {
+      const idxAtual = (engine && typeof engine.currentStanzaIndex === 'number')
+        ? engine.currentStanzaIndex : 0;
+      updateActiveStanzaInList(idxAtual);
+    }
   }
 
   // Deleta uma estrofe (com confirmação)
@@ -26020,13 +26029,27 @@ function initEditor() {
       engine.sceneOverrides[stanza.id] = sceneConfig;
     });
 
-    // Re-renderiza
+    // Re-renderiza ESTÁTICO com as palavras VISÍVEIS. Antes chamava
+    // playFull() (animava a entrada), mas se a animação não completasse
+    // ou o contexto não disparasse o RAF, as palavras ficavam em
+    // opacity:0 (invisíveis) — bug "palavras somem ao aplicar template".
+    // Render estático + forçar opacity:1 garante que sempre aparecem.
     if (typeof engine.renderStanza === 'function') {
       engine.renderStanza(engine.currentStanzaIndex || 0);
     }
-    if (typeof engine.playFull === 'function') {
-      engine.playFull();
+    if (typeof engine.killAllAnimations === 'function') {
+      try { engine.killAllAnimations(); } catch (e) {}
     }
+    // Força as palavras visíveis (mata o estado "antes da animação")
+    requestAnimationFrame(() => {
+      const stz = (typeof getStanzaEl === 'function') ? getStanzaEl() : null;
+      if (stz) {
+        stz.querySelectorAll('.lyric-word').forEach(el => {
+          el.style.opacity = '1';
+          el.style.animation = 'none';
+        });
+      }
+    });
     if (typeof renderStanzaList === 'function') {
       renderStanzaList(parsed);
     }
