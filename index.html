@@ -13938,8 +13938,11 @@ const CanvasRenderer = {
     if (transform === 'uppercase') return text.toUpperCase();
     if (transform === 'lowercase') return text.toLowerCase();
     if (transform === 'capitalize') {
-      // Primeira letra de cada palavra (igual ao CSS capitalize)
-      return text.replace(/(^|\s)(\S)/g, (m, sp, ch) => sp + ch.toUpperCase());
+      // "Cada Palavra": primeira letra de cada palavra maiúscula, RESTO
+      // minúsculo. Diferente do CSS capitalize puro (que só mexe na
+      // primeira letra e deixa o resto como está) — aqui forçamos o
+      // resto pra minúsculo, senão "SANTO" continuaria "SANTO".
+      return text.toLowerCase().replace(/(^|\s)(\S)/g, (m, sp, ch) => sp + ch.toUpperCase());
     }
     return text;
   },
@@ -16125,19 +16128,48 @@ class RenderEngineV2 {
 
   _applyStyleToStanzaEl(stanzaEl) {
     // ESTILO POR ESTROFE: lê o style merged (global + sceneOverride da
-    // estrofe específica). Permite que cada estrofe tenha fonte, cor,
-    // glow, effects próprios — essencial pra aplicar templates em
-    // estrofes individuais sem afetar as outras.
-    // Fallback: se stanzaEl não tem stanzaId ou estrofe não tem override,
-    // usa this.style global (comportamento original).
+    // estrofe específica).
     let s = this.style;
     const sid = stanzaEl?.dataset?.stanzaId;
+    let _temOverrideStyle = false;
     if (sid && typeof this.getSceneConfig === 'function') {
       const sceneCfg = this.getSceneConfig(sid);
       if (sceneCfg && sceneCfg.style) {
         s = sceneCfg.style;
+        _temOverrideStyle = !!(this.sceneOverrides && this.sceneOverrides[sid] && this.sceneOverrides[sid].style);
       }
     }
+
+    // DIAG TEMPORÁRIO glow/shadow — mostra de onde vem o brilho
+    try {
+      let db = document.getElementById('wm-glow-diag');
+      if (!db) {
+        db = document.createElement('div');
+        db.id = 'wm-glow-diag';
+        db.style.cssText = 'position:fixed;bottom:8px;left:8px;z-index:9999999;background:#001a0a;color:#6f6;font:10px/1.5 monospace;padding:8px;max-width:540px;border:2px solid #6f6;border-radius:6px;white-space:pre;';
+        document.body.appendChild(db);
+        db.onclick = () => db.remove();
+      }
+      // Lista glow/shadow de TODAS as estrofes
+      let porEstrofe = '';
+      if (this.parsed && this.parsed.stanzas) {
+        this.parsed.stanzas.forEach((st, i) => {
+          const ov = this.sceneOverrides && this.sceneOverrides[st.id];
+          const ovStyle = ov && ov.style;
+          const g = ovStyle && typeof ovStyle.glow === 'number' ? ovStyle.glow : '-';
+          const sh = ovStyle && typeof ovStyle.shadow === 'number' ? ovStyle.shadow : '-';
+          if (i < 8) porEstrofe += '  [' + i + '] ov=' + (ovStyle ? 'S' : 'n') + ' glow=' + g + ' shad=' + sh + '\n';
+        });
+      }
+      db.textContent = 'GLOW DIAG (toque fecha)\n'
+        + 'atual idx: ' + this.currentStanzaIndex + ' | sid: ' + (sid || '?') + '\n'
+        + 'tem override.style: ' + _temOverrideStyle + '\n'
+        + 'GLOBAL glow=' + this.style.glow + ' shadow=' + this.style.shadow + '\n'
+        + 'USADO glow=' + s.glow + ' shadow=' + s.shadow + '\n'
+        + 'USADO filter base: glowColor=' + s.glowColor + '\n'
+        + '--- por estrofe (ov/glow/shadow) ---\n' + porEstrofe;
+    } catch(e) {}
+
     stanzaEl.style.fontFamily = `'${s.fontFamily}', sans-serif`;
 
     // === ESCALA DE FONTE IDÊNTICA AO EXPORT ===
@@ -16393,7 +16425,30 @@ class RenderEngineV2 {
       applyCustomTransform(wordEl);
       wordEl.dataset.wordId = word.id;
       wordEl.dataset.stanzaId = stanza.id;
-      wordEl.textContent = word.text;
+
+      // CAPITALIZE ("Cada Palavra"): o CSS text-transform:capitalize só
+      // poe a primeira letra maiúscula SEM abaixar o resto — então
+      // "SANTO" continuava "SANTO". Pra funcionar de verdade, quando a
+      // caixa efetiva é capitalize, transformamos o TEXTO direto e
+      // tiramos o text-transform CSS (que não daria o resultado certo).
+      const woStyle = (this.wordOverrides[word.id] || {}).style || {};
+      const sceneStyleTT = (() => {
+        const sid = stanza.id;
+        if (sid && typeof this.getSceneConfig === 'function') {
+          const sc = this.getSceneConfig(sid);
+          return sc && sc.style ? sc.style.textTransform : null;
+        }
+        return null;
+      })();
+      const ttEfetivo = (woStyle.textTransform && woStyle.textTransform !== 'none')
+        ? woStyle.textTransform
+        : (sceneStyleTT || this.style.textTransform);
+      if (ttEfetivo === 'capitalize') {
+        wordEl.textContent = this._applyTransform(word.text, 'capitalize');
+        wordEl.style.textTransform = 'none';
+      } else {
+        wordEl.textContent = word.text;
+      }
 
       return wordEl;
     };
