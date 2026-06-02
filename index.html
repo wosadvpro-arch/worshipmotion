@@ -16132,37 +16132,12 @@ class RenderEngineV2 {
     // usa this.style global (comportamento original).
     let s = this.style;
     const sid = stanzaEl?.dataset?.stanzaId;
-    let _temOverride = false;
     if (sid && typeof this.getSceneConfig === 'function') {
       const sceneCfg = this.getSceneConfig(sid);
       if (sceneCfg && sceneCfg.style) {
         s = sceneCfg.style;
-        _temOverride = !!(this.sceneOverrides && this.sceneOverrides[sid] && this.sceneOverrides[sid].style);
       }
     }
-
-    // DIAG TEMPORÁRIO glow/shadow
-    try {
-      let db = document.getElementById('wm-glow-diag');
-      if (!db) {
-        db = document.createElement('div');
-        db.id = 'wm-glow-diag';
-        db.style.cssText = 'position:fixed;bottom:8px;left:8px;z-index:9999999;background:#001a0a;color:#6f6;font:10px/1.4 monospace;padding:8px;max-width:520px;border:2px solid #6f6;border-radius:6px;white-space:pre;';
-        document.body.appendChild(db);
-        db.onclick = () => db.remove();
-      }
-      db.textContent = 'GLOW DIAG (toque fecha)\n'
-        + 'estrofe atual idx: ' + (this.currentStanzaIndex) + '\n'
-        + 'stanzaId: ' + (sid || '(none)') + '\n'
-        + 'tem sceneOverride.style: ' + _temOverride + '\n'
-        + 'GLOBAL this.style.glow: ' + (this.style.glow) + '\n'
-        + 'GLOBAL this.style.shadow: ' + (this.style.shadow) + '\n'
-        + 'style USADO glow: ' + (s.glow) + '\n'
-        + 'style USADO shadow: ' + (s.shadow) + '\n'
-        + 'style USADO glowColor: ' + (s.glowColor) + '\n'
-        + 'total sceneOverrides: ' + (this.sceneOverrides ? Object.keys(this.sceneOverrides).length : 0);
-    } catch(e) {}
-
     stanzaEl.style.fontFamily = `'${s.fontFamily}', sans-serif`;
 
     // === ESCALA DE FONTE IDÊNTICA AO EXPORT ===
