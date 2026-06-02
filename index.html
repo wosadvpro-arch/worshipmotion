@@ -462,6 +462,18 @@ h1, h2, h3, h4, h5, h6 {
   transform: translateX(-50%) translateY(0);
 }
 
+/* Tooltips dos botões da rail esquerda: aparecem à DIREITA do botão
+ * (não acima), senão ficam cortados pela borda esquerda da tela. */
+.editor-rail [data-tooltip]::after {
+  bottom: auto;
+  top: 50%;
+  left: calc(100% + 8px);
+  transform: translateY(-50%) translateX(-4px);
+}
+.editor-rail [data-tooltip]:hover::after {
+  transform: translateY(-50%) translateX(0);
+}
+
 /* ============ SLIDERS (custom range) ============ */
 .range {
   -webkit-appearance: none;
@@ -5182,6 +5194,9 @@ body.is-dragging-word .lyric-word { cursor: grabbing !important; }
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 16l5-5 4 4 5-5 4 4"/></svg>
     </button>
     <div style="flex:1"></div>
+    <button class="rail-btn" data-tooltip="Conta">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg>
+    </button>
     <button class="rail-btn" data-tooltip="Configurações">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 10v6M4.22 4.22l4.24 4.24m7.08 7.08l4.24 4.24M1 12h6m10 0h6M4.22 19.78l4.24-4.24m7.08-7.08l4.24-4.24"/></svg>
     </button>
@@ -24490,14 +24505,175 @@ function initEditor() {
   });
 
   // ============ Rail navigation (mostra a aba correspondente) ============
+  // Modal de Configurações (acionado pelo botão de engrenagem na rail).
+  // Modal de CONTA do usuário (botão pessoa na rail).
+  // Funcionalidade real de login depende do backend (Supabase) — ainda
+  // não implementado. Por ora é interface visual marcada como "em breve".
+  function _openAccountModal() {
+    const existente = document.getElementById('wm-account-overlay');
+    if (existente) existente.remove();
+
+    const overlay = document.createElement('div');
+    overlay.id = 'wm-account-overlay';
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
+
+    const card = document.createElement('div');
+    card.style.cssText = 'background:#1a1a1f;border:1px solid #333;border-radius:12px;padding:24px;max-width:420px;width:90%;color:#f4f4f7;font-family:Inter,sans-serif;box-shadow:0 20px 60px rgba(0,0,0,0.5);max-height:80vh;overflow:auto;';
+
+    card.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">'
+      + '  <h3 style="margin:0;font-size:18px;font-weight:600;">Conta</h3>'
+      + '  <button id="wm-acc-close" style="background:none;border:none;color:#a0a0aa;font-size:22px;cursor:pointer;line-height:1;">&times;</button>'
+      + '</div>'
+      + '<div style="display:flex;flex-direction:column;gap:14px;">'
+      + '  <div style="background:linear-gradient(135deg,#1e2230,#262b3d);border:1px solid #3a4256;border-radius:8px;padding:18px;text-align:center;">'
+      + '    <div style="width:64px;height:64px;border-radius:50%;background:#3a4256;display:flex;align-items:center;justify-content:center;font-size:30px;margin:0 auto 12px;">👤</div>'
+      + '    <div style="font-weight:600;font-size:15px;margin-bottom:4px;">Você não está conectado</div>'
+      + '    <div style="font-size:12px;color:#7a8499;margin-bottom:4px;">Entre para salvar seus projetos na nuvem</div>'
+      + '    <span style="display:inline-block;margin-top:8px;font-size:10px;background:#4a8;color:#062;padding:3px 10px;border-radius:10px;font-weight:700;">EM BREVE</span>'
+      + '  </div>'
+      + '  <div style="display:flex;gap:8px;">'
+      + '    <button class="wm-acc-soon" style="flex:1;padding:11px;background:#3a4256;border:none;border-radius:6px;color:#cdd;cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;">Entrar</button>'
+      + '    <button class="wm-acc-soon" style="flex:1;padding:11px;background:transparent;border:1px solid #3a4256;border-radius:6px;color:#9aa;cursor:pointer;font-family:inherit;font-size:13px;">Criar conta</button>'
+      + '  </div>'
+      + '  <button class="wm-acc-soon" style="width:100%;padding:11px;background:transparent;border:1px solid #3a4256;border-radius:6px;color:#9aa;cursor:pointer;font-family:inherit;font-size:13px;text-align:left;display:flex;justify-content:space-between;align-items:center;">'
+      + '    <span>☁ Projetos na nuvem</span><span style="color:#667;">→</span>'
+      + '  </button>'
+      + '  <button class="wm-acc-soon" style="width:100%;padding:11px;background:transparent;border:1px solid #3a4256;border-radius:6px;color:#9aa;cursor:pointer;font-family:inherit;font-size:13px;text-align:left;display:flex;justify-content:space-between;align-items:center;">'
+      + '    <span>⭐ Meu plano / Assinatura</span><span style="color:#667;">→</span>'
+      + '  </button>'
+      + '  <div style="font-size:11px;color:#667;text-align:center;line-height:1.5;margin-top:4px;">O sistema de contas com projetos na nuvem está em desenvolvimento.</div>'
+      + '</div>';
+
+    overlay.appendChild(card);
+    document.body.appendChild(overlay);
+
+    const fechar = () => overlay.remove();
+    card.querySelector('#wm-acc-close').addEventListener('click', fechar);
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) fechar(); });
+    card.querySelectorAll('.wm-acc-soon').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (typeof showToast === 'function') {
+          showToast('Sistema de contas em desenvolvimento — em breve!');
+        }
+      });
+    });
+  }
+
+  // Modal de CONFIGURAÇÕES (botão engrenagem na rail). Só ajustes do app:
+  // fontes, atalhos, dica. A parte de Conta foi pro _openAccountModal.
+  function _openSettingsModal() {
+    const existente = document.getElementById('wm-settings-overlay');
+    if (existente) existente.remove();
+
+    const overlay = document.createElement('div');
+    overlay.id = 'wm-settings-overlay';
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
+
+    const card = document.createElement('div');
+    card.style.cssText = 'background:#1a1a1f;border:1px solid #333;border-radius:12px;padding:24px;max-width:440px;width:90%;color:#f4f4f7;font-family:Inter,sans-serif;box-shadow:0 20px 60px rgba(0,0,0,0.5);max-height:80vh;overflow:auto;';
+
+    const numFontesLocais = window.__localFontsByFamily
+      ? Object.keys(window.__localFontsByFamily).length
+      : 0;
+    const fontesStatus = numFontesLocais > 0
+      ? numFontesLocais + ' fontes do computador carregadas'
+      : 'Fontes do computador não carregadas ainda';
+
+    card.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">'
+      + '  <h3 style="margin:0;font-size:18px;font-weight:600;">Configurações</h3>'
+      + '  <button id="wm-set-close" style="background:none;border:none;color:#a0a0aa;font-size:22px;cursor:pointer;line-height:1;">&times;</button>'
+      + '</div>'
+      + '<div style="display:flex;flex-direction:column;gap:14px;">'
+      + '  <div style="background:#22222a;border-radius:8px;padding:14px;">'
+      + '    <div style="font-weight:600;font-size:14px;margin-bottom:6px;">Fontes do computador</div>'
+      + '    <div style="font-size:12px;color:#a0a0aa;margin-bottom:10px;">' + fontesStatus + '</div>'
+      + '    <button id="wm-set-reload-fonts" style="width:100%;padding:10px;background:#3a3a48;border:1px solid #4a8;border-radius:6px;color:#9fd;cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;">Recarregar fontes do computador</button>'
+      + '  </div>'
+      + '  <div style="background:#22222a;border-radius:8px;padding:14px;">'
+      + '    <div style="font-weight:600;font-size:14px;margin-bottom:8px;">Atalhos de teclado</div>'
+      + '    <div style="font-size:12px;color:#a0a0aa;line-height:1.8;">'
+      + '      <div><b style="color:#ccc;">Espaço</b> — tocar animação</div>'
+      + '      <div><b style="color:#ccc;">← →</b> — navegar entre slides</div>'
+      + '      <div><b style="color:#ccc;">Ctrl+S</b> — salvar projeto</div>'
+      + '      <div><b style="color:#ccc;">Ctrl+Z</b> — desfazer</div>'
+      + '    </div>'
+      + '  </div>'
+      + '  <div style="background:#22222a;border-radius:8px;padding:14px;">'
+      + '    <div style="font-weight:600;font-size:14px;margin-bottom:6px;">Dica</div>'
+      + '    <div style="font-size:12px;color:#a0a0aa;line-height:1.5;">Se as fontes personalizadas não aparecerem, clique em "Recarregar fontes" acima e permita o acesso quando o navegador pedir.</div>'
+      + '  </div>'
+      + '</div>';
+
+    overlay.appendChild(card);
+    document.body.appendChild(overlay);
+
+    const fechar = () => overlay.remove();
+    card.querySelector('#wm-set-close').addEventListener('click', fechar);
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) fechar(); });
+
+    card.querySelector('#wm-set-reload-fonts').addEventListener('click', async () => {
+      const btn = card.querySelector('#wm-set-reload-fonts');
+      btn.textContent = 'Carregando...';
+      btn.disabled = true;
+      try {
+        if (typeof tryQueryLocalFonts === 'function') {
+          await tryQueryLocalFonts();
+        }
+        if (typeof initLocalFontsTab === 'function') {
+          await initLocalFontsTab();
+        }
+        const n = window.__localFontsByFamily ? Object.keys(window.__localFontsByFamily).length : 0;
+        btn.textContent = n > 0 ? (n + ' fontes carregadas ✓') : 'Permita o acesso e tente de novo';
+        if (typeof showToast === 'function' && n > 0) showToast(n + ' fontes do computador disponíveis');
+      } catch (e) {
+        btn.textContent = 'Erro — tente de novo';
+      }
+      setTimeout(() => { btn.disabled = false; btn.textContent = 'Recarregar fontes do computador'; }, 2500);
+    });
+  }
+
   $$('.rail-btn').forEach((btn, i) => {
     btn.addEventListener('click', () => {
       $$('.rail-btn').forEach(b => b.classList.toggle('active', b === btn));
-      // mapeia rail → panel tab
-      const map = ['lyrics', 'animations'];
-      if (map[i]) {
-        const tab = $(`.panel-tab[data-panel="${map[i]}"]`);
-        if (tab) tab.click();
+      // Mapeia cada botão da rail (por índice) pra sua ação.
+      // Ordem dos botões: 0=Lyrics, 1=Animações, 2=Templates, 3=Fontes,
+      // 4=Backgrounds, 5=Configurações.
+      switch (i) {
+        case 0: { // Lyrics → painel esquerdo aba "lyrics"
+          const tab = $('.panel-tab[data-panel="lyrics"]');
+          if (tab) tab.click();
+          break;
+        }
+        case 1: { // Animações → painel esquerdo aba "animations"
+          const tab = $('.panel-tab[data-panel="animations"]');
+          if (tab) tab.click();
+          break;
+        }
+        case 2: { // Templates → abre o modal de templates
+          if (typeof openModal === 'function') openModal('templates');
+          break;
+        }
+        case 3: { // Fontes → painel direito aba "style" (onde ficam as fontes)
+          const tab = $('.panel-tab[data-rpanel="style"]');
+          if (tab) tab.click();
+          // Foca o campo de busca de fonte pra deixar claro onde está
+          const fontSearch = $('#font-search');
+          if (fontSearch) setTimeout(() => fontSearch.focus(), 50);
+          break;
+        }
+        case 4: { // Backgrounds → painel direito aba "bg" (Fundo)
+          const tab = $('.panel-tab[data-rpanel="bg"]');
+          if (tab) tab.click();
+          break;
+        }
+        case 5: { // Conta → abre modal de conta do usuário
+          if (typeof _openAccountModal === 'function') _openAccountModal();
+          break;
+        }
+        case 6: { // Configurações → abre modal de configurações
+          if (typeof _openSettingsModal === 'function') _openSettingsModal();
+          break;
+        }
       }
     });
   });
