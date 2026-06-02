@@ -13585,6 +13585,64 @@ const CanvasRenderer = {
   /**
    * Cria chave de cache para layout (identifica unicamente um slide).
    */
+  /**
+   * Diz se um slide está em estado ESTÁTICO num dado tempo (ms): toda a
+   * animação de entrada já terminou, nenhuma saída começou, sem loop, sem
+   * movimento contínuo. Usado pelo export pra pular o redesenho de frames
+   * pixel-a-pixel idênticos (otimização sem perda de qualidade).
+   *
+   * CONSERVADOR: na dúvida, retorna false (redesenha). Só retorna true
+   * quando tem CERTEZA que o frame é idêntico ao anterior.
+   */
+  isSlideStatic(slide, elapsedMs) {
+    const anim = slide.animation || {};
+
+    // Background de vídeo muda a cada frame → nunca estático
+    if (slide.background && typeof slide.background === 'object'
+        && slide.background.type === 'video') {
+      return false;
+    }
+
+    const entrance = window.WM_ANIM_V2?.byId(anim.entranceId);
+    const exit = window.WM_ANIM_V2?.byId(anim.exitId);
+    const loop = anim.loopId ? window.WM_ANIM_V2?.byId(anim.loopId) : null;
+
+    // Loop ativo → movimento contínuo, nunca estático
+    if (loop) return false;
+
+    // Animações isoladas (motor importado / máquina) têm movimento próprio
+    if (entrance && entrance.isolatedEngine) return false;
+    // charStagger também é movimento prolongado por caractere
+    if (entrance && entrance.charStagger) return false;
+
+    const stanzaDur = typeof slide._effectiveStanzaDurMs === 'number'
+      ? slide._effectiveStanzaDurMs
+      : (anim.stanzaDuration || 5.0) * 1000;
+    const stagger = (anim.stagger || 0.06) * 1000;
+    const target = anim.target || 'word';
+
+    // Tempo em que a ENTRADA de todas as palavras termina.
+    // Considera o maior delay (stagger acumulado) + duração da entrada +
+    // transição de cor (palavras emphasized = 600ms). Margem de segurança.
+    const entDur = entrance ? entrance.duration * 1000 : 0;
+    // Conta palavras pra estimar o maior stagger
+    let numWords = 0;
+    if (slide.stanza && slide.stanza.lines) {
+      slide.stanza.lines.forEach(ln => { numWords += (ln.words ? ln.words.length : 0); });
+    }
+    const maxStaggerDelay = (target === 'word') ? stagger * Math.max(0, numWords - 1) : 0;
+    const colorTransitionMs = 600;
+    const entradaTerminaMs = maxStaggerDelay + entDur + colorTransitionMs;
+
+    // Tempo em que a SAÍDA começa
+    const exitDur = exit ? exit.duration * 1000 : 0;
+    const exitStartMs = stanzaDur - exitDur;
+
+    // Estático: depois da entrada terminar E antes da saída começar.
+    // Margem de 50ms de cada lado pra garantir.
+    return (elapsedMs > entradaTerminaMs + 50) && (elapsedMs < exitStartMs - 50);
+  },
+
   _makeLayoutKey(slide, W, H) {
     const stanzaId = slide.stanza?.id || slide.stanzaIdx || 0;
     const s = slide.style || {};
@@ -15632,6 +15690,10 @@ class VideoExporter {
       let lastLoggedSlide = -1;
       let droppedFrames = 0;
       const renderStartTime = performance.now();
+      // Estado do skip de frames estáticos (otimização de redesenho)
+      this._lastDrawnSlideIdx = -1;
+      this._lastFrameWasStatic = false;
+      let _framesPulados = 0;
 
       for (let frameIdx = 0; frameIdx < totalFrames; frameIdx++) {
         if (this.aborted) {
@@ -15658,7 +15720,27 @@ class VideoExporter {
         // Passa a duração efetiva desse slide (importante pra modo sync onde
         // cada estrofe tem duração diferente baseada em quando a próxima começa)
         slide._effectiveStanzaDurMs = slideDurations[slideIdx];
-        renderer.drawSlide(this.ctx, slide, elapsedInSlide, this.W, this.H);
+
+        // OTIMIZAÇÃO: skip de redesenho em frames estaticamente idênticos.
+        // Quando a animação de entrada do slide já terminou e não há loop,
+        // os frames seguintes são pixel-a-pixel iguais. Nesses casos, o
+        // canvas já tem o conteúdo certo do frame anterior — não precisa
+        // chamar drawSlide de novo (que é a parte cara). O encode continua
+        // normalmente (o vídeo precisa do frame), mas pulamos o redesenho.
+        // Zero perda de qualidade: o frame encodado é idêntico.
+        const estaticoAgora = renderer.isSlideStatic
+          ? renderer.isSlideStatic(slide, elapsedInSlide)
+          : false;
+        const mesmoSlide = (slideIdx === this._lastDrawnSlideIdx);
+        const podePularRedesenho = estaticoAgora && mesmoSlide && this._lastFrameWasStatic;
+
+        if (!podePularRedesenho) {
+          renderer.drawSlide(this.ctx, slide, elapsedInSlide, this.W, this.H);
+        } else {
+          _framesPulados++;
+        }
+        this._lastDrawnSlideIdx = slideIdx;
+        this._lastFrameWasStatic = estaticoAgora;
 
         // Cria VideoFrame com timestamp exato
         const timestamp = frameIdx * microsecondsPerFrame;
@@ -15740,6 +15822,10 @@ class VideoExporter {
       const elapsedRender = (performance.now() - renderStartTime) / 1000;
       if (typeof window.WM_EXPORT_LOG === 'function') {
         window.WM_EXPORT_LOG(`✓ MP4 gerado em ${elapsedRender.toFixed(1)}s (${(blob.size/1024/1024).toFixed(2)} MB)`, 'success');
+        if (_framesPulados > 0) {
+          const pct = Math.round((_framesPulados / totalFrames) * 100);
+          window.WM_EXPORT_LOG(`⚡ ${_framesPulados} frames estáticos otimizados (${pct}% do total)`, 'info');
+        }
         if (droppedFrames > 0) {
           window.WM_EXPORT_LOG(`⚠ ${droppedFrames} frames foram descartados`, 'warn');
         }
@@ -16213,44 +16299,12 @@ class RenderEngineV2 {
     // estrofe específica).
     let s = this.style;
     const sid = stanzaEl?.dataset?.stanzaId;
-    let _temOverrideStyle = false;
     if (sid && typeof this.getSceneConfig === 'function') {
       const sceneCfg = this.getSceneConfig(sid);
       if (sceneCfg && sceneCfg.style) {
         s = sceneCfg.style;
-        _temOverrideStyle = !!(this.sceneOverrides && this.sceneOverrides[sid] && this.sceneOverrides[sid].style);
       }
     }
-
-    // DIAG TEMPORÁRIO glow/shadow — mostra de onde vem o brilho
-    try {
-      let db = document.getElementById('wm-glow-diag');
-      if (!db) {
-        db = document.createElement('div');
-        db.id = 'wm-glow-diag';
-        db.style.cssText = 'position:fixed;bottom:8px;left:8px;z-index:9999999;background:#001a0a;color:#6f6;font:10px/1.5 monospace;padding:8px;max-width:540px;border:2px solid #6f6;border-radius:6px;white-space:pre;';
-        document.body.appendChild(db);
-        db.onclick = () => db.remove();
-      }
-      // Lista glow/shadow de TODAS as estrofes
-      let porEstrofe = '';
-      if (this.parsed && this.parsed.stanzas) {
-        this.parsed.stanzas.forEach((st, i) => {
-          const ov = this.sceneOverrides && this.sceneOverrides[st.id];
-          const ovStyle = ov && ov.style;
-          const g = ovStyle && typeof ovStyle.glow === 'number' ? ovStyle.glow : '-';
-          const sh = ovStyle && typeof ovStyle.shadow === 'number' ? ovStyle.shadow : '-';
-          if (i < 8) porEstrofe += '  [' + i + '] ov=' + (ovStyle ? 'S' : 'n') + ' glow=' + g + ' shad=' + sh + '\n';
-        });
-      }
-      db.textContent = 'GLOW DIAG (toque fecha)\n'
-        + 'atual idx: ' + this.currentStanzaIndex + ' | sid: ' + (sid || '?') + '\n'
-        + 'tem override.style: ' + _temOverrideStyle + '\n'
-        + 'GLOBAL glow=' + this.style.glow + ' shadow=' + this.style.shadow + '\n'
-        + 'USADO glow=' + s.glow + ' shadow=' + s.shadow + '\n'
-        + 'USADO filter base: glowColor=' + s.glowColor + '\n'
-        + '--- por estrofe (ov/glow/shadow) ---\n' + porEstrofe;
-    } catch(e) {}
 
     stanzaEl.style.fontFamily = `'${s.fontFamily}', sans-serif`;
 
@@ -18812,6 +18866,89 @@ function initEditor() {
    * Se não estiver, congela todas as palavras da estrofe.
    * Retorna true se a palavra já tinha position ou foi freezed com sucesso.
    */
+  // Reespaça horizontalmente as palavras que estão na MESMA linha da
+  // palavra dada, pra que não se sobreponham depois que uma mudou de
+  // tamanho/caixa/fonte. Mantém o centro do grupo (a linha continua
+  // centralizada) e preserva o Y de cada palavra. Só atua em palavras
+  // free (com position) — não mexe em palavras em flow nem em linhas de
+  // palavra única.
+  function _reflowLinhaDaPalavra(wordId) {
+    if (!wordId) return;
+    const wo = engine.wordOverrides[wordId];
+    if (!wo || !wo.position) return; // só reflui se a palavra é free
+
+    const stanza = getStanzaEl();
+    if (!stanza) return;
+    const stanzaRect = stanza.getBoundingClientRect();
+    if (!stanzaRect.width) return;
+
+    const yRef = wo.position.y;
+    const TOL = 0.06; // mesma tolerância usada pra agrupar linhas
+
+    // Coleta as palavras free da mesma linha (Y próximo), com largura real
+    const palavras = [];
+    stanza.querySelectorAll('.lyric-word').forEach(el => {
+      const wid = el.dataset.wordId;
+      if (!wid) return;
+      const w = engine.wordOverrides[wid];
+      if (!w || !w.position) return; // só free
+      if (Math.abs(w.position.y - yRef) > TOL) return; // outra linha
+      const rect = el.getBoundingClientRect();
+      palavras.push({
+        id: wid,
+        x: w.position.x,
+        wFrac: rect.width / stanzaRect.width, // largura relativa
+      });
+    });
+
+    if (palavras.length < 2) return; // linha de 1 palavra: nada a reespaçar
+
+    // Ordena pela posição X atual (esquerda → direita)
+    palavras.sort((a, b) => a.x - b.x);
+
+    // Gap mínimo entre palavras (relativo à largura do canvas)
+    const GAP = 0.015;
+
+    // Largura total do bloco (somatório das larguras + gaps)
+    let larguraTotal = 0;
+    palavras.forEach((p, i) => {
+      larguraTotal += p.wFrac;
+      if (i < palavras.length - 1) larguraTotal += GAP;
+    });
+
+    // Centro do grupo = média dos centros atuais (mantém onde a linha está)
+    const centroGrupo = palavras.reduce((acc, p) => acc + p.x, 0) / palavras.length;
+
+    // Reposiciona: começa na borda esquerda do bloco centralizado
+    let cursor = centroGrupo - larguraTotal / 2;
+    let mudou = false;
+    palavras.forEach((p, i) => {
+      const novoCentroX = cursor + p.wFrac / 2;
+      cursor += p.wFrac + GAP;
+      const w = engine.wordOverrides[p.id];
+      if (w && w.position && Math.abs(w.position.x - novoCentroX) > 0.001) {
+        engine.setWordOverride(p.id, {
+          position: { x: novoCentroX, y: w.position.y },
+        });
+        mudou = true;
+      }
+    });
+
+    if (mudou) {
+      engine.renderStanza(engine.currentStanzaIndex);
+      if (typeof engine.killAllAnimations === 'function') {
+        try { engine.killAllAnimations(); } catch (e) {}
+      }
+      const stz = getStanzaEl();
+      if (stz) {
+        stz.querySelectorAll('.lyric-word').forEach(el => {
+          el.style.opacity = '1';
+          el.style.animation = 'none';
+        });
+      }
+    }
+  }
+
   function ensureWordIsFree(wordId) {
     const wo = engine.wordOverrides[wordId] || {};
     if (wo.position) return true; // já é free
@@ -20820,6 +20957,15 @@ function initEditor() {
       if (typeof engine.killAllAnimations === 'function') {
         try { engine.killAllAnimations(); } catch (e) {}
       }
+      // REFLOW: depois de mudar caixa/tamanho/fonte de uma palavra, ela
+      // pode ter ficado mais larga e sobrepor as vizinhas da mesma linha
+      // (palavras free têm posição fixa, não refluem sozinhas). Reespaça
+      // as palavras da linha pra não cobrir, mantendo o centro do grupo.
+      requestAnimationFrame(() => {
+        if (typeof _reflowLinhaDaPalavra === 'function') {
+          _reflowLinhaDaPalavra(selectedWordId);
+        }
+      });
       requestAnimationFrame(() => {
         const stz = getStanzaEl();
         if (stz) {
