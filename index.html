@@ -21361,6 +21361,37 @@ function initEditor() {
   window.selectWord = selectWord;
 
   function updateActiveStanzaInList(idx) {
+    // DIAG TEMPORÁRIO navegação de slides
+    try {
+      let db = document.getElementById('wm-nav-diag');
+      if (!db) {
+        db = document.createElement('div');
+        db.id = 'wm-nav-diag';
+        db.style.cssText = 'position:fixed;top:8px;right:8px;z-index:9999999;background:#001a2a;color:#6cf;font:10px/1.5 monospace;padding:8px;max-width:560px;max-height:60vh;overflow:auto;border:2px solid #6cf;border-radius:6px;white-space:pre;';
+        document.body.appendChild(db);
+        db.onclick = () => db.remove();
+      }
+      const items = $$('.stanza-item');
+      let itensTxt = '';
+      items.forEach(el => {
+        const di = el.dataset.index;
+        const ativo = el.classList.contains('active');
+        itensTxt += `  item data-index=${di} ${ativo ? '← ATIVO' : ''}\n`;
+      });
+      let estrofesTxt = '';
+      if (engine && engine.parsed && engine.parsed.stanzas) {
+        engine.parsed.stanzas.forEach((st, i) => {
+          const temOv = engine.sceneOverrides && engine.sceneOverrides[st.id];
+          estrofesTxt += `  [${i}] id=${st.id} ${temOv ? 'TEM-template' : ''}\n`;
+        });
+      }
+      db.textContent = 'NAV DIAG (toque fecha)\n'
+        + 'updateActiveStanzaInList(idx=' + idx + ')\n'
+        + 'engine.currentStanzaIndex: ' + (engine ? engine.currentStanzaIndex : '?') + '\n'
+        + '--- itens na lista DOM ---\n' + itensTxt
+        + '--- estrofes no engine ---\n' + estrofesTxt;
+    } catch(e) {}
+
     $$('.stanza-item').forEach(el => {
       el.classList.toggle('active', parseInt(el.dataset.index, 10) === idx);
     });
