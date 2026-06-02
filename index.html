@@ -6001,6 +6001,11 @@ Digno de toda honra"></textarea>
         <div class="export-status" id="export-status">Gravando…</div>
         <div class="export-status-detail" id="export-status-detail">A página precisa ficar aberta</div>
 
+        <div style="margin-top:14px;padding:10px 14px;background:rgba(251,191,36,0.12);border:1px solid rgba(251,191,36,0.4);border-radius:8px;display:flex;align-items:center;gap:10px;max-width:340px;">
+          <span style="font-size:18px;">⚠️</span>
+          <span style="font-size:12px;color:#fbbf24;line-height:1.4;text-align:left;">Mantenha esta aba aberta e visível durante a exportação. Trocar de aba pode deixar o processo muito mais lento.</span>
+        </div>
+
         
         <div class="export-log-panel is-collapsed" id="export-log-panel">
           <div class="export-log-header" id="export-log-header-toggle" style="cursor: pointer;">
@@ -14902,6 +14907,21 @@ const QUALITY_PRESETS = {
   cinema: { scale: 1,     fps: 30, label: 'Cinema (1080p 30fps)' },
 };
 
+// Yield rápido pro event loop SEM o clamp de ~4ms do setTimeout(0).
+// Usa MessageChannel (postMessage resolve no próximo tick, quase instantâneo),
+// deixando a UI respirar durante o export sem somar latência ociosa.
+const _yieldChannel = (typeof MessageChannel !== 'undefined') ? new MessageChannel() : null;
+function _yieldRapido() {
+  if (_yieldChannel) {
+    return new Promise(resolve => {
+      _yieldChannel.port1.onmessage = () => resolve();
+      _yieldChannel.port2.postMessage(0);
+    });
+  }
+  // Fallback se MessageChannel não existir
+  return new Promise(r => setTimeout(r, 0));
+}
+
 class VideoExporter {
   constructor(options = {}) {
     this.options = {
@@ -15344,24 +15364,35 @@ class VideoExporter {
     ];
 
     for (const candidate of candidates) {
-      try {
-        const config = {
-          codec: candidate.codec,
-          width: this.W,
-          height: this.H,
-          bitrate: this.options.videoBitsPerSecond,
-          framerate: this.fps,
-          bitrateMode: 'variable',
-        };
-        const support = await VideoEncoder.isConfigSupported(config);
-        if (support.supported) {
-          if (typeof window.WM_EXPORT_LOG === 'function') {
-            window.WM_EXPORT_LOG(`✓ Codec: ${candidate.label}`, 'info');
+      // Tenta primeiro COM aceleração de hardware (muito mais rápido, mesma
+      // qualidade visual — o bitrate é o mesmo). Se o navegador não suportar
+      // hardware pra esse codec, cai no modo padrão (sem forçar).
+      const variantes = [
+        { hardwareAcceleration: 'prefer-hardware' },
+        {}, // fallback: deixa o navegador escolher (software se preciso)
+      ];
+      for (const extra of variantes) {
+        try {
+          const config = {
+            codec: candidate.codec,
+            width: this.W,
+            height: this.H,
+            bitrate: this.options.videoBitsPerSecond,
+            framerate: this.fps,
+            bitrateMode: 'variable',
+            ...extra,
+          };
+          const support = await VideoEncoder.isConfigSupported(config);
+          if (support.supported) {
+            if (typeof window.WM_EXPORT_LOG === 'function') {
+              const hw = extra.hardwareAcceleration ? ' (hardware)' : '';
+              window.WM_EXPORT_LOG(`✓ Codec: ${candidate.label}${hw}`, 'info');
+            }
+            return config;
           }
-          return config;
+        } catch (e) {
+          // continua tentando
         }
-      } catch (e) {
-        // continua tentando
       }
     }
 
@@ -15385,6 +15416,14 @@ class VideoExporter {
 
     this.running = true;
     this.aborted = false;
+
+    // === KEEP-ALIVE: reduz o throttling quando o usuário troca de aba ===
+    // 1) Wake Lock: pede pro sistema não suspender (onde suportado).
+    // 2) Áudio silencioso em loop: mantém a aba "ativa" pro navegador, o que
+    //    reduz bastante o throttling de timers em background.
+    // Ambos são best-effort: se falharem, o export continua (só pode ficar
+    // mais lento em background).
+    await this._startKeepAlive();
 
     try {
       // === 1. Setup canvas ===
@@ -15651,10 +15690,13 @@ class VideoExporter {
           this.onProgress((frameIdx + 1) / totalFrames);
         }
 
-        // Yield pro navegador respirar a cada 8 frames
-        // (sem isso, navegador trava UI durante export)
-        if (frameIdx % 8 === 7) {
-          await new Promise(r => setTimeout(r, 0));
+        // Yield pro navegador respirar. setTimeout(0) tem clamp de ~4ms no
+        // browser, então fazer a cada 8 frames somava bastante latência ociosa.
+        // A cada 16 frames é suficiente pra UI não travar, e usamos
+        // requestAnimationFrame-like via MessageChannel (mais rápido que
+        // setTimeout, sem o clamp de 4ms) quando disponível.
+        if (frameIdx % 16 === 15) {
+          await _yieldRapido();
         }
 
         // Se encoder está com muita pressão, espera dar conta
@@ -15720,7 +15762,47 @@ class VideoExporter {
     this.running = false;
   }
 
+  // Inicia mecanismos que reduzem o throttling em background.
+  async _startKeepAlive() {
+    // 1) Wake Lock (Screen Wake Lock API) — best-effort
+    this._wakeLock = null;
+    try {
+      if (navigator.wakeLock && typeof navigator.wakeLock.request === 'function') {
+        this._wakeLock = await navigator.wakeLock.request('screen');
+      }
+    } catch (e) { /* sem wake lock, segue */ }
+
+    // 2) Áudio silencioso em loop — mantém a aba "ativa" pro navegador
+    try {
+      if (!this._silentAudioCtx) {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (AC) {
+          const ctx = new AC();
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          gain.gain.value = 0.0001; // praticamente inaudível
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start();
+          this._silentAudioCtx = ctx;
+          this._silentOsc = osc;
+        }
+      }
+    } catch (e) { /* sem áudio keep-alive, segue */ }
+  }
+
+  _stopKeepAlive() {
+    try {
+      if (this._wakeLock) { this._wakeLock.release(); this._wakeLock = null; }
+    } catch (e) {}
+    try {
+      if (this._silentOsc) { this._silentOsc.stop(); this._silentOsc = null; }
+      if (this._silentAudioCtx) { this._silentAudioCtx.close(); this._silentAudioCtx = null; }
+    } catch (e) {}
+  }
+
   _cleanup() {
+    this._stopKeepAlive();
     if (this.encoder && this.encoder.state !== 'closed') {
       try { this.encoder.close(); } catch (e) {}
     }
