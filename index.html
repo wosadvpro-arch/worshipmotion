@@ -16744,12 +16744,18 @@ class RenderEngineV2 {
     this.canvas.appendChild(stanzaEl);
     this._applyStyleToStanzaEl(stanzaEl);
 
-    // Inicializa palavras com estado "antes da entrada" (opacity 0)
-    // pra não piscarem aparecendo antes da animação começar.
+    // Inicializa palavras com estado "antes da entrada" (opacity 0) APENAS
+    // se uma animação vai rodar logo em seguida (this._prepararParaAnimacao).
+    // Em render ESTÁTICO (navegação simples, aplicar template, edição), as
+    // palavras devem ficar VISÍVEIS — senão, se a animação não disparar (ex:
+    // animação isolada que falha no contexto), as palavras somem pra sempre.
     const allTargets = stanzaEl.querySelectorAll('.lyric-word');
-    allTargets.forEach(el => {
-      el.style.opacity = '0';
-    });
+    if (this._prepararParaAnimacao) {
+      allTargets.forEach(el => { el.style.opacity = '0'; });
+    } else {
+      // Render estático: garante visíveis
+      allTargets.forEach(el => { el.style.opacity = '1'; });
+    }
 
     // Atualiza bounding box (se existir e tem palavra selecionada)
     // Esperamos a opacity ser corrigida pela animação antes de mostrar
@@ -17318,9 +17324,15 @@ class RenderEngineV2 {
     const transition = this.animConfig.transition || 'cut';
     const dur = this.animConfig.transitionDuration || 0.5;
 
+    // Marca que o próximo render vai ser SEGUIDO de animação de entrada
+    // (então renderStanza pode zerar opacity pra animar). É resetado logo
+    // após o render, pra que renders estáticos posteriores fiquem visíveis.
+    this._prepararParaAnimacao = true;
+
     if (!useTransition || transition === 'cut' || !this.canvas) {
       // Sem transição: comportamento antigo
       this.renderStanza(this.currentStanzaIndex);
+      this._prepararParaAnimacao = false;
       requestAnimationFrame(() => this.playEntrance());
       return;
     }
@@ -17338,12 +17350,14 @@ class RenderEngineV2 {
     const t = transitions[transition];
     if (!t) {
       this.renderStanza(this.currentStanzaIndex);
+      this._prepararParaAnimacao = false;
       requestAnimationFrame(() => this.playEntrance());
       return;
     }
 
     // Re-renderiza e aplica animation no canvas content pra "entrar"
     this.renderStanza(this.currentStanzaIndex);
+    this._prepararParaAnimacao = false;
     this.canvas.style.animation = '';
     void this.canvas.offsetHeight;
     this.canvas.style.animation = `${t.name} ${t.dur}s cubic-bezier(0.22, 1, 0.36, 1) both`;
@@ -21364,30 +21378,6 @@ function initEditor() {
     $$('.stanza-item').forEach(el => {
       el.classList.toggle('active', parseInt(el.dataset.index, 10) === idx);
     });
-
-    // DIAG TEMPORÁRIO navegação de slides (lê DEPOIS do toggle)
-    try {
-      let db = document.getElementById('wm-nav-diag');
-      if (!db) {
-        db = document.createElement('div');
-        db.id = 'wm-nav-diag';
-        db.style.cssText = 'position:fixed;top:8px;right:8px;z-index:9999999;background:#001a2a;color:#6cf;font:10px/1.5 monospace;padding:8px;max-width:560px;max-height:60vh;overflow:auto;border:2px solid #6cf;border-radius:6px;white-space:pre;';
-        document.body.appendChild(db);
-        db.onclick = () => db.remove();
-      }
-      const items = $$('.stanza-item');
-      let ativos = [];
-      items.forEach(el => {
-        if (el.classList.contains('active')) ativos.push(el.dataset.index);
-      });
-      db.textContent = 'NAV DIAG (toque fecha)\n'
-        + 'idx pedido: ' + idx + '\n'
-        + 'engine.currentStanzaIndex: ' + (engine ? engine.currentStanzaIndex : '?') + '\n'
-        + 'total itens na lista: ' + items.length + '\n'
-        + 'itens marcados ATIVO: [' + ativos.join(', ') + ']\n'
-        + '(esperado: só [' + idx + '])\n'
-        + 'match: ' + (ativos.length === 1 && ativos[0] == idx ? 'OK ✓' : 'PROBLEMA ✗');
-    } catch(e) {}
 
     // continua função original
     // Atualiza o indicador discreto "SLIDE N de M" no preview. Chamado
