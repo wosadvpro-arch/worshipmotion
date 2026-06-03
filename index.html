@@ -1571,11 +1571,11 @@ body.wm-recording-mode::after {
    Reservamos a altura do painel como padding inferior e o canvas
    recalcula sua altura máxima descontando isso. */
 body.marking-open .editor-canvas-wrap {
-  padding-bottom: calc(70vh + var(--space-8));
+  padding-bottom: calc(60vh + var(--space-8));
   transition: padding-bottom 0.3s cubic-bezier(0.22, 1, 0.36, 1);
 }
 body.marking-open .editor-canvas {
-  max-height: calc(30vh - var(--topbar-height) - var(--space-16));
+  max-height: calc(38vh - var(--topbar-height) - var(--space-8));
   /* CAUSA RAIZ do bug "palavras separadas no preview": quando esse
      max-height é restritivo (painel marcar aberto), o aspect-ratio
      16/9 era violado: altura batia no limite mas a largura ainda
@@ -1586,8 +1586,27 @@ body.marking-open .editor-canvas {
      Correção: limitar a width PROPORCIONALMENTE à max-height ativa.
      16/9 = 1.7778, então max-width = max-height × 1.7778 mantém o
      aspect mesmo quando a altura é restrita. */
-  max-width: calc((30vh - var(--topbar-height) - var(--space-16)) * 16 / 9);
+  max-width: calc((38vh - var(--topbar-height) - var(--space-8)) * 16 / 9);
   transition: max-height 0.3s cubic-bezier(0.22, 1, 0.36, 1), max-width 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+/* No modo marcação o canvas fica menor — o indicador de proporção
+   (posição absoluta) acabava sobrepondo o slide pequeno e poluindo a
+   tela. Escondemos enquanto marca (volta ao fechar o painel). */
+body.marking-open .aspect-indicator {
+  display: none;
+}
+/* A barra de navegação (SLIDE N de M + botões) também é absolute dentro
+   do canvas e cobria o slide pequeno. No modo marcação, movemos ela pro
+   TOPO do wrap (acima do slide, na área de respiro) pra não sobrepor o
+   conteúdo mas manter os botões de navegação acessíveis. */
+body.marking-open .canvas-toolbar {
+  position: fixed !important;
+  top: calc(var(--topbar-height) + 8px) !important;
+  right: calc(var(--panel-width) + 16px) !important;
+  left: auto !important;
+  transform: none !important;
+  bottom: auto !important;
+  z-index: 1001 !important;
 }
 /* Painel colapsado ocupa só o header (~140px) — canvas recua bem menos */
 body.marking-open.marking-collapsed .editor-canvas-wrap {
@@ -3935,7 +3954,7 @@ body.is-dragging-word .lyric-word { cursor: grabbing !important; }
   bottom: 0;
   left: 0;
   right: 0;
-  height: 70vh;
+  height: 60vh;
   background: linear-gradient(180deg, rgba(22, 20, 32, 0.99), rgba(14, 12, 20, 0.99));
   backdrop-filter: blur(20px);
   border-top: 1px solid rgba(139, 92, 246, 0.28);
