@@ -18945,8 +18945,18 @@ function initEditor() {
       if (i < palavras.length - 1) larguraTotal += GAP;
     });
 
-    // Centro do grupo = média dos centros atuais (mantém onde a linha está)
-    const centroGrupo = palavras.reduce((acc, p) => acc + p.x, 0) / palavras.length;
+    // Centro do grupo: ponto médio entre a borda ESQUERDA da primeira
+    // palavra e a borda DIREITA da última (centro visual REAL do bloco).
+    // Antes usávamos a média dos centros (palavras.x), mas como as larguras
+    // diferem, a média NÃO é o centro visual — e a cada reflow ela
+    // deslocava um pouquinho, fazendo a linha "andar" pra esquerda
+    // (bug de acúmulo). Usar as bordas extremas é estável: reaplica o
+    // reflow no mesmo lugar quantas vezes for.
+    const primeira = palavras[0];
+    const ultima = palavras[palavras.length - 1];
+    const bordaEsq = primeira.x - primeira.wFrac / 2;
+    const bordaDir = ultima.x + ultima.wFrac / 2;
+    const centroGrupo = (bordaEsq + bordaDir) / 2;
 
     // Reposiciona: começa na borda esquerda do bloco centralizado
     let cursor = centroGrupo - larguraTotal / 2;
