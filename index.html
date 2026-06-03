@@ -15267,15 +15267,43 @@ class VideoExporter {
     // Loop: se virtualMs > duration, mod
     const targetSec = (virtualMs / 1000) % duration;
 
-    // Tolerância: se já está perto, não faz seek (otimização)
-    if (Math.abs(video.currentTime - targetSec) < 0.04) {
+    // OTIMIZAÇÃO (vídeo de fundo): o seek frame-a-frame é MUITO lento em
+    // vídeos 1080p+ (cada seek decodifica + espera o evento 'seeked').
+    // Estratégia mais rápida: deixar o vídeo TOCANDO (play) e só corrigir
+    // (seek) quando ele dessincroniza do tempo alvo. Enquanto está perto,
+    // usamos o frame atual direto — sem seek, sem espera.
+    const diff = video.currentTime - targetSec;
+    const absDiff = Math.abs(diff);
+
+    // Janela "perto o suficiente": usa o frame atual sem fazer nada.
+    // ~1.5 frames a 30fps = 0.05s de tolerância.
+    if (absDiff < 0.05) {
       return;
     }
 
+    // Se o vídeo está ATRASADO e perto (alvo logo à frente), em vez de seek
+    // (caro), deixa ele tocar e espera alcançar — bem mais rápido que seek.
+    // Só vale se a diferença é pequena (até ~0.5s) e pra frente.
+    if (diff < 0 && absDiff < 0.5) {
+      if (video.paused) {
+        try { video.playbackRate = 1; video.play().catch(() => {}); } catch (e) {}
+      }
+      // Espera curta pro vídeo avançar naturalmente até o alvo
+      const espera = Math.min(absDiff * 1000, 60);
+      await new Promise(r => setTimeout(r, espera));
+      // Se ainda não chegou perto, aí sim corrige com seek
+      if (Math.abs(video.currentTime - targetSec) < 0.06) {
+        return;
+      }
+    }
+
+    // FALLBACK: seek preciso (quando dessincronizou muito ou vídeo pra trás)
+    if (!video.paused) {
+      try { video.pause(); } catch (e) {}
+    }
     return new Promise((resolve) => {
       const onSeeked = () => {
         video.removeEventListener('seeked', onSeeked);
-        // Aguarda 1 frame após seek pra garantir que o frame está renderizável
         requestAnimationFrame(() => resolve());
       };
       video.addEventListener('seeked', onSeeked, { once: true });
@@ -15285,7 +15313,6 @@ class VideoExporter {
         video.removeEventListener('seeked', onSeeked);
         resolve();
       }
-      // Timeout de segurança (não trava se seek falhar)
       setTimeout(() => {
         video.removeEventListener('seeked', onSeeked);
         resolve();
@@ -15908,6 +15935,17 @@ class VideoExporter {
 
   _cleanup() {
     this._stopKeepAlive();
+    // Pausa vídeos de fundo que ficaram tocando (otimização de play sync)
+    try {
+      if (this.slides) {
+        this.slides.forEach(s => {
+          if (s.background && typeof s.background === 'object'
+              && s.background.type === 'video' && s.background.video) {
+            try { s.background.video.pause(); } catch (e) {}
+          }
+        });
+      }
+    } catch (e) {}
     if (this.encoder && this.encoder.state !== 'closed') {
       try { this.encoder.close(); } catch (e) {}
     }
