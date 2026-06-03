@@ -5451,6 +5451,14 @@ Digno de toda honra"></textarea>
         </div>
 
         <div class="panel-section">
+          <div class="panel-section-title">Estilo</div>
+          <div class="segmented" style="width:100%; display:flex;">
+            <button class="active" id="style-roman-btn" style="flex:1; padding:6px 4px;" title="Normal">Normal</button>
+            <button id="style-italic-btn" style="flex:1; padding:6px 4px; font-style:italic;" title="Itálico">Itálico</button>
+          </div>
+        </div>
+
+        <div class="panel-section">
           <div class="panel-section-title">Cor do texto</div>
           <div class="color-swatches" id="color-swatches">
             <div class="color-swatch selected" data-color="#f4f4f7" style="background:#f4f4f7"></div>
@@ -5937,6 +5945,10 @@ Digno de toda honra"></textarea>
             <div class="segmented" id="export-scope" style="width: 100%;">
               <button class="active" data-scope="all" style="flex:1">Projeto inteiro</button>
               <button data-scope="one" style="flex:1">Só um slide</button>
+              <button data-scope="trecho" style="flex:1">Só o trecho</button>
+            </div>
+            <div id="export-trecho-info" style="display:none; margin-top: var(--space-3); font-size: 11px; color: var(--text-tertiary);">
+              Exporta só o trecho dos slides marcados (do 1º ao último), com o áudio sincronizado daquele pedaço. Ideal pra correções rápidas sem renderizar o áudio inteiro.
             </div>
             <div id="export-slide-picker-row" style="display:none; margin-top: var(--space-3);">
               <label class="label">Qual slide</label>
@@ -15267,40 +15279,21 @@ class VideoExporter {
     // Loop: se virtualMs > duration, mod
     const targetSec = (virtualMs / 1000) % duration;
 
-    // OTIMIZAÇÃO (vídeo de fundo): o seek frame-a-frame é MUITO lento em
-    // vídeos 1080p+ (cada seek decodifica + espera o evento 'seeked').
-    // Estratégia mais rápida: deixar o vídeo TOCANDO (play) e só corrigir
-    // (seek) quando ele dessincroniza do tempo alvo. Enquanto está perto,
-    // usamos o frame atual direto — sem seek, sem espera.
-    const diff = video.currentTime - targetSec;
-    const absDiff = Math.abs(diff);
-
-    // Janela "perto o suficiente": usa o frame atual sem fazer nada.
-    // ~1.5 frames a 30fps = 0.05s de tolerância.
-    if (absDiff < 0.05) {
+    // Tolerância: se já está perto, não faz seek (otimização).
+    // O export é DETERMINÍSTICO (gera frames o mais rápido possível, não em
+    // tempo real). Por isso NÃO usamos play+espera (isso travaria o export
+    // na velocidade de reprodução real do vídeo — 9 min de vídeo = 9 min de
+    // export). Seek direto é o caminho certo aqui; só pulamos quando o frame
+    // atual já está perto o suficiente do alvo.
+    if (Math.abs(video.currentTime - targetSec) < 0.04) {
       return;
     }
 
-    // Se o vídeo está ATRASADO e perto (alvo logo à frente), em vez de seek
-    // (caro), deixa ele tocar e espera alcançar — bem mais rápido que seek.
-    // Só vale se a diferença é pequena (até ~0.5s) e pra frente.
-    if (diff < 0 && absDiff < 0.5) {
-      if (video.paused) {
-        try { video.playbackRate = 1; video.play().catch(() => {}); } catch (e) {}
-      }
-      // Espera curta pro vídeo avançar naturalmente até o alvo
-      const espera = Math.min(absDiff * 1000, 60);
-      await new Promise(r => setTimeout(r, espera));
-      // Se ainda não chegou perto, aí sim corrige com seek
-      if (Math.abs(video.currentTime - targetSec) < 0.06) {
-        return;
-      }
-    }
-
-    // FALLBACK: seek preciso (quando dessincronizou muito ou vídeo pra trás)
+    // Garante que o vídeo está pausado (seek é mais confiável pausado)
     if (!video.paused) {
       try { video.pause(); } catch (e) {}
     }
+
     return new Promise((resolve) => {
       const onSeeked = () => {
         video.removeEventListener('seeked', onSeeked);
@@ -15387,9 +15380,15 @@ class VideoExporter {
     const audioBuf = this.audioBuffer;
     const sampleRate = audioBuf.sampleRate;
     const numChannels = audioBuf.numberOfChannels;
+
+    // No modo corte, o áudio começa no início do trecho (ex: minuto 5),
+    // não no zero. Calcula o sample inicial pra alinhar com os slides.
+    const inicioMs = this._trechoInicioMs || 0;
+    const startSample = Math.round((inicioMs / 1000) * sampleRate);
+
     const totalSamples = Math.min(
       audioBuf.length,
-      Math.round((totalDurMs / 1000) * sampleRate)
+      startSample + Math.round((totalDurMs / 1000) * sampleRate)
     );
 
     // AAC espera frames de 1024 samples
@@ -15401,7 +15400,7 @@ class VideoExporter {
       channelsData.push(audioBuf.getChannelData(ch));
     }
 
-    let offset = 0;
+    let offset = startSample;
     while (offset < totalSamples) {
       if (this.aborted) break;
 
@@ -15418,7 +15417,10 @@ class VideoExporter {
         }
       }
 
-      const timestamp = Math.round((offset / sampleRate) * 1_000_000); // µs
+      // Timestamp relativo ao início do trecho (offset - startSample), pra
+      // que o áudio do vídeo cortado comece em 0 e fique sincronizado com
+      // os slides (que também começam em 0 no modo corte).
+      const timestamp = Math.round(((offset - startSample) / sampleRate) * 1_000_000); // µs
       const audioData = new AudioData({
         format: 'f32-planar',
         sampleRate: sampleRate,
@@ -15686,10 +15688,36 @@ class VideoExporter {
           }
           slideStarts.push(startMs);
         }
-        // Última posição = duração total (até o fim do áudio)
-        slideStarts.push(audioDurationMs);
+        // Última posição = duração total.
+        // Por padrão vai até o fim do áudio (louvor inteiro). Mas:
+        // - 'cortarNoTrecho' (Só o trecho): termina no fim do último slide
+        // - onlyStanzaIdx (Só um slide): idem — não faz sentido renderizar
+        //   os 9 min do áudio se só queremos 1 slide marcado no minuto 5.
+        const deveCortarTrecho = this.options.cortarNoTrecho
+          || (typeof this.options.onlyStanzaIdx === 'number');
+        if (deveCortarTrecho) {
+          // Duração do último slide: usa a animação (entrada+espera+saída) ou
+          // um padrão. Estimamos pelo stanzaDuration do slide.
+          const ultimoSlide = this.slides[this.slides.length - 1];
+          const durUltimo = ((ultimoSlide.animation && ultimoSlide.animation.stanzaDuration)
+            || this.options.stanzaDuration || 5) * 1000;
+          const fimUltimoSlide = slideStarts[slideStarts.length - 1] + durUltimo;
+          slideStarts.push(Math.min(fimUltimoSlide, audioDurationMs));
+        } else {
+          slideStarts.push(audioDurationMs);
+        }
         slideDurations = slideStarts.slice(1).map((end, i) => end - slideStarts[i]);
-        totalDurMs = audioDurationMs;
+
+        // Início do trecho = tStart do 1º slide. Usado pra deslocar o áudio.
+        this._trechoInicioMs = deveCortarTrecho ? (slideStarts[0] || 0) : 0;
+
+        // Desloca os slideStarts pra que o 1º slide comece em 0 (vídeo curto).
+        // Sem isso, o loop procuraria os slides em tempos absolutos (ex: 5:00)
+        // que não existem mais no vídeo curto.
+        if (deveCortarTrecho && this._trechoInicioMs > 0) {
+          slideStarts = slideStarts.map(t => t - this._trechoInicioMs);
+        }
+        totalDurMs = slideStarts[slideStarts.length - 1];
 
         if (typeof window.WM_EXPORT_LOG === 'function') {
           window.WM_EXPORT_LOG(`SYNC ATIVO: estrofes posicionadas pelos tStart marcados`, 'info');
@@ -16393,6 +16421,7 @@ class RenderEngineV2 {
     }
 
     stanzaEl.style.fontWeight = s.fontWeight;
+    stanzaEl.style.fontStyle = s.fontStyle || 'normal';
     stanzaEl.style.letterSpacing = `${s.letterSpacing}em`;
 
     // === ESPAÇAMENTO ENTRE LINHAS (semântica nova) ===
@@ -16549,6 +16578,7 @@ class RenderEngineV2 {
           }
           if (ws.color) wordEl.style.color = ws.color;
           if (ws.fontWeight) wordEl.style.fontWeight = ws.fontWeight;
+          if (ws.fontStyle) wordEl.style.fontStyle = ws.fontStyle;
           // Espaçamento entre letras por palavra (em). Sobrepõe o global
           // só nesta palavra; sem override, herda o da estrofe.
           if (typeof ws.letterSpacing === 'number') {
@@ -20868,6 +20898,16 @@ function initEditor() {
         </div>
 
         <div class="scene-control">
+          <div class="scene-control-label">Estilo (só esta palavra)</div>
+          <div class="scene-control-row">
+            <div class="segmented" style="width:100%; display:flex;">
+              <button id="word-style-normal" class="${((wo.style||{}).fontStyle||'normal')!=='italic' ? 'active' : ''}" style="flex:1; padding:6px 4px;">Normal</button>
+              <button id="word-style-italic" class="${((wo.style||{}).fontStyle||'normal')==='italic' ? 'active' : ''}" style="flex:1; padding:6px 4px; font-style:italic;">Itálico</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="scene-control">
           <div class="scene-control-label">Cor da palavra</div>
           <div class="scene-control-row">
             <input type="color" data-word-style="color" value="${woStyle.color || '#f4f4f7'}" style="width: 40px; height: 28px; padding: 0; border-radius: 4px; cursor: pointer; background: none;" />
@@ -21198,6 +21238,22 @@ function initEditor() {
       caseSelect.addEventListener('change', () => {
         const v = caseSelect.value;
         setStyleOverride('textTransform', (v === 'none') ? null : v);
+      });
+    }
+
+    // ===== Wire: Estilo Normal/Itálico (só esta palavra) =====
+    const wordStyleNormal = $('#word-style-normal', container);
+    const wordStyleItalic = $('#word-style-italic', container);
+    if (wordStyleNormal && wordStyleItalic) {
+      wordStyleNormal.addEventListener('click', () => {
+        wordStyleNormal.classList.add('active');
+        wordStyleItalic.classList.remove('active');
+        setStyleOverride('fontStyle', null); // null = volta ao normal/herda
+      });
+      wordStyleItalic.addEventListener('click', () => {
+        wordStyleItalic.classList.add('active');
+        wordStyleNormal.classList.remove('active');
+        setStyleOverride('fontStyle', 'italic');
       });
     }
 
@@ -22449,6 +22505,22 @@ function initEditor() {
       engine.setStyle({ fontWeight: w });
     });
   });
+
+  // Estilo: Normal / Itálico (slide inteiro)
+  const styleRomanBtn = $('#style-roman-btn');
+  const styleItalicBtn = $('#style-italic-btn');
+  if (styleRomanBtn && styleItalicBtn) {
+    styleRomanBtn.addEventListener('click', () => {
+      styleRomanBtn.classList.add('active');
+      styleItalicBtn.classList.remove('active');
+      engine.setStyle({ fontStyle: 'normal' });
+    });
+    styleItalicBtn.addEventListener('click', () => {
+      styleItalicBtn.classList.add('active');
+      styleRomanBtn.classList.remove('active');
+      engine.setStyle({ fontStyle: 'italic' });
+    });
+  }
 
   // text color (swatches predefinidos)
   $$('#color-swatches .color-swatch').forEach(sw => {
@@ -26579,6 +26651,7 @@ function initEditor() {
   // aquele índice de estrofe. Declarado aqui (junto dos outros estados
   // de export) pra estar disponível em openExportModal/updateExportSummary.
   let exportOnlyStanzaIdx = null;
+  let exportCortarTrecho = false;
 
   // === Log visível na UI durante export ===
   const exportLogStartTime = { t: 0 };
@@ -26665,6 +26738,9 @@ function initEditor() {
 
     // Reset do escopo: sempre abre em "projeto inteiro"
     exportOnlyStanzaIdx = null;
+    exportCortarTrecho = false;
+    const trechoInfo = $('#export-trecho-info');
+    if (trechoInfo) trechoInfo.style.display = 'none';
     $$('#export-scope button').forEach(b => {
       b.classList.toggle('active', b.dataset.scope === 'all');
     });
@@ -26787,6 +26863,8 @@ function initEditor() {
       videoBitsPerSecond: bitrate,
       // null = projeto inteiro; número = só aquele slide
       onlyStanzaIdx: (typeof exportOnlyStanzaIdx === 'number') ? exportOnlyStanzaIdx : null,
+      // true = corta o vídeo só no trecho dos slides marcados (não o áudio inteiro)
+      cortarNoTrecho: !!exportCortarTrecho,
     });
 
     // Aponta para o engine (sourceEl não usado mas mantém API)
@@ -26912,14 +26990,24 @@ function initEditor() {
       $$('#export-scope button').forEach(b => b.classList.toggle('active', b === btn));
       const scope = btn.dataset.scope;
       const pickerRow = $('#export-slide-picker-row');
+      const trechoInfo = $('#export-trecho-info');
       if (scope === 'one') {
         populateExportSlidePicker();
         if (pickerRow) pickerRow.style.display = '';
+        if (trechoInfo) trechoInfo.style.display = 'none';
         const sel = $('#export-slide-picker');
         exportOnlyStanzaIdx = sel ? parseInt(sel.value, 10) : 0;
+        exportCortarTrecho = false;
+      } else if (scope === 'trecho') {
+        if (pickerRow) pickerRow.style.display = 'none';
+        if (trechoInfo) trechoInfo.style.display = '';
+        exportOnlyStanzaIdx = null;
+        exportCortarTrecho = true;
       } else {
         if (pickerRow) pickerRow.style.display = 'none';
+        if (trechoInfo) trechoInfo.style.display = 'none';
         exportOnlyStanzaIdx = null;
+        exportCortarTrecho = false;
       }
       updateExportSummary();
     });
