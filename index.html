@@ -26045,13 +26045,59 @@ function initEditor() {
       engine.sceneOverrides[stanza.id] = sceneConfig;
     });
 
-    // Re-renderiza ESTÁTICO com as palavras VISÍVEIS. Antes chamava
-    // playFull() (animava a entrada), mas se a animação não completasse
-    // ou o contexto não disparasse o RAF, as palavras ficavam em
-    // opacity:0 (invisíveis) — bug "palavras somem ao aplicar template".
-    // Render estático + forçar opacity:1 garante que sempre aparecem.
+    // DIAG TEMPORÁRIO: estado das estrofes após aplicar template
+    try {
+      let db = document.getElementById('wm-tpl-diag');
+      if (!db) {
+        db = document.createElement('div');
+        db.id = 'wm-tpl-diag';
+        db.style.cssText = 'position:fixed;top:8px;left:8px;z-index:9999999;background:#1a0a1a;color:#f9f;font:10px/1.5 monospace;padding:8px;max-width:560px;max-height:70vh;overflow:auto;border:2px solid #f9f;border-radius:6px;white-space:pre;';
+        document.body.appendChild(db);
+        db.onclick = () => db.remove();
+      }
+      let txt = 'TPL DIAG (toque fecha)\n';
+      txt += 'targetIndices: [' + targetIndices.join(',') + ']\n';
+      txt += 'currentStanzaIndex: ' + engine.currentStanzaIndex + '\n';
+      txt += 'lineSchema: ' + (lineSchema ? lineSchema.length + ' linhas' : 'NULL (modo antigo)') + '\n';
+      txt += '--- estrofes alvo ---\n';
+      targetIndices.forEach(ti => {
+        const st = parsed.stanzas[ti];
+        if (!st) { txt += '  [' + ti + '] ESTROFE NULL!\n'; return; }
+        let totalW = 0;
+        (st.lines || []).forEach(ln => totalW += (ln.words ? ln.words.length : 0));
+        txt += '  [' + ti + '] id=' + st.id + '\n';
+        txt += '       lines=' + (st.lines ? st.lines.length : 'NULL') + ' palavras=' + totalW + '\n';
+        // Mostra primeira palavra e seu override
+        const fw = st.lines?.[0]?.words?.[0];
+        if (fw) {
+          const ov = engine.wordOverrides[fw.id];
+          txt += '       1a palavra: "' + fw.text + '" id=' + fw.id + '\n';
+          txt += '       override: ' + (ov ? JSON.stringify(ov.style||{}).slice(0,60) : 'nenhum') + '\n';
+        } else {
+          txt += '       SEM PALAVRAS!\n';
+        }
+      });
+      db.textContent = txt;
+    } catch(e) {}
+
+    // Re-renderiza ESTÁTICO com as palavras VISÍVEIS.
+    let _erroRender = null;
     if (typeof engine.renderStanza === 'function') {
-      engine.renderStanza(engine.currentStanzaIndex || 0);
+      try {
+        engine.renderStanza(engine.currentStanzaIndex || 0);
+      } catch (errRender) {
+        _erroRender = errRender;
+        // Mostra o erro no diag
+        try {
+          const db = document.getElementById('wm-tpl-diag');
+          if (db) {
+            db.textContent += '\n\n🔴 ERRO no renderStanza:\n'
+              + (errRender && errRender.message ? errRender.message : String(errRender))
+              + '\n' + (errRender && errRender.stack ? errRender.stack.slice(0, 300) : '');
+          }
+        } catch(e) {}
+        console.error('Erro no renderStanza ao aplicar template:', errRender);
+      }
     }
     if (typeof engine.killAllAnimations === 'function') {
       try { engine.killAllAnimations(); } catch (e) {}
@@ -26065,6 +26111,38 @@ function initEditor() {
           el.style.animation = 'none';
         });
       }
+
+      // DIAG TEMPORÁRIO: estado do DOM após render
+      try {
+        const db = document.getElementById('wm-tpl-diag');
+        if (db) {
+          const canvas = engine.canvas;
+          const stzEl = canvas ? canvas.querySelector('.lyric-stanza') : null;
+          const words = stzEl ? stzEl.querySelectorAll('.lyric-word') : [];
+          let domTxt = '\n--- DOM após render ---\n';
+          domTxt += 'canvas existe: ' + (!!canvas) + '\n';
+          domTxt += 'stanzaEl existe: ' + (!!stzEl) + '\n';
+          if (stzEl) {
+            domTxt += 'stanzaEl classe: ' + stzEl.className + '\n';
+            domTxt += 'stanzaEl.dataset.stanzaId: ' + stzEl.dataset.stanzaId + '\n';
+          }
+          domTxt += 'palavras no DOM: ' + words.length + '\n';
+          if (words.length > 0) {
+            const w0 = words[0];
+            const cs = window.getComputedStyle(w0);
+            domTxt += '1a palavra DOM: "' + w0.textContent + '"\n';
+            domTxt += '  opacity: ' + cs.opacity + '\n';
+            domTxt += '  color: ' + cs.color + '\n';
+            domTxt += '  fontFamily: ' + cs.fontFamily.slice(0,40) + '\n';
+            domTxt += '  fontSize: ' + cs.fontSize + '\n';
+            domTxt += '  position: ' + cs.position + '\n';
+            domTxt += '  left/top: ' + cs.left + '/' + cs.top + '\n';
+            const rect = w0.getBoundingClientRect();
+            domTxt += '  rect: ' + Math.round(rect.width) + 'x' + Math.round(rect.height) + ' @ ' + Math.round(rect.left) + ',' + Math.round(rect.top) + '\n';
+          }
+          db.textContent += domTxt;
+        }
+      } catch(e) {}
     });
     if (typeof renderStanzaList === 'function') {
       renderStanzaList(parsed);
