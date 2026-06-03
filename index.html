@@ -21361,7 +21361,11 @@ function initEditor() {
   window.selectWord = selectWord;
 
   function updateActiveStanzaInList(idx) {
-    // DIAG TEMPORÁRIO navegação de slides
+    $$('.stanza-item').forEach(el => {
+      el.classList.toggle('active', parseInt(el.dataset.index, 10) === idx);
+    });
+
+    // DIAG TEMPORÁRIO navegação de slides (lê DEPOIS do toggle)
     try {
       let db = document.getElementById('wm-nav-diag');
       if (!db) {
@@ -21372,29 +21376,20 @@ function initEditor() {
         db.onclick = () => db.remove();
       }
       const items = $$('.stanza-item');
-      let itensTxt = '';
+      let ativos = [];
       items.forEach(el => {
-        const di = el.dataset.index;
-        const ativo = el.classList.contains('active');
-        itensTxt += `  item data-index=${di} ${ativo ? '← ATIVO' : ''}\n`;
+        if (el.classList.contains('active')) ativos.push(el.dataset.index);
       });
-      let estrofesTxt = '';
-      if (engine && engine.parsed && engine.parsed.stanzas) {
-        engine.parsed.stanzas.forEach((st, i) => {
-          const temOv = engine.sceneOverrides && engine.sceneOverrides[st.id];
-          estrofesTxt += `  [${i}] id=${st.id} ${temOv ? 'TEM-template' : ''}\n`;
-        });
-      }
       db.textContent = 'NAV DIAG (toque fecha)\n'
-        + 'updateActiveStanzaInList(idx=' + idx + ')\n'
+        + 'idx pedido: ' + idx + '\n'
         + 'engine.currentStanzaIndex: ' + (engine ? engine.currentStanzaIndex : '?') + '\n'
-        + '--- itens na lista DOM ---\n' + itensTxt
-        + '--- estrofes no engine ---\n' + estrofesTxt;
+        + 'total itens na lista: ' + items.length + '\n'
+        + 'itens marcados ATIVO: [' + ativos.join(', ') + ']\n'
+        + '(esperado: só [' + idx + '])\n'
+        + 'match: ' + (ativos.length === 1 && ativos[0] == idx ? 'OK ✓' : 'PROBLEMA ✗');
     } catch(e) {}
 
-    $$('.stanza-item').forEach(el => {
-      el.classList.toggle('active', parseInt(el.dataset.index, 10) === idx);
-    });
+    // continua função original
     // Atualiza o indicador discreto "SLIDE N de M" no preview. Chamado
     // aqui porque esta função roda em TODA troca de slide (navegação,
     // clique na lista, play, atalhos), então o indicador nunca dessincroniza.
