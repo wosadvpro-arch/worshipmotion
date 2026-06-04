@@ -15316,10 +15316,7 @@ class VideoExporter {
     this.canvas.height = this.H;
     this.ctx = this.canvas.getContext('2d', {
       alpha: false,
-      // desynchronized REMOVIDO: com ele, o canvas desenha de forma assíncrona
-      // e o new VideoFrame(canvas) precisa ESPERAR o desenho terminar a cada
-      // frame — esse tempo de espera inflava o "videoframe" no diag. Sem ele,
-      // o draw é síncrono e o VideoFrame captura na hora.
+      desynchronized: true,
       willReadFrequently: false,
     });
     this.ctx.fillStyle = '#050507';
@@ -15768,8 +15765,6 @@ class VideoExporter {
       this._lastDrawnSlideIdx = -1;
       this._lastFrameWasStatic = false;
       let _framesPulados = 0;
-      // DIAG TEMPORÁRIO: mede onde o tempo é gasto (pra otimizar projeto inteiro)
-      let _tSeek = 0, _tDraw = 0, _tEncode = 0, _tVF = 0, _nSeek = 0;
 
       for (let frameIdx = 0; frameIdx < totalFrames; frameIdx++) {
         if (this.aborted) {
@@ -15789,10 +15784,7 @@ class VideoExporter {
 
         // Se o slide tem background de vídeo, faz seek no frame correto
         if (slide.background && typeof slide.background === 'object' && slide.background.type === 'video') {
-          const _t0 = performance.now();
           await this._seekVideoBg(slide.background, virtualMs);
-          _tSeek += performance.now() - _t0;
-          _nSeek++;
         }
 
         // Render no canvas
@@ -15814,9 +15806,7 @@ class VideoExporter {
         const podePularRedesenho = estaticoAgora && mesmoSlide && this._lastFrameWasStatic;
 
         if (!podePularRedesenho) {
-          const _t1 = performance.now();
           renderer.drawSlide(this.ctx, slide, elapsedInSlide, this.W, this.H);
-          _tDraw += performance.now() - _t1;
         } else {
           _framesPulados++;
         }
@@ -15826,7 +15816,6 @@ class VideoExporter {
         // Cria VideoFrame com timestamp exato
         const timestamp = frameIdx * microsecondsPerFrame;
         let videoFrame;
-        const _tvf0 = performance.now();
         try {
           videoFrame = new VideoFrame(this.canvas, {
             timestamp: timestamp,
@@ -15837,14 +15826,11 @@ class VideoExporter {
           droppedFrames++;
           continue;
         }
-        _tVF += performance.now() - _tvf0;
 
         // Encode: keyframe a cada 2 segundos (fps*2 frames)
         const keyFrame = frameIdx % (this.fps * 2) === 0;
         try {
-          const _te0 = performance.now();
           this.encoder.encode(videoFrame, { keyFrame });
-          _tEncode += performance.now() - _te0;
         } catch (e) {
           console.error('Erro encodando frame:', e);
           droppedFrames++;
@@ -15907,32 +15893,6 @@ class VideoExporter {
       const elapsedRender = (performance.now() - renderStartTime) / 1000;
       if (typeof window.WM_EXPORT_LOG === 'function') {
         window.WM_EXPORT_LOG(`✓ MP4 gerado em ${elapsedRender.toFixed(1)}s (${(blob.size/1024/1024).toFixed(2)} MB)`, 'success');
-        // DIAG TEMPORÁRIO: onde o tempo foi gasto (% do total de render)
-        const _tot = elapsedRender || 1;
-        const _pct = (v) => Math.round((v/1000/_tot)*100);
-        const _diagTxt = 'DIAG EXPORT (toque fecha)\n'
-          + 'Total: ' + elapsedRender.toFixed(1) + 's\n'
-          + 'seek vídeo: ' + (_tSeek/1000).toFixed(1) + 's (' + _pct(_tSeek) + '%)\n'
-          + 'draw: ' + (_tDraw/1000).toFixed(1) + 's (' + _pct(_tDraw) + '%)\n'
-          + 'videoframe: ' + (_tVF/1000).toFixed(1) + 's (' + _pct(_tVF) + '%)\n'
-          + 'encode: ' + (_tEncode/1000).toFixed(1) + 's (' + _pct(_tEncode) + '%)\n'
-          + 'nº seeks de vídeo: ' + _nSeek + '\n'
-          + 'frames pulados: ' + _framesPulados;
-        if (typeof window.WM_EXPORT_LOG === 'function') {
-          window.WM_EXPORT_LOG('⏱ ' + _diagTxt.replace(/\n/g, ' | '), 'info');
-        }
-        // Caixa VISÍVEL na tela (impossível de perder)
-        try {
-          let _db = document.getElementById('wm-export-diag');
-          if (!_db) {
-            _db = document.createElement('div');
-            _db.id = 'wm-export-diag';
-            _db.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:99999999;background:#0a1a2a;color:#6cf;font:13px/1.7 monospace;padding:20px 24px;border:3px solid #6cf;border-radius:12px;white-space:pre;box-shadow:0 20px 60px rgba(0,0,0,0.7);cursor:pointer;';
-            document.body.appendChild(_db);
-            _db.onclick = () => _db.remove();
-          }
-          _db.textContent = _diagTxt;
-        } catch(e) {}
         if (_framesPulados > 0) {
           const pct = Math.round((_framesPulados / totalFrames) * 100);
           window.WM_EXPORT_LOG(`⚡ ${_framesPulados} frames estáticos otimizados (${pct}% do total)`, 'info');
