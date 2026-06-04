@@ -15279,13 +15279,16 @@ class VideoExporter {
     // Loop: se virtualMs > duration, mod
     const targetSec = (virtualMs / 1000) % duration;
 
-    // Tolerância: se já está perto, não faz seek (otimização).
-    // O export é DETERMINÍSTICO (gera frames o mais rápido possível, não em
-    // tempo real). Por isso NÃO usamos play+espera (isso travaria o export
-    // na velocidade de reprodução real do vídeo — 9 min de vídeo = 9 min de
-    // export). Seek direto é o caminho certo aqui; só pulamos quando o frame
-    // atual já está perto o suficiente do alvo.
-    if (Math.abs(video.currentTime - targetSec) < 0.04) {
+    // Tolerância alinhada ao fps REAL do vídeo de fundo. Se o vídeo é 30fps,
+    // cada frame dura 1/30s (~0.033s). Dois tempos do export dentro desse
+    // intervalo caem no MESMO frame do vídeo — então re-seek decodificaria
+    // exatamente o mesmo frame (desperdício). Usamos ~1 intervalo de frame
+    // como tolerância pra pular esses seeks redundantes SEM perder qualidade
+    // (o frame mostrado seria idêntico). Isso reduz muito o nº de seeks
+    // quando o export tem fps >= fps do vídeo.
+    const videoFps = bgVideo.fps || 30;
+    const tolerancia = Math.max(0.033, (1 / videoFps) * 0.9);
+    if (Math.abs(video.currentTime - targetSec) < tolerancia) {
       return;
     }
 
@@ -15297,7 +15300,10 @@ class VideoExporter {
     return new Promise((resolve) => {
       const onSeeked = () => {
         video.removeEventListener('seeked', onSeeked);
-        requestAnimationFrame(() => resolve());
+        // Resolve DIRETO (sem requestAnimationFrame extra). O frame já está
+        // decodificado quando 'seeked' dispara — o rAF adicional só somava
+        // ~16ms por seek (com 1000+ seeks, eram dezenas de segundos à toa).
+        resolve();
       };
       video.addEventListener('seeked', onSeeked, { once: true });
       try {
