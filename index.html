@@ -15276,33 +15276,54 @@ class VideoExporter {
     const duration = bgVideo.duration || video.duration || 0;
     if (!duration) return;
 
-    // Loop: se virtualMs > duration, mod
     const targetSec = (virtualMs / 1000) % duration;
 
-    // Tolerância alinhada ao fps REAL do vídeo de fundo. Se o vídeo é 30fps,
-    // cada frame dura 1/30s (~0.033s). Dois tempos do export dentro desse
-    // intervalo caem no MESMO frame do vídeo — então re-seek decodificaria
-    // exatamente o mesmo frame (desperdício). Usamos ~1 intervalo de frame
-    // como tolerância pra pular esses seeks redundantes SEM perder qualidade
-    // (o frame mostrado seria idêntico). Isso reduz muito o nº de seeks
-    // quando o export tem fps >= fps do vídeo.
+    // Tolerância: se já está perto, não faz nada (frame seria idêntico).
     const videoFps = bgVideo.fps || 30;
     const tolerancia = Math.max(0.033, (1 / videoFps) * 0.9);
     if (Math.abs(video.currentTime - targetSec) < tolerancia) {
       return;
     }
 
-    // Garante que o vídeo está pausado (seek é mais confiável pausado)
+    // ESTRATÉGIA RÁPIDA — avançar em SEQUÊNCIA quando o alvo está logo À
+    // FRENTE do tempo atual (caso comum no export: frames consecutivos).
+    // Seek aleatório re-decodifica desde o keyframe anterior (lento em vídeos
+    // muito comprimidos, com keyframes esparsos). Já avançar em ordem deixa o
+    // decoder seguir o fluxo natural — MUITO mais rápido. Usamos um play
+    // curtíssimo controlado: liga o play, espera o vídeo cruzar o alvo, pausa.
+    const adiante = targetSec - video.currentTime;
+    if (adiante > 0 && adiante < 1.0) {
+      // Avança tocando rápido até cruzar o alvo (sem seek)
+      return new Promise((resolve) => {
+        let resolvido = false;
+        const finish = () => {
+          if (resolvido) return;
+          resolvido = true;
+          try { video.pause(); } catch (e) {}
+          video.removeEventListener('timeupdate', onTime);
+          resolve();
+        };
+        const onTime = () => {
+          if (video.currentTime >= targetSec - 0.005) finish();
+        };
+        video.addEventListener('timeupdate', onTime);
+        try {
+          video.playbackRate = 16; // toca acelerado pra cruzar rápido
+          const p = video.play();
+          if (p && p.catch) p.catch(() => finish());
+        } catch (e) { finish(); }
+        // Segurança: não trava mais que 120ms nesse avanço
+        setTimeout(finish, 120);
+      });
+    }
+
+    // FALLBACK — seek aleatório (alvo pra trás, ou salto grande/loop).
     if (!video.paused) {
       try { video.pause(); } catch (e) {}
     }
-
     return new Promise((resolve) => {
       const onSeeked = () => {
         video.removeEventListener('seeked', onSeeked);
-        // Resolve DIRETO (sem requestAnimationFrame extra). O frame já está
-        // decodificado quando 'seeked' dispara — o rAF adicional só somava
-        // ~16ms por seek (com 1000+ seeks, eram dezenas de segundos à toa).
         resolve();
       };
       video.addEventListener('seeked', onSeeked, { once: true });
