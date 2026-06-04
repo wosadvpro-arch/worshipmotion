@@ -15285,39 +15285,9 @@ class VideoExporter {
       return;
     }
 
-    // ESTRATÉGIA RÁPIDA — avançar em SEQUÊNCIA quando o alvo está logo À
-    // FRENTE do tempo atual (caso comum no export: frames consecutivos).
-    // Seek aleatório re-decodifica desde o keyframe anterior (lento em vídeos
-    // muito comprimidos, com keyframes esparsos). Já avançar em ordem deixa o
-    // decoder seguir o fluxo natural — MUITO mais rápido. Usamos um play
-    // curtíssimo controlado: liga o play, espera o vídeo cruzar o alvo, pausa.
-    const adiante = targetSec - video.currentTime;
-    if (adiante > 0 && adiante < 1.0) {
-      // Avança tocando rápido até cruzar o alvo (sem seek)
-      return new Promise((resolve) => {
-        let resolvido = false;
-        const finish = () => {
-          if (resolvido) return;
-          resolvido = true;
-          try { video.pause(); } catch (e) {}
-          video.removeEventListener('timeupdate', onTime);
-          resolve();
-        };
-        const onTime = () => {
-          if (video.currentTime >= targetSec - 0.005) finish();
-        };
-        video.addEventListener('timeupdate', onTime);
-        try {
-          video.playbackRate = 16; // toca acelerado pra cruzar rápido
-          const p = video.play();
-          if (p && p.catch) p.catch(() => finish());
-        } catch (e) { finish(); }
-        // Segurança: não trava mais que 120ms nesse avanço
-        setTimeout(finish, 120);
-      });
-    }
-
-    // FALLBACK — seek aleatório (alvo pra trás, ou salto grande/loop).
+    // Seek preciso (pausado). O avanço acelerado por play foi descartado:
+    // acelerava mas o vídeo não parava no frame exato, deixando o fundo
+    // travado/pulando. Seek é mais lento mas mantém a fluidez correta.
     if (!video.paused) {
       try { video.pause(); } catch (e) {}
     }
@@ -15346,7 +15316,10 @@ class VideoExporter {
     this.canvas.height = this.H;
     this.ctx = this.canvas.getContext('2d', {
       alpha: false,
-      desynchronized: true,
+      // desynchronized REMOVIDO: com ele, o canvas desenha de forma assíncrona
+      // e o new VideoFrame(canvas) precisa ESPERAR o desenho terminar a cada
+      // frame — esse tempo de espera inflava o "videoframe" no diag. Sem ele,
+      // o draw é síncrono e o VideoFrame captura na hora.
       willReadFrequently: false,
     });
     this.ctx.fillStyle = '#050507';
