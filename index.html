@@ -15910,7 +15910,29 @@ class VideoExporter {
         // DIAG TEMPORÁRIO: onde o tempo foi gasto (% do total de render)
         const _tot = elapsedRender || 1;
         const _pct = (v) => Math.round((v/1000/_tot)*100);
-        window.WM_EXPORT_LOG(`⏱ DIAG: seek=${(_tSeek/1000).toFixed(1)}s(${_pct(_tSeek)}%) draw=${(_tDraw/1000).toFixed(1)}s(${_pct(_tDraw)}%) videoframe=${(_tVF/1000).toFixed(1)}s(${_pct(_tVF)}%) encode=${(_tEncode/1000).toFixed(1)}s(${_pct(_tEncode)}%) | seeks:${_nSeek}`, 'info');
+        const _diagTxt = 'DIAG EXPORT (toque fecha)\n'
+          + 'Total: ' + elapsedRender.toFixed(1) + 's\n'
+          + 'seek vídeo: ' + (_tSeek/1000).toFixed(1) + 's (' + _pct(_tSeek) + '%)\n'
+          + 'draw: ' + (_tDraw/1000).toFixed(1) + 's (' + _pct(_tDraw) + '%)\n'
+          + 'videoframe: ' + (_tVF/1000).toFixed(1) + 's (' + _pct(_tVF) + '%)\n'
+          + 'encode: ' + (_tEncode/1000).toFixed(1) + 's (' + _pct(_tEncode) + '%)\n'
+          + 'nº seeks de vídeo: ' + _nSeek + '\n'
+          + 'frames pulados: ' + _framesPulados;
+        if (typeof window.WM_EXPORT_LOG === 'function') {
+          window.WM_EXPORT_LOG('⏱ ' + _diagTxt.replace(/\n/g, ' | '), 'info');
+        }
+        // Caixa VISÍVEL na tela (impossível de perder)
+        try {
+          let _db = document.getElementById('wm-export-diag');
+          if (!_db) {
+            _db = document.createElement('div');
+            _db.id = 'wm-export-diag';
+            _db.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:99999999;background:#0a1a2a;color:#6cf;font:13px/1.7 monospace;padding:20px 24px;border:3px solid #6cf;border-radius:12px;white-space:pre;box-shadow:0 20px 60px rgba(0,0,0,0.7);cursor:pointer;';
+            document.body.appendChild(_db);
+            _db.onclick = () => _db.remove();
+          }
+          _db.textContent = _diagTxt;
+        } catch(e) {}
         if (_framesPulados > 0) {
           const pct = Math.round((_framesPulados / totalFrames) * 100);
           window.WM_EXPORT_LOG(`⚡ ${_framesPulados} frames estáticos otimizados (${pct}% do total)`, 'info');
