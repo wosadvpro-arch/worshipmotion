@@ -15768,6 +15768,8 @@ class VideoExporter {
       this._lastDrawnSlideIdx = -1;
       this._lastFrameWasStatic = false;
       let _framesPulados = 0;
+      // DIAG TEMPORÁRIO: mede onde o tempo é gasto (pra otimizar projeto inteiro)
+      let _tSeek = 0, _tDraw = 0, _tEncode = 0, _tVF = 0, _nSeek = 0;
 
       for (let frameIdx = 0; frameIdx < totalFrames; frameIdx++) {
         if (this.aborted) {
@@ -15787,7 +15789,10 @@ class VideoExporter {
 
         // Se o slide tem background de vídeo, faz seek no frame correto
         if (slide.background && typeof slide.background === 'object' && slide.background.type === 'video') {
+          const _t0 = performance.now();
           await this._seekVideoBg(slide.background, virtualMs);
+          _tSeek += performance.now() - _t0;
+          _nSeek++;
         }
 
         // Render no canvas
@@ -15809,7 +15814,9 @@ class VideoExporter {
         const podePularRedesenho = estaticoAgora && mesmoSlide && this._lastFrameWasStatic;
 
         if (!podePularRedesenho) {
+          const _t1 = performance.now();
           renderer.drawSlide(this.ctx, slide, elapsedInSlide, this.W, this.H);
+          _tDraw += performance.now() - _t1;
         } else {
           _framesPulados++;
         }
@@ -15819,6 +15826,7 @@ class VideoExporter {
         // Cria VideoFrame com timestamp exato
         const timestamp = frameIdx * microsecondsPerFrame;
         let videoFrame;
+        const _tvf0 = performance.now();
         try {
           videoFrame = new VideoFrame(this.canvas, {
             timestamp: timestamp,
@@ -15829,11 +15837,14 @@ class VideoExporter {
           droppedFrames++;
           continue;
         }
+        _tVF += performance.now() - _tvf0;
 
         // Encode: keyframe a cada 2 segundos (fps*2 frames)
         const keyFrame = frameIdx % (this.fps * 2) === 0;
         try {
+          const _te0 = performance.now();
           this.encoder.encode(videoFrame, { keyFrame });
+          _tEncode += performance.now() - _te0;
         } catch (e) {
           console.error('Erro encodando frame:', e);
           droppedFrames++;
@@ -15896,6 +15907,10 @@ class VideoExporter {
       const elapsedRender = (performance.now() - renderStartTime) / 1000;
       if (typeof window.WM_EXPORT_LOG === 'function') {
         window.WM_EXPORT_LOG(`✓ MP4 gerado em ${elapsedRender.toFixed(1)}s (${(blob.size/1024/1024).toFixed(2)} MB)`, 'success');
+        // DIAG TEMPORÁRIO: onde o tempo foi gasto (% do total de render)
+        const _tot = elapsedRender || 1;
+        const _pct = (v) => Math.round((v/1000/_tot)*100);
+        window.WM_EXPORT_LOG(`⏱ DIAG: seek=${(_tSeek/1000).toFixed(1)}s(${_pct(_tSeek)}%) draw=${(_tDraw/1000).toFixed(1)}s(${_pct(_tDraw)}%) videoframe=${(_tVF/1000).toFixed(1)}s(${_pct(_tVF)}%) encode=${(_tEncode/1000).toFixed(1)}s(${_pct(_tEncode)}%) | seeks:${_nSeek}`, 'info');
         if (_framesPulados > 0) {
           const pct = Math.round((_framesPulados / totalFrames) * 100);
           window.WM_EXPORT_LOG(`⚡ ${_framesPulados} frames estáticos otimizados (${pct}% do total)`, 'info');
