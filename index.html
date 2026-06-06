@@ -8,7 +8,7 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@400;500;600;700;800&family=Manrope:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,300;1,400;1,600;1,800;1,900&family=Inter:wght@400;500;600;700&family=Sora:wght@400;500;600;700;800&family=Manrope:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
 
   <style>
 /* === tokens.css === */
@@ -5368,7 +5368,11 @@ Digno de toda honra"></textarea>
           
           <div class="font-tab-content" data-font-tab-content="brand">
             <div class="font-grid" id="font-grid">
-              <div class="font-option selected" data-font="Sora">
+              <div class="font-option selected" data-font="Montserrat">
+                <div class="font-option-sample" style="font-family: 'Montserrat'">Aa</div>
+                <div class="font-option-name">Montserrat</div>
+              </div>
+              <div class="font-option" data-font="Sora">
                 <div class="font-option-sample" style="font-family: 'Sora'">Aa</div>
                 <div class="font-option-name">Sora</div>
               </div>
@@ -15853,7 +15857,7 @@ class RenderEngineV2 {
 
     // estilos GLOBAIS (default pra todas as estrofes)
     this.style = {
-      fontFamily: 'Sora',
+      fontFamily: 'Montserrat',
       fontSize: 64,
       fontWeight: 600,
       letterSpacing: -0.02,
@@ -20532,7 +20536,7 @@ function initEditor() {
     const woStyle = wo.style || {};
 
     // Lista de fontes disponíveis (mesmo conjunto do painel global)
-    const FONTS = ['Sora', 'Inter', 'Manrope', 'Plus Jakarta Sans', 'Space Grotesk'];
+    const FONTS = ['Montserrat', 'Sora', 'Inter', 'Manrope', 'Plus Jakarta Sans', 'Space Grotesk'];
 
     container.innerHTML = `
       <div class="word-panel-selected">
@@ -22258,8 +22262,8 @@ function initEditor() {
     }
     const families = window.WM_CUSTOM_FONTS ? window.WM_CUSTOM_FONTS.list().map(f => f.family) : [];
     if (!families.includes(engine.style.fontFamily) &&
-        !['Sora','Inter','Manrope','Plus Jakarta Sans','Space Grotesk'].includes(engine.style.fontFamily)) {
-      selectFont('Sora');
+        !['Montserrat','Sora','Inter','Manrope','Plus Jakarta Sans','Space Grotesk'].includes(engine.style.fontFamily)) {
+      selectFont('Montserrat');
     }
     await refreshCustomFontGrid();
   });
@@ -25499,7 +25503,7 @@ function initEditor() {
     // Fallback: se não tem parsed estruturado, mostra a primeira linha plana
     if (!parsed || !parsed.stanzas || !parsed.stanzas.length) {
       const fallback = (cfg.lyrics || 'Worship').split('\n').filter(l => l.trim())[0] || 'Worship';
-      return `<div class="tpl-prev-line" style="font-family:'${globalStyle.fontFamily || 'Sora'}';color:${globalStyle.color || '#f4f4f7'};">${escapeHtml(fallback)}</div>`;
+      return `<div class="tpl-prev-line" style="font-family:'${globalStyle.fontFamily || 'Montserrat'}';color:${globalStyle.color || '#f4f4f7'};">${escapeHtml(fallback)}</div>`;
     }
 
     // Calcula o scale máximo entre todas as palavras pra normalizar
@@ -25535,7 +25539,7 @@ function initEditor() {
       const palavrasHTML = ln.words.map(w => {
         const ov = wordOverrides[w.id] || {};
         const st = ov.style || {};
-        const font = st.fontFamily || globalStyle.fontFamily || 'Sora';
+        const font = st.fontFamily || globalStyle.fontFamily || 'Montserrat';
         const color = st.color || globalStyle.color || '#f4f4f7';
         const tt = st.textTransform || globalStyle.textTransform || 'none';
         const scale = st.fontSizeScale || 1;
