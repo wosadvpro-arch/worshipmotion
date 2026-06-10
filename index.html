@@ -5976,13 +5976,16 @@ Digno de toda honra"></textarea>
 
           <div class="export-row">
             <label class="label">Qualidade</label>
-            <div class="segmented" id="export-quality" style="width: 100%;">
-              <button data-preset="reels" style="flex:1">Reels (720p)</button>
-              <button class="active" data-preset="smooth" style="flex:1">Suave (1080p)</button>
-              <button data-preset="cinema" style="flex:1">Cinema (1080p 30fps)</button>
+            <div class="segmented" id="export-quality" style="width: 100%; flex-wrap: wrap;">
+              <button data-preset="reels" style="flex:1 1 30%">Reels (720p)</button>
+              <button class="active" data-preset="smooth" style="flex:1 1 30%">Suave (1080p)</button>
+              <button data-preset="cinema" style="flex:1 1 30%">Cinema (1080p 30fps)</button>
+              <button data-preset="qhd" style="flex:1 1 45%">Nítido (1440p)</button>
+              <button data-preset="uhd" style="flex:1 1 45%">Máximo (4K)</button>
             </div>
             <span style="font-size: 11px; color: var(--text-tertiary); margin-top: 4px;">
-              "Suave" é recomendado. "Cinema" só funciona em computadores potentes.
+              "Suave" é recomendado pro dia a dia. "Nítido" e "Máximo" deixam as letras
+              mais definidas em telas grandes, mas demoram mais pra exportar.
             </span>
           </div>
 
@@ -14797,6 +14800,8 @@ const QUALITY_PRESETS = {
   reels:  { scale: 0.667, fps: 30, label: 'Reels (720p)' },
   smooth: { scale: 1,     fps: 24, label: 'Suave (1080p 24fps)' },
   cinema: { scale: 1,     fps: 30, label: 'Cinema (1080p 30fps)' },
+  qhd:    { scale: 1.333, fps: 30, label: 'Nítido (1440p 30fps)' },
+  uhd:    { scale: 2,     fps: 30, label: 'Máximo (4K 30fps)' },
 };
 
 // Yield rápido pro event loop SEM o clamp de ~4ms do setTimeout(0).
@@ -26575,8 +26580,8 @@ function initEditor() {
       : (presetsAspect[aspect] || presetsAspect['16:9']);
 
     // Aplica escala do quality preset
-    const scaleMap = { reels: 0.667, smooth: 1, cinema: 1 };
-    const fpsMap = { reels: 30, smooth: 24, cinema: 30 };
+    const scaleMap = { reels: 0.667, smooth: 1, cinema: 1, qhd: 1.333, uhd: 2 };
+    const fpsMap = { reels: 30, smooth: 24, cinema: 30, qhd: 30, uhd: 30 };
     const scale = scaleMap[exportQualityPreset] || 1;
     const fps = fpsMap[exportQualityPreset] || 24;
     const realW = Math.round(base.w * scale);
@@ -26595,13 +26600,20 @@ function initEditor() {
     // Sempre MP4 com WebCodecs
     $('#export-format').textContent = 'MP4 (H.264)';
 
-    // Tamanho estimado com novos bitrates
-    const bitrate = exportQualityPreset === 'reels' ? 6_000_000
-                  : exportQualityPreset === 'cinema' ? 16_000_000
-                  : 12_000_000;
+    // Tamanho estimado — bitrate proporcional à resolução (mesma fórmula do export)
+    const bitrate = calcBitrate(realW, realH, fps);
     const bytes = (bitrate * totalSec) / 8;
     const mb = bytes / (1024 * 1024);
     $('#export-filesize').textContent = mb < 1 ? '< 1 MB' : `~${mb.toFixed(0)} MB`;
+  }
+
+  // Bitrate proporcional à resolução e fps. BPP=0.26 dá bordas de texto
+  // nítidas (curvas sem serrilhado). Calibrado pra bater ~12Mbps em 1080p24
+  // e escalar pra 1440p/4K automaticamente. Teto de 60Mbps por segurança.
+  function calcBitrate(w, h, fps) {
+    const BPP = 0.26;
+    const calc = Math.round(w * h * fps * BPP);
+    return Math.min(calc, 60_000_000);
   }
 
   function setProgressRing(pct) {
@@ -26644,15 +26656,20 @@ function initEditor() {
     }
     window.WM_EXPORT_LOG('✓ Sistema de export OK', 'success');
 
-    // Bitrate baseado no preset
-    // Bitrate baseado no preset (fórmula do patch: w×h×fps×0.07)
-    // 720p×30: 1280×720×30×0.07 = ~1.9Mbps mínimo → 6Mbps recomendado
-    // 1080p×24: 1920×1080×24×0.07 = ~3.5Mbps mínimo → 12Mbps recomendado
-    // 1080p×30: 1920×1080×30×0.07 = ~4.3Mbps mínimo → 16Mbps recomendado
-    const bitrateMap = { reels: 6_000_000, smooth: 12_000_000, cinema: 16_000_000 };
-    const bitrate = bitrateMap[exportQualityPreset] || 12_000_000;
+    // Bitrate proporcional à resolução real (combate serrilhado nas curvas).
+    // Calcula a resolução final aplicando a escala do preset sobre a base.
+    const _scaleMap = { reels: 0.667, smooth: 1, cinema: 1, qhd: 1.333, uhd: 2 };
+    const _fpsMap = { reels: 30, smooth: 24, cinema: 30, qhd: 30, uhd: 30 };
+    const _base = (typeof aspect === 'object' && aspect.custom)
+      ? { w: aspect.w, h: aspect.h }
+      : ({ '16:9':{w:1920,h:1080}, '9:16':{w:1080,h:1920}, '1:1':{w:1080,h:1080}, '4:3':{w:1024,h:768} }[aspect] || {w:1920,h:1080});
+    const _scale = _scaleMap[exportQualityPreset] || 1;
+    const _fps = _fpsMap[exportQualityPreset] || 24;
+    const _realW = Math.round(_base.w * _scale);
+    const _realH = Math.round(_base.h * _scale);
+    const bitrate = calcBitrate(_realW, _realH, _fps);
 
-    window.WM_EXPORT_LOG(`Preset: ${exportQualityPreset}, bitrate ${bitrate/1_000_000}Mbps`, 'info');
+    window.WM_EXPORT_LOG(`Preset: ${exportQualityPreset}, ${_realW}×${_realH}, bitrate ${(bitrate/1_000_000).toFixed(0)}Mbps`, 'info');
 
     // Cria o exporter
     currentExporter = new WM_EXPORT.VideoExporter({
