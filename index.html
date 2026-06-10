@@ -22422,11 +22422,18 @@ function initEditor() {
       }
       const globalFs = (engine.style && engine.style.fontSize) || 64;
       const alvoScale = Math.max(0.2, v / globalFs);
-      // Preview: muda o fontSize do elemento direto (em). Sem recriar.
+      // Preview no DOM (instantâneo) E grava o override JÁ AQUI — não
+      // depende do evento 'change' (que nem sempre dispara de forma
+      // confiável; quando não disparava, o tamanho sumia no próximo
+      // render). Assim o fontSizeScale fica SEMPRE persistido.
       Object.keys(_fsSelBaseScales).forEach(wid => {
         const el = stz.querySelector(`.lyric-word[data-word-id="${wid}"]`);
         if (el) el.style.fontSize = alvoScale + 'em';
+        const wo = engine.wordOverrides[wid] || {};
+        const ns = { ...(wo.style || {}), fontSizeScale: alvoScale };
+        engine.setWordOverride(wid, { style: ns });
       });
+      markDirty();
     } else {
       // Início do arraste: captura o tamanho base.
       if (_fsDragBase === null) _fsDragBase = window.__lastFontSize || v;
