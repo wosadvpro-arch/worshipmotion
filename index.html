@@ -18880,6 +18880,37 @@ function initEditor() {
     }
   }
 
+  // Reflui (re-centraliza) TODAS as linhas que contêm alguma das palavras
+  // da lista. Usado quando uma edição em massa (fonte, itálico, peso) muda
+  // a largura de várias palavras — sem isso, cada palavra fica presa na
+  // posição antiga e abre buraco no meio da linha. Agrupa por linha (Y)
+  // pra chamar o reflow uma vez por linha, não uma vez por palavra.
+  function reflowLinhasDasPalavras(wordIds) {
+    if (!wordIds || !wordIds.length) return;
+    if (typeof _reflowLinhaDaPalavra !== 'function') return;
+    // Coleta os Y das palavras que são free; agrupa por linha (TOL).
+    const TOL = 0.06;
+    const linhasY = [];
+    const representante = {}; // y-da-linha → um wordId daquela linha
+    wordIds.forEach(wid => {
+      const w = engine.wordOverrides[wid];
+      if (!w || !w.position) return; // só free entram no reflow
+      const y = w.position.y;
+      let achou = false;
+      for (const ly of linhasY) {
+        if (Math.abs(ly - y) <= TOL) { achou = true; break; }
+      }
+      if (!achou) {
+        linhasY.push(y);
+        representante[y] = wid;
+      }
+    });
+    // Chama o reflow uma vez por linha (usando uma palavra representante).
+    Object.values(representante).forEach(wid => {
+      _reflowLinhaDaPalavra(wid);
+    });
+  }
+
   function ensureWordIsFree(wordId) {
     const wo = engine.wordOverrides[wordId] || {};
     if (wo.position) return true; // já é free
@@ -20276,13 +20307,22 @@ function initEditor() {
 
   function afterMultiEditApply(wordIds) {
     markDirty();
-    engine.playFull();
+    // Render ESTÁTICO (igual afterWordOverrideChange do single): NÃO
+    // playFull — playFull anima a entrada e DESLOCA palavras free, o que
+    // desfazia o reflow e reabria o buraco. Re-renderiza e restaura opacity.
+    engine.renderStanza(engine.currentStanzaIndex);
+    if (typeof engine.killAllAnimations === 'function') {
+      try { engine.killAllAnimations(); } catch (e) {}
+    }
     requestAnimationFrame(() => {
       $$('.lyric-word').forEach(el => {
+        el.style.opacity = '1';
+        el.style.animation = 'none';
         const wid = el.dataset.wordId;
         el.classList.toggle('has-anim-override', !!engine.wordOverrides[wid]);
         el.classList.toggle('is-word-selected', selectedWordIds.has(wid));
       });
+      if (typeof updateSelectionBox === 'function') updateSelectionBox();
       renderWordPanel();
     });
   }
@@ -20324,7 +20364,23 @@ function initEditor() {
     $$('[data-multi-weight]', container).forEach(btn => {
       btn.addEventListener('click', () => {
         const w = parseInt(btn.dataset.multiWeight, 10);
+        // Peso muda largura → garante free antes pra não descentralizar
+        wordIds.forEach(id => { if (typeof ensureWordIsFree === 'function') ensureWordIsFree(id); });
         setMultiStyleOverride(wordIds, 'fontWeight', w);
+        if (typeof reflowLinhasDasPalavras === 'function') reflowLinhasDasPalavras(wordIds);
+      });
+    });
+
+    // Estilo (itálico) — aplica em todas; itálico muda a largura, então
+    // garante free + reflow das linhas pra não abrir buraco no meio.
+    $$('[data-multi-fontstyle]', container).forEach(btn => {
+      btn.addEventListener('click', () => {
+        const val = btn.dataset.multiFontstyle; // 'normal' | 'italic'
+        $$('[data-multi-fontstyle]', container).forEach(b => b.classList.toggle('active', b === btn));
+        wordIds.forEach(id => { if (typeof ensureWordIsFree === 'function') ensureWordIsFree(id); });
+        // null = volta ao normal/herda
+        setMultiStyleOverride(wordIds, 'fontStyle', val === 'italic' ? 'italic' : null);
+        if (typeof reflowLinhasDasPalavras === 'function') reflowLinhasDasPalavras(wordIds);
       });
     });
 
@@ -20420,6 +20476,7 @@ function initEditor() {
       const commonSize = getCommonValue(['style', 'fontSizeScale']);
       const commonColor = getCommonValue(['style', 'color']);
       const commonWeight = getCommonValue(['style', 'fontWeight']);
+      const commonStyle = getCommonValue(['style', 'fontStyle']);
       const sizePct = commonSize != null ? Math.round(commonSize * 100) : 100;
       // Espaçamento entre letras por palavra (em). Sem override, mostra o
       // global da estrofe como base de referência.
@@ -20480,6 +20537,12 @@ function initEditor() {
           <button data-multi-weight="600" class="${commonWeight === 600 ? 'active' : ''}" style="flex:1; padding:6px 4px;" title="Semibold">Semi</button>
           <button data-multi-weight="700" class="${commonWeight === 700 ? 'active' : ''}" style="flex:1; padding:6px 4px;" title="Bold">Bold</button>
           <button data-multi-weight="800" class="${commonWeight === 800 ? 'active' : ''}" style="flex:1; padding:6px 4px;" title="Heavy">Heavy</button>
+        </div>
+
+        <div class="word-panel-section-title">Estilo ${commonStyle == null ? '<span style="font-weight:400;font-size:10px;color:var(--text-tertiary);">(misto)</span>' : ''}</div>
+        <div class="segmented" style="width:100%; display:flex;">
+          <button data-multi-fontstyle="normal" class="${commonStyle !== 'italic' ? 'active' : ''}" style="flex:1; padding:6px 4px;" title="Normal">Normal</button>
+          <button data-multi-fontstyle="italic" class="${commonStyle === 'italic' ? 'active' : ''}" style="flex:1; padding:6px 4px; font-style:italic;" title="Itálico">Itálico</button>
         </div>
 
         <div class="word-panel-section-title">Cor ${commonColor == null ? '<span style="font-weight:400;font-size:10px;color:var(--text-tertiary);">(mista)</span>' : ''}</div>
@@ -22025,6 +22088,11 @@ function initEditor() {
         engine.setWordOverride(wid, { style: newStyle });
       });
       markDirty();
+      // Re-centraliza as linhas afetadas (trocar a fonte muda a largura;
+      // sem isso, com 2+ palavras abre buraco no meio / vão pros extremos).
+      if (typeof reflowLinhasDasPalavras === 'function') {
+        reflowLinhasDasPalavras([...selectedWordIds]);
+      }
       // Re-render ESTÁTICO (igual applyResizeUpdate): NÃO playFull.
       engine.renderStanza(engine.currentStanzaIndex);
       if (typeof engine.killAllAnimations === 'function') {
@@ -22315,15 +22383,37 @@ function initEditor() {
   const styleRomanBtn = $('#style-roman-btn');
   const styleItalicBtn = $('#style-italic-btn');
   if (styleRomanBtn && styleItalicBtn) {
+    // Aplica fontStyle respeitando a seleção: se há palavra(s)
+    // selecionada(s), aplica SÓ nelas (igual selectFont); senão, global.
+    const aplicarFontStyle = (val) => {
+      const temSelecao = (typeof selectedWordIds !== 'undefined'
+        && selectedWordIds && selectedWordIds.size > 0);
+      if (temSelecao) {
+        const ids = [...selectedWordIds];
+        // Garante que cada palavra esteja free ANTES (mede centro atual,
+        // não acumula) — itálico muda a largura e descentralizaria.
+        ids.forEach(wid => {
+          if (typeof ensureWordIsFree === 'function') ensureWordIsFree(wid);
+        });
+        // null = volta ao normal/herda (não crava 'normal' à toa)
+        setMultiStyleOverride(ids, 'fontStyle', val === 'italic' ? 'italic' : null);
+        // Re-centraliza cada linha afetada (corrige buraco/deslocamento)
+        if (typeof reflowLinhasDasPalavras === 'function') {
+          reflowLinhasDasPalavras(ids);
+        }
+      } else {
+        engine.setStyle({ fontStyle: val });
+      }
+    };
     styleRomanBtn.addEventListener('click', () => {
       styleRomanBtn.classList.add('active');
       styleItalicBtn.classList.remove('active');
-      engine.setStyle({ fontStyle: 'normal' });
+      aplicarFontStyle('normal');
     });
     styleItalicBtn.addEventListener('click', () => {
       styleItalicBtn.classList.add('active');
       styleRomanBtn.classList.remove('active');
-      engine.setStyle({ fontStyle: 'italic' });
+      aplicarFontStyle('italic');
     });
   }
 
