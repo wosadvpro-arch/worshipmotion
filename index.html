@@ -5416,11 +5416,11 @@ Digno de toda honra"></textarea>
         <div class="panel-section">
           <div class="panel-section-title">Caixa</div>
           <div class="text-case-grid">
-            <button class="text-case-btn active" data-case="none" title="Como digitou">
+            <button class="text-case-btn" data-case="none" title="Como digitou">
               <span class="text-case-sample">Ab</span>
               <span class="text-case-label">Original</span>
             </button>
-            <button class="text-case-btn" data-case="uppercase" title="Tudo maiúscula">
+            <button class="text-case-btn active" data-case="uppercase" title="Tudo maiúscula">
               <span class="text-case-sample">AB</span>
               <span class="text-case-label">MAIÚSCULAS</span>
             </button>
@@ -15880,7 +15880,7 @@ class RenderEngineV2 {
       shadowOffsetX: 4,            // px de offset horizontal
       shadowOffsetY: 4,            // px de offset vertical
       shadowBlur: 8,               // px de blur
-      textTransform: 'none',
+      textTransform: 'uppercase',
       backgroundType: 'gradient',
       // Estilo das palavras destacadas (emphasized)
       emphasisColor: '#fbbf24',          // cor dourada default
@@ -25038,8 +25038,8 @@ function initEditor() {
       const s = project.style;
       $$('.font-option').forEach(o => o.classList.toggle('selected', o.dataset.font === s.fontFamily));
       if (s.fontSize) { $('#font-size').value = s.fontSize; $('#font-size-val').textContent = s.fontSize; }
-      // Sincroniza botão de caixa ativo
-      const tcase = s.textTransform || 'none';
+      // Sincroniza botão de caixa ativo (padrão = MAIÚSCULAS)
+      const tcase = s.textTransform || 'uppercase';
       $$('.text-case-btn').forEach(b => b.classList.toggle('active', b.dataset.case === tcase));
       $$('.segmented button[data-weight]').forEach(b => b.classList.toggle('active', parseInt(b.dataset.weight) === s.fontWeight));
       $$('#color-swatches .color-swatch').forEach(sw => sw.classList.toggle('selected', sw.dataset.color === s.color));
