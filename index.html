@@ -22354,38 +22354,76 @@ function initEditor() {
   })();
 
   // font size
-  // Tamanho do texto. Comportamento:
-  //  - SEM seleção: escala o slide INTEIRO proporcionalmente. Além do
-  //    fontSize global, escala as posições das palavras free a partir do
-  //    centro (0.5,0.5) pela mesma razão — assim glifo E espaçamento
-  //    crescem juntos e as palavras NÃO se sobrepõem.
-  //  - COM seleção: aumenta só a(s) palavra(s) selecionada(s) via
-  //    fontSizeScale e reflui a linha (não mexe no resto do slide).
-  // Trabalho pesado no 'change' (ao soltar); 'input' só faz preview leve.
+  // Tamanho do texto — com PREVIEW AO VIVO (a mudança aparece enquanto
+  // você arrasta, não só ao soltar). Comportamento por seleção:
+  //  - SEM seleção: escala o slide INTEIRO proporcionalmente (glifo +
+  //    posições das palavras free, a partir do centro) → nada sobrepõe.
+  //  - COM seleção: aumenta só a(s) palavra(s) selecionada(s).
+  // Durante o arraste (input) mexemos direto no DOM (leve, sem piscar);
+  // ao soltar (change) gravamos nos overrides e reflui (caso seleção).
   if (typeof window.__lastFontSize !== 'number') window.__lastFontSize = parseInt($('#font-size').value, 10) || 64;
+  let _fsDragBase = null;        // fontSize no início do arraste
+  let _fsSelBaseScales = null;   // fontSizeScale base de cada palavra selecionada
+
+  const _fsTemSelecao = () => (typeof selectedWordIds !== 'undefined'
+    && selectedWordIds && selectedWordIds.size > 0);
+
   $('#font-size').addEventListener('input', e => {
     const v = parseInt(e.target.value, 10);
     $('#font-size-val').textContent = v;
-    // Só atualiza o número durante o arraste. O ajuste real (proporcional
-    // ou por seleção) acontece no 'change' (ao soltar), pra calcular a
-    // razão a partir do tamanho ANTERIOR sem que o preview a zere.
+    const stz = (typeof getStanzaEl === 'function') ? getStanzaEl() : null;
+    if (!stz) return;
+
+    if (_fsTemSelecao()) {
+      // Início do arraste: garante free e captura escalas-base.
+      if (_fsSelBaseScales === null) {
+        _fsSelBaseScales = {};
+        [...selectedWordIds].forEach(wid => {
+          if (typeof ensureWordIsFree === 'function') ensureWordIsFree(wid);
+          const wo = engine.wordOverrides[wid] || {};
+          _fsSelBaseScales[wid] = (wo.style && wo.style.fontSizeScale) || 1;
+        });
+      }
+      const globalFs = (engine.style && engine.style.fontSize) || 64;
+      const alvoScale = Math.max(0.2, v / globalFs);
+      // Preview: muda o fontSize do elemento direto (em). Sem recriar.
+      Object.keys(_fsSelBaseScales).forEach(wid => {
+        const el = stz.querySelector(`.lyric-word[data-word-id="${wid}"]`);
+        if (el) el.style.fontSize = alvoScale + 'em';
+      });
+    } else {
+      // Início do arraste: captura o tamanho base.
+      if (_fsDragBase === null) _fsDragBase = window.__lastFontSize || v;
+      const ratio = (_fsDragBase > 0) ? (v / _fsDragBase) : 1;
+      // Glifo ao vivo (não recria): aplica fontSize no stanza.
+      engine.setStyle({ fontSize: v });
+      // Posições free ao vivo: mexe no left/top do DOM a partir do centro,
+      // usando a posição BASE (override salvo) × ratio — não acumula.
+      stz.querySelectorAll('.lyric-word').forEach(el => {
+        const wid = el.dataset.wordId;
+        const wo = engine.wordOverrides[wid];
+        if (wo && wo.position) {
+          const nx = 0.5 + (wo.position.x - 0.5) * ratio;
+          const ny = 0.5 + (wo.position.y - 0.5) * ratio;
+          el.style.left = (nx * 100).toFixed(3) + '%';
+          el.style.top = (ny * 100).toFixed(3) + '%';
+        }
+      });
+    }
   });
+
   $('#font-size').addEventListener('change', e => {
     const v = parseInt(e.target.value, 10);
     $('#font-size-val').textContent = v;
-    const temSelecao = (typeof selectedWordIds !== 'undefined'
-      && selectedWordIds && selectedWordIds.size > 0);
 
-    if (temSelecao) {
-      // Escala SÓ as selecionadas. fontSizeScale é relativo ao fontSize
-      // global atual: alvoPx / globalPx. Reflui a linha pra não sobrepor.
-      const ids = [...selectedWordIds];
+    if (_fsTemSelecao() && _fsSelBaseScales !== null) {
+      // Commit: grava fontSizeScale final nas selecionadas e reflui linha.
+      const ids = Object.keys(_fsSelBaseScales);
       const globalFs = (engine.style && engine.style.fontSize) || 64;
-      const scale = Math.max(0.2, v / globalFs);
-      ids.forEach(wid => { if (typeof ensureWordIsFree === 'function') ensureWordIsFree(wid); });
+      const alvoScale = Math.max(0.2, v / globalFs);
       ids.forEach(wid => {
         const wo = engine.wordOverrides[wid] || {};
-        const ns = { ...(wo.style || {}), fontSizeScale: scale };
+        const ns = { ...(wo.style || {}), fontSizeScale: alvoScale };
         engine.setWordOverride(wid, { style: ns });
       });
       engine.renderStanza(engine.currentStanzaIndex);
@@ -22397,18 +22435,16 @@ function initEditor() {
         if (typeof updateSelectionBox === 'function') updateSelectionBox();
       });
     } else {
-      // Proporcional global: escala posições free a partir do centro pela
-      // razão entre o novo tamanho e o ANTERIOR (capturado no último
-      // change/carregamento), depois aplica o novo fontSize.
-      const prev = window.__lastFontSize || v;
-      const ratio = (prev > 0) ? (v / prev) : 1;
+      // Commit proporcional global: grava as posições escaladas nos overrides.
+      const base = (_fsDragBase !== null) ? _fsDragBase : (window.__lastFontSize || v);
+      const ratio = (base > 0) ? (v / base) : 1;
       if (ratio !== 1 && engine.wordOverrides) {
         Object.keys(engine.wordOverrides).forEach(wid => {
           const wo = engine.wordOverrides[wid];
           if (wo && wo.position) {
-            wo.position.x = 0.5 + (wo.position.x - 0.5) * ratio;
-            wo.position.y = 0.5 + (wo.position.y - 0.5) * ratio;
-            engine.setWordOverride(wid, { position: { x: wo.position.x, y: wo.position.y } });
+            const nx = 0.5 + (wo.position.x - 0.5) * ratio;
+            const ny = 0.5 + (wo.position.y - 0.5) * ratio;
+            engine.setWordOverride(wid, { position: { x: nx, y: ny } });
           }
         });
       }
@@ -22421,6 +22457,8 @@ function initEditor() {
       });
     }
     window.__lastFontSize = v;
+    _fsDragBase = null;
+    _fsSelBaseScales = null;
     markDirty();
   });
 
