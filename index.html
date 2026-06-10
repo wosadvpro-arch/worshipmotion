@@ -20023,14 +20023,31 @@ function initEditor() {
 
 
   document.addEventListener('keydown', (ev) => {
-    // Ignora se está em input/textarea/contenteditable
+    // Ignora se está em input/textarea/contenteditable — COM uma exceção:
+    // a caixa de letra (#lyrics-input). O foco costuma ficar "preso" nela
+    // depois que o usuário digita a letra; aí, ao editar palavras no canvas
+    // e apertar Ctrl+Z, o navegador fazia o "desfazer nativo" da caixa e
+    // APAGAVA a letra inteira (bug relatado). Então: se o foco está na
+    // caixa de letra mas o usuário NÃO está digitando nela agora (sem
+    // input recente), deixamos o APP tratar o Ctrl+Z (desfaz a edição de
+    // palavra) em vez do nativo. Se ele acabou de digitar na caixa, o
+    // desfazer nativo continua valendo normalmente.
     const target = ev.target;
+    const ctrlKeyDown = ev.ctrlKey || ev.metaKey;
+    const ehUndoRedo = ctrlKeyDown && (ev.key === 'z' || ev.key === 'Z' || ev.key === 'y' || ev.key === 'Y');
+    const ehCaixaLetra = target && target.id === 'lyrics-input';
+    const digitouAgora = (Date.now() - (window.__lastLyricsTyping || 0)) < 1500;
+
     if (target && (
       target.tagName === 'INPUT' ||
       target.tagName === 'TEXTAREA' ||
       target.isContentEditable
     )) {
-      return;
+      // Exceção: Ctrl+Z/Y na caixa de letra SEM digitação recente → o app
+      // trata (protege a letra do desfazer nativo). Demais casos: cede.
+      if (!(ehUndoRedo && ehCaixaLetra && !digitouAgora)) {
+        return;
+      }
     }
     // Ignora se não está na página editor
     if (!document.querySelector('.lyric-stanza')) return;
@@ -24955,6 +24972,7 @@ function initEditor() {
   const _liveLyricsInput = $('#lyrics-input');
   if (_liveLyricsInput) {
     _liveLyricsInput.addEventListener('input', () => {
+      window.__lastLyricsTyping = Date.now(); // marca digitação ativa na caixa
       if (_liveLyricsTimer) clearTimeout(_liveLyricsTimer);
       _liveLyricsTimer = setTimeout(() => {
         _liveLyricsTimer = null;
