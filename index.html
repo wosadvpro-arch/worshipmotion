@@ -22354,10 +22354,74 @@ function initEditor() {
   })();
 
   // font size
+  // Tamanho do texto. Comportamento:
+  //  - SEM seleção: escala o slide INTEIRO proporcionalmente. Além do
+  //    fontSize global, escala as posições das palavras free a partir do
+  //    centro (0.5,0.5) pela mesma razão — assim glifo E espaçamento
+  //    crescem juntos e as palavras NÃO se sobrepõem.
+  //  - COM seleção: aumenta só a(s) palavra(s) selecionada(s) via
+  //    fontSizeScale e reflui a linha (não mexe no resto do slide).
+  // Trabalho pesado no 'change' (ao soltar); 'input' só faz preview leve.
+  if (typeof window.__lastFontSize !== 'number') window.__lastFontSize = parseInt($('#font-size').value, 10) || 64;
   $('#font-size').addEventListener('input', e => {
     const v = parseInt(e.target.value, 10);
     $('#font-size-val').textContent = v;
-    engine.setStyle({ fontSize: v });
+    // Só atualiza o número durante o arraste. O ajuste real (proporcional
+    // ou por seleção) acontece no 'change' (ao soltar), pra calcular a
+    // razão a partir do tamanho ANTERIOR sem que o preview a zere.
+  });
+  $('#font-size').addEventListener('change', e => {
+    const v = parseInt(e.target.value, 10);
+    $('#font-size-val').textContent = v;
+    const temSelecao = (typeof selectedWordIds !== 'undefined'
+      && selectedWordIds && selectedWordIds.size > 0);
+
+    if (temSelecao) {
+      // Escala SÓ as selecionadas. fontSizeScale é relativo ao fontSize
+      // global atual: alvoPx / globalPx. Reflui a linha pra não sobrepor.
+      const ids = [...selectedWordIds];
+      const globalFs = (engine.style && engine.style.fontSize) || 64;
+      const scale = Math.max(0.2, v / globalFs);
+      ids.forEach(wid => { if (typeof ensureWordIsFree === 'function') ensureWordIsFree(wid); });
+      ids.forEach(wid => {
+        const wo = engine.wordOverrides[wid] || {};
+        const ns = { ...(wo.style || {}), fontSizeScale: scale };
+        engine.setWordOverride(wid, { style: ns });
+      });
+      engine.renderStanza(engine.currentStanzaIndex);
+      if (typeof engine.killAllAnimations === 'function') { try { engine.killAllAnimations(); } catch (e2) {} }
+      requestAnimationFrame(() => {
+        const stz = (typeof getStanzaEl === 'function') ? getStanzaEl() : null;
+        if (stz) stz.querySelectorAll('.lyric-word').forEach(el => { el.style.opacity = '1'; el.style.animation = 'none'; });
+        if (typeof reflowLinhasDasPalavras === 'function') reflowLinhasDasPalavras(ids);
+        if (typeof updateSelectionBox === 'function') updateSelectionBox();
+      });
+    } else {
+      // Proporcional global: escala posições free a partir do centro pela
+      // razão entre o novo tamanho e o ANTERIOR (capturado no último
+      // change/carregamento), depois aplica o novo fontSize.
+      const prev = window.__lastFontSize || v;
+      const ratio = (prev > 0) ? (v / prev) : 1;
+      if (ratio !== 1 && engine.wordOverrides) {
+        Object.keys(engine.wordOverrides).forEach(wid => {
+          const wo = engine.wordOverrides[wid];
+          if (wo && wo.position) {
+            wo.position.x = 0.5 + (wo.position.x - 0.5) * ratio;
+            wo.position.y = 0.5 + (wo.position.y - 0.5) * ratio;
+            engine.setWordOverride(wid, { position: { x: wo.position.x, y: wo.position.y } });
+          }
+        });
+      }
+      engine.setStyle({ fontSize: v });
+      engine.renderStanza(engine.currentStanzaIndex);
+      if (typeof engine.killAllAnimations === 'function') { try { engine.killAllAnimations(); } catch (e2) {} }
+      requestAnimationFrame(() => {
+        const stz = (typeof getStanzaEl === 'function') ? getStanzaEl() : null;
+        if (stz) stz.querySelectorAll('.lyric-word').forEach(el => { el.style.opacity = '1'; el.style.animation = 'none'; });
+      });
+    }
+    window.__lastFontSize = v;
+    markDirty();
   });
 
   // Text case (text-transform)
@@ -22375,7 +22439,17 @@ function initEditor() {
     btn.addEventListener('click', () => {
       const w = parseInt(btn.dataset.weight, 10);
       $$('.segmented button[data-weight]').forEach(b => b.classList.toggle('active', b === btn));
-      engine.setStyle({ fontWeight: w });
+      const temSelecao = (typeof selectedWordIds !== 'undefined'
+        && selectedWordIds && selectedWordIds.size > 0);
+      if (temSelecao) {
+        const ids = [...selectedWordIds];
+        // Peso muda a largura → garante free antes e reflui a linha depois
+        ids.forEach(wid => { if (typeof ensureWordIsFree === 'function') ensureWordIsFree(wid); });
+        setMultiStyleOverride(ids, 'fontWeight', w);
+        if (typeof reflowLinhasDasPalavras === 'function') reflowLinhasDasPalavras(ids);
+      } else {
+        engine.setStyle({ fontWeight: w });
+      }
     });
   });
 
@@ -25127,7 +25201,7 @@ function initEditor() {
       // sincroniza UI dos controles de estilo
       const s = project.style;
       $$('.font-option').forEach(o => o.classList.toggle('selected', o.dataset.font === s.fontFamily));
-      if (s.fontSize) { $('#font-size').value = s.fontSize; $('#font-size-val').textContent = s.fontSize; }
+      if (s.fontSize) { $('#font-size').value = s.fontSize; $('#font-size-val').textContent = s.fontSize; window.__lastFontSize = s.fontSize; }
       // Sincroniza botão de caixa ativo (padrão = MAIÚSCULAS)
       const tcase = s.textTransform || 'uppercase';
       $$('.text-case-btn').forEach(b => b.classList.toggle('active', b.dataset.case === tcase));
