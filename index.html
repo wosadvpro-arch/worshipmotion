@@ -19768,6 +19768,25 @@ function initEditor() {
     isUndoingOrRedoing = true;
     try {
       deserializeEngineState(snap.json);
+
+      // Mantém a CAIXA DE LETRA (painel esquerdo) sincronizada com o
+      // estado restaurado. Sem isto, o canvas voltava pro estado antigo
+      // mas a caixa ficava descasada/vazia — dava a impressão de que a
+      // letra "sumia" ao dar Ctrl+Z. Reconstrói o texto a partir do
+      // parsed restaurado (estrofes separadas por linha em branco).
+      try {
+        const inp = document.getElementById('lyrics-input');
+        if (inp && engine.parsed && Array.isArray(engine.parsed.stanzas)) {
+          const txt = engine.parsed.stanzas.map(st =>
+            (st.lines || []).map(ln =>
+              (ln.words || []).map(w => w.text).join(' ')
+            ).join('\n')
+          ).join('\n\n');
+          // Só atualiza se realmente mudou (evita mexer no cursor à toa)
+          if (txt.trim() && inp.value !== txt) inp.value = txt;
+        }
+      } catch (eLyr) {}
+
       const targetIdx = Math.min(snap.currentStanzaIndex || 0, engine.parsed.stanzas.length - 1);
       engine.currentStanzaIndex = Math.max(0, targetIdx);
 
