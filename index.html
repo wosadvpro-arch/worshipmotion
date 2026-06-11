@@ -20414,12 +20414,25 @@ function initEditor() {
       lsSliderEl.addEventListener('input', e => {
         const em = parseInt(e.target.value, 10) / 100;
         lsValEl.textContent = em.toFixed(2) + 'em';
-        // PREVIEW LEVE no DOM (não reconstrói o painel — ver acima).
-        const stz = (typeof getStanzaEl === 'function') ? getStanzaEl() : null;
-        if (stz) wordIds.forEach(wid => {
-          const el = stz.querySelector(`.lyric-word[data-word-id="${wid}"]`);
-          if (el) el.style.letterSpacing = em + 'em';
+        // PREVIEW: grava override + re-renderiza o CANVAS + reflui a linha
+        // (letterSpacing alarga a palavra; sem reflow elas SOBREPÕEM).
+        // Não chama renderWordPanel, então o slider em arraste não é
+        // recriado.
+        wordIds.forEach(wid => {
+          if (typeof ensureWordIsFree === 'function') ensureWordIsFree(wid);
+          const wo = engine.wordOverrides[wid] || {};
+          const ns = { ...(wo.style || {}), letterSpacing: em };
+          engine.setWordOverride(wid, { style: ns });
         });
+        engine.renderStanza(engine.currentStanzaIndex);
+        if (typeof engine.killAllAnimations === 'function') { try { engine.killAllAnimations(); } catch (e2) {} }
+        const stz = (typeof getStanzaEl === 'function') ? getStanzaEl() : null;
+        if (stz) stz.querySelectorAll('.lyric-word').forEach(el => {
+          el.style.opacity = '1'; el.style.animation = 'none';
+          el.classList.toggle('is-word-selected', selectedWordIds.has(el.dataset.wordId));
+        });
+        if (typeof reflowLinhasDasPalavras === 'function') reflowLinhasDasPalavras(wordIds);
+        if (typeof markDirty === 'function') markDirty();
       });
       lsSliderEl.addEventListener('change', e => {
         const em = parseInt(e.target.value, 10) / 100;
@@ -22739,7 +22752,7 @@ function initEditor() {
     outlineSlider.addEventListener('input', e => {
       const v = parseFloat(e.target.value);
       $('#outline-val').textContent = v;
-      aplicarEstiloSensivel('outline', v, { leve: true, cssProp: () => {} });
+      aplicarEstiloSensivel('outline', v, { leve: true, afetaLargura: true });
     });
     outlineSlider.addEventListener('change', e => {
       aplicarEstiloSensivel('outline', parseFloat(e.target.value), { afetaLargura: true });
@@ -22822,7 +22835,7 @@ function initEditor() {
     const raw = parseInt(e.target.value, 10);
     const em = raw / 100;
     $('#letter-spacing-val').textContent = `${em.toFixed(2)}em`;
-    aplicarEstiloSensivel('letterSpacing', em, { leve: true, cssProp: (el, val) => { el.style.letterSpacing = val + 'em'; } });
+    aplicarEstiloSensivel('letterSpacing', em, { leve: true, afetaLargura: true });
   });
   $('#letter-spacing').addEventListener('change', e => {
     const em = (parseInt(e.target.value, 10)) / 100;
