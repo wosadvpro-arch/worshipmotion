@@ -20125,6 +20125,33 @@ function initEditor() {
     const ehCaixaLetra = target && target.id === 'lyrics-input';
     const digitouAgora = (Date.now() - (window.__lastLyricsTyping || 0)) < 1500;
 
+    // DIAG TEMPORÁRIO: ao apertar Ctrl+Z/Y, mostra o estado real numa caixa
+    // visível (pra achar por que a letra some). Toque fecha.
+    if (ehUndoRedo) {
+      try {
+        const tag = target ? (target.tagName + (target.id ? '#' + target.id : '')) : 'nenhum';
+        const ehCampo = target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable);
+        const vaiCederNativo = ehCampo && !(ehUndoRedo && ehCaixaLetra && !digitouAgora);
+        const temStanza = !!document.querySelector('.lyric-stanza');
+        const txt = 'DIAG Ctrl+Z (toque fecha)\n'
+          + 'foco: ' + tag + '\n'
+          + 'é campo de texto: ' + ehCampo + '\n'
+          + 'é caixa de letra: ' + ehCaixaLetra + '\n'
+          + 'digitou < 1.5s: ' + digitouAgora + '\n'
+          + '.lyric-stanza existe: ' + temStanza + '\n'
+          + '→ CEDE pro navegador (nativo): ' + (vaiCederNativo || !temStanza);
+        let _d = document.getElementById('wm-undo-diag');
+        if (!_d) {
+          _d = document.createElement('div');
+          _d.id = 'wm-undo-diag';
+          _d.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:99999999;background:#1a0a2a;color:#d8b4fe;font:13px/1.7 monospace;padding:18px 22px;border:3px solid #a855f7;border-radius:12px;white-space:pre;box-shadow:0 20px 60px rgba(0,0,0,0.7);cursor:pointer;';
+          document.body.appendChild(_d);
+          _d.onclick = () => _d.remove();
+        }
+        _d.textContent = txt;
+      } catch (e) {}
+    }
+
     if (target && (
       target.tagName === 'INPUT' ||
       target.tagName === 'TEXTAREA' ||
