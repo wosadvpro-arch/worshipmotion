@@ -21147,6 +21147,17 @@ function initEditor() {
       sizeInput.addEventListener('input', () => {
         const val = parseFloat(sizeInput.value);
         if (sizeDisplay) sizeDisplay.textContent = val.toFixed(2) + '×';
+        // PREVIEW AO VIVO: aplica o tamanho direto no DOM da(s) palavra(s)
+        // enquanto arrasta — leve, instantâneo, sem re-render. O valor
+        // real é persistido no 'change'.
+        const ids = (selectedWordIds && selectedWordIds.size > 0)
+          ? [...selectedWordIds]
+          : (selectedWordId ? [selectedWordId] : []);
+        ids.forEach(wid => {
+          document.querySelectorAll(`.lyric-word[data-word-id="${wid}"]`).forEach(el => {
+            el.style.fontSize = val + 'em';
+          });
+        });
       });
       sizeInput.addEventListener('change', () => {
         const val = parseFloat(sizeInput.value);
@@ -21521,6 +21532,26 @@ function initEditor() {
     $$('.stanza-item').forEach(el => {
       el.classList.toggle('active', parseInt(el.dataset.index, 10) === idx);
     });
+
+    // Sincroniza o slider de TAMANHO com a estrofe atual. Como o tamanho
+    // sem seleção é POR ESTROFE (sceneOverride.style.fontSize), ao trocar
+    // de slide o slider precisa mostrar o tamanho DAQUELA estrofe — senão
+    // ele "trava" no valor anterior (ex: 140) e dá a impressão de que o
+    // tamanho vazou pro slide seguinte.
+    try {
+      const fsSlider = document.getElementById('font-size');
+      const fsVal = document.getElementById('font-size-val');
+      if (fsSlider && engine.parsed && engine.parsed.stanzas[idx]) {
+        const sid = engine.parsed.stanzas[idx].id;
+        const ov = (engine.sceneOverrides[sid] && engine.sceneOverrides[sid].style) || {};
+        const efetivo = (typeof ov.fontSize === 'number')
+          ? ov.fontSize
+          : ((engine.style && engine.style.fontSize) || 64);
+        fsSlider.value = efetivo;
+        if (fsVal) fsVal.textContent = efetivo;
+        window.__lastFontSize = efetivo;
+      }
+    } catch (e) {}
 
     // continua função original
     // Atualiza o indicador discreto "SLIDE N de M" no preview. Chamado
@@ -22557,10 +22588,13 @@ function initEditor() {
       markDirty();
     } else {
       const ratio = (_fsDragBase > 0) ? (v / _fsDragBase) : 1;
-      // Glifo ao vivo (não recria): aplica fontSize no stanza.
-      engine.setStyle({ fontSize: v });
-      // Posições free ao vivo: mexe no left/top do DOM a partir do centro,
-      // usando a posição BASE (override salvo) × ratio — não acumula.
+      // SEM seleção = afeta SÓ a estrofe atual (não vaza pros outros
+      // slides). Preview ao vivo: muda o fontSize do elemento da estrofe
+      // direto (não mexe no global). O commit grava no sceneOverride.
+      const refH = (typeof stz.getBoundingClientRect === 'function')
+        ? stz.getBoundingClientRect().height : 0;
+      stz.style.fontSize = v + 'px';
+      // Posições free ao vivo: escala a partir do centro pela razão.
       stz.querySelectorAll('.lyric-word').forEach(el => {
         const wid = el.dataset.wordId;
         const wo = engine.wordOverrides[wid];
@@ -22599,12 +22633,18 @@ function initEditor() {
       // alvo da PALAVRA, não o tamanho global. Atualizar corromperia a
       // base do próximo arraste global.
     } else if (_fsDragBase !== null) {
-      // Foi arraste SEM seleção (global proporcional): grava as posições
-      // free escaladas e aplica o fontSize global.
+      // SEM seleção = afeta SÓ a estrofe atual. Grava fontSize no
+      // sceneOverride DESTA estrofe (não no global → não vaza pros outros
+      // slides). As posições free também escalam proporcionalmente.
       const base = _fsDragBase;
       const ratio = (base > 0) ? (v / base) : 1;
       if (ratio !== 1 && engine.wordOverrides) {
-        Object.keys(engine.wordOverrides).forEach(wid => {
+        // Só escala posições das palavras DESTA estrofe.
+        const stzEl = (typeof getStanzaEl === 'function') ? getStanzaEl() : null;
+        const idsDaEstrofe = stzEl
+          ? [...stzEl.querySelectorAll('.lyric-word')].map(el => el.dataset.wordId)
+          : Object.keys(engine.wordOverrides);
+        idsDaEstrofe.forEach(wid => {
           const wo = engine.wordOverrides[wid];
           if (wo && wo.position) {
             const nx = 0.5 + (wo.position.x - 0.5) * ratio;
@@ -22613,14 +22653,20 @@ function initEditor() {
           }
         });
       }
-      engine.setStyle({ fontSize: v });
+      // Grava o fontSize no override DA ESTROFE atual (não no global).
+      const stanzaId = engine.parsed && engine.parsed.stanzas[engine.currentStanzaIndex]
+        && engine.parsed.stanzas[engine.currentStanzaIndex].id;
+      if (stanzaId && typeof engine.setSceneOverride === 'function') {
+        const cur = (engine.sceneOverrides[stanzaId] && engine.sceneOverrides[stanzaId].style) || {};
+        engine.setSceneOverride(stanzaId, { style: { ...cur, fontSize: v } });
+      }
       engine.renderStanza(engine.currentStanzaIndex);
       if (typeof engine.killAllAnimations === 'function') { try { engine.killAllAnimations(); } catch (e2) {} }
       requestAnimationFrame(() => {
         const stz = (typeof getStanzaEl === 'function') ? getStanzaEl() : null;
         if (stz) stz.querySelectorAll('.lyric-word').forEach(el => { el.style.opacity = '1'; el.style.animation = 'none'; });
       });
-      window.__lastFontSize = v;
+      // NÃO atualiza window.__lastFontSize global — é por estrofe agora.
     }
     // else: 'change' espúrio (sem arraste real, ex: blur) — ignora tudo.
     _fsDragBase = null;
