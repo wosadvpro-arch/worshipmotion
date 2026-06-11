@@ -16430,6 +16430,20 @@ class RenderEngineV2 {
             textShadows.push(`0 0 ${gp * 1.5}px ${gc}`);
             textShadows.push(`0 0 ${gp * 0.6}px ${gc}`);
           }
+          // OUTLINE (contorno) por palavra — 8 direções, igual ao stanza.
+          // Vai no MESMO text-shadow do glow/shadow (não dá pra usar o
+          // outline do stanza, que ocupa o text-shadow da estrofe inteira).
+          if (typeof ws.outline === 'number' && ws.outline > 0) {
+            const ow = ws.outline;
+            const oc = ws.outlineColor || '#000000';
+            const steps = 8;
+            for (let i = 0; i < steps; i++) {
+              const angle = (i / steps) * Math.PI * 2;
+              const dx = (Math.cos(angle) * ow).toFixed(2);
+              const dy = (Math.sin(angle) * ow).toFixed(2);
+              textShadows.push(`${dx}px ${dy}px 0 ${oc}`);
+            }
+          }
           if (hasShadow) {
             const sox = ws.shadowOffsetX || 0;
             const soy = ws.shadowOffsetY || 0;
@@ -20375,10 +20389,21 @@ function initEditor() {
       sizeSlider.addEventListener('input', e => {
         const pct = parseInt(e.target.value, 10);
         sizeVal.textContent = pct + '%';
+        // PREVIEW LEVE no DOM — NÃO reconstrói o painel (senão o próprio
+        // slider que está sendo arrastado seria recriado e o arraste
+        // quebraria). O commit (que reconstrói) fica no 'change'.
+        const stz = (typeof getStanzaEl === 'function') ? getStanzaEl() : null;
+        if (stz) wordIds.forEach(wid => {
+          const el = stz.querySelector(`.lyric-word[data-word-id="${wid}"]`);
+          if (el) el.style.fontSize = (pct / 100) + 'em';
+        });
       });
       sizeSlider.addEventListener('change', e => {
         const pct = parseInt(e.target.value, 10);
+        // Commit: tamanho muda largura → free + override + reflui.
+        wordIds.forEach(id => { if (typeof ensureWordIsFree === 'function') ensureWordIsFree(id); });
         setMultiStyleOverride(wordIds, 'fontSizeScale', pct === 100 ? null : pct / 100);
+        if (typeof reflowLinhasDasPalavras === 'function') reflowLinhasDasPalavras(wordIds);
       });
     }
 
@@ -20389,10 +20414,18 @@ function initEditor() {
       lsSliderEl.addEventListener('input', e => {
         const em = parseInt(e.target.value, 10) / 100;
         lsValEl.textContent = em.toFixed(2) + 'em';
+        // PREVIEW LEVE no DOM (não reconstrói o painel — ver acima).
+        const stz = (typeof getStanzaEl === 'function') ? getStanzaEl() : null;
+        if (stz) wordIds.forEach(wid => {
+          const el = stz.querySelector(`.lyric-word[data-word-id="${wid}"]`);
+          if (el) el.style.letterSpacing = em + 'em';
+        });
       });
       lsSliderEl.addEventListener('change', e => {
         const em = parseInt(e.target.value, 10) / 100;
+        wordIds.forEach(id => { if (typeof ensureWordIsFree === 'function') ensureWordIsFree(id); });
         setMultiStyleOverride(wordIds, 'letterSpacing', em);
+        if (typeof reflowLinhasDasPalavras === 'function') reflowLinhasDasPalavras(wordIds);
       });
     }
 
@@ -22410,22 +22443,28 @@ function initEditor() {
     const stz = (typeof getStanzaEl === 'function') ? getStanzaEl() : null;
     if (!stz) return;
 
-    if (_fsTemSelecao()) {
-      // Início do arraste: garante free e captura escalas-base.
-      if (_fsSelBaseScales === null) {
+    // Decide o modo do arraste UMA vez, no primeiro 'input', e mantém até
+    // o 'change' resetar. Assim, se a seleção mudar no meio (ex: setas de
+    // navegação mexendo no slider focado), o modo NÃO troca pra global no
+    // meio do caminho — o que estourava o tamanho de todos os slides.
+    if (_fsSelBaseScales === null && _fsDragBase === null) {
+      if (_fsTemSelecao()) {
         _fsSelBaseScales = {};
         [...selectedWordIds].forEach(wid => {
           if (typeof ensureWordIsFree === 'function') ensureWordIsFree(wid);
           const wo = engine.wordOverrides[wid] || {};
           _fsSelBaseScales[wid] = (wo.style && wo.style.fontSizeScale) || 1;
         });
+      } else {
+        _fsDragBase = window.__lastFontSize || v;
       }
+    }
+
+    if (_fsSelBaseScales !== null) {
       const globalFs = (engine.style && engine.style.fontSize) || 64;
       const alvoScale = Math.max(0.2, v / globalFs);
       // Preview no DOM (instantâneo) E grava o override JÁ AQUI — não
-      // depende do evento 'change' (que nem sempre dispara de forma
-      // confiável; quando não disparava, o tamanho sumia no próximo
-      // render). Assim o fontSizeScale fica SEMPRE persistido.
+      // depende do 'change'. Usa os ids capturados no início do arraste.
       Object.keys(_fsSelBaseScales).forEach(wid => {
         const el = stz.querySelector(`.lyric-word[data-word-id="${wid}"]`);
         if (el) el.style.fontSize = alvoScale + 'em';
@@ -22435,8 +22474,6 @@ function initEditor() {
       });
       markDirty();
     } else {
-      // Início do arraste: captura o tamanho base.
-      if (_fsDragBase === null) _fsDragBase = window.__lastFontSize || v;
       const ratio = (_fsDragBase > 0) ? (v / _fsDragBase) : 1;
       // Glifo ao vivo (não recria): aplica fontSize no stanza.
       engine.setStyle({ fontSize: v });
@@ -22459,16 +22496,15 @@ function initEditor() {
     const v = parseInt(e.target.value, 10);
     $('#font-size-val').textContent = v;
 
-    if (_fsTemSelecao() && _fsSelBaseScales !== null) {
-      // Commit: grava fontSizeScale final nas selecionadas e reflui linha.
+    // IMPORTANTE: o caminho é decidido pelo CONTEXTO DO ARRASTE (capturado
+    // no início), NUNCA pela seleção atual. Se decidisse pela seleção
+    // atual, um evento 'change' disparado DEPOIS da seleção ser limpa
+    // (ex: ao navegar de estrofe / clicar fora) caía no caminho global e
+    // estourava o tamanho de TODOS os slides pra 140. Esse era o bug.
+    if (_fsSelBaseScales !== null) {
+      // Foi arraste COM seleção. O fontSizeScale já foi gravado no 'input';
+      // aqui só finaliza (reflui a linha). Usa os ids capturados.
       const ids = Object.keys(_fsSelBaseScales);
-      const globalFs = (engine.style && engine.style.fontSize) || 64;
-      const alvoScale = Math.max(0.2, v / globalFs);
-      ids.forEach(wid => {
-        const wo = engine.wordOverrides[wid] || {};
-        const ns = { ...(wo.style || {}), fontSizeScale: alvoScale };
-        engine.setWordOverride(wid, { style: ns });
-      });
       engine.renderStanza(engine.currentStanzaIndex);
       if (typeof engine.killAllAnimations === 'function') { try { engine.killAllAnimations(); } catch (e2) {} }
       requestAnimationFrame(() => {
@@ -22477,9 +22513,13 @@ function initEditor() {
         if (typeof reflowLinhasDasPalavras === 'function') reflowLinhasDasPalavras(ids);
         if (typeof updateSelectionBox === 'function') updateSelectionBox();
       });
-    } else {
-      // Commit proporcional global: grava as posições escaladas nos overrides.
-      const base = (_fsDragBase !== null) ? _fsDragBase : (window.__lastFontSize || v);
+      // NÃO atualiza window.__lastFontSize: o valor do slider aqui é o
+      // alvo da PALAVRA, não o tamanho global. Atualizar corromperia a
+      // base do próximo arraste global.
+    } else if (_fsDragBase !== null) {
+      // Foi arraste SEM seleção (global proporcional): grava as posições
+      // free escaladas e aplica o fontSize global.
+      const base = _fsDragBase;
       const ratio = (base > 0) ? (v / base) : 1;
       if (ratio !== 1 && engine.wordOverrides) {
         Object.keys(engine.wordOverrides).forEach(wid => {
@@ -22498,8 +22538,9 @@ function initEditor() {
         const stz = (typeof getStanzaEl === 'function') ? getStanzaEl() : null;
         if (stz) stz.querySelectorAll('.lyric-word').forEach(el => { el.style.opacity = '1'; el.style.animation = 'none'; });
       });
+      window.__lastFontSize = v;
     }
-    window.__lastFontSize = v;
+    // else: 'change' espúrio (sem arraste real, ex: blur) — ignora tudo.
     _fsDragBase = null;
     _fsSelBaseScales = null;
     markDirty();
@@ -22572,6 +22613,63 @@ function initEditor() {
     });
   }
 
+  // ===== Helper: aplica um estilo respeitando a SELEÇÃO =====
+  // Se há palavra(s) selecionada(s), aplica o override SÓ nelas; senão,
+  // aplica no slide inteiro (global). Para propriedades que mudam a
+  // LARGURA do texto (afetaLargura=true), garante free + reflui a linha
+  // pra não abrir buraco/sobrepor. `keys` pode ser uma string (mesma
+  // chave no global e no override) ou um objeto {global, word} quando os
+  // nomes diferem. `value` null limpa o override (volta a herdar).
+  //
+  // opts.leve=true → PREVIEW durante arraste de slider: aplica direto no
+  // DOM (cssProp) e no override, SEM reconstruir o painel (afterMultiEdit
+  // reconstrói o painel direito, o que a cada tick deixa pesado/piscando).
+  // Use leve no 'input' e o commit normal (sem leve) no 'change'/clique.
+  function aplicarEstiloSensivel(keys, value, opts) {
+    opts = opts || {};
+    const globalKey = (typeof keys === 'object') ? keys.global : keys;
+    const wordKey = (typeof keys === 'object') ? keys.word : keys;
+    const temSelecao = (typeof selectedWordIds !== 'undefined'
+      && selectedWordIds && selectedWordIds.size > 0);
+    if (temSelecao) {
+      const ids = [...selectedWordIds];
+      if (opts.leve) {
+        // Preview ao vivo: grava override (persiste) + re-renderiza só o
+        // CANVAS (não o painel direito — senão o slider em arraste seria
+        // recriado / o painel piscaria). Restaura opacity pós-render.
+        ids.forEach(wid => {
+          const wo = engine.wordOverrides[wid] || {};
+          const ns = { ...(wo.style || {}) };
+          if (value === null || value === '' || value === undefined) delete ns[wordKey];
+          else ns[wordKey] = value;
+          engine.setWordOverride(wid, { style: ns });
+        });
+        if (opts.afetaLargura) {
+          ids.forEach(wid => { if (typeof ensureWordIsFree === 'function') ensureWordIsFree(wid); });
+        }
+        engine.renderStanza(engine.currentStanzaIndex);
+        if (typeof engine.killAllAnimations === 'function') { try { engine.killAllAnimations(); } catch (e) {} }
+        const stz = (typeof getStanzaEl === 'function') ? getStanzaEl() : null;
+        if (stz) stz.querySelectorAll('.lyric-word').forEach(el => {
+          el.style.opacity = '1'; el.style.animation = 'none';
+          el.classList.toggle('is-word-selected', selectedWordIds.has(el.dataset.wordId));
+        });
+        if (opts.afetaLargura && typeof reflowLinhasDasPalavras === 'function') reflowLinhasDasPalavras(ids);
+        if (typeof markDirty === 'function') markDirty();
+        return;
+      }
+      if (opts.afetaLargura) {
+        ids.forEach(wid => { if (typeof ensureWordIsFree === 'function') ensureWordIsFree(wid); });
+      }
+      setMultiStyleOverride(ids, wordKey, value);
+      if (opts.afetaLargura && typeof reflowLinhasDasPalavras === 'function') {
+        reflowLinhasDasPalavras(ids);
+      }
+    } else {
+      engine.setStyle({ [globalKey]: value });
+    }
+  }
+
   // text color (swatches predefinidos)
   $$('#color-swatches .color-swatch').forEach(sw => {
     // Skip swatch custom (tem handler próprio abaixo)
@@ -22580,7 +22678,7 @@ function initEditor() {
       const c = sw.dataset.color;
       if (!c) return;
       $$('#color-swatches .color-swatch').forEach(s => s.classList.toggle('selected', s === sw));
-      engine.setStyle({ color: c });
+      aplicarEstiloSensivel('color', c);
     });
   });
 
@@ -22596,7 +22694,7 @@ function initEditor() {
       $$('#color-swatches .color-swatch').forEach(s => s.classList.toggle('selected', s === textCustomSwatch));
       textCustomSwatch.style.setProperty('--custom-color', c);
       textCustomSwatch.classList.add('has-color');
-      engine.setStyle({ color: c });
+      aplicarEstiloSensivel('color', c);
     });
   }
 
@@ -22604,7 +22702,10 @@ function initEditor() {
   $('#glow').addEventListener('input', e => {
     const v = parseInt(e.target.value, 10);
     $('#glow-val').textContent = v;
-    engine.setStyle({ glow: v });
+    aplicarEstiloSensivel('glow', v, { leve: true, cssProp: () => {} });
+  });
+  $('#glow').addEventListener('change', e => {
+    aplicarEstiloSensivel('glow', parseInt(e.target.value, 10));
   });
 
   // glow color (swatches predefinidos)
@@ -22614,7 +22715,7 @@ function initEditor() {
       const c = sw.dataset.glowColor;
       if (!c) return;
       $$('#glow-swatches .color-swatch').forEach(s => s.classList.toggle('selected', s === sw));
-      engine.setStyle({ glowColor: c });
+      aplicarEstiloSensivel('glowColor', c);
     });
   });
 
@@ -22628,7 +22729,7 @@ function initEditor() {
       $$('#glow-swatches .color-swatch').forEach(s => s.classList.toggle('selected', s === glowCustomSwatch));
       glowCustomSwatch.style.setProperty('--custom-color', c);
       glowCustomSwatch.classList.add('has-color');
-      engine.setStyle({ glowColor: c });
+      aplicarEstiloSensivel('glowColor', c);
     });
   }
 
@@ -22638,7 +22739,10 @@ function initEditor() {
     outlineSlider.addEventListener('input', e => {
       const v = parseFloat(e.target.value);
       $('#outline-val').textContent = v;
-      engine.setStyle({ outline: v });
+      aplicarEstiloSensivel('outline', v, { leve: true, cssProp: () => {} });
+    });
+    outlineSlider.addEventListener('change', e => {
+      aplicarEstiloSensivel('outline', parseFloat(e.target.value), { afetaLargura: true });
     });
   }
   $$('#outline-swatches .color-swatch').forEach(sw => {
@@ -22647,7 +22751,7 @@ function initEditor() {
       const c = sw.dataset.outlineColor;
       if (!c) return;
       $$('#outline-swatches .color-swatch').forEach(s => s.classList.toggle('selected', s === sw));
-      engine.setStyle({ outlineColor: c });
+      aplicarEstiloSensivel('outlineColor', c);
     });
   });
   const outlineCustomSwatch = $('#outline-swatches .color-swatch-custom');
@@ -22659,7 +22763,7 @@ function initEditor() {
       $$('#outline-swatches .color-swatch').forEach(s => s.classList.toggle('selected', s === outlineCustomSwatch));
       outlineCustomSwatch.style.setProperty('--custom-color', c);
       outlineCustomSwatch.classList.add('has-color');
-      engine.setStyle({ outlineColor: c });
+      aplicarEstiloSensivel('outlineColor', c);
     });
   }
 
@@ -22669,15 +22773,27 @@ function initEditor() {
     shadowSlider.addEventListener('input', e => {
       const v = parseInt(e.target.value, 10);
       $('#shadow-val').textContent = v;
-      engine.setStyle({ shadow: v });
+      aplicarEstiloSensivel({ global: 'shadow', word: 'shadowBlur' }, v, { leve: true, cssProp: () => {} });
+    });
+    shadowSlider.addEventListener('change', e => {
+      aplicarEstiloSensivel({ global: 'shadow', word: 'shadowBlur' }, parseInt(e.target.value, 10));
     });
   }
   const shadowX = $('#shadow-x');
   const shadowY = $('#shadow-y');
   const shadowBlur = $('#shadow-blur');
-  if (shadowX) shadowX.addEventListener('input', e => engine.setStyle({ shadowOffsetX: parseInt(e.target.value, 10) || 0 }));
-  if (shadowY) shadowY.addEventListener('input', e => engine.setStyle({ shadowOffsetY: parseInt(e.target.value, 10) || 0 }));
-  if (shadowBlur) shadowBlur.addEventListener('input', e => engine.setStyle({ shadowBlur: parseInt(e.target.value, 10) || 0 }));
+  if (shadowX) {
+    shadowX.addEventListener('input', e => aplicarEstiloSensivel('shadowOffsetX', parseInt(e.target.value, 10) || 0, { leve: true, cssProp: () => {} }));
+    shadowX.addEventListener('change', e => aplicarEstiloSensivel('shadowOffsetX', parseInt(e.target.value, 10) || 0));
+  }
+  if (shadowY) {
+    shadowY.addEventListener('input', e => aplicarEstiloSensivel('shadowOffsetY', parseInt(e.target.value, 10) || 0, { leve: true, cssProp: () => {} }));
+    shadowY.addEventListener('change', e => aplicarEstiloSensivel('shadowOffsetY', parseInt(e.target.value, 10) || 0));
+  }
+  if (shadowBlur) {
+    shadowBlur.addEventListener('input', e => aplicarEstiloSensivel('shadowBlur', parseInt(e.target.value, 10) || 0, { leve: true, cssProp: () => {} }));
+    shadowBlur.addEventListener('change', e => aplicarEstiloSensivel('shadowBlur', parseInt(e.target.value, 10) || 0));
+  }
 
   $$('#shadow-swatches .color-swatch').forEach(sw => {
     if (sw.classList.contains('color-swatch-custom')) return;
@@ -22685,7 +22801,7 @@ function initEditor() {
       const c = sw.dataset.shadowColor;
       if (!c) return;
       $$('#shadow-swatches .color-swatch').forEach(s => s.classList.toggle('selected', s === sw));
-      engine.setStyle({ shadowColor: c });
+      aplicarEstiloSensivel('shadowColor', c);
     });
   });
   const shadowCustomSwatch = $('#shadow-swatches .color-swatch-custom');
@@ -22697,7 +22813,7 @@ function initEditor() {
       $$('#shadow-swatches .color-swatch').forEach(s => s.classList.toggle('selected', s === shadowCustomSwatch));
       shadowCustomSwatch.style.setProperty('--custom-color', c);
       shadowCustomSwatch.classList.add('has-color');
-      engine.setStyle({ shadowColor: c });
+      aplicarEstiloSensivel('shadowColor', c);
     });
   }
 
@@ -22706,7 +22822,11 @@ function initEditor() {
     const raw = parseInt(e.target.value, 10);
     const em = raw / 100;
     $('#letter-spacing-val').textContent = `${em.toFixed(2)}em`;
-    engine.setStyle({ letterSpacing: em });
+    aplicarEstiloSensivel('letterSpacing', em, { leve: true, cssProp: (el, val) => { el.style.letterSpacing = val + 'em'; } });
+  });
+  $('#letter-spacing').addEventListener('change', e => {
+    const em = (parseInt(e.target.value, 10)) / 100;
+    aplicarEstiloSensivel('letterSpacing', em, { afetaLargura: true });
   });
 
   // line height
@@ -25191,7 +25311,22 @@ function initEditor() {
         return;
       }
     }
-    if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') return;
+    // Campos de texto continuam com prioridade total (digitação/cursor).
+    if (e.target.tagName === 'TEXTAREA') return;
+    if (e.target.tagName === 'INPUT' && e.target.type !== 'range') return;
+    // Sliders (type=range): as SETAS navegam estrofe em vez de mexer no
+    // slider. Sem isto, ao deixar um slider focado (ex: depois de ajustar
+    // o tamanho) a seta incrementava o slider até o máximo por engano —
+    // foi o que estourou o tamanho de todos os slides. Tira o foco do
+    // slider antes de navegar.
+    if (e.target.tagName === 'INPUT' && e.target.type === 'range') {
+      if (e.code === 'ArrowRight' || e.code === 'ArrowLeft') {
+        e.preventDefault();
+        try { e.target.blur(); } catch (_) {}
+      } else {
+        return; // outras teclas (ex: setas cima/baixo) seguem normais
+      }
+    }
     if (e.code === 'Space') { e.preventDefault(); engine.playFull(); }
     if (e.code === 'ArrowRight') { engine.nextStanza(); updateActiveStanzaInList(engine.currentStanzaIndex); updateActiveTimelineClip(engine.currentStanzaIndex); }
     if (e.code === 'ArrowLeft')  { engine.prevStanza(); updateActiveStanzaInList(engine.currentStanzaIndex); updateActiveTimelineClip(engine.currentStanzaIndex); }
