@@ -1555,8 +1555,10 @@ body.wm-recording-mode::after {
 .editor-canvas-wrap {
   position: relative;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: var(--space-3);
   padding: var(--space-8);
   background:
     radial-gradient(circle at 30% 20%, rgba(139, 92, 246, 0.06), transparent 50%),
@@ -1564,6 +1566,29 @@ body.wm-recording-mode::after {
     var(--bg-base);
   overflow: hidden;
 }
+
+/* ===== BARRA CONTEXTUAL (estilo Canva) — Etapa 1 ===== */
+.ctx-toolbar {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--bg-surface, #111118);
+  border: 1px solid var(--border-default, rgba(255,255,255,0.08));
+  border-radius: 12px; padding: 6px 8px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.35);
+  flex: 0 0 auto; z-index: 5; max-width: 100%;
+  flex-wrap: wrap; justify-content: center;
+}
+.ctx-scope { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-dim, #7a8499); padding: 0 6px; white-space: nowrap; }
+.ctx-scope-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent, #8b5cf6); display: inline-block; }
+.ctx-sep { width: 1px; height: 20px; background: var(--border-default, rgba(255,255,255,0.1)); }
+.ctx-font { height: 30px; font-size: 12px; padding: 0 6px; min-width: 110px; background: var(--bg-base, #0a0a0f); color: var(--text, #e8e8ee); border: 1px solid var(--border-default, rgba(255,255,255,0.1)); border-radius: 8px; }
+.ctx-btn { height: 30px; min-width: 30px; padding: 0 8px; display: inline-flex; align-items: center; justify-content: center; background: transparent; color: var(--text, #e8e8ee); border: 1px solid var(--border-default, rgba(255,255,255,0.1)); border-radius: 8px; font-size: 13px; cursor: pointer; transition: background 0.15s, border-color 0.15s; }
+.ctx-btn:hover { background: rgba(255,255,255,0.06); }
+.ctx-btn.active { background: var(--accent, #8b5cf6); border-color: var(--accent, #8b5cf6); color: #fff; }
+.ctx-mini { min-width: 26px; height: 26px; padding: 0; font-size: 14px; border-radius: 6px; }
+.ctx-stepper { display: inline-flex; align-items: center; gap: 3px; border: 1px solid var(--border-default, rgba(255,255,255,0.1)); border-radius: 8px; padding: 2px; }
+.ctx-stepper .ctx-mini { border: none; }
+.ctx-val { font-size: 12px; min-width: 26px; text-align: center; color: var(--text, #e8e8ee); }
+.ctx-color-dot { width: 16px; height: 16px; border-radius: 50%; background: #ffffff; display: block; border: 1px solid rgba(255,255,255,0.3); }
 
 /* Quando o painel de marcação está ABERTO (70vh fixo embaixo), o
    conteúdo principal precisa recuar pra cima — senão o slide/preview
@@ -5314,6 +5339,29 @@ Digno de toda honra"></textarea>
 
   
   <main class="editor-canvas-wrap">
+    <!-- BARRA CONTEXTUAL (estilo Canva) — Etapa 1. Aparece no topo,
+         muda conforme o que está selecionado (palavra ou slide). Aciona
+         a MESMA lógica das abas (selectFont, aplicarEstiloSensivel, etc).
+         As abas antigas continuam embaixo como rede de segurança. -->
+    <div class="ctx-toolbar" id="ctx-toolbar">
+      <span class="ctx-scope" id="ctx-scope"><i class="ctx-scope-dot"></i><span id="ctx-scope-label">Slide</span></span>
+      <span class="ctx-sep"></span>
+      <select class="ctx-font" id="ctx-font" title="Fonte"></select>
+      <button class="ctx-btn" id="ctx-bold" title="Negrito" style="font-weight:700;">B</button>
+      <button class="ctx-btn" id="ctx-italic" title="Itálico" style="font-style:italic;">I</button>
+      <span class="ctx-sep"></span>
+      <div class="ctx-stepper" title="Tamanho">
+        <button class="ctx-btn ctx-mini" id="ctx-size-minus">−</button>
+        <span class="ctx-val" id="ctx-size-val">64</span>
+        <button class="ctx-btn ctx-mini" id="ctx-size-plus">+</button>
+      </div>
+      <div class="ctx-stepper" title="Espaçamento entre letras">
+        <button class="ctx-btn ctx-mini" id="ctx-ls-minus"><i style="font-style:normal;">A‹›</i></button>
+        <span class="ctx-val" id="ctx-ls-val">0</span>
+        <button class="ctx-btn ctx-mini" id="ctx-ls-plus">+</button>
+      </div>
+      <button class="ctx-btn ctx-color" id="ctx-color" title="Cor"><span class="ctx-color-dot" id="ctx-color-dot"></span></button>
+    </div>
     <div class="editor-canvas" id="editor-canvas">
       <div class="canvas-bg" id="canvas-bg"></div>
       <div class="canvas-content" id="canvas-content">
@@ -20655,7 +20703,145 @@ function initEditor() {
     return `${s.toFixed(1)}× lento`;
   }
 
+  // ===== BARRA CONTEXTUAL (Etapa 1) =====
+  // Liga a barra do topo à MESMA lógica das abas. Não duplica handlers
+  // pesados: aciona selectFont / aplicarEstiloSensivel / os botões
+  // originais de peso e itálico. Sincroniza com a seleção atual.
+  function _ctxTemSelecao() {
+    return (typeof selectedWordIds !== 'undefined' && selectedWordIds && selectedWordIds.size > 0);
+  }
+  function _ctxEstiloEfetivo() {
+    // Estilo "efetivo" do contexto: se 1 palavra selecionada, usa o
+    // override dela mesclado ao global; senão usa o global da estrofe.
+    const base = (engine.style) ? { ...engine.style } : {};
+    try {
+      const sid = engine.parsed && engine.parsed.stanzas[engine.currentStanzaIndex] && engine.parsed.stanzas[engine.currentStanzaIndex].id;
+      if (sid && engine.sceneOverrides[sid] && engine.sceneOverrides[sid].style) Object.assign(base, engine.sceneOverrides[sid].style);
+    } catch (e) {}
+    if (_ctxTemSelecao() && selectedWordIds.size === 1) {
+      const wid = [...selectedWordIds][0];
+      const wo = engine.wordOverrides[wid];
+      if (wo && wo.style) Object.assign(base, wo.style);
+    }
+    return base;
+  }
+  function setupCtxToolbar() {
+    const bar = document.getElementById('ctx-toolbar');
+    if (!bar || bar.dataset.wired) return;
+    bar.dataset.wired = '1';
+
+    // Popula o seletor de fonte a partir das .font-option existentes.
+    const sel = document.getElementById('ctx-font');
+    if (sel) {
+      const fonts = [...document.querySelectorAll('.font-option')]
+        .map(o => o.dataset.font).filter((v, i, a) => v && a.indexOf(v) === i);
+      sel.innerHTML = fonts.map(f => `<option value="${f}">${f}</option>`).join('');
+      sel.addEventListener('change', () => {
+        if (typeof selectFont === 'function') selectFont(sel.value);
+      });
+    }
+
+    // Negrito: alterna entre peso atual e bold (700) acionando os botões originais.
+    const bBold = document.getElementById('ctx-bold');
+    if (bBold) bBold.addEventListener('click', () => {
+      const s = _ctxEstiloEfetivo();
+      const ehBold = (parseInt(s.fontWeight, 10) || 400) >= 700;
+      const alvo = ehBold ? 400 : 700;
+      const orig = document.querySelector(`.segmented button[data-weight="${alvo}"]`);
+      if (orig) orig.click();
+      syncCtxToolbar();
+    });
+
+    // Itálico: aciona o botão original.
+    const bItalic = document.getElementById('ctx-italic');
+    if (bItalic) bItalic.addEventListener('click', () => {
+      const orig = document.getElementById('style-italic-btn');
+      if (orig) orig.click();
+      syncCtxToolbar();
+    });
+
+    // Tamanho − / + : mexe via aplicarEstiloSensivel (respeita seleção).
+    const aplicarTamanho = (delta) => {
+      const s = _ctxEstiloEfetivo();
+      if (_ctxTemSelecao()) {
+        const escalaAtual = (s.fontSizeScale || 1);
+        const nova = Math.max(0.2, Math.round((escalaAtual + delta * 0.1) * 100) / 100);
+        if (typeof aplicarEstiloSensivel === 'function')
+          aplicarEstiloSensivel('fontSizeScale', nova === 1 ? null : nova, { afetaLargura: true });
+      } else {
+        // Sem seleção: usa o slider global #font-size (já grava por estrofe).
+        const slider = document.getElementById('font-size');
+        if (slider) {
+          const v = Math.min(140, Math.max(20, (parseInt(slider.value, 10) || 64) + delta * 6));
+          slider.value = v;
+          slider.dispatchEvent(new Event('input', { bubbles: true }));
+          slider.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+      }
+      syncCtxToolbar();
+    };
+    const sMinus = document.getElementById('ctx-size-minus');
+    const sPlus = document.getElementById('ctx-size-plus');
+    if (sMinus) sMinus.addEventListener('click', () => aplicarTamanho(-1));
+    if (sPlus) sPlus.addEventListener('click', () => aplicarTamanho(1));
+
+    // Espaçamento − / + : aplicarEstiloSensivel (afeta largura → reflui).
+    const aplicarLS = (delta) => {
+      const s = _ctxEstiloEfetivo();
+      const atual = (typeof s.letterSpacing === 'number') ? s.letterSpacing : -0.02;
+      const novo = Math.round((atual + delta * 0.02) * 100) / 100;
+      if (typeof aplicarEstiloSensivel === 'function')
+        aplicarEstiloSensivel('letterSpacing', novo, { afetaLargura: true });
+      syncCtxToolbar();
+    };
+    const lMinus = document.getElementById('ctx-ls-minus');
+    const lPlus = document.getElementById('ctx-ls-plus');
+    if (lMinus) lMinus.addEventListener('click', () => aplicarLS(-1));
+    if (lPlus) lPlus.addEventListener('click', () => aplicarLS(1));
+
+    // Cor: abre a aba Estilo (onde está o seletor de cor completo) — por
+    // ora reaproveita o picker existente clicando no swatch custom.
+    const bColor = document.getElementById('ctx-color');
+    if (bColor) bColor.addEventListener('click', () => {
+      const custom = document.getElementById('text-custom-color');
+      if (custom) custom.click();
+    });
+
+    syncCtxToolbar();
+  }
+  function syncCtxToolbar() {
+    const bar = document.getElementById('ctx-toolbar');
+    if (!bar) return;
+    const s = _ctxEstiloEfetivo();
+    const temSel = _ctxTemSelecao();
+    // Scope
+    const lbl = document.getElementById('ctx-scope-label');
+    if (lbl) lbl.textContent = temSel ? (selectedWordIds.size > 1 ? `${selectedWordIds.size} palavras` : 'Palavra') : 'Slide';
+    // Fonte
+    const sel = document.getElementById('ctx-font');
+    if (sel && s.fontFamily && sel.value !== s.fontFamily) sel.value = s.fontFamily;
+    // Negrito / itálico
+    const bBold = document.getElementById('ctx-bold');
+    if (bBold) bBold.classList.toggle('active', (parseInt(s.fontWeight, 10) || 400) >= 700);
+    const bItalic = document.getElementById('ctx-italic');
+    if (bItalic) bItalic.classList.toggle('active', (s.fontStyle === 'italic'));
+    // Tamanho (mostra px efetivo)
+    const szVal = document.getElementById('ctx-size-val');
+    if (szVal) {
+      const globalFs = (s.fontSize || 64);
+      const px = temSel ? Math.round(globalFs * (s.fontSizeScale || 1)) : Math.round(globalFs);
+      szVal.textContent = px;
+    }
+    // Espaçamento
+    const lsVal = document.getElementById('ctx-ls-val');
+    if (lsVal) lsVal.textContent = ((typeof s.letterSpacing === 'number') ? s.letterSpacing : -0.02).toFixed(2);
+    // Cor
+    const dot = document.getElementById('ctx-color-dot');
+    if (dot && s.color) dot.style.background = s.color;
+  }
+
   function renderWordPanel() {
+    if (typeof syncCtxToolbar === 'function') syncCtxToolbar();
     const container = $('#word-panel-content');
     if (!container) return;
 
@@ -21602,6 +21788,7 @@ function initEditor() {
   window.selectWord = selectWord;
 
   function updateActiveStanzaInList(idx) {
+    if (typeof syncCtxToolbar === 'function') syncCtxToolbar();
     $$('.stanza-item').forEach(el => {
       el.classList.toggle('active', parseInt(el.dataset.index, 10) === idx);
     });
@@ -27042,6 +27229,9 @@ function initEditor() {
   });
 
   attachDirtyListeners();
+
+  // Barra contextual (Etapa 1): liga os controles e sincroniza.
+  if (typeof setupCtxToolbar === 'function') setupCtxToolbar();
 
   // ============ EXPORT (Fase 4) ============
   let currentExporter = null;
