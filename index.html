@@ -1581,6 +1581,7 @@ body.wm-recording-mode::after {
 .ctx-scope-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent, #8b5cf6); display: inline-block; }
 .ctx-sep { width: 1px; height: 20px; background: var(--border-default, rgba(255,255,255,0.1)); }
 .ctx-font { height: 30px; font-size: 12px; padding: 0 6px; min-width: 110px; background: var(--bg-base, #0a0a0f); color: var(--text, #e8e8ee); border: 1px solid var(--border-default, rgba(255,255,255,0.1)); border-radius: 8px; }
+.ctx-weight { height: 30px; font-size: 12px; padding: 0 6px; background: var(--bg-base, #0a0a0f); color: var(--text, #e8e8ee); border: 1px solid var(--border-default, rgba(255,255,255,0.1)); border-radius: 8px; cursor: pointer; }
 .ctx-btn { height: 30px; min-width: 30px; padding: 0 8px; display: inline-flex; align-items: center; justify-content: center; background: transparent; color: var(--text, #e8e8ee); border: 1px solid var(--border-default, rgba(255,255,255,0.1)); border-radius: 8px; font-size: 13px; cursor: pointer; transition: background 0.15s, border-color 0.15s; }
 .ctx-btn:hover { background: rgba(255,255,255,0.06); }
 .ctx-btn.active { background: var(--accent, #8b5cf6); border-color: var(--accent, #8b5cf6); color: #fff; }
@@ -1589,6 +1590,77 @@ body.wm-recording-mode::after {
 .ctx-stepper .ctx-mini { border: none; }
 .ctx-val { font-size: 12px; min-width: 26px; text-align: center; color: var(--text, #e8e8ee); }
 .ctx-color-dot { width: 16px; height: 16px; border-radius: 50%; background: #ffffff; display: block; border: 1px solid rgba(255,255,255,0.3); }
+.ctx-ico { font-size: 10px; color: var(--text-dim, #7a8499); letter-spacing: -1px; padding: 0 2px; user-select: none; }
+.ctx-color { position: relative; }
+.ctx-color-pop {
+  position: fixed; z-index: 9999;
+  background: var(--bg-surface, #111118); border: 1px solid var(--border-default, rgba(255,255,255,0.12));
+  border-radius: 12px; padding: 10px; box-shadow: 0 8px 28px rgba(0,0,0,0.45); width: 188px;
+}
+.ctx-color-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; margin-bottom: 8px; }
+.ctx-color-grid button {
+  width: 100%; aspect-ratio: 1; border-radius: 6px; border: 1px solid rgba(255,255,255,0.18);
+  cursor: pointer; padding: 0;
+}
+.ctx-color-grid button:hover { transform: scale(1.08); }
+.ctx-color-custom { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 11px; color: var(--text-dim, #7a8499); }
+.ctx-color-custom input[type=color] { width: 34px; height: 26px; padding: 0; border: 1px solid var(--border-default, rgba(255,255,255,0.15)); border-radius: 6px; background: none; cursor: pointer; }
+/* Popover de espaçamento (entre letras + entre linhas) */
+.ctx-spacing-pop {
+  position: fixed; z-index: 9999;
+  background: var(--bg-surface, #111118); border: 1px solid var(--border-default, rgba(255,255,255,0.12));
+  border-radius: 12px; padding: 14px; box-shadow: 0 8px 28px rgba(0,0,0,0.45); width: 248px;
+}
+.ctx-spacing-row { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+.ctx-spacing-row:last-child { margin-bottom: 0; }
+.ctx-spacing-row label { font-size: 12px; color: var(--text, #e8e8ee); font-weight: 500; }
+.ctx-spacing-row input[type=range] { width: 100%; }
+.ctx-spacing-val { font-size: 11px; color: var(--text-dim, #7a8499); align-self: flex-end; margin-top: -2px; }
+/* Popover de caixa (maiúsculas/minúsculas) */
+.ctx-case-pop {
+  position: fixed; z-index: 9999;
+  background: var(--bg-surface, #111118); border: 1px solid var(--border-default, rgba(255,255,255,0.12));
+  border-radius: 12px; padding: 6px; box-shadow: 0 8px 28px rgba(0,0,0,0.45); width: 180px;
+  display: flex; flex-direction: column; gap: 2px;
+}
+.ctx-case-opt {
+  text-align: left; padding: 9px 12px; border-radius: 8px; border: 1px solid transparent;
+  background: transparent; color: var(--text, #e8e8ee); font-size: 13px; cursor: pointer;
+}
+.ctx-case-opt:hover { background: rgba(255,255,255,0.06); }
+.ctx-case-opt.active { background: rgba(139,92,246,0.18); border-color: var(--accent, #8b5cf6); }
+/* Painel de fontes estilo Canva */
+.ctx-fonts-panel {
+  position: fixed; top: 0; right: 0; height: 100vh; width: 300px; z-index: 9998;
+  background: var(--bg-surface, #111118); border-left: 1px solid var(--border-default, rgba(255,255,255,0.1));
+  box-shadow: -8px 0 30px rgba(0,0,0,0.4); display: flex; flex-direction: column; padding: 14px;
+}
+.ctx-fonts-head { display: flex; align-items: center; justify-content: space-between; font-size: 14px; font-weight: 600; color: var(--text, #e8e8ee); margin-bottom: 12px; }
+.ctx-fonts-search { width: 100%; height: 36px; padding: 0 10px; margin-bottom: 12px; background: var(--bg-base, #0a0a0f); color: var(--text, #e8e8ee); border: 1px solid var(--border-default, rgba(255,255,255,0.12)); border-radius: 8px; font-size: 13px; }
+.ctx-fonts-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; }
+.ctx-fonts-cat { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-dim, #7a8499); margin: 10px 4px 4px; }
+.ctx-font-item { display: flex; align-items: center; justify-content: space-between; padding: 9px 12px; border-radius: 8px; cursor: pointer; color: var(--text, #e8e8ee); border: 1px solid transparent; transition: background 0.12s; }
+.ctx-font-item:hover { background: rgba(255,255,255,0.05); }
+.ctx-font-item.selected { background: rgba(139,92,246,0.18); border-color: var(--accent, #8b5cf6); }
+.ctx-font-item .ctx-font-name { font-size: 14px; line-height: 1.1; }
+.ctx-fonts-upload {
+  width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 9px; margin-bottom: 12px; border-radius: 8px;
+  background: var(--bg-base, #0a0a0f); color: var(--text, #e8e8ee);
+  border: 1px dashed var(--border-default, rgba(255,255,255,0.2));
+  font-size: 12px; cursor: pointer; transition: background 0.15s, border-color 0.15s;
+}
+.ctx-fonts-upload:hover { background: rgba(139,92,246,0.1); border-color: var(--accent, #8b5cf6); }
+.ctx-font-item { gap: 8px; padding: 7px 12px; }
+.ctx-font-star {
+  flex: 0 0 auto; width: 26px; height: 26px; padding: 4px; border: none; background: transparent;
+  cursor: pointer; color: var(--text-dim, #7a8499); opacity: 0.5; border-radius: 6px;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.ctx-font-item:hover .ctx-font-star { opacity: 0.9; }
+.ctx-font-star.is-fav { opacity: 1; }
+.ctx-font-star:hover { background: rgba(255,255,255,0.08); }
+.ctx-font-star svg { width: 16px; height: 16px; }
 
 /* Quando o painel de marcação está ABERTO (70vh fixo embaixo), o
    conteúdo principal precisa recuar pra cima — senão o slide/preview
@@ -5316,7 +5388,7 @@ Digno de toda honra"></textarea>
             <button class="anim-cat-tab active" data-cat="entrance">Entrada</button>
             <button class="anim-cat-tab" data-cat="exit">Saída</button>
             <button class="anim-cat-tab" data-cat="loop">Loop</button>
-            <button class="anim-cat-tab" data-cat="emphasis">Destaque</button>
+            <button class="anim-cat-tab" data-cat="emphasis" style="display:none;">Destaque</button>
           </div>
         </div>
 
@@ -5332,6 +5404,10 @@ Digno de toda honra"></textarea>
 
         <div class="panel-section">
           <div class="anim-grid" id="anim-grid"></div>
+          <button class="btn btn-secondary btn-sm" id="btn-anim-aplicar-todos" style="width:100%; margin-top:10px; display:none;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:5px; vertical-align:-2px;"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+            Aplicar esta animação em todos os slides
+          </button>
         </div>
       </div>
     </div>
@@ -5346,21 +5422,83 @@ Digno de toda honra"></textarea>
     <div class="ctx-toolbar" id="ctx-toolbar">
       <span class="ctx-scope" id="ctx-scope"><i class="ctx-scope-dot"></i><span id="ctx-scope-label">Slide</span></span>
       <span class="ctx-sep"></span>
-      <select class="ctx-font" id="ctx-font" title="Fonte"></select>
+      <button class="ctx-font" id="ctx-font-btn" title="Fonte" style="display:inline-flex; align-items:center; justify-content:space-between; gap:6px; cursor:pointer; text-align:left;">
+        <span id="ctx-font-current">Montserrat</span>
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <select class="ctx-weight" id="ctx-weight" title="Espessura da fonte">
+        <option value="400">Regular</option>
+        <option value="500">Medium</option>
+        <option value="600">Semibold</option>
+        <option value="700">Bold</option>
+        <option value="800">Heavy</option>
+      </select>
       <button class="ctx-btn" id="ctx-bold" title="Negrito" style="font-weight:700;">B</button>
       <button class="ctx-btn" id="ctx-italic" title="Itálico" style="font-style:italic;">I</button>
+      <button class="ctx-btn" id="ctx-case" title="Maiúsculas / minúsculas" style="font-size:12px;">Aa</button>
       <span class="ctx-sep"></span>
-      <div class="ctx-stepper" title="Tamanho">
-        <button class="ctx-btn ctx-mini" id="ctx-size-minus">−</button>
+      <div class="ctx-stepper" title="Tamanho do texto">
+        <button class="ctx-btn ctx-mini" id="ctx-size-minus" aria-label="Diminuir tamanho">−</button>
         <span class="ctx-val" id="ctx-size-val">64</span>
-        <button class="ctx-btn ctx-mini" id="ctx-size-plus">+</button>
+        <button class="ctx-btn ctx-mini" id="ctx-size-plus" aria-label="Aumentar tamanho">+</button>
       </div>
-      <div class="ctx-stepper" title="Espaçamento entre letras">
-        <button class="ctx-btn ctx-mini" id="ctx-ls-minus"><i style="font-style:normal;">A‹›</i></button>
-        <span class="ctx-val" id="ctx-ls-val">0</span>
-        <button class="ctx-btn ctx-mini" id="ctx-ls-plus">+</button>
+      <button class="ctx-btn ctx-spacing" id="ctx-spacing-btn" title="Espaçamento">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <!-- Letra T centralizada (maior e mais alta) -->
+          <line x1="5" y1="4" x2="19" y2="4"/>
+          <line x1="12" y1="4" x2="12" y2="16"/>
+          <!-- Seta horizontal dupla (↔) abaixo da base do T -->
+          <line x1="5" y1="20" x2="19" y2="20"/>
+          <polyline points="7 18 5 20 7 22"/>
+          <polyline points="17 18 19 20 17 22"/>
+        </svg>
+      </button>
+      <span class="ctx-sep"></span>
+      <button class="ctx-btn ctx-color" id="ctx-color" title="Cor do texto"><span class="ctx-color-dot" id="ctx-color-dot"></span></button>
+      <button class="ctx-btn" id="ctx-anim" title="Animações" style="display:inline-flex; align-items:center; gap:5px; font-size:12px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>Animações
+      </button>
+      <!-- Popover de cores (abre na própria barra) -->
+      <div class="ctx-color-pop" id="ctx-color-pop" style="display:none;">
+        <div class="ctx-color-grid" id="ctx-color-grid"></div>
+        <label class="ctx-color-custom">
+          <span>Personalizada</span>
+          <input type="color" id="ctx-color-input" value="#ffffff">
+        </label>
       </div>
-      <button class="ctx-btn ctx-color" id="ctx-color" title="Cor"><span class="ctx-color-dot" id="ctx-color-dot"></span></button>
+      <!-- Popover de espaçamento (entre letras + entre linhas) -->
+      <div class="ctx-spacing-pop" id="ctx-spacing-pop" style="display:none;">
+        <div class="ctx-spacing-row">
+          <label>Entre letras</label>
+          <input type="range" id="ctx-ls-range" min="-5" max="20" value="-2">
+          <span class="ctx-spacing-val" id="ctx-ls-num">-0.02</span>
+        </div>
+        <div class="ctx-spacing-row">
+          <label>Entre linhas</label>
+          <input type="range" id="ctx-lh-range" min="100" max="200" value="112">
+          <span class="ctx-spacing-val" id="ctx-lh-num">1.12</span>
+        </div>
+      </div>
+      <!-- Popover de caixa (maiúsculas / minúsculas / etc) -->
+      <div class="ctx-case-pop" id="ctx-case-pop" style="display:none;">
+        <button class="ctx-case-opt" data-case-opt="uppercase">MAIÚSCULAS</button>
+        <button class="ctx-case-opt" data-case-opt="lowercase">minúsculas</button>
+        <button class="ctx-case-opt" data-case-opt="capitalize">Primeira De Cada</button>
+        <button class="ctx-case-opt" data-case-opt="none">Como digitou</button>
+      </div>
+    </div>
+    <!-- Painel de FONTES (estilo Canva) — abre ao clicar no nome da fonte -->
+    <div class="ctx-fonts-panel" id="ctx-fonts-panel" style="display:none;">
+      <div class="ctx-fonts-head">
+        <span>Fontes</span>
+        <button class="ctx-btn ctx-mini" id="ctx-fonts-close" aria-label="Fechar">×</button>
+      </div>
+      <input type="text" class="ctx-fonts-search" id="ctx-fonts-search" placeholder="Buscar fonte…">
+      <button class="ctx-fonts-upload" id="ctx-fonts-upload">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Carregar fonte do computador
+      </button>
+      <div class="ctx-fonts-list" id="ctx-fonts-list"></div>
     </div>
     <div class="editor-canvas" id="editor-canvas">
       <div class="canvas-bg" id="canvas-bg"></div>
@@ -5379,6 +5517,9 @@ Digno de toda honra"></textarea>
         <button class="icon-btn" data-tooltip="Próxima estrofe" id="btn-next-stanza">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
         </button>
+        <button class="icon-btn" data-tooltip="Recentralizar slide" id="btn-recentralizar">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/></svg>
+        </button>
       </div>
 
       <div class="aspect-indicator">
@@ -5391,17 +5532,17 @@ Digno de toda honra"></textarea>
   
   <aside class="editor-right">
     <div class="panel-tabs">
-      <button class="panel-tab active" data-rpanel="style">Estilo</button>
-      <button class="panel-tab" data-rpanel="bg">Fundo</button>
-      <button class="panel-tab" data-rpanel="motion">Motion</button>
-      <button class="panel-tab" data-rpanel="scenes">Cenas</button>
-      <button class="panel-tab" data-rpanel="word">Palavra</button>
+      <button class="panel-tab active" data-rpanel="style">Efeitos</button>
+      <button class="panel-tab" data-rpanel="bg">Fundo &amp; Movimento</button>
+      <button class="panel-tab" data-rpanel="motion" style="display:none;">Motion</button>
+      <button class="panel-tab" data-rpanel="scenes" style="display:none;">Cenas</button>
+      <button class="panel-tab" data-rpanel="word" style="display:none;">Palavra</button>
     </div>
 
     <div class="panel-body">
       
       <div class="panel-content" data-rpanel-content="style">
-        <div class="panel-section">
+        <div class="panel-section" style="display:none;">
           <div class="panel-section-title">Fonte</div>
 
           
@@ -5461,7 +5602,7 @@ Digno de toda honra"></textarea>
           </div>
         </div>
 
-        <div class="panel-section">
+        <div class="panel-section" style="display:none;">
           <div class="panel-section-title">Caixa</div>
           <div class="text-case-grid">
             <button class="text-case-btn" data-case="none" title="Como digitou">
@@ -5483,7 +5624,7 @@ Digno de toda honra"></textarea>
           </div>
         </div>
 
-        <div class="panel-section">
+        <div class="panel-section" style="display:none;">
           <div class="panel-section-title">Tamanho</div>
           <div style="display: flex; align-items: center; gap: var(--space-3);">
             <input type="range" class="range" id="font-size" min="20" max="140" value="64" style="flex:1">
@@ -5491,7 +5632,7 @@ Digno de toda honra"></textarea>
           </div>
         </div>
 
-        <div class="panel-section">
+        <div class="panel-section" style="display:none;">
           <div class="panel-section-title">Peso</div>
           <div class="segmented" style="width:100%; display:flex;">
             <button data-weight="400" style="flex:1; padding:6px 4px;" title="Regular (400)">Reg</button>
@@ -5502,7 +5643,7 @@ Digno de toda honra"></textarea>
           </div>
         </div>
 
-        <div class="panel-section">
+        <div class="panel-section" style="display:none;">
           <div class="panel-section-title">Estilo</div>
           <div class="segmented" style="width:100%; display:flex;">
             <button class="active" id="style-roman-btn" style="flex:1; padding:6px 4px;" title="Normal">Normal</button>
@@ -5510,7 +5651,7 @@ Digno de toda honra"></textarea>
           </div>
         </div>
 
-        <div class="panel-section">
+        <div class="panel-section" style="display:none;">
           <div class="panel-section-title">Cor do texto</div>
           <div class="color-swatches" id="color-swatches">
             <div class="color-swatch selected" data-color="#f4f4f7" style="background:#f4f4f7"></div>
@@ -5600,7 +5741,7 @@ Digno de toda honra"></textarea>
           </div>
         </div>
 
-        <div class="panel-section">
+        <div class="panel-section" style="display:none;">
           <div class="panel-section-title">Espaçamento</div>
           <label class="label" style="font-size: 10px; margin-bottom: var(--space-1); display:block;">Entre letras <span style="color:var(--text-tertiary); font-weight:400;">(estrofe toda)</span></label>
           <div style="display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-3);">
@@ -5685,7 +5826,7 @@ Digno de toda honra"></textarea>
           </p>
         </div>
 
-        <div class="panel-section">
+        <div class="panel-section" style="display:none;">
           <div class="panel-section-title">Visual das destacadas</div>
           <p style="font-size: 11px; color: var(--text-tertiary); margin-bottom: var(--space-3); line-height: 1.5;">
             Estilo aplicado às palavras marcadas como destaque (ícone ⭐).
@@ -5770,7 +5911,7 @@ Digno de toda honra"></textarea>
           </div>
         </div>
 
-        <div class="panel-section">
+        <div class="panel-section" style="display:none;">
           <div class="panel-section-title">Palavras de destaque</div>
           <div style="font-size: 11px; color: var(--text-tertiary); line-height: 1.5; margin-bottom: var(--space-3);">
             Palavras destacadas ganham animação extra de cor. Você pode editar a lista ou marcar individualmente clicando na palavra do canvas.
@@ -5795,7 +5936,7 @@ Digno de toda honra"></textarea>
             </button>
           </div>
 
-          <input type="checkbox" id="auto-emphasis" checked style="display:none">
+          <input type="checkbox" id="auto-emphasis" style="display:none">
         </div>
 
       </div>
@@ -10376,7 +10517,19 @@ async function registerFontFromAsset(asset) {
   const family = asset.name.replace(/\.[^.]+$/, ''); // remove extensão
   const buffer = await asset.blob.arrayBuffer();
 
-  const fontFace = new FontFace(family, buffer);
+  // Detecta peso e estilo pelo NOME do arquivo. Muitos arquivos de fonte
+  // são uma variante específica (ex: "Fonte-Bold", "Fonte-Light"). Sem
+  // informar o descriptor, o navegador registra o arquivo como peso 400 —
+  // então um arquivo Bold aparecia grosso mesmo o app pedindo normal.
+  // Registramos a família NORMALIZADA: o arquivo vira o peso 400 da
+  // família, então o texto (que pede 400 por padrão) mostra a fonte como
+  // ela é, e o botão B sintetiza o negrito por cima quando você clicar.
+  const nomeLower = asset.name.toLowerCase();
+  const ehItalico = /italic|oblique|itálico/.test(nomeLower);
+  const fontFace = new FontFace(family, buffer, {
+    weight: '400',
+    style: ehItalico ? 'italic' : 'normal'
+  });
   await fontFace.load();
   document.fonts.add(fontFace);
 
@@ -13670,7 +13823,7 @@ const CanvasRenderer = {
       const woStyle = wo.style || {};
       return {
         family: woStyle.fontFamily || style.fontFamily || 'Inter',
-        weight: woStyle.fontWeight || style.fontWeight || 600,
+        weight: woStyle.fontWeight || style.fontWeight || 400,
         size: baseFontSize * (woStyle.fontSizeScale || 1),
       };
     };
@@ -13711,7 +13864,7 @@ const CanvasRenderer = {
           return { word: w, text, width, font };
         });
 
-        ctx.font = `${style.fontWeight || 600} ${baseFontSize}px "${style.fontFamily || 'Inter'}", sans-serif`;
+        ctx.font = `${style.fontWeight || 400} ${baseFontSize}px "${style.fontFamily || 'Inter'}", sans-serif`;
         const spaceW = ctx.measureText(' ').width;
 
         const totalLineW = wordsMeta.reduce((a, m) => a + m.width, 0) +
@@ -13786,7 +13939,7 @@ const CanvasRenderer = {
           return { word: w, text, width, font };
         });
 
-        ctx.font = `${style.fontWeight || 600} ${baseFontSize}px "${style.fontFamily || 'Inter'}", sans-serif`;
+        ctx.font = `${style.fontWeight || 400} ${baseFontSize}px "${style.fontFamily || 'Inter'}", sans-serif`;
         const spaceW = ctx.measureText(' ').width;
 
         const totalLineW = wordsMeta.reduce((a, m) => a + m.width, 0) +
@@ -13813,6 +13966,17 @@ const CanvasRenderer = {
           cursorX += m.width + spaceW;
         });
 
+        // === DIAGNÓSTICO (temporário) ===
+        if (window.__WM_DIAG_EXPORT) {
+          try {
+            console.log('[WM-DIAG flow] linha:', words.map(w => w.text).join(' '),
+              '| W=', W, 'totalLineW=', Math.round(totalLineW), 'spaceW=', Math.round(spaceW),
+              '| larguras=', words.map(w => Math.round(w.width)),
+              '| cx=', words.map(w => Math.round(w.cx)),
+              '| font=', words[0] && words[0].font.family, words[0] && Math.round(words[0].font.size));
+          } catch (e) {}
+        }
+
         lines.push({ words, lineH: thisLineH });
       });
 
@@ -13838,7 +14002,7 @@ const CanvasRenderer = {
   _setFont(ctx, style, H, W) {
     const fontSize = this._computeFontSize(style, H, W);
     const fontFamily = style?.fontFamily || 'Inter';
-    const fontWeight = style?.fontWeight || 600;
+    const fontWeight = style?.fontWeight || 400;
     ctx.font = `${fontWeight} ${fontSize}px "${fontFamily}", sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
@@ -15184,11 +15348,27 @@ class VideoExporter {
   async _ensureFontsLoaded() {
     if (typeof document === 'undefined' || !document.fonts) return;
     try {
-      const family = this.engine?.style?.fontFamily || 'Inter';
-      const weight = this.engine?.style?.fontWeight || 600;
-      await document.fonts.load(`${weight} 64px "${family}"`);
+      // Coleta TODAS as fontes usadas: a global + as aplicadas por palavra
+      // (overrides). Sem carregar as dos overrides, uma fonte do computador
+      // aplicada só em algumas palavras era rasterizada em baixa qualidade
+      // pelo canvas (texto borrado/pixelado no vídeo).
+      const familias = new Set();
+      const gFamily = this.engine?.style?.fontFamily || 'Inter';
+      familias.add(gFamily);
+      const wo = this.engine?.wordOverrides || {};
+      Object.values(wo).forEach(o => {
+        if (o && o.style && o.style.fontFamily) familias.add(o.style.fontFamily);
+      });
+      // Pede ao navegador pra carregar cada família em vários pesos.
+      const pesos = [400, 600, 700];
+      const jobs = [];
+      familias.forEach(fam => {
+        pesos.forEach(w => {
+          jobs.push(document.fonts.load(`${w} 64px "${fam}"`).catch(() => {}));
+        });
+      });
+      await Promise.all(jobs);
       await document.fonts.ready;
-      // Aguarda fontes custom (se carregadas) ficarem prontas
       if (window.WM_CUSTOM_FONTS && typeof window.WM_CUSTOM_FONTS.waitReady === 'function') {
         await window.WM_CUSTOM_FONTS.waitReady();
       }
@@ -15914,7 +16094,7 @@ class RenderEngineV2 {
     this.style = {
       fontFamily: 'Montserrat',
       fontSize: 64,
-      fontWeight: 600,
+      fontWeight: 400,
       letterSpacing: -0.02,
       lineHeight: 1.12,
       color: '#f4f4f7',
@@ -16963,6 +17143,27 @@ class RenderEngineV2 {
           if (_hasTimed) break;
         }
         if (_hasTimed) target = 'word';
+      }
+    }
+
+    // ANIMAÇÃO POR PALAVRA tem prioridade: se QUALQUER palavra da estrofe
+    // tem animação própria (wo.entrance/wo.exit), força target='word' pra
+    // o render respeitar os overrides. Sem isto, aplicar uma animação de
+    // SLIDE forçava target='stanza' e a animação individual das palavras
+    // era IGNORADA (parecia que "não continuava"). As palavras sem
+    // override seguem a animação do slide normalmente.
+    {
+      const _st2 = this.parsed?.stanzas?.[this.currentStanzaIndex];
+      if (_st2 && this.wordOverrides) {
+        let _temWordAnim = false;
+        for (const ln of _st2.lines) {
+          for (const wd of ln.words) {
+            const wo = this.wordOverrides[wd.id];
+            if (wo && (wo.entrance || wo.exit)) { _temWordAnim = true; break; }
+          }
+          if (_temWordAnim) break;
+        }
+        if (_temWordAnim) target = 'word';
       }
     }
 
@@ -18686,7 +18887,8 @@ function initEditor() {
       } else {
         setSelection([wid]);
       }
-      const tab = $('.panel-tab[data-rpanel="word"]');
+      // A aba Palavra foi unida à Efeitos — abre Efeitos ao selecionar.
+      const tab = $('.panel-tab[data-rpanel="style"]');
       if (tab) tab.click();
     }
 
@@ -19055,6 +19257,65 @@ function initEditor() {
   // slides editados com a marcação aberta (proporção distorcida) antes
   // da correção da escala. Idempotente: rodar de novo não muda nada se
   // já estiver tudo certo.
+  // Recentraliza um slide: remove as posições "free" de todas as palavras
+  // da estrofe, fazendo-a voltar ao layout automático (flow) centralizado.
+  // Preserva estilo e animação de cada palavra (só tira a posição). Usado
+  // pelo botão "Recentralizar" e pelo conserto automático de slides que
+  // vieram com posições ruins (ex.: congeladas num layout inválido).
+  function recentralizarSlide(idx) {
+    if (!engine.parsed || !engine.parsed.stanzas[idx]) return 0;
+    const stanza = engine.parsed.stanzas[idx];
+    let removidas = 0;
+    stanza.lines.forEach(line => line.words.forEach(w => {
+      const wo = engine.wordOverrides[w.id];
+      if (wo && wo.position) { engine.clearWordOverride(w.id, 'position'); removidas++; }
+    }));
+    if (removidas > 0) {
+      engine.renderStanza(idx);
+      if (typeof engine.killAllAnimations === 'function') { try { engine.killAllAnimations(); } catch (e) {} }
+      const stz = getStanzaEl();
+      if (stz) stz.querySelectorAll('.lyric-word').forEach(el => { el.style.opacity = '1'; el.style.animation = 'none'; });
+      if (typeof markDirty === 'function') markDirty();
+    }
+    return removidas;
+  }
+
+  // Detecta slides cujas palavras free estão FORA do esperado (amontoadas
+  // numa faixa / sobrepostas) e os recentraliza automaticamente. Conserta
+  // o problema de slides que vieram com posições ruins do salvamento.
+  function consertarSlidesComPosicaoRuim() {
+    if (!engine.parsed || !engine.parsed.stanzas) return 0;
+    const idxAtual = engine.currentStanzaIndex;
+    let consertados = 0;
+    engine.parsed.stanzas.forEach((stanza, si) => {
+      // Coleta posições free da estrofe.
+      const poss = [];
+      stanza.lines.forEach(line => line.words.forEach(w => {
+        const wo = engine.wordOverrides[w.id];
+        if (wo && wo.position) poss.push(wo.position);
+      }));
+      if (poss.length < 2) return;
+      // Heurística de "ruim": todas as palavras praticamente na mesma faixa
+      // horizontal estreita (variação de Y minúscula) E muito próximas em X
+      // (amontoadas), OU posições fora de [0,1] (fora do slide).
+      const xs = poss.map(p => p.x), ys = poss.map(p => p.y);
+      const foraDoSlide = poss.some(p => p.x < -0.02 || p.x > 1.02 || p.y < -0.02 || p.y > 1.02);
+      const spanX = Math.max(...xs) - Math.min(...xs);
+      const spanY = Math.max(...ys) - Math.min(...ys);
+      // Amontoado: muitas palavras num espaço muito pequeno.
+      const amontoado = (poss.length >= 3 && spanX < 0.12 && spanY < 0.12);
+      if (foraDoSlide || amontoado) {
+        consertados += recentralizarSlide(si) > 0 ? 1 : 0;
+      }
+    });
+    engine.currentStanzaIndex = idxAtual;
+    engine.renderStanza(idxAtual);
+    if (typeof engine.killAllAnimations === 'function') { try { engine.killAllAnimations(); } catch (e) {} }
+    const stz = getStanzaEl();
+    if (stz) stz.querySelectorAll('.lyric-word').forEach(el => { el.style.opacity = '1'; el.style.animation = 'none'; });
+    return consertados;
+  }
+
   function rearrumarSlidesSobrepostos() {
     if (!engine.parsed || !engine.parsed.stanzas) return 0;
     const idxAtual = engine.currentStanzaIndex;
@@ -20711,34 +20972,145 @@ function initEditor() {
     return (typeof selectedWordIds !== 'undefined' && selectedWordIds && selectedWordIds.size > 0);
   }
   function _ctxEstiloEfetivo() {
-    // Estilo "efetivo" do contexto: se 1 palavra selecionada, usa o
-    // override dela mesclado ao global; senão usa o global da estrofe.
+    // Estilo "efetivo" do contexto: se há palavra(s) selecionada(s), usa o
+    // override da PRIMEIRA (representativo) mesclado ao global; senão usa
+    // o global da estrofe. Antes só lia o override com 1 palavra — com 2+
+    // o número/nome da fonte ficava travado no global.
     const base = (engine.style) ? { ...engine.style } : {};
     try {
       const sid = engine.parsed && engine.parsed.stanzas[engine.currentStanzaIndex] && engine.parsed.stanzas[engine.currentStanzaIndex].id;
       if (sid && engine.sceneOverrides[sid] && engine.sceneOverrides[sid].style) Object.assign(base, engine.sceneOverrides[sid].style);
     } catch (e) {}
-    if (_ctxTemSelecao() && selectedWordIds.size === 1) {
+    if (_ctxTemSelecao()) {
       const wid = [...selectedWordIds][0];
       const wo = engine.wordOverrides[wid];
       if (wo && wo.style) Object.assign(base, wo.style);
     }
     return base;
   }
+  // Lista unificada de fontes: marca (brand) + computador. Lê das
+  // .font-option já existentes na UI.
+  function _ctxListaFontes() {
+    const brand = [...document.querySelectorAll('[data-font-tab-content="brand"] .font-option, #brand-font-grid .font-option')]
+      .map(o => o.dataset.font).filter(Boolean);
+    const todas = [...document.querySelectorAll('.font-option')].map(o => o.dataset.font).filter(Boolean);
+    const brandSet = new Set(brand);
+    const pc = todas.filter(f => !brandSet.has(f));
+    const uniq = arr => arr.filter((v, i, a) => v && a.indexOf(v) === i);
+    return { brand: uniq(brand.length ? brand : todas), pc: uniq(pc) };
+  }
+  // Atualiza só o NOME da fonte mostrado no botão da barra.
+  function repopularFontesCtx() {
+    const cur = document.getElementById('ctx-font-current');
+    if (cur) {
+      const s = _ctxEstiloEfetivo();
+      if (s.fontFamily) cur.textContent = s.fontFamily;
+    }
+    // Se o painel de fontes estiver aberto, re-renderiza a lista pra
+    // incluir fontes recém-carregadas do computador.
+    const painel = document.getElementById('ctx-fonts-panel');
+    if (painel && painel.style.display !== 'none' && typeof renderListaFontes === 'function') {
+      renderListaFontes(document.getElementById('ctx-fonts-search')?.value || '');
+    }
+  }
+  window._repopularFontesCtx = repopularFontesCtx;
+
+  // Fontes usadas recentemente (persistido). Mais recente primeiro.
+  function _getFontesRecentes() {
+    try { return JSON.parse(localStorage.getItem('wm_fontes_recentes') || '[]'); }
+    catch (e) { return []; }
+  }
+  function _registrarFonteRecente(f) {
+    if (!f) return;
+    try {
+      let r = _getFontesRecentes().filter(x => x !== f);
+      r.unshift(f);
+      r = r.slice(0, 6); // guarda até 6
+      localStorage.setItem('wm_fontes_recentes', JSON.stringify(r));
+    } catch (e) {}
+  }
+
+  function renderListaFontes(filtro) {
+    const list = document.getElementById('ctx-fonts-list');
+    if (!list) return;
+    const q = (filtro || '').toLowerCase().trim();
+    const s = _ctxEstiloEfetivo();
+    const atual = s.fontFamily;
+    const { brand, pc } = _ctxListaFontes();
+    const todas = [...brand, ...pc];
+    const favSet = (typeof isFontFav === 'function');
+    const estrela = (f) => {
+      const fav = favSet && isFontFav(f);
+      const svg = (typeof favStarSVG === 'function') ? favStarSVG(fav) : (fav ? '★' : '☆');
+      return `<button class="ctx-font-star ${fav ? 'is-fav' : ''}" data-fav-font="${f}" title="${fav ? 'Desfavoritar' : 'Favoritar'}">${svg}</button>`;
+    };
+    const item = (f) => `<div class="ctx-font-item ${f === atual ? 'selected' : ''}" data-font="${f}">
+        <span class="ctx-font-name" style="font-family:'${f}', sans-serif;">${f}</span>
+        ${estrela(f)}
+      </div>`;
+
+    const fb = brand.filter(f => !q || f.toLowerCase().includes(q));
+    const fp = pc.filter(f => !q || f.toLowerCase().includes(q));
+    let html = '';
+
+    // Recentes (só quando NÃO está buscando).
+    if (!q) {
+      const recentes = _getFontesRecentes().filter(f => todas.indexOf(f) !== -1);
+      if (recentes.length) html += `<div class="ctx-fonts-cat">Usadas recentemente</div>` + recentes.map(item).join('');
+      // Favoritas
+      const favs = todas.filter(f => favSet && isFontFav(f));
+      if (favs.length) html += `<div class="ctx-fonts-cat">Favoritas</div>` + favs.map(item).join('');
+    }
+
+    if (fb.length) html += `<div class="ctx-fonts-cat">Fontes do app</div>` + fb.map(item).join('');
+    if (fp.length) html += `<div class="ctx-fonts-cat">Do computador</div>` + fp.map(item).join('');
+    if (!fb.length && !fp.length) html = `<div style="font-size:12px;color:var(--text-dim,#7a8499);padding:12px;text-align:center;">Nenhuma fonte encontrada</div>`;
+    list.innerHTML = html;
+
+    // Clique na estrela: favorita/desfavorita (sem aplicar a fonte).
+    list.querySelectorAll('.ctx-font-star').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (typeof toggleFontFav === 'function') toggleFontFav(btn.dataset.favFont);
+        renderListaFontes(document.getElementById('ctx-fonts-search')?.value || '');
+      });
+    });
+    // Clique no item: aplica a fonte + registra como recente.
+    list.querySelectorAll('.ctx-font-item').forEach(el => {
+      el.addEventListener('click', () => {
+        const f = el.dataset.font;
+        if (typeof selectFont === 'function') selectFont(f);
+        _registrarFonteRecente(f);
+        const cur = document.getElementById('ctx-font-current');
+        if (cur) cur.textContent = f;
+        renderListaFontes(document.getElementById('ctx-fonts-search')?.value || '');
+        requestAnimationFrame(syncCtxToolbar);
+      });
+    });
+  }
+  function abrirPainelFontes() {
+    const panel = document.getElementById('ctx-fonts-panel');
+    if (!panel) return;
+    panel.style.display = 'flex';
+    renderListaFontes('');
+    const search = document.getElementById('ctx-fonts-search');
+    if (search) { search.value = ''; setTimeout(() => search.focus(), 50); }
+  }
+  function fecharPainelFontes() {
+    const panel = document.getElementById('ctx-fonts-panel');
+    if (panel) panel.style.display = 'none';
+  }
+
   function setupCtxToolbar() {
     const bar = document.getElementById('ctx-toolbar');
     if (!bar || bar.dataset.wired) return;
     bar.dataset.wired = '1';
 
-    // Popula o seletor de fonte a partir das .font-option existentes.
-    const sel = document.getElementById('ctx-font');
-    if (sel) {
-      const fonts = [...document.querySelectorAll('.font-option')]
-        .map(o => o.dataset.font).filter((v, i, a) => v && a.indexOf(v) === i);
-      sel.innerHTML = fonts.map(f => `<option value="${f}">${f}</option>`).join('');
-      sel.addEventListener('change', () => {
-        if (typeof selectFont === 'function') selectFont(sel.value);
-      });
+    // Botão de fonte abre o painel de fontes (estilo Canva).
+    const fontBtn = document.getElementById('ctx-font-btn');
+    if (fontBtn) {
+      repopularFontesCtx();
+      fontBtn.addEventListener('click', (e) => { e.stopPropagation(); abrirPainelFontes(); });
     }
 
     // Negrito: alterna entre peso atual e bold (700) acionando os botões originais.
@@ -20749,36 +21121,88 @@ function initEditor() {
       const alvo = ehBold ? 400 : 700;
       const orig = document.querySelector(`.segmented button[data-weight="${alvo}"]`);
       if (orig) orig.click();
-      syncCtxToolbar();
+      requestAnimationFrame(syncCtxToolbar);
     });
 
-    // Itálico: aciona o botão original.
+    // Seletor de peso (Regular/Medium/Semibold/Bold/Heavy): aciona os
+    // botões data-weight originais (respeitam seleção).
+    const selWeight = document.getElementById('ctx-weight');
+    if (selWeight) selWeight.addEventListener('change', () => {
+      const orig = document.querySelector(`.segmented button[data-weight="${selWeight.value}"]`);
+      if (orig) orig.click();
+      requestAnimationFrame(syncCtxToolbar);
+    });
+
+    // Itálico: TOGGLE de verdade. O original tem 2 botões (Normal /
+    // Itálico) — não um toggle. Então aqui decidimos qual acionar pelo
+    // estado efetivo: se já está itálico, aciona "Normal"; senão "Itálico".
     const bItalic = document.getElementById('ctx-italic');
     if (bItalic) bItalic.addEventListener('click', () => {
-      const orig = document.getElementById('style-italic-btn');
+      const s = _ctxEstiloEfetivo();
+      const ehItalico = (s.fontStyle === 'italic');
+      const orig = document.getElementById(ehItalico ? 'style-roman-btn' : 'style-italic-btn');
       if (orig) orig.click();
-      syncCtxToolbar();
+      requestAnimationFrame(syncCtxToolbar);
     });
 
     // Tamanho − / + : mexe via aplicarEstiloSensivel (respeita seleção).
-    const aplicarTamanho = (delta) => {
-      const s = _ctxEstiloEfetivo();
+    // Lê o valor REAL de uma propriedade de estilo na seleção atual
+    // (mesmo com VÁRIAS palavras — pega o valor da primeira selecionada).
+    // Sem isto, com 2+ palavras o estado vinha do global e o tamanho/
+    // espaçamento "travava" (lia sempre o mesmo valor base a cada clique).
+    const _ctxValorSelecao = (chave, fallback) => {
       if (_ctxTemSelecao()) {
-        const escalaAtual = (s.fontSizeScale || 1);
+        const wid = [...selectedWordIds][0];
+        const wo = engine.wordOverrides[wid];
+        if (wo && wo.style && typeof wo.style[chave] !== 'undefined') return wo.style[chave];
+      }
+      const s = _ctxEstiloEfetivo();
+      return (typeof s[chave] !== 'undefined') ? s[chave] : fallback;
+    };
+
+    const aplicarTamanho = (delta) => {
+      if (_ctxTemSelecao()) {
+        const escalaAtual = (_ctxValorSelecao('fontSizeScale', 1) || 1);
         const nova = Math.max(0.2, Math.round((escalaAtual + delta * 0.1) * 100) / 100);
         if (typeof aplicarEstiloSensivel === 'function')
           aplicarEstiloSensivel('fontSizeScale', nova === 1 ? null : nova, { afetaLargura: true });
       } else {
-        // Sem seleção: usa o slider global #font-size (já grava por estrofe).
-        const slider = document.getElementById('font-size');
-        if (slider) {
-          const v = Math.min(140, Math.max(20, (parseInt(slider.value, 10) || 64) + delta * 6));
-          slider.value = v;
-          slider.dispatchEvent(new Event('input', { bubbles: true }));
-          slider.dispatchEvent(new Event('change', { bubbles: true }));
+        // Sem seleção: aplica o tamanho DIRETO no sceneOverride da estrofe
+        // (não simula o arraste do slider — isso bugava as posições free,
+        // que o handler de arraste escala de forma acumulada). Escala as
+        // posições free proporcionalmente, de uma vez, igual ao commit.
+        const st = engine.parsed && engine.parsed.stanzas[engine.currentStanzaIndex];
+        if (!st) return;
+        const cur = (engine.sceneOverrides[st.id] && engine.sceneOverrides[st.id].style) || {};
+        const fsAtual = (typeof cur.fontSize === 'number') ? cur.fontSize : ((engine.style && engine.style.fontSize) || 64);
+        const novo = Math.min(140, Math.max(20, fsAtual + delta * 6));
+        const ratio = (fsAtual > 0) ? (novo / fsAtual) : 1;
+        // Escala posições free SÓ desta estrofe.
+        const stzEl = (typeof getStanzaEl === 'function') ? getStanzaEl() : null;
+        const ids = stzEl ? [...stzEl.querySelectorAll('.lyric-word')].map(el => el.dataset.wordId) : [];
+        if (ratio !== 1) ids.forEach(wid => {
+          const wo = engine.wordOverrides[wid];
+          if (wo && wo.position) {
+            const nx = 0.5 + (wo.position.x - 0.5) * ratio;
+            const ny = 0.5 + (wo.position.y - 0.5) * ratio;
+            engine.setWordOverride(wid, { position: { x: nx, y: ny } });
+          }
+        });
+        if (typeof engine.setSceneOverride === 'function') {
+          engine.setSceneOverride(st.id, { style: { ...cur, fontSize: novo } });
+        } else {
+          if (!engine.sceneOverrides[st.id]) engine.sceneOverrides[st.id] = {};
+          engine.sceneOverrides[st.id].style = { ...cur, fontSize: novo };
         }
+        engine.renderStanza(engine.currentStanzaIndex);
+        if (typeof engine.killAllAnimations === 'function') { try { engine.killAllAnimations(); } catch (e) {} }
+        if (stzEl) stzEl.querySelectorAll('.lyric-word').forEach(el => { el.style.opacity = '1'; el.style.animation = 'none'; });
+        // Sincroniza o slider antigo (visual).
+        const slider = document.getElementById('font-size');
+        if (slider) { slider.value = novo; const v2 = document.getElementById('font-size-val'); if (v2) v2.textContent = novo; }
+        if (typeof markDirty === 'function') markDirty();
       }
-      syncCtxToolbar();
+      requestAnimationFrame(syncCtxToolbar);
     };
     const sMinus = document.getElementById('ctx-size-minus');
     const sPlus = document.getElementById('ctx-size-plus');
@@ -20786,25 +21210,207 @@ function initEditor() {
     if (sPlus) sPlus.addEventListener('click', () => aplicarTamanho(1));
 
     // Espaçamento − / + : aplicarEstiloSensivel (afeta largura → reflui).
-    const aplicarLS = (delta) => {
-      const s = _ctxEstiloEfetivo();
-      const atual = (typeof s.letterSpacing === 'number') ? s.letterSpacing : -0.02;
-      const novo = Math.round((atual + delta * 0.02) * 100) / 100;
-      if (typeof aplicarEstiloSensivel === 'function')
-        aplicarEstiloSensivel('letterSpacing', novo, { afetaLargura: true });
-      syncCtxToolbar();
-    };
-    const lMinus = document.getElementById('ctx-ls-minus');
-    const lPlus = document.getElementById('ctx-ls-plus');
-    if (lMinus) lMinus.addEventListener('click', () => aplicarLS(-1));
-    if (lPlus) lPlus.addEventListener('click', () => aplicarLS(1));
+    // Espaçamento: abre um popover com 2 sliders (entre letras + entre
+    // linhas), estilo Canva. Letras respeita seleção; linhas é do slide.
+    const spBtn = document.getElementById('ctx-spacing-btn');
+    const spPop = document.getElementById('ctx-spacing-pop');
+    const lsRange = document.getElementById('ctx-ls-range');
+    const lsNum = document.getElementById('ctx-ls-num');
+    const lhRange = document.getElementById('ctx-lh-range');
+    const lhNum = document.getElementById('ctx-lh-num');
 
-    // Cor: abre a aba Estilo (onde está o seletor de cor completo) — por
-    // ora reaproveita o picker existente clicando no swatch custom.
+    // Entre letras: aplica via aplicarEstiloSensivel (respeita seleção).
+    if (lsRange) {
+      const aplicarLetras = () => {
+        const em = Math.round((parseInt(lsRange.value, 10) / 100) * 100) / 100;
+        if (lsNum) lsNum.textContent = em.toFixed(2);
+        if (typeof aplicarEstiloSensivel === 'function')
+          aplicarEstiloSensivel('letterSpacing', em, { afetaLargura: true, leve: true });
+      };
+      lsRange.addEventListener('input', aplicarLetras);
+      lsRange.addEventListener('change', () => {
+        const em = Math.round((parseInt(lsRange.value, 10) / 100) * 100) / 100;
+        if (typeof aplicarEstiloSensivel === 'function')
+          aplicarEstiloSensivel('letterSpacing', em, { afetaLargura: true });
+        requestAnimationFrame(syncCtxToolbar);
+      });
+    }
+    // Entre linhas: aciona o slider original #line-height (do slide).
+    if (lhRange) {
+      const orig = document.getElementById('line-height');
+      lhRange.addEventListener('input', () => {
+        if (lhNum) lhNum.textContent = (parseInt(lhRange.value, 10) / 100).toFixed(2);
+        if (orig) { orig.value = lhRange.value; orig.dispatchEvent(new Event('input', { bubbles: true })); }
+      });
+      lhRange.addEventListener('change', () => {
+        if (orig) { orig.value = lhRange.value; orig.dispatchEvent(new Event('change', { bubbles: true })); }
+      });
+    }
+    if (spBtn && spPop) {
+      spBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (spPop.style.display === 'none' || !spPop.style.display) {
+          // Sincroniza os sliders com os valores atuais antes de abrir.
+          const s = _ctxEstiloEfetivo();
+          const lsEm = (typeof _ctxValorSelecao('letterSpacing', -0.02) === 'number') ? _ctxValorSelecao('letterSpacing', -0.02) : -0.02;
+          if (lsRange) { lsRange.value = Math.round(lsEm * 100); if (lsNum) lsNum.textContent = lsEm.toFixed(2); }
+          const origLh = document.getElementById('line-height');
+          if (lhRange && origLh) { lhRange.value = origLh.value; if (lhNum) lhNum.textContent = (parseInt(origLh.value, 10) / 100).toFixed(2); }
+          const r = spBtn.getBoundingClientRect();
+          spPop.style.display = 'block';
+          const w = spPop.offsetWidth || 248;
+          let left = r.left + r.width / 2 - w / 2;
+          left = Math.max(8, Math.min(left, window.innerWidth - w - 8));
+          spPop.style.left = left + 'px';
+          spPop.style.top = (r.bottom + 8) + 'px';
+        } else {
+          spPop.style.display = 'none';
+        }
+      });
+      document.addEventListener('click', (e) => {
+        if (spPop.style.display !== 'none' && !spPop.contains(e.target) && e.target !== spBtn && !spBtn.contains(e.target)) {
+          spPop.style.display = 'none';
+        }
+      });
+    }
+
+    // Cor: popover na própria barra. Monta a grade com os mesmos swatches
+    // da aba e aciona aplicarEstiloSensivel (respeita seleção).
     const bColor = document.getElementById('ctx-color');
-    if (bColor) bColor.addEventListener('click', () => {
-      const custom = document.getElementById('text-custom-color');
-      if (custom) custom.click();
+    const pop = document.getElementById('ctx-color-pop');
+    const grid = document.getElementById('ctx-color-grid');
+    const colorInput = document.getElementById('ctx-color-input');
+    if (grid) {
+      const cores = [...document.querySelectorAll('#color-swatches .color-swatch[data-color]')]
+        .map(sw => sw.dataset.color).filter((v, i, a) => v && a.indexOf(v) === i);
+      grid.innerHTML = cores.map(c => `<button data-c="${c}" style="background:${c}"></button>`).join('');
+      grid.querySelectorAll('button').forEach(btn => {
+        btn.addEventListener('click', () => {
+          if (typeof aplicarEstiloSensivel === 'function') aplicarEstiloSensivel('color', btn.dataset.c);
+          if (pop) pop.style.display = 'none';
+          requestAnimationFrame(syncCtxToolbar);
+        });
+      });
+    }
+    if (colorInput) colorInput.addEventListener('input', () => {
+      if (typeof aplicarEstiloSensivel === 'function') aplicarEstiloSensivel('color', colorInput.value);
+      requestAnimationFrame(syncCtxToolbar);
+    });
+    if (bColor && pop) {
+      bColor.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (pop.style.display === 'none' || !pop.style.display) {
+          // Posiciona (fixed) logo abaixo do botão, centralizado, sem ser
+          // cortado pelo overflow do canvas-wrap.
+          const r = bColor.getBoundingClientRect();
+          pop.style.display = 'block';
+          const w = pop.offsetWidth || 188;
+          let left = r.left + r.width / 2 - w / 2;
+          left = Math.max(8, Math.min(left, window.innerWidth - w - 8));
+          pop.style.left = left + 'px';
+          pop.style.top = (r.bottom + 8) + 'px';
+        } else {
+          pop.style.display = 'none';
+        }
+      });
+      document.addEventListener('click', (e) => {
+        if (pop.style.display !== 'none' && !pop.contains(e.target) && e.target !== bColor && !bColor.contains(e.target)) {
+          pop.style.display = 'none';
+        }
+      });
+    }
+
+    // Caixa (Aa): cicla maiúscula → minúscula → primeira maiúscula → como
+    // digitou. Usa aplicarEstiloSensivel direto (respeita seleção). Os
+    // botões originais data-case eram SEMPRE globais — por isso a caixa
+    // mudava o slide todo mesmo com palavra selecionada.
+    // Caixa (Aa): abre um balão com as opções (MAIÚSCULAS / minúsculas /
+    // Primeira de cada / Como digitou), igual ao popover de espaçamento.
+    const bCase = document.getElementById('ctx-case');
+    const casePop = document.getElementById('ctx-case-pop');
+    if (casePop) {
+      casePop.querySelectorAll('.ctx-case-opt').forEach(opt => {
+        opt.addEventListener('click', () => {
+          const val = opt.dataset.caseOpt;
+          if (typeof aplicarEstiloSensivel === 'function')
+            aplicarEstiloSensivel('textTransform', val === 'none' ? null : val);
+          document.querySelectorAll('.text-case-btn').forEach(b =>
+            b.classList.toggle('active', b.dataset.case === val));
+          casePop.style.display = 'none';
+          requestAnimationFrame(syncCtxToolbar);
+        });
+      });
+    }
+    if (bCase && casePop) {
+      bCase.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (casePop.style.display === 'none' || !casePop.style.display) {
+          // Marca a opção atual como ativa.
+          const atual = _ctxValorSelecao('textTransform', 'none') || 'none';
+          casePop.querySelectorAll('.ctx-case-opt').forEach(o =>
+            o.classList.toggle('active', o.dataset.caseOpt === atual));
+          const r = bCase.getBoundingClientRect();
+          casePop.style.display = 'flex';
+          const w = casePop.offsetWidth || 180;
+          let left = r.left + r.width / 2 - w / 2;
+          left = Math.max(8, Math.min(left, window.innerWidth - w - 8));
+          casePop.style.left = left + 'px';
+          casePop.style.top = (r.bottom + 8) + 'px';
+        } else {
+          casePop.style.display = 'none';
+        }
+      });
+      document.addEventListener('click', (e) => {
+        if (casePop.style.display !== 'none' && !casePop.contains(e.target) && e.target !== bCase && !bCase.contains(e.target)) {
+          casePop.style.display = 'none';
+        }
+      });
+    }
+
+    // Animações: abre a aba de ANIMAÇÕES (painel esquerdo) e re-renderiza
+    // o grid no contexto certo: se há palavra(s) selecionada(s), aplica na
+    // palavra; senão, na estrofe inteira. NÃO anula o que já foi feito em
+    // outras palavras (cada palavra guarda sua própria animação no
+    // wordOverride; a estrofe só afeta quem não tem override).
+    const bAnim = document.getElementById('ctx-anim');
+    if (bAnim) bAnim.addEventListener('click', () => {
+      const tab = document.querySelector('.panel-tab[data-panel="animations"]');
+      if (tab) tab.click();
+      // Garante que o grid reflita o contexto atual (palavra vs estrofe).
+      requestAnimationFrame(() => {
+        if (typeof updateAnimContextHeader === 'function') updateAnimContextHeader();
+        if (typeof renderAnimGrid === 'function' && typeof currentAnimCategory === 'string') {
+          renderAnimGrid(currentAnimCategory);
+        }
+      });
+    });
+
+    // Painel de fontes: busca + fechar.
+    const fSearch = document.getElementById('ctx-fonts-search');
+    if (fSearch) fSearch.addEventListener('input', () => renderListaFontes(fSearch.value));
+    const fClose = document.getElementById('ctx-fonts-close');
+    if (fClose) fClose.addEventListener('click', fecharPainelFontes);
+
+    // Botão "Carregar fonte do computador": primeiro tenta acessar TODAS
+    // as fontes do sistema (se o navegador suportar queryLocalFonts, ex.
+    // Chrome/Edge); se não rolar, abre o seletor de arquivo .ttf/.otf.
+    const fUpload = document.getElementById('ctx-fonts-upload');
+    if (fUpload) fUpload.addEventListener('click', async () => {
+      try {
+        if (window.WM_LOCAL_FONTS && typeof window.WM_LOCAL_FONTS.tryQueryApi === 'function') {
+          const apiFonts = await window.WM_LOCAL_FONTS.tryQueryApi();
+          if (apiFonts && apiFonts.length > 0) {
+            const families = apiFonts.map(f => f.family);
+            if (typeof _allLocalFonts !== 'undefined') _allLocalFonts = families;
+            if (typeof renderLocalFontsGrid === 'function') renderLocalFontsGrid(families);
+            if (typeof window._repopularFontesCtx === 'function') window._repopularFontesCtx();
+            return; // conseguiu as fontes do sistema
+          }
+        }
+      } catch (e) {}
+      // Fallback: seletor de arquivo de fonte.
+      const inp = document.getElementById('custom-font-input');
+      if (inp) inp.click();
     });
 
     syncCtxToolbar();
@@ -20817,27 +21423,45 @@ function initEditor() {
     // Scope
     const lbl = document.getElementById('ctx-scope-label');
     if (lbl) lbl.textContent = temSel ? (selectedWordIds.size > 1 ? `${selectedWordIds.size} palavras` : 'Palavra') : 'Slide';
-    // Fonte
-    const sel = document.getElementById('ctx-font');
-    if (sel && s.fontFamily && sel.value !== s.fontFamily) sel.value = s.fontFamily;
+    // Fonte (nome no botão)
+    const fontCur = document.getElementById('ctx-font-current');
+    if (fontCur && s.fontFamily) fontCur.textContent = s.fontFamily;
     // Negrito / itálico
     const bBold = document.getElementById('ctx-bold');
     if (bBold) bBold.classList.toggle('active', (parseInt(s.fontWeight, 10) || 400) >= 700);
+    // Seletor de peso reflete o peso atual.
+    const selWeight = document.getElementById('ctx-weight');
+    if (selWeight) {
+      const w = String(parseInt(s.fontWeight, 10) || 400);
+      if ([...selWeight.options].some(o => o.value === w)) selWeight.value = w;
+    }
     const bItalic = document.getElementById('ctx-italic');
     if (bItalic) bItalic.classList.toggle('active', (s.fontStyle === 'italic'));
     // Tamanho (mostra px efetivo)
     const szVal = document.getElementById('ctx-size-val');
     if (szVal) {
       const globalFs = (s.fontSize || 64);
-      const px = temSel ? Math.round(globalFs * (s.fontSizeScale || 1)) : Math.round(globalFs);
-      szVal.textContent = px;
+      let escala = 1;
+      if (temSel) {
+        const wid = [...selectedWordIds][0];
+        const wo = engine.wordOverrides[wid];
+        escala = (wo && wo.style && wo.style.fontSizeScale) || 1;
+      }
+      szVal.textContent = temSel ? Math.round(globalFs * escala) : Math.round(globalFs);
     }
     // Espaçamento
-    const lsVal = document.getElementById('ctx-ls-val');
-    if (lsVal) lsVal.textContent = ((typeof s.letterSpacing === 'number') ? s.letterSpacing : -0.02).toFixed(2);
+    // Espaçamento entre letras agora vive no popover (ctx-spacing-pop),
+    // sincronizado ao abrir — não há valor fixo na barra pra atualizar.
     // Cor
     const dot = document.getElementById('ctx-color-dot');
     if (dot && s.color) dot.style.background = s.color;
+    // Caixa (Aa) — destaca quando não é "como digitou"
+    const bCase = document.getElementById('ctx-case');
+    if (bCase) {
+      const tt = s.textTransform || 'none';
+      bCase.classList.toggle('active', tt !== 'none');
+      bCase.textContent = tt === 'uppercase' ? 'AA' : (tt === 'lowercase' ? 'aa' : (tt === 'capitalize' ? 'Aa' : 'Aa'));
+    }
   }
 
   function renderWordPanel() {
@@ -20917,54 +21541,10 @@ function initEditor() {
           </button>
         </div>
 
-        <div class="word-panel-section-title">Tamanho ${commonSize == null ? '<span style="font-weight:400;font-size:10px;color:var(--text-tertiary);">(misto)</span>' : ''}</div>
-        <div style="display: flex; align-items: center; gap: var(--space-3);">
-          <input type="range" class="range" id="multi-size" min="50" max="250" step="5" value="${sizePct}" style="flex:1">
-          <span class="value-display" id="multi-size-val">${sizePct}%</span>
-        </div>
-        <div class="scene-card-actions" style="margin-top: 4px;">
-          <button class="btn-tiny" data-multi-action="reset-size">↺ Resetar tamanho</button>
-        </div>
-
-        <div class="word-panel-section-title">Espaçamento de letra <span style="font-weight:400;font-size:10px;color:var(--text-tertiary);">(só esta palavra)</span> ${commonLS == null ? '<span style="font-weight:400;font-size:10px;color:var(--text-tertiary);">— herda global</span>' : ''}</div>
-        <div style="display: flex; align-items: center; gap: var(--space-3);">
-          <input type="range" class="range" id="multi-letterspacing" min="-20" max="50" step="1" value="${lsSlider}" style="flex:1">
-          <span class="value-display" id="multi-letterspacing-val">${lsVal.toFixed(2)}em</span>
-        </div>
-        <div class="scene-card-actions" style="margin-top: 4px;">
-          <button class="btn-tiny" data-multi-action="reset-letterspacing">↺ Resetar espaçamento</button>
-        </div>
-
-        <div class="word-panel-section-title">Peso ${commonWeight == null ? '<span style="font-weight:400;font-size:10px;color:var(--text-tertiary);">(misto)</span>' : ''}</div>
-        <div class="segmented" style="width:100%; display:flex;">
-          <button data-multi-weight="400" class="${commonWeight === 400 ? 'active' : ''}" style="flex:1; padding:6px 4px;" title="Regular">Reg</button>
-          <button data-multi-weight="500" class="${commonWeight === 500 ? 'active' : ''}" style="flex:1; padding:6px 4px;" title="Medium">Med</button>
-          <button data-multi-weight="600" class="${commonWeight === 600 ? 'active' : ''}" style="flex:1; padding:6px 4px;" title="Semibold">Semi</button>
-          <button data-multi-weight="700" class="${commonWeight === 700 ? 'active' : ''}" style="flex:1; padding:6px 4px;" title="Bold">Bold</button>
-          <button data-multi-weight="800" class="${commonWeight === 800 ? 'active' : ''}" style="flex:1; padding:6px 4px;" title="Heavy">Heavy</button>
-        </div>
-
-        <div class="word-panel-section-title">Estilo ${commonStyle == null ? '<span style="font-weight:400;font-size:10px;color:var(--text-tertiary);">(misto)</span>' : ''}</div>
-        <div class="segmented" style="width:100%; display:flex;">
-          <button data-multi-fontstyle="normal" class="${commonStyle !== 'italic' ? 'active' : ''}" style="flex:1; padding:6px 4px;" title="Normal">Normal</button>
-          <button data-multi-fontstyle="italic" class="${commonStyle === 'italic' ? 'active' : ''}" style="flex:1; padding:6px 4px; font-style:italic;" title="Itálico">Itálico</button>
-        </div>
-
-        <div class="word-panel-section-title">Cor ${commonColor == null ? '<span style="font-weight:400;font-size:10px;color:var(--text-tertiary);">(mista)</span>' : ''}</div>
-        <div class="color-swatches" style="grid-template-columns: repeat(7, 1fr);">
-          <div class="color-swatch ${commonColor === '#f4f4f7' ? 'selected' : ''}" data-multi-color="#f4f4f7" style="background:#f4f4f7"></div>
-          <div class="color-swatch ${commonColor === '#ffffff' ? 'selected' : ''}" data-multi-color="#ffffff" style="background:#ffffff"></div>
-          <div class="color-swatch ${commonColor === '#d4a857' ? 'selected' : ''}" data-multi-color="#d4a857" style="background:#d4a857"></div>
-          <div class="color-swatch ${commonColor === '#8b5cf6' ? 'selected' : ''}" data-multi-color="#8b5cf6" style="background:#8b5cf6"></div>
-          <div class="color-swatch ${commonColor === '#60a5fa' ? 'selected' : ''}" data-multi-color="#60a5fa" style="background:#60a5fa"></div>
-          <div class="color-swatch ${commonColor === '#f472b6' ? 'selected' : ''}" data-multi-color="#f472b6" style="background:#f472b6"></div>
-          <label class="color-swatch color-swatch-custom" data-multi-color-custom title="Cor personalizada">
-            <input type="color" id="multi-color-custom" value="#ffffff" style="position:absolute; opacity:0; pointer-events:none; width:0; height:0;" />
-          </label>
-        </div>
-        <div class="scene-card-actions" style="margin-top: 4px;">
-          <button class="btn-tiny" data-multi-action="reset-color">↺ Resetar cor</button>
-        </div>
+        <div class="word-panel-section-title">Tamanho, fonte, cor e mais</div>
+        <p style="font-size: 11px; color: var(--text-tertiary); margin: 4px 0 0; line-height: 1.5;">
+          Use a <strong>barra no topo do slide</strong> pra mudar fonte, tamanho, espaçamento, negrito, itálico, caixa e cor das palavras selecionadas.
+        </p>
 
         <div class="scene-card-actions" style="margin-top: 16px;">
           <button class="btn-tiny" data-multi-action="clear-all">⌫ Limpar TODOS overrides destas palavras</button>
@@ -21063,221 +21643,10 @@ function initEditor() {
           </button>
         </div>
 
-        <div class="word-panel-section-title">Animação</div>
-
-        <div class="word-anim-inline">
-          <!-- Tabs Entrada/Saída -->
-          <div class="word-anim-tabs">
-            <button class="word-anim-tab active" data-word-anim-tab="entrance">Entrada</button>
-            <button class="word-anim-tab" data-word-anim-tab="exit">Saída</button>
-          </div>
-
-          <!-- Busca -->
-          <input type="text" class="word-anim-search" id="word-anim-search" placeholder="Buscar animação..." />
-
-          <!-- Filtros de estilo (chips) -->
-          <div class="word-anim-styles" id="word-anim-styles"></div>
-
-          <!-- Grid de cards -->
-          <div class="word-anim-grid" id="word-anim-grid"></div>
-        </div>
-
-        <div class="scene-control">
-          <div class="scene-control-label">Delay extra (segundos)</div>
-          <input type="number" data-word-prop="delay" min="0" max="5" step="0.1" value="${wo.delay || 0}" />
-        </div>
-
-        <div class="scene-control">
-          <div class="scene-control-label">Multiplicador de duração</div>
-          <input type="number" data-word-prop="durationScale" min="0.5" max="3" step="0.1" value="${wo.durationScale || 1}" />
-        </div>
-
-        <div class="word-panel-section-title">Estilo da palavra</div>
-
-        <div class="scene-control">
-          <div class="scene-control-label">Fonte</div>
-          <div class="word-font-grid">
-            <div class="word-font-option ${!woStyle.fontFamily ? 'selected' : ''}" data-word-font="">
-              <div class="word-font-sample" style="font-family: inherit; opacity: 0.6;">—</div>
-              <div class="word-font-name">Padrão</div>
-            </div>
-            ${FONTS.map(f => `
-              <div class="word-font-option ${woStyle.fontFamily === f ? 'selected' : ''}" data-word-font="${f}">
-                <div class="word-font-sample" style="font-family: '${f}', sans-serif;">Aa</div>
-                <div class="word-font-name">${f === 'Plus Jakarta Sans' ? 'Jakarta' : f === 'Space Grotesk' ? 'Grotesk' : f}</div>
-              </div>
-            `).join('')}
-          </div>
-        </div>
-
-        <div class="scene-control">
-          <div class="scene-control-label">Tamanho (relativo ao normal)</div>
-          <div class="scene-control-row">
-            <input type="range" data-word-style="fontSizeScale" min="0.5" max="3" step="0.05" value="${woStyle.fontSizeScale || 1}" style="flex: 1;" />
-            <span style="font-size: 11px; color: var(--text-tertiary); min-width: 38px; text-align: right;" id="word-size-display">${(woStyle.fontSizeScale || 1).toFixed(2)}×</span>
-          </div>
-        </div>
-
-        <div class="scene-control">
-          <div class="scene-control-label">Espaçamento de letra (só esta palavra)</div>
-          <div class="scene-control-row">
-            <input type="range" data-word-style="letterSpacing" min="-0.2" max="0.5" step="0.01" value="${typeof woStyle.letterSpacing === 'number' ? woStyle.letterSpacing : 0}" style="flex: 1;" />
-            <span style="font-size: 11px; color: var(--text-tertiary); min-width: 44px; text-align: right;" id="word-ls-display">${(typeof woStyle.letterSpacing === 'number' ? woStyle.letterSpacing : 0).toFixed(2)}em</span>
-            ${typeof woStyle.letterSpacing === 'number' ? `<button class="btn-tiny" data-word-style-clear="letterSpacing">×</button>` : ''}
-          </div>
-        </div>
-
-        <div class="scene-control">
-          <div class="scene-control-label">Velocidade da animação (só esta palavra)</div>
-          <div class="scene-control-row">
-            <input type="range" id="word-speed-range" min="0.3" max="3" step="0.1" value="${wo.durationScale || 1}" style="flex: 1;" />
-            <span style="font-size: 11px; color: var(--text-tertiary); min-width: 64px; text-align: right;" id="word-speed-display">${speedLabel(wo.durationScale || 1)}</span>
-            ${wo.durationScale && wo.durationScale !== 1 ? `<button class="btn-tiny" id="word-speed-clear">×</button>` : ''}
-          </div>
-        </div>
-
-        <div class="scene-control">
-          <div class="scene-control-label">Mesclagem com o fundo (só esta palavra)</div>
-          <div class="scene-control-row">
-            <select id="word-blend-select" style="flex: 1;">
-              ${[
-                ['normal','Normal (sem efeito)'],
-                ['multiply','Multiplicar (escurece sobre o fundo)'],
-                ['screen','Tela (clareia sobre o fundo)'],
-                ['overlay','Sobrepor (contraste)'],
-                ['soft-light','Luz suave'],
-                ['hard-light','Luz direta (forte)'],
-                ['darken','Escurecer'],
-                ['lighten','Clarear'],
-                ['difference','Diferença (inverte cores do fundo)'],
-                ['exclusion','Exclusão (suave que diferença)'],
-              ].map(([v,t]) => `<option value="${v}" ${(wo.style && wo.style.blendMode === v) || (!((wo.style||{}).blendMode) && v==='normal') ? 'selected' : ''}>${t}</option>`).join('')}
-            </select>
-          </div>
-        </div>
-
-        <div class="scene-control">
-          <div class="scene-control-label">Caixa do texto (só esta palavra)</div>
-          <div class="scene-control-row">
-            <select id="word-case-select" style="flex: 1;">
-              ${[
-                ['none','Original (como digitou / herda)'],
-                ['uppercase','MAIÚSCULAS'],
-                ['lowercase','minúsculas'],
-                ['capitalize','Cada Palavra'],
-              ].map(([v,t]) => `<option value="${v}" ${((wo.style||{}).textTransform||'none')===v ? 'selected' : ''}>${t}</option>`).join('')}
-            </select>
-          </div>
-        </div>
-
-        <div class="scene-control">
-          <div class="scene-control-label">Estilo (só esta palavra)</div>
-          <div class="scene-control-row">
-            <div class="segmented" style="width:100%; display:flex;">
-              <button id="word-style-normal" class="${((wo.style||{}).fontStyle||'normal')!=='italic' ? 'active' : ''}" style="flex:1; padding:6px 4px;">Normal</button>
-              <button id="word-style-italic" class="${((wo.style||{}).fontStyle||'normal')==='italic' ? 'active' : ''}" style="flex:1; padding:6px 4px; font-style:italic;">Itálico</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="scene-control">
-          <div class="scene-control-label">Cor da palavra</div>
-          <div class="scene-control-row">
-            <input type="color" data-word-style="color" value="${woStyle.color || '#f4f4f7'}" style="width: 40px; height: 28px; padding: 0; border-radius: 4px; cursor: pointer; background: none;" />
-            <input type="text" data-word-style-text="color" value="${woStyle.color || ''}" placeholder="Padrão" style="flex: 1;" />
-            ${woStyle.color ? `<button class="btn-tiny" data-word-style-clear="color">×</button>` : ''}
-          </div>
-        </div>
-
-        <div class="scene-control">
-          <div class="scene-control-label">Peso</div>
-          <div class="scene-control-row" style="gap: 4px;">
-            <button class="word-weight-btn ${!woStyle.fontWeight ? 'selected' : ''}" data-word-weight="">Padrão</button>
-            <button class="word-weight-btn ${woStyle.fontWeight === 400 ? 'selected' : ''}" data-word-weight="400">Regular</button>
-            <button class="word-weight-btn ${woStyle.fontWeight === 600 ? 'selected' : ''}" data-word-weight="600">Semibold</button>
-            <button class="word-weight-btn ${woStyle.fontWeight === 800 ? 'selected' : ''}" data-word-weight="800">Bold</button>
-          </div>
-        </div>
-
-        <div class="word-panel-section-title">Brilho e sombra</div>
-
-        <div class="scene-control">
-          <div class="scene-control-label">Brilho (glow)</div>
-          <div class="scene-control-row">
-            <input type="range" data-word-style="glow" min="0" max="40" step="1" value="${woStyle.glow || 0}" style="flex: 1;" />
-            <span style="font-size: 11px; color: var(--text-tertiary); min-width: 28px; text-align: right;" id="word-glow-display">${woStyle.glow || 0}</span>
-          </div>
-        </div>
-
-        <div class="scene-control">
-          <div class="scene-control-label">Cor do brilho</div>
-          <div class="scene-control-row">
-            <input type="color" data-word-style="glowColor" value="${woStyle.glowColor || '#8b5cf6'}" style="width: 40px; height: 28px; padding: 0; border-radius: 4px; cursor: pointer; background: none;" ${!(woStyle.glow > 0) ? 'disabled' : ''} />
-            <input type="text" data-word-style-text="glowColor" value="${woStyle.glowColor || ''}" placeholder="Padrão (#8b5cf6)" style="flex: 1;" />
-            ${woStyle.glowColor ? `<button class="btn-tiny" data-word-style-clear="glowColor">×</button>` : ''}
-          </div>
-        </div>
-
-        <div class="scene-control">
-          <div class="scene-control-label">Sombra — direção X</div>
-          <div class="scene-control-row">
-            <input type="range" data-word-style="shadowOffsetX" min="-20" max="20" step="1" value="${woStyle.shadowOffsetX || 0}" style="flex: 1;" />
-            <span style="font-size: 11px; color: var(--text-tertiary); min-width: 28px; text-align: right;" id="word-shadow-x-display">${woStyle.shadowOffsetX || 0}</span>
-          </div>
-        </div>
-
-        <div class="scene-control">
-          <div class="scene-control-label">Sombra — direção Y</div>
-          <div class="scene-control-row">
-            <input type="range" data-word-style="shadowOffsetY" min="-20" max="20" step="1" value="${woStyle.shadowOffsetY || 0}" style="flex: 1;" />
-            <span style="font-size: 11px; color: var(--text-tertiary); min-width: 28px; text-align: right;" id="word-shadow-y-display">${woStyle.shadowOffsetY || 0}</span>
-          </div>
-        </div>
-
-        <div class="scene-control">
-          <div class="scene-control-label">Sombra — desfoque</div>
-          <div class="scene-control-row">
-            <input type="range" data-word-style="shadowBlur" min="0" max="30" step="1" value="${woStyle.shadowBlur || 0}" style="flex: 1;" />
-            <span style="font-size: 11px; color: var(--text-tertiary); min-width: 28px; text-align: right;" id="word-shadow-blur-display">${woStyle.shadowBlur || 0}</span>
-          </div>
-        </div>
-
-        <div class="scene-control">
-          <div class="scene-control-label">Sombra — cor</div>
-          <div class="scene-control-row">
-            <input type="color" data-word-style="shadowColor" value="${woStyle.shadowColor || '#000000'}" style="width: 40px; height: 28px; padding: 0; border-radius: 4px; cursor: pointer; background: none;" />
-            <input type="text" data-word-style-text="shadowColor" value="${woStyle.shadowColor || ''}" placeholder="Padrão (preto 60%)" style="flex: 1;" />
-            ${woStyle.shadowColor ? `<button class="btn-tiny" data-word-style-clear="shadowColor">×</button>` : ''}
-          </div>
-        </div>
-
-        <div class="scene-control" style="margin-top: 4px;">
-          <div class="scene-control-label" style="margin-bottom: 4px;">Predefinições</div>
-          <div class="scene-control-row" style="gap: 4px; flex-wrap: wrap;">
-            <button class="btn-tiny" data-word-glow-preset="soft">Brilho suave</button>
-            <button class="btn-tiny" data-word-glow-preset="strong">Brilho forte</button>
-            <button class="btn-tiny" data-word-glow-preset="gold">Dourado</button>
-            <button class="btn-tiny" data-word-glow-preset="shadow">Sombra clássica</button>
-            <button class="btn-tiny" data-word-glow-preset="clear">✕ Sem efeito</button>
-          </div>
-        </div>
-
-        ${wo.position ? `
-        <div class="word-panel-section-title">Posição</div>
-        <div style="font-size: 11px; color: var(--text-secondary); padding: 8px 10px; background: var(--bg-3); border-radius: 6px;">
-          📍 X: ${(wo.position.x * 100).toFixed(1)}% • Y: ${(wo.position.y * 100).toFixed(1)}%
-          <br><span style="font-size: 10px; color: var(--text-tertiary);">Esta palavra foi posicionada manualmente (drag)</span>
-        </div>
-        <div class="scene-card-actions" style="margin-top: 6px;">
-          <button class="btn-tiny" data-word-action="reset-position">↺ Resetar posição (volta auto-layout)</button>
-        </div>
-        ` : `
-        <div class="word-panel-section-title">Posição</div>
-        <div style="font-size: 11px; color: var(--text-tertiary); padding: 8px 10px; background: var(--bg-3); border-radius: 6px;">
-          Auto-layout (centralizada)
-          <br><span style="font-size: 10px;">Arraste a palavra no canvas para posicionar livremente</span>
-        </div>
-        `}
+        <div class="word-panel-section-title">Mais opções</div>
+        <p style="font-size: 11px; color: var(--text-tertiary); margin: 4px 0 0; line-height: 1.5;">
+          Fonte, tamanho, espaçamento, negrito, itálico, caixa, cor e animação ficam na <strong>barra do topo do slide</strong>. Aqui você organiza as <strong>camadas</strong> (ordem das palavras).
+        </p>
 
         <div class="scene-card-actions" style="margin-top: 16px;">
           <button class="btn-tiny" data-word-action="preview">▶ Prévia estrofe</button>
@@ -21896,6 +22265,40 @@ function initEditor() {
     if (typeof renderWordPanel === 'function') renderWordPanel();
   });
 
+  // Botão "Aplicar esta animação em todos os slides": pega a animação da
+  // categoria ATUAL do slide atual e propaga pra todas as estrofes,
+  // limpando os overrides de cena dessa categoria (todas passam a seguir
+  // o global). Não mexe nas OUTRAS categorias nem nas animações por palavra.
+  $('#btn-anim-aplicar-todos')?.addEventListener('click', () => {
+    const cat = currentAnimCategory;
+    if (cat !== 'entrance' && cat !== 'exit' && cat !== 'loop') return;
+    // Anim atual desta categoria nesta estrofe (override) ou a última escolhida.
+    let animId = null;
+    const st = engine.parsed?.stanzas?.[engine.currentStanzaIndex];
+    if (st && engine.sceneOverrides && engine.sceneOverrides[st.id] && engine.sceneOverrides[st.id][cat]) {
+      animId = engine.sceneOverrides[st.id][cat];
+    } else if (window.__ultimaAnim && window.__ultimaAnim[cat]) {
+      animId = window.__ultimaAnim[cat];
+    } else {
+      animId = engine.animConfig[cat];
+    }
+    if (!animId) return;
+    // Global: todas seguem este id; limpa overrides de cena dessa categoria.
+    engine.animConfig[cat] = animId;
+    if (engine.sceneOverrides) {
+      Object.keys(engine.sceneOverrides).forEach(sid => {
+        if (engine.sceneOverrides[sid] && engine.sceneOverrides[sid][cat]) {
+          delete engine.sceneOverrides[sid][cat];
+        }
+      });
+    }
+    markDirty();
+    if (typeof engine.playFull === 'function') engine.playFull();
+    // Feedback rápido no botão.
+    const b = document.getElementById('btn-anim-aplicar-todos');
+    if (b) { const t = b.innerHTML; b.innerHTML = '✓ Aplicado em todos os slides'; setTimeout(() => { b.innerHTML = t; }, 1600); }
+  });
+
   // ============ FAVORITOS (animações e fontes) ============
   // Persistido em localStorage. Não depende de projeto — é do usuário.
 
@@ -21991,6 +22394,14 @@ function initEditor() {
 
     // Atualiza header contextual
     updateAnimContextHeader();
+
+    // Botão "aplicar em todos os slides": só faz sentido pra animação de
+    // SLIDE (sem palavra selecionada) nas categorias de estrofe.
+    const btnTodos = document.getElementById('btn-anim-aplicar-todos');
+    if (btnTodos) {
+      const ehEstrofe = !hasWordSelected && (category === 'entrance' || category === 'exit' || category === 'loop');
+      btnTodos.style.display = ehEstrofe ? '' : 'none';
+    }
 
     // atualiza contador
     const total = WM_ANIMATIONS.byCategory[category].length;
@@ -22089,47 +22500,33 @@ function initEditor() {
           return;
         }
 
-        // Default: aplica na estrofe — mas PERGUNTA o escopo primeiro
-        // (só este slide ou todos), pra entrance/exit/loop.
+        // Aplica DIRETO só neste slide (sem pop-up). Pra propagar a todos,
+        // o usuário usa o botão "Aplicar em todos os slides" no painel.
         if (category === 'entrance' || category === 'exit' || category === 'loop') {
-          _askAnimScope(id, category, (escopo) => {
-            if (escopo === 'cancel') return;
+          // Garante target = stanza (animação de slide, não por palavra)
+          if (engine.animConfig.target === 'word') {
+            engine.setAnimConfig({ target: 'stanza' });
+            $$('.granularity-choice button').forEach(b => {
+              b.classList.toggle('active', b.dataset.grain === 'stanza');
+            });
+          }
+          // Só este slide: salva no sceneOverride da estrofe atual.
+          const st = engine.parsed?.stanzas?.[engine.currentStanzaIndex];
+          if (st) {
+            if (!engine.sceneOverrides) engine.sceneOverrides = {};
+            if (!engine.sceneOverrides[st.id]) engine.sceneOverrides[st.id] = {};
+            engine.sceneOverrides[st.id][category] = id;
+          }
+          // Lembra a última animação escolhida por categoria (pro botão
+          // "aplicar em todos" saber o que propagar).
+          window.__ultimaAnim = window.__ultimaAnim || {};
+          window.__ultimaAnim[category] = id;
 
-            // Garante target = stanza (animação de slide, não por palavra)
-            if (engine.animConfig.target === 'word') {
-              engine.setAnimConfig({ target: 'stanza' });
-              $$('.granularity-choice button').forEach(b => {
-                b.classList.toggle('active', b.dataset.grain === 'stanza');
-              });
-            }
-
-            if (escopo === 'todos') {
-              // Global: aplica em todas as estrofes
-              engine.animConfig[category] = id;
-              // Limpa overrides de cena dessa categoria (pra todas seguirem o global)
-              if (engine.sceneOverrides) {
-                Object.keys(engine.sceneOverrides).forEach(sid => {
-                  if (engine.sceneOverrides[sid] && engine.sceneOverrides[sid][category]) {
-                    delete engine.sceneOverrides[sid][category];
-                  }
-                });
-              }
-            } else {
-              // Só este slide: salva no sceneOverride da estrofe atual
-              const st = engine.parsed?.stanzas?.[engine.currentStanzaIndex];
-              if (st) {
-                if (!engine.sceneOverrides) engine.sceneOverrides = {};
-                if (!engine.sceneOverrides[st.id]) engine.sceneOverrides[st.id] = {};
-                engine.sceneOverrides[st.id][category] = id;
-              }
-            }
-
-            $$('.anim-card').forEach(c => c.classList.remove('selected'));
-            card.classList.add('selected');
-            updateCurrentAnimDisplay(id);
-            markDirty();
-            engine.playFull();
-          });
+          $$('.anim-card').forEach(c => c.classList.remove('selected'));
+          card.classList.add('selected');
+          updateCurrentAnimDisplay(id);
+          markDirty();
+          engine.playFull();
           return;
         }
 
@@ -22525,15 +22922,18 @@ function initEditor() {
         engine.setWordOverride(wid, { style: newStyle });
       });
       markDirty();
-      // Re-centraliza as linhas afetadas (trocar a fonte muda a largura;
-      // sem isso, com 2+ palavras abre buraco no meio / vão pros extremos).
-      if (typeof reflowLinhasDasPalavras === 'function') {
-        reflowLinhasDasPalavras([...selectedWordIds]);
-      }
-      // Re-render ESTÁTICO (igual applyResizeUpdate): NÃO playFull.
+      // Re-render ESTÁTICO primeiro (aplica a NOVA fonte no DOM), e SÓ
+      // DEPOIS reflui. A ordem importa: o reflow mede a largura com
+      // getBoundingClientRect — se medisse ANTES do render, pegava a
+      // largura da fonte ANTIGA e o espaçamento ficava desregulado
+      // (umas juntas, outras afastadas). Agora mede a fonte nova.
       engine.renderStanza(engine.currentStanzaIndex);
       if (typeof engine.killAllAnimations === 'function') {
         try { engine.killAllAnimations(); } catch (e) {}
+      }
+      // Reflui as linhas afetadas com a nova fonte já no DOM.
+      if (typeof reflowLinhasDasPalavras === 'function') {
+        reflowLinhasDasPalavras([...selectedWordIds]);
       }
       requestAnimationFrame(() => {
         const stz = getStanzaEl();
@@ -22707,6 +23107,7 @@ function initEditor() {
       `;
     }).join('');
     applyFontSearch();
+    if (typeof window._repopularFontesCtx === 'function') window._repopularFontesCtx();
   }
 
   // Função exportada chamada quando estrela é clicada (re-render do grid)
@@ -22738,6 +23139,7 @@ function initEditor() {
       </div>
     `).join('');
     applyFontSearch();
+    if (typeof window._repopularFontesCtx === 'function') window._repopularFontesCtx();
   }
 
   // Upload manual (legacy — não está mais exposto na UI, mas mantido pra usuários antigos)
@@ -27233,6 +27635,67 @@ function initEditor() {
   // Barra contextual (Etapa 1): liga os controles e sincroniza.
   if (typeof setupCtxToolbar === 'function') setupCtxToolbar();
 
+  // Botão "Recentralizar slide": volta o slide atual ao layout automático.
+  {
+    const btnRec = document.getElementById('btn-recentralizar');
+    if (btnRec) btnRec.addEventListener('click', () => {
+      const n = recentralizarSlide(engine.currentStanzaIndex);
+      if (n === 0) {
+        // Nada pra recentralizar (já está no flow) — re-render leve.
+        engine.renderStanza(engine.currentStanzaIndex);
+      }
+    });
+  }
+
+  // Conserto automático: ao iniciar, varre slides que vieram com posições
+  // ruins (amontoadas/fora do slide) e os recentraliza. Roda uma vez,
+  // depois que tudo carregou, sem atrapalhar o usuário.
+  setTimeout(() => {
+    try {
+      if (typeof consertarSlidesComPosicaoRuim === 'function') {
+        consertarSlidesComPosicaoRuim();
+      }
+    } catch (e) {}
+  }, 800);
+
+  // Une a aba Palavra à aba Efeitos: move o conteúdo de palavra (camadas)
+  // pra dentro do painel Efeitos, no fim. Assim vira uma aba só ("Efeitos")
+  // com os efeitos (brilho/contorno/sombra) + os controles de palavra
+  // (camadas), e a aba Palavra some.
+  (function fundirPalavraComEfeitos() {
+    try {
+      const efeitos = document.querySelector('.panel-content[data-rpanel-content="style"]');
+      const palavra = document.querySelector('.panel-content[data-rpanel-content="word"]');
+      if (efeitos && palavra && palavra.parentNode) {
+        // Move as seções da aba palavra pro INÍCIO da aba efeitos, mantendo
+        // a ordem original (animação por palavra → camadas), pra que ao
+        // selecionar uma palavra apareçam PRIMEIRO os controles de palavra
+        // e DEPOIS os efeitos (brilho/contorno/sombra).
+        const ancora = efeitos.firstElementChild; // primeiro efeito
+        const secoes = [...palavra.children];
+        secoes.forEach(sec => efeitos.insertBefore(sec, ancora));
+        // Remove o container vazio da aba palavra.
+        palavra.parentNode.removeChild(palavra);
+      }
+    } catch (e) {}
+  })();
+
+  // Une a aba Motion à aba Fundo: move as seções de Motion (granularidade,
+  // velocidade, transição) pro FIM da aba Fundo. Vira "Fundo & Movimento":
+  // primeiro o fundo (o que se vê), depois o movimento (como anima).
+  (function fundirMotionComFundo() {
+    try {
+      const fundo = document.querySelector('.panel-content[data-rpanel-content="bg"]');
+      const motion = document.querySelector('.panel-content[data-rpanel-content="motion"]');
+      if (fundo && motion && motion.parentNode) {
+        while (motion.firstElementChild) {
+          fundo.appendChild(motion.firstElementChild);
+        }
+        motion.parentNode.removeChild(motion);
+      }
+    } catch (e) {}
+  })();
+
   // ============ EXPORT (Fase 4) ============
   let currentExporter = null;
   let lastExportBlob = null;
@@ -27413,12 +27876,37 @@ function initEditor() {
   async function startExport() {
     const aspect = window.__currentAspect || '16:9';
 
+    // DIAGNÓSTICO temporário: loga posições calculadas no console.
+    window.__WM_DIAG_EXPORT = true;
+    console.log('[WM-DIAG] === Início do export — fontes prontas? ===');
+    try {
+      console.log('[WM-DIAG] document.fonts.status:', document.fonts.status,
+        '| fontes carregadas:', document.fonts.size);
+    } catch (e) {}
+
+    // Garante que as fontes do computador estejam 100% carregadas ANTES de
+    // exportar. Sem isto, o canvas desenhava o texto com a fonte ainda não
+    // pronta → glyphs rasterizados em baixa qualidade (fonte borrada/
+    // pixelada no vídeo, só nas fontes do computador).
+    try {
+      if (window.WM_CUSTOM_FONTS && typeof window.WM_CUSTOM_FONTS.waitReady === 'function') {
+        await window.WM_CUSTOM_FONTS.waitReady();
+      }
+      if (document.fonts && document.fonts.ready) await document.fonts.ready;
+    } catch (e) {}
+
     // Re-arruma slides com palavras sobrepostas ANTES de exportar. Com a
     // escala por largura, o reflow mede certo em qualquer proporção, então
     // isto garante que o vídeo nunca saia com palavras grudadas (corrige
     // slides editados com a marcação aberta). Só toca em linhas que de
     // fato sobrepõem.
     try {
+      // Conserta slides com posições ruins (amontoadas/fora do quadro)
+      // ANTES de exportar — mesmo conserto do editor, pra o vídeo nunca
+      // sair com palavras grudadas.
+      if (typeof consertarSlidesComPosicaoRuim === 'function') {
+        consertarSlidesComPosicaoRuim();
+      }
       if (typeof rearrumarSlidesSobrepostos === 'function') {
         const n = rearrumarSlidesSobrepostos();
         if (n > 0 && typeof window.WM_EXPORT_LOG === 'function') {
