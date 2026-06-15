@@ -1560,8 +1560,6 @@ body.wm-recording-mode::after {
   justify-content: center;
   gap: var(--space-3);
   padding: var(--space-8);
-  min-height: 0;
-  min-width: 0;
   background:
     radial-gradient(circle at 30% 20%, rgba(139, 92, 246, 0.06), transparent 50%),
     radial-gradient(circle at 70% 80%, rgba(59, 130, 246, 0.05), transparent 50%),
@@ -1736,18 +1734,9 @@ body.marking-open.marking-collapsed .editor-canvas {
   position: relative;
   isolation: isolate;
   aspect-ratio: 16 / 9;
-  /* width e height automáticos dentro dos limites, mas o aspect-ratio
-     SEMPRE manda. Antes, width:100% + max-height conflitavam: quando a
-     altura era o fator limitante (barra no topo ocupa espaço), a largura
-     esticava além do 16:9 → slide "ultra widescreen" no editor, diferente
-     do export 16:9 → tudo sobreposto. Agora limitamos AMBos e deixamos o
-     aspect-ratio resolver, priorizando caber na altura. */
-  width: auto;
-  height: auto;
-  max-width: min(900px, 100%);
+  width: 100%;
+  max-width: 900px;
   max-height: calc(100vh - var(--topbar-height) - var(--timeline-height) - var(--space-16));
-  min-width: 0;
-  min-height: 0;
   background: var(--bg-canvas);
   border-radius: var(--radius-xl);
   border: 1px solid var(--border-default);
@@ -19366,6 +19355,28 @@ function initEditor() {
   // Chame WM_DIAG() no console com a estrofe que está bugada aberta.
   // Compara, pra cada palavra: posição (x,y), tamanho de fonte e largura
   // medida no EDITOR (DOM) vs no EXPORT (canvas measureLayout).
+  window.WM_DIM = function() {
+    const els = ['.editor-canvas', '#canvas-content', '.canvas-content', '.lyric-stanza', '#editor-canvas'];
+    console.log('%c=== DIMENSÕES (largura x altura, proporção) ===', 'font-weight:bold;color:#8b5cf6');
+    els.forEach(sel => {
+      const el = document.querySelector(sel);
+      if (el) {
+        const r = el.getBoundingClientRect();
+        const ratio = r.height > 0 ? (r.width / r.height).toFixed(2) : '?';
+        console.log(`${sel}: ${Math.round(r.width)} x ${Math.round(r.height)} | proporção ${ratio} ${Math.abs(parseFloat(ratio) - 1.78) > 0.1 ? '← NÃO é 16:9 (1.78)!' : '✓ 16:9'}`);
+      } else {
+        console.log(`${sel}: não encontrado`);
+      }
+    });
+    // Checa transform/scale aplicado
+    const stz = document.querySelector('.lyric-stanza');
+    if (stz) {
+      const cs = getComputedStyle(stz);
+      console.log('lyric-stanza transform:', cs.transform, '| width CSS:', cs.width);
+    }
+    return '16:9 = proporção 1.78. Veja qual elemento está fora disso.';
+  };
+
   window.WM_DIAG = function() {
     const idx = engine.currentStanzaIndex;
     const stanza = engine.parsed && engine.parsed.stanzas[idx];
