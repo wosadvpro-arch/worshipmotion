@@ -13172,7 +13172,7 @@ const CanvasRenderer = {
     this._drawBackgroundCached(ctx, slide.background || 'brand', W, H);
 
     // 2. Configura tipografia e pega layout (cacheado por slide)
-    this._setFont(ctx, slide.style, H);
+    this._setFont(ctx, slide.style, H, W);
     const layoutKey = this._makeLayoutKey(slide, W, H);
     let layout = this._layoutCache.get(layoutKey);
     if (!layout) {
@@ -13607,7 +13607,7 @@ const CanvasRenderer = {
     }
 
     const style = slide.style || {};
-    const baseFontSize = this._computeFontSize(style, H);
+    const baseFontSize = this._computeFontSize(style, H, W);
     // SEMÂNTICA NOVA (igual editor):
     // line-height tipográfico fixo em 1 (compacto, sem espaço dentro da linha).
     // O "espaçamento entre linhas" do usuário vira GAP entre linhas.
@@ -13787,8 +13787,8 @@ const CanvasRenderer = {
 
   /* ==================== INTERNOS ==================== */
 
-  _setFont(ctx, style, H) {
-    const fontSize = this._computeFontSize(style, H);
+  _setFont(ctx, style, H, W) {
+    const fontSize = this._computeFontSize(style, H, W);
     const fontFamily = style?.fontFamily || 'Inter';
     const fontWeight = style?.fontWeight || 600;
     ctx.font = `${fontWeight} ${fontSize}px "${fontFamily}", sans-serif`;
@@ -13828,9 +13828,15 @@ const CanvasRenderer = {
    * fontSize do editor é definido em px relativo a um canvas ~600px de altura.
    * No export, escalamos proporcional à altura real.
    */
-  _computeFontSize(style, H) {
+  _computeFontSize(style, H, W) {
     const base = style?.fontSize || 64;
-    // Referência: H=600 dá tamanho base; H=1080 multiplica
+    // ESCALA PELA LARGURA (aspecto-independente): as posições das palavras
+    // são frações da largura, então ancorar a fonte na largura mantém a
+    // escala IDÊNTICA em 16:9, 9:16 e no canvas distorcido da marcação.
+    // Pra 16:9, W/1066.67 == H/600. Se W não vier, cai no antigo (altura).
+    if (typeof W === 'number' && W > 0) {
+      return base * (W / (600 * 16 / 9));
+    }
     return base * (H / 600);
   },
 
@@ -13995,7 +14001,7 @@ const CanvasRenderer = {
         // Altura da "caixa" do texto (aprox. tamanho da fonte) — usada pra
         // calcular o raio farthest-corner igual ao CSS radial-gradient.
         const fontPxS = (firstW.font && firstW.font.size)
-          ? firstW.font.size : (this._computeFontSize(style, H) || 48);
+          ? firstW.font.size : (this._computeFontSize(style, H, W) || 48);
         const boxH = fontPxS;
         // raio até o canto mais distante (farthest-corner) da caixa do texto
         const cornerR = Math.sqrt(
@@ -14016,7 +14022,7 @@ const CanvasRenderer = {
         // rende bem mais forte que strokeText 1.5px no canvas. Escala com
         // a fonte pra ter presença equivalente.
         const fontForStroke = (firstW.font && firstW.font.size)
-          ? firstW.font.size : (this._computeFontSize(style, H) || 48);
+          ? firstW.font.size : (this._computeFontSize(style, H, W) || 48);
         const effStrokeW = Math.max(strokeW, fontForStroke * 0.035);
 
         // Modo de preenchimento: 'bottom' = líquido subindo (máscara
@@ -14163,7 +14169,7 @@ const CanvasRenderer = {
 
         // Altura generosa pra não cortar ascender/descender (Ç g p q y).
         const fontPxR = (firstW.font && firstW.font.size) ? firstW.font.size
-                        : (this._computeFontSize(style, H) || 48);
+                        : (this._computeFontSize(style, H, W) || 48);
         const halfH = fontPxR * 1.0; // acima e abaixo da baseline central
 
         ctx.save();
@@ -14199,7 +14205,7 @@ const CanvasRenderer = {
         // Altura da janela = altura da linha + folga p/ descender (Ç g p q y),
         // igual ao motor (paddingBottom em "em" do tamanho da fonte).
         const fontPx = (firstW.font && firstW.font.size) ? firstW.font.size
-                       : (this._computeFontSize(style, H) || 48);
+                       : (this._computeFontSize(style, H, W) || 48);
         const descenderPad = (preset.windowMask.descenderPad != null
           ? preset.windowMask.descenderPad : 0.20) * fontPx;
         // caixa do texto ~ fontPx (tipográfico) + folga de descender
@@ -16205,19 +16211,37 @@ class RenderEngineV2 {
     // fração ocupada pelas palavras é IDÊNTICA — usando física ou
     // lógica. Usar física dá fonte adequada à tela.
     let refHeight = 0;
+    let refWidth = 0;
     const cont = this.canvas
       && (this.canvas.closest('.editor-canvas') || this.canvas);
     if (cont) {
       const cr = cont.getBoundingClientRect();
       refHeight = cr.height || cont.clientHeight || 0;
+      refWidth = cr.width || cont.clientWidth || 0;
     }
     if (!refHeight) {
       refHeight = this.canvas
         ? (this.canvas.clientHeight || this.canvas.getBoundingClientRect().height)
         : 0;
     }
+    if (!refWidth) {
+      refWidth = this.canvas
+        ? (this.canvas.clientWidth || this.canvas.getBoundingClientRect().width)
+        : 0;
+    }
+    // ESCALA PELA LARGURA (não pela altura). As posições/larguras das
+    // palavras são frações da LARGURA do canvas; ancorar a fonte na
+    // largura deixa a escala IDÊNTICA em qualquer proporção (16:9, 9:16
+    // ou o canvas distorcido do modo marcação). Antes, ancorada na
+    // altura, uma proporção diferente de 16:9 (ex: marcação) deixava a
+    // fonte grande demais pra largura → palavras sobrepostas no preview
+    // e no export. Pra 16:9, largura/1066.67 == altura/600 (idêntico).
+    const BASE_W = 600 * 16 / 9; // 1066.667 = largura equivalente à altura-base 600
     let effectiveFontSize;
-    if (refHeight > 0) {
+    if (refWidth > 0) {
+      effectiveFontSize = s.fontSize * (refWidth / BASE_W);
+      stanzaEl.style.fontSize = `${effectiveFontSize}px`;
+    } else if (refHeight > 0) {
       effectiveFontSize = s.fontSize * (refHeight / 600);
       stanzaEl.style.fontSize = `${effectiveFontSize}px`;
     } else {
@@ -18996,6 +19020,63 @@ function initEditor() {
       });
     });
     if (typeof markDirty === 'function') markDirty();
+  }
+
+  // ===== RE-ARRUMAÇÃO AUTOMÁTICA (corrige sobreposição em massa) =====
+  // Percorre TODOS os slides, detecta linhas onde palavras free estão
+  // SOBREPOSTAS (uma invadindo a outra) e reflui só essas — preserva
+  // posicionamento intencional que não sobrepõe. Usada pra consertar
+  // slides editados com a marcação aberta (proporção distorcida) antes
+  // da correção da escala. Idempotente: rodar de novo não muda nada se
+  // já estiver tudo certo.
+  function rearrumarSlidesSobrepostos() {
+    if (!engine.parsed || !engine.parsed.stanzas) return 0;
+    const idxAtual = engine.currentStanzaIndex;
+    let linhasCorrigidas = 0;
+    const TOL = 0.06;
+
+    engine.parsed.stanzas.forEach((stanza, si) => {
+      engine.currentStanzaIndex = si;
+      engine.renderStanza(si);
+      const stz = getStanzaEl();
+      if (!stz) return;
+      const stanzaRect = stz.getBoundingClientRect();
+      if (!stanzaRect.width) return;
+
+      // Agrupa palavras free por linha (Y).
+      const linhas = {};
+      stz.querySelectorAll('.lyric-word').forEach(el => {
+        const wid = el.dataset.wordId;
+        const w = engine.wordOverrides[wid];
+        if (!w || !w.position) return;
+        const yKey = Math.round(w.position.y / TOL);
+        (linhas[yKey] = linhas[yKey] || []).push({ id: wid, el, x: w.position.x });
+      });
+
+      // Pra cada linha, detecta sobreposição entre vizinhas.
+      Object.values(linhas).forEach(palavras => {
+        if (palavras.length < 2) return;
+        palavras.sort((a, b) => a.x - b.x);
+        let sobrepoe = false;
+        for (let i = 0; i < palavras.length - 1; i++) {
+          const a = palavras[i].el.getBoundingClientRect();
+          const b = palavras[i + 1].el.getBoundingClientRect();
+          if (a.right > b.left + 1) { sobrepoe = true; break; }
+        }
+        if (sobrepoe && typeof _reflowLinhaDaPalavra === 'function') {
+          _reflowLinhaDaPalavra(palavras[0].id);
+          linhasCorrigidas++;
+        }
+      });
+    });
+
+    engine.currentStanzaIndex = idxAtual;
+    engine.renderStanza(idxAtual);
+    if (typeof engine.killAllAnimations === 'function') { try { engine.killAllAnimations(); } catch (e) {} }
+    const stzFim = getStanzaEl();
+    if (stzFim) stzFim.querySelectorAll('.lyric-word').forEach(el => { el.style.opacity = '1'; el.style.animation = 'none'; });
+    if (linhasCorrigidas > 0 && typeof markDirty === 'function') markDirty();
+    return linhasCorrigidas;
   }
 
   function ensureWordIsFree(wordId) {
@@ -27163,6 +27244,21 @@ function initEditor() {
 
   async function startExport() {
     const aspect = window.__currentAspect || '16:9';
+
+    // Re-arruma slides com palavras sobrepostas ANTES de exportar. Com a
+    // escala por largura, o reflow mede certo em qualquer proporção, então
+    // isto garante que o vídeo nunca saia com palavras grudadas (corrige
+    // slides editados com a marcação aberta). Só toca em linhas que de
+    // fato sobrepõem.
+    try {
+      if (typeof rearrumarSlidesSobrepostos === 'function') {
+        const n = rearrumarSlidesSobrepostos();
+        if (n > 0 && typeof window.WM_EXPORT_LOG === 'function') {
+          window.WM_EXPORT_LOG(`Re-arrumadas ${n} linha(s) sobreposta(s) antes de exportar`, 'info');
+        }
+      }
+    } catch (e) {}
+
     const resolution = (typeof window.getCurrentResolution === 'function')
       ? window.getCurrentResolution()
       : { w: 1920, h: 1080 };
