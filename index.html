@@ -13860,6 +13860,12 @@ const CanvasRenderer = {
           const text = this._wordText(w, style.textTransform, wordOverrides);
           const font = resolveWordFont(w);
           ctx.font = `${font.weight} ${font.size}px "${font.family}", sans-serif`;
+          // letterSpacing proporcional ao tamanho REAL desta palavra (em
+          // 'em', como o editor). Antes era fixo em px (tamanho base), e
+          // palavras muito ampliadas ficavam com letras largas demais no
+          // export, invadindo a palavra vizinha. Agora acompanha o font.size.
+          const lsEm = (typeof style.letterSpacing === 'number') ? style.letterSpacing : 0;
+          try { ctx.letterSpacing = `${lsEm * font.size}px`; } catch (e) {}
           const width = ctx.measureText(text).width;
           return { word: w, text, width, font };
         });
@@ -13935,6 +13941,12 @@ const CanvasRenderer = {
           const text = this._wordText(w, style.textTransform, wordOverrides);
           const font = resolveWordFont(w);
           ctx.font = `${font.weight} ${font.size}px "${font.family}", sans-serif`;
+          // letterSpacing proporcional ao tamanho REAL desta palavra (em
+          // 'em', como o editor). Antes era fixo em px (tamanho base), e
+          // palavras muito ampliadas ficavam com letras largas demais no
+          // export, invadindo a palavra vizinha. Agora acompanha o font.size.
+          const lsEm = (typeof style.letterSpacing === 'number') ? style.letterSpacing : 0;
+          try { ctx.letterSpacing = `${lsEm * font.size}px`; } catch (e) {}
           const width = ctx.measureText(text).width;
           return { word: w, text, width, font };
         });
@@ -14613,6 +14625,7 @@ const CanvasRenderer = {
     // Aplica fonte custom da palavra ANTES de medir
     if (word.font) {
       ctx.font = `${word.font.weight} ${word.font.size}px "${word.font.family}", sans-serif`;
+      try { const _lsEm = (style && typeof style.letterSpacing === 'number') ? style.letterSpacing : 0; ctx.letterSpacing = `${_lsEm * word.font.size}px`; } catch (e) {}
     }
 
     // Mede largura de cada caractere pra calcular posição X
@@ -14681,6 +14694,7 @@ const CanvasRenderer = {
       // Aplica fonte de novo (porque mudou no save anterior do char)
       if (word.font) {
         ctx.font = `${word.font.weight} ${word.font.size}px "${word.font.family}", sans-serif`;
+        try { const _lsEm = (style && typeof style.letterSpacing === 'number') ? style.letterSpacing : 0; ctx.letterSpacing = `${_lsEm * word.font.size}px`; } catch (e) {}
       }
 
       ctx.globalAlpha = Math.max(0, Math.min(1, charState.opacity));
@@ -14745,6 +14759,7 @@ const CanvasRenderer = {
     // de qualquer fillText. Senão deixa a fonte global que já está em ctx.
     if (word.font) {
       ctx.font = `${word.font.weight} ${word.font.size}px "${word.font.family}", sans-serif`;
+      try { const _lsEm = (style && typeof style.letterSpacing === 'number') ? style.letterSpacing : 0; ctx.letterSpacing = `${_lsEm * word.font.size}px`; } catch (e) {}
     }
 
     // Aplica opacity
