@@ -16435,11 +16435,13 @@ class RenderEngineV2 {
     // fração ocupada pelas palavras é IDÊNTICA — usando física ou
     // lógica. Usar física dá fonte adequada à tela.
     let refHeight = 0;
+    let refWidth = 0;
     const cont = this.canvas
       && (this.canvas.closest('.editor-canvas') || this.canvas);
     if (cont) {
       const cr = cont.getBoundingClientRect();
       refHeight = cr.height || cont.clientHeight || 0;
+      refWidth = cr.width || cont.clientWidth || 0;
     }
     if (!refHeight) {
       refHeight = this.canvas
@@ -16448,7 +16450,20 @@ class RenderEngineV2 {
     }
     let effectiveFontSize;
     if (refHeight > 0) {
-      effectiveFontSize = s.fontSize * (refHeight / 600);
+      // A fonte escala pela razão base/600 sobre a ALTURA. Mas em telas
+      // estreitas (responsivo), o canvas 16:9 passa a ser limitado pela
+      // LARGURA — e a altura informada não reflete o espaço horizontal
+      // real, então a fonte ficava grande demais e as palavras sobrepunham.
+      // Corrigimos: usamos a altura EFETIVA do quadro 16:9 que cabe na
+      // largura disponível. Assim a fonte acompanha a dimensão que de fato
+      // limita o slide, e o layout nunca estoura na horizontal.
+      let alturaEfetiva = refHeight;
+      if (refWidth > 0) {
+        const alturaPelaLargura = refWidth * (9 / 16); // altura do 16:9 que cabe na largura
+        // Usa a MENOR (a que realmente limita o slide).
+        alturaEfetiva = Math.min(refHeight, alturaPelaLargura);
+      }
+      effectiveFontSize = s.fontSize * (alturaEfetiva / 600);
       stanzaEl.style.fontSize = `${effectiveFontSize}px`;
     } else {
       effectiveFontSize = s.fontSize;
@@ -27882,7 +27897,23 @@ function initEditor() {
     try {
       console.log('[WM-DIAG] document.fonts.status:', document.fonts.status,
         '| fontes carregadas:', document.fonts.size);
-    } catch (e) {}
+      // Loga, por estrofe, se as palavras têm posição livre (free) ou flow.
+      if (engine.parsed && engine.parsed.stanzas) {
+        engine.parsed.stanzas.slice(0, 4).forEach((st, i) => {
+          let comPos = 0, total = 0;
+          st.lines.forEach(l => l.words.forEach(w => {
+            total++;
+            const wo = engine.wordOverrides[w.id];
+            if (wo && wo.position) comPos++;
+          }));
+          console.log(`[WM-DIAG] estrofe ${i}: ${total} palavras, ${comPos} com posição livre (${comPos === 0 ? 'FLOW' : 'FREE'})`);
+        });
+      }
+      // Força recálculo do layout (sem cache) pra ver os logs do flow.
+      if (window.WM_CANVAS_RENDERER && window.WM_CANVAS_RENDERER.clearCache) {
+        window.WM_CANVAS_RENDERER.clearCache();
+      }
+    } catch (e) { console.log('[WM-DIAG] erro:', e.message); }
 
     // Garante que as fontes do computador estejam 100% carregadas ANTES de
     // exportar. Sem isto, o canvas desenhava o texto com a fonte ainda não
