@@ -16450,10 +16450,23 @@ class RenderEngineV2 {
     }
     let effectiveFontSize;
     if (refHeight > 0) {
-      // Escala por ALTURA (igual ao export, que usa H/600). Mantém editor
-      // e export idênticos. NÃO usar largura aqui — o export não tem essa
-      // lógica, e divergir causaria layout diferente entre os dois.
-      effectiveFontSize = s.fontSize * (refHeight / 600);
+      // A fonte escala por (altura/600), MAS a altura precisa ser a do
+      // retângulo 16:9 REALMENTE exibido. Em telas estreitas (responsivo),
+      // o canvas 16:9 é limitado pela LARGURA, então sua altura física
+      // fica menor que o esperado — e a fonte saía pequena no editor,
+      // levando o usuário a aumentar demais o tamanho das palavras. No
+      // export (16:9 cheio) esse tamanho exagerado estourava e sobrepunha.
+      // Correção: usamos a altura do 16:9 que cabe na largura disponível
+      // (a dimensão que de fato governa o slide exibido). Assim editor e
+      // export mostram o MESMO tamanho relativo, em qualquer tela.
+      let refAltura16x9 = refHeight;
+      if (refWidth > 0) {
+        const alturaPelaLargura = refWidth * (9 / 16);
+        // A altura real do slide 16:9 é a menor entre a física e a derivada
+        // da largura (a que está limitando).
+        refAltura16x9 = Math.min(refHeight, alturaPelaLargura);
+      }
+      effectiveFontSize = s.fontSize * (refAltura16x9 / 600);
       stanzaEl.style.fontSize = `${effectiveFontSize}px`;
     } else {
       effectiveFontSize = s.fontSize;
@@ -19296,11 +19309,32 @@ function initEditor() {
     const idx = engine.currentStanzaIndex;
     const stanza = engine.parsed && engine.parsed.stanzas[idx];
     if (!stanza) { console.log('Sem estrofe ativa'); return; }
-    // Renderiza o slide IGUAL ao export, num canvas flutuante, pra comparar
-    // visualmente com o editor.
+
+    // Compara, pra cada palavra: posição EXIBIDA no editor (DOM) vs posição
+    // SALVA (wo.position). Se diferirem, o editor mostra uma coisa e salva
+    // outra — e o export usa a salva.
+    const stz = getStanzaEl();
+    const canvasEl = document.querySelector('.editor-canvas');
+    const cr = canvasEl ? canvasEl.getBoundingClientRect() : null;
+    console.log('%c=== POSIÇÕES: exibida (editor) vs salva (usada no export) ===', 'font-weight:bold;color:#8b5cf6');
+    if (stz && cr) {
+      stz.querySelectorAll('.lyric-word').forEach(el => {
+        const wr = el.getBoundingClientRect();
+        const wid = el.dataset.wordId;
+        const wo = engine.wordOverrides[wid];
+        const exibidaX = (((wr.left + wr.width/2) - cr.left) / cr.width).toFixed(3);
+        const exibidaY = (((wr.top + wr.height/2) - cr.top) / cr.height).toFixed(3);
+        const salvaX = wo && wo.position ? wo.position.x.toFixed(3) : 'FLOW';
+        const salvaY = wo && wo.position ? wo.position.y.toFixed(3) : 'FLOW';
+        const difere = (wo && wo.position) && (Math.abs(parseFloat(exibidaX)-wo.position.x) > 0.02 || Math.abs(parseFloat(exibidaY)-wo.position.y) > 0.02);
+        console.log(`${difere ? '⚠️' : '  '} "${el.textContent.trim()}" | EXIBIDA: ${exibidaX},${exibidaY} | SALVA: ${salvaX},${salvaY}${difere ? '  ← DIFERENTE!' : ''}`);
+      });
+    }
+
+    // Renderiza o slide IGUAL ao export, num canvas flutuante.
     try {
       const R = window.WM_CANVAS_RENDERER;
-      const W = 960, H = 540; // metade de 1920x1080, mesma proporção
+      const W = 960, H = 540;
       const cv = document.createElement('canvas');
       cv.width = W; cv.height = H;
       const ctx = cv.getContext('2d');
@@ -19311,26 +19345,22 @@ function initEditor() {
         animation: {},
       };
       if (R.clearCache) R.clearCache();
-      // Desenha o estado FINAL (sem animação): elapsed alto.
       R.drawSlide(ctx, slide, 999999, W, H);
-
-      // Janela flutuante com o canvas.
       let box = document.getElementById('wm-diag-box');
       if (box) box.remove();
       box = document.createElement('div');
       box.id = 'wm-diag-box';
       box.style.cssText = 'position:fixed;top:20px;right:20px;z-index:99999;background:#000;border:2px solid #8b5cf6;border-radius:8px;padding:8px;box-shadow:0 8px 40px rgba(0,0,0,0.7)';
       const title = document.createElement('div');
-      title.textContent = 'EXPORT (como sai no vídeo) — clique pra fechar';
+      title.textContent = 'EXPORT (clique pra fechar)';
       title.style.cssText = 'color:#fff;font:12px sans-serif;margin-bottom:6px;cursor:pointer';
       title.onclick = () => box.remove();
       cv.style.cssText = 'display:block;width:480px;height:270px;background:#050507';
       box.appendChild(title);
       box.appendChild(cv);
       document.body.appendChild(box);
-      console.log('[WM_DIAG] Janela do EXPORT aberta no canto superior direito. Compare com o editor.');
-    } catch (e) { console.log('Erro:', e.message, e.stack); }
-    return 'Compare a janela (export) com o editor e descreva a diferença';
+    } catch (e) { console.log('Erro:', e.message); }
+    return 'Veja os ⚠️ no console — palavras onde EXIBIDA ≠ SALVA';
   };
 
   function recentralizarTodos() {
