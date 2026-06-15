@@ -13830,13 +13830,9 @@ const CanvasRenderer = {
    */
   _computeFontSize(style, H, W) {
     const base = style?.fontSize || 64;
-    // ESCALA PELA LARGURA (aspecto-independente): as posições das palavras
-    // são frações da largura, então ancorar a fonte na largura mantém a
-    // escala IDÊNTICA em 16:9, 9:16 e no canvas distorcido da marcação.
-    // Pra 16:9, W/1066.67 == H/600. Se W não vier, cai no antigo (altura).
-    if (typeof W === 'number' && W > 0) {
-      return base * (W / (600 * 16 / 9));
-    }
+    // Referência: H=600 dá tamanho base; H=1080 multiplica. (W é aceito
+    // por compatibilidade mas a escala é por ALTURA — o canvas de export
+    // é sempre exatamente 16:9/9:16, então altura é consistente.)
     return base * (H / 600);
   },
 
@@ -16211,37 +16207,19 @@ class RenderEngineV2 {
     // fração ocupada pelas palavras é IDÊNTICA — usando física ou
     // lógica. Usar física dá fonte adequada à tela.
     let refHeight = 0;
-    let refWidth = 0;
     const cont = this.canvas
       && (this.canvas.closest('.editor-canvas') || this.canvas);
     if (cont) {
       const cr = cont.getBoundingClientRect();
       refHeight = cr.height || cont.clientHeight || 0;
-      refWidth = cr.width || cont.clientWidth || 0;
     }
     if (!refHeight) {
       refHeight = this.canvas
         ? (this.canvas.clientHeight || this.canvas.getBoundingClientRect().height)
         : 0;
     }
-    if (!refWidth) {
-      refWidth = this.canvas
-        ? (this.canvas.clientWidth || this.canvas.getBoundingClientRect().width)
-        : 0;
-    }
-    // ESCALA PELA LARGURA (não pela altura). As posições/larguras das
-    // palavras são frações da LARGURA do canvas; ancorar a fonte na
-    // largura deixa a escala IDÊNTICA em qualquer proporção (16:9, 9:16
-    // ou o canvas distorcido do modo marcação). Antes, ancorada na
-    // altura, uma proporção diferente de 16:9 (ex: marcação) deixava a
-    // fonte grande demais pra largura → palavras sobrepostas no preview
-    // e no export. Pra 16:9, largura/1066.67 == altura/600 (idêntico).
-    const BASE_W = 600 * 16 / 9; // 1066.667 = largura equivalente à altura-base 600
     let effectiveFontSize;
-    if (refWidth > 0) {
-      effectiveFontSize = s.fontSize * (refWidth / BASE_W);
-      stanzaEl.style.fontSize = `${effectiveFontSize}px`;
-    } else if (refHeight > 0) {
+    if (refHeight > 0) {
       effectiveFontSize = s.fontSize * (refHeight / 600);
       stanzaEl.style.fontSize = `${effectiveFontSize}px`;
     } else {
