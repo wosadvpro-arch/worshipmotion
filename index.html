@@ -1560,6 +1560,8 @@ body.wm-recording-mode::after {
   justify-content: center;
   gap: var(--space-3);
   padding: var(--space-8);
+  min-height: 0;
+  min-width: 0;
   background:
     radial-gradient(circle at 30% 20%, rgba(139, 92, 246, 0.06), transparent 50%),
     radial-gradient(circle at 70% 80%, rgba(59, 130, 246, 0.05), transparent 50%),
@@ -1734,9 +1736,18 @@ body.marking-open.marking-collapsed .editor-canvas {
   position: relative;
   isolation: isolate;
   aspect-ratio: 16 / 9;
-  width: 100%;
-  max-width: 900px;
+  /* width e height automáticos dentro dos limites, mas o aspect-ratio
+     SEMPRE manda. Antes, width:100% + max-height conflitavam: quando a
+     altura era o fator limitante (barra no topo ocupa espaço), a largura
+     esticava além do 16:9 → slide "ultra widescreen" no editor, diferente
+     do export 16:9 → tudo sobreposto. Agora limitamos AMBos e deixamos o
+     aspect-ratio resolver, priorizando caber na altura. */
+  width: auto;
+  height: auto;
+  max-width: min(900px, 100%);
   max-height: calc(100vh - var(--topbar-height) - var(--timeline-height) - var(--space-16));
+  min-width: 0;
+  min-height: 0;
   background: var(--bg-canvas);
   border-radius: var(--radius-xl);
   border: 1px solid var(--border-default);
@@ -13860,7 +13871,18 @@ const CanvasRenderer = {
           const text = this._wordText(w, style.textTransform, wordOverrides);
           const font = resolveWordFont(w);
           ctx.font = `${font.weight} ${font.size}px "${font.family}", sans-serif`;
-          const width = ctx.measureText(text).width;
+          // Largura: prioriza a largura REAL do DOM do editor (mapa
+          // window.__WM_WORD_WIDTHS, fração da largura do canvas). O canvas
+          // mede levemente diferente do DOM; em palavras muito ampliadas a
+          // diferença vira vários px e a palavra invade a vizinha. Usar a
+          // largura do editor garante export == preview.
+          let width;
+          const fracDom = (window.__WM_WORD_WIDTHS && w.id) ? window.__WM_WORD_WIDTHS[w.id] : null;
+          if (typeof fracDom === 'number' && fracDom > 0) {
+            width = fracDom * W;
+          } else {
+            width = ctx.measureText(text).width;
+          }
           return { word: w, text, width, font };
         });
 
@@ -13935,7 +13957,18 @@ const CanvasRenderer = {
           const text = this._wordText(w, style.textTransform, wordOverrides);
           const font = resolveWordFont(w);
           ctx.font = `${font.weight} ${font.size}px "${font.family}", sans-serif`;
-          const width = ctx.measureText(text).width;
+          // Largura: prioriza a largura REAL do DOM do editor (mapa
+          // window.__WM_WORD_WIDTHS, fração da largura do canvas). O canvas
+          // mede levemente diferente do DOM; em palavras muito ampliadas a
+          // diferença vira vários px e a palavra invade a vizinha. Usar a
+          // largura do editor garante export == preview.
+          let width;
+          const fracDom = (window.__WM_WORD_WIDTHS && w.id) ? window.__WM_WORD_WIDTHS[w.id] : null;
+          if (typeof fracDom === 'number' && fracDom > 0) {
+            width = fracDom * W;
+          } else {
+            width = ctx.measureText(text).width;
+          }
           return { word: w, text, width, font };
         });
 
@@ -19280,6 +19313,34 @@ function initEditor() {
   // Preserva estilo e animação de cada palavra (só tira a posição). Usado
   // pelo botão "Recentralizar" e pelo conserto automático de slides que
   // vieram com posições ruins (ex.: congeladas num layout inválido).
+  // Captura a largura real de cada palavra renderizada no editor (DOM),
+  // como fração da largura do canvas. Renderiza cada estrofe rapidamente,
+  // mede, e restaura a estrofe atual. Usado pelo export pra ter largura
+  // idêntica ao preview.
+  function capturarLargurasDOM() {
+    const mapa = {};
+    if (!engine.parsed || !engine.parsed.stanzas) return mapa;
+    const canvasEl = document.querySelector('.editor-canvas');
+    const cr = canvasEl ? canvasEl.getBoundingClientRect() : null;
+    if (!cr || !cr.width) return mapa;
+    const idxOriginal = engine.currentStanzaIndex;
+    engine.parsed.stanzas.forEach((stanza, si) => {
+      engine.renderStanza(si);
+      const stz = getStanzaEl();
+      if (!stz) return;
+      const cr2 = canvasEl.getBoundingClientRect();
+      stz.querySelectorAll('.lyric-word').forEach(el => {
+        const wid = el.dataset.wordId;
+        if (!wid) return;
+        const wr = el.getBoundingClientRect();
+        if (wr.width > 0 && cr2.width > 0) mapa[wid] = wr.width / cr2.width;
+      });
+    });
+    // Restaura a estrofe que estava ativa.
+    engine.renderStanza(idxOriginal);
+    return mapa;
+  }
+
   function recentralizarSlide(idx) {
     if (!engine.parsed || !engine.parsed.stanzas[idx]) return 0;
     const stanza = engine.parsed.stanzas[idx];
@@ -19327,7 +19388,7 @@ function initEditor() {
         const salvaX = wo && wo.position ? wo.position.x.toFixed(3) : 'FLOW';
         const salvaY = wo && wo.position ? wo.position.y.toFixed(3) : 'FLOW';
         const difere = (wo && wo.position) && (Math.abs(parseFloat(exibidaX)-wo.position.x) > 0.02 || Math.abs(parseFloat(exibidaY)-wo.position.y) > 0.02);
-        console.log(`${difere ? '⚠️' : '  '} "${el.textContent.trim()}" | EXIBIDA: ${exibidaX},${exibidaY} | SALVA: ${salvaX},${salvaY}${difere ? '  ← DIFERENTE!' : ''}`);
+        console.log(`${difere ? '⚠️' : '  '} "${el.textContent.trim()}" | EXIBIDA: ${exibidaX},${exibidaY} | SALVA: ${salvaX},${salvaY} | LARGURA editor(frac): ${(wr.width/cr.width).toFixed(3)}${difere ? '  ← DIFERENTE!' : ''}`);
       });
     }
 
@@ -19345,6 +19406,15 @@ function initEditor() {
         animation: {},
       };
       if (R.clearCache) R.clearCache();
+      // Mede e loga a largura de cada palavra no EXPORT pra comparar.
+      try {
+        const layout = R.measureLayout(ctx, slide, W, H);
+        console.log('%c=== LARGURAS no EXPORT (frac) ===', 'font-weight:bold;color:#22c55e');
+        layout.lines.forEach(line => line.words.forEach(w => {
+          console.log(`  "${w.text}" | LARGURA export(frac): ${(w.width/W).toFixed(3)} | centroX(frac): ${(w.cx/W).toFixed(3)}`);
+        }));
+        if (R.clearCache) R.clearCache();
+      } catch (e) {}
       R.drawSlide(ctx, slide, 999999, W, H);
       let box = document.getElementById('wm-diag-box');
       if (box) box.remove();
@@ -27994,6 +28064,14 @@ function initEditor() {
 
     // (diagnóstico de posições desativado — causa já identificada e corrigida)
     window.__WM_DIAG_EXPORT = false;
+
+    // Captura as larguras REAIS de cada palavra no DOM do editor (em fração
+    // da largura do canvas). O export usa essas frações pra desenhar com a
+    // MESMA largura do preview — evitando que palavras ampliadas invadam a
+    // vizinha por diferença de medição canvas vs DOM.
+    try {
+      window.__WM_WORD_WIDTHS = capturarLargurasDOM();
+    } catch (e) { window.__WM_WORD_WIDTHS = null; }
 
     // Garante que as fontes do computador estejam 100% carregadas ANTES de
     // exportar. Sem isto, o canvas desenhava o texto com a fonte ainda não
