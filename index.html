@@ -13860,12 +13860,6 @@ const CanvasRenderer = {
           const text = this._wordText(w, style.textTransform, wordOverrides);
           const font = resolveWordFont(w);
           ctx.font = `${font.weight} ${font.size}px "${font.family}", sans-serif`;
-          // letterSpacing proporcional ao tamanho REAL desta palavra (em
-          // 'em', como o editor). Antes era fixo em px (tamanho base), e
-          // palavras muito ampliadas ficavam com letras largas demais no
-          // export, invadindo a palavra vizinha. Agora acompanha o font.size.
-          const lsEm = (typeof style.letterSpacing === 'number') ? style.letterSpacing : 0;
-          try { ctx.letterSpacing = `${lsEm * font.size}px`; } catch (e) {}
           const width = ctx.measureText(text).width;
           return { word: w, text, width, font };
         });
@@ -13941,12 +13935,6 @@ const CanvasRenderer = {
           const text = this._wordText(w, style.textTransform, wordOverrides);
           const font = resolveWordFont(w);
           ctx.font = `${font.weight} ${font.size}px "${font.family}", sans-serif`;
-          // letterSpacing proporcional ao tamanho REAL desta palavra (em
-          // 'em', como o editor). Antes era fixo em px (tamanho base), e
-          // palavras muito ampliadas ficavam com letras largas demais no
-          // export, invadindo a palavra vizinha. Agora acompanha o font.size.
-          const lsEm = (typeof style.letterSpacing === 'number') ? style.letterSpacing : 0;
-          try { ctx.letterSpacing = `${lsEm * font.size}px`; } catch (e) {}
           const width = ctx.measureText(text).width;
           return { word: w, text, width, font };
         });
@@ -14625,7 +14613,6 @@ const CanvasRenderer = {
     // Aplica fonte custom da palavra ANTES de medir
     if (word.font) {
       ctx.font = `${word.font.weight} ${word.font.size}px "${word.font.family}", sans-serif`;
-      try { const _lsEm = (style && typeof style.letterSpacing === 'number') ? style.letterSpacing : 0; ctx.letterSpacing = `${_lsEm * word.font.size}px`; } catch (e) {}
     }
 
     // Mede largura de cada caractere pra calcular posição X
@@ -14694,7 +14681,6 @@ const CanvasRenderer = {
       // Aplica fonte de novo (porque mudou no save anterior do char)
       if (word.font) {
         ctx.font = `${word.font.weight} ${word.font.size}px "${word.font.family}", sans-serif`;
-        try { const _lsEm = (style && typeof style.letterSpacing === 'number') ? style.letterSpacing : 0; ctx.letterSpacing = `${_lsEm * word.font.size}px`; } catch (e) {}
       }
 
       ctx.globalAlpha = Math.max(0, Math.min(1, charState.opacity));
@@ -14759,7 +14745,6 @@ const CanvasRenderer = {
     // de qualquer fillText. Senão deixa a fonte global que já está em ctx.
     if (word.font) {
       ctx.font = `${word.font.weight} ${word.font.size}px "${word.font.family}", sans-serif`;
-      try { const _lsEm = (style && typeof style.letterSpacing === 'number') ? style.letterSpacing : 0; ctx.letterSpacing = `${_lsEm * word.font.size}px`; } catch (e) {}
     }
 
     // Aplica opacity
@@ -19311,54 +19296,41 @@ function initEditor() {
     const idx = engine.currentStanzaIndex;
     const stanza = engine.parsed && engine.parsed.stanzas[idx];
     if (!stanza) { console.log('Sem estrofe ativa'); return; }
-    console.log(`%c=== DIAGNÓSTICO estrofe ${idx} ===`, 'font-weight:bold;color:#8b5cf6');
-
-    // --- EDITOR (DOM) ---
-    const stz = getStanzaEl();
-    const canvasEl = document.querySelector('.editor-canvas');
-    const cr = canvasEl ? canvasEl.getBoundingClientRect() : null;
-    console.log('EDITOR canvas (px):', cr ? `${Math.round(cr.width)}x${Math.round(cr.height)}` : '?',
-      '| fonte base:', stz ? getComputedStyle(stz).fontSize : '?');
-    if (stz && cr) {
-      stz.querySelectorAll('.lyric-word').forEach(el => {
-        const wr = el.getBoundingClientRect();
-        const wid = el.dataset.wordId;
-        const wo = engine.wordOverrides[wid];
-        console.log(`  [EDITOR] "${el.textContent.trim()}"`,
-          '| pos:', wo && wo.position ? `${wo.position.x.toFixed(3)},${wo.position.y.toFixed(3)}` : 'FLOW',
-          '| fontSize:', getComputedStyle(el).fontSize,
-          '| larguraPx:', Math.round(wr.width),
-          '| larguraFrac:', (wr.width / cr.width).toFixed(3),
-          '| centroXFrac:', (((wr.left + wr.width/2) - cr.left) / cr.width).toFixed(3));
-      });
-    }
-
-    // --- EXPORT (canvas measureLayout) ---
+    // Renderiza o slide IGUAL ao export, num canvas flutuante, pra comparar
+    // visualmente com o editor.
     try {
       const R = window.WM_CANVAS_RENDERER;
-      const W = 1920, H = 1080;
-      const tmp = document.createElement('canvas'); tmp.width = W; tmp.height = H;
-      const ctx = tmp.getContext('2d');
+      const W = 960, H = 540; // metade de 1920x1080, mesma proporção
+      const cv = document.createElement('canvas');
+      cv.width = W; cv.height = H;
+      const ctx = cv.getContext('2d');
       const slide = {
         stanza: stanza,
-        style: { ...engine.style, ...(engine.sceneOverrides[stanza.id]?.style || {}) },
+        style: { ...engine.style, ...(engine.sceneOverrides[stanza.id] && engine.sceneOverrides[stanza.id].style || {}) },
         wordOverrides: engine.wordOverrides,
+        animation: {},
       };
       if (R.clearCache) R.clearCache();
-      const layout = R.measureLayout(ctx, slide, W, H);
-      console.log('EXPORT canvas (px): 1920x1080 | baseFontSize:', R._computeFontSize(slide.style, H, W).toFixed(1));
-      layout.lines.forEach((line, li) => {
-        line.words.forEach(w => {
-          console.log(`  [EXPORT] "${w.text}"`,
-            '| larguraPx:', Math.round(w.width),
-            '| larguraFrac:', (w.width / W).toFixed(3),
-            '| centroXFrac:', (w.cx / W).toFixed(3),
-            '| fontSize:', w.font ? Math.round(w.font.size) : '?');
-        });
-      });
-    } catch (e) { console.log('Erro no export diag:', e.message); }
-    console.log('%c=== fim ===', 'color:#8b5cf6');
-    return 'Copie tudo acima e mande pro Claude';
+      // Desenha o estado FINAL (sem animação): elapsed alto.
+      R.drawSlide(ctx, slide, 999999, W, H);
+
+      // Janela flutuante com o canvas.
+      let box = document.getElementById('wm-diag-box');
+      if (box) box.remove();
+      box = document.createElement('div');
+      box.id = 'wm-diag-box';
+      box.style.cssText = 'position:fixed;top:20px;right:20px;z-index:99999;background:#000;border:2px solid #8b5cf6;border-radius:8px;padding:8px;box-shadow:0 8px 40px rgba(0,0,0,0.7)';
+      const title = document.createElement('div');
+      title.textContent = 'EXPORT (como sai no vídeo) — clique pra fechar';
+      title.style.cssText = 'color:#fff;font:12px sans-serif;margin-bottom:6px;cursor:pointer';
+      title.onclick = () => box.remove();
+      cv.style.cssText = 'display:block;width:480px;height:270px;background:#050507';
+      box.appendChild(title);
+      box.appendChild(cv);
+      document.body.appendChild(box);
+      console.log('[WM_DIAG] Janela do EXPORT aberta no canto superior direito. Compare com o editor.');
+    } catch (e) { console.log('Erro:', e.message, e.stack); }
+    return 'Compare a janela (export) com o editor e descreva a diferença';
   };
 
   function recentralizarTodos() {
