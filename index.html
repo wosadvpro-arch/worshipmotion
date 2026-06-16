@@ -1590,7 +1590,9 @@ body.wm-recording-mode::after {
 .ctx-mini { min-width: 26px; height: 26px; padding: 0; font-size: 14px; border-radius: 6px; }
 .ctx-stepper { display: inline-flex; align-items: center; gap: 3px; border: 1px solid var(--border-default, rgba(255,255,255,0.1)); border-radius: 8px; padding: 2px; }
 .ctx-stepper .ctx-mini { border: none; }
-.ctx-val { font-size: 12px; min-width: 26px; text-align: center; color: var(--text, #e8e8ee); }
+.ctx-val { font-size: 12px; min-width: 26px; text-align: center; color: var(--text, #e8e8ee); cursor: text; border-radius: 4px; padding: 1px 3px; outline: none; }
+.ctx-val[contenteditable]:hover { background: rgba(255,255,255,0.06); }
+.ctx-val[contenteditable]:focus { background: rgba(139,92,246,0.18); box-shadow: 0 0 0 1px var(--accent, #8b5cf6); }
 .ctx-color-dot { width: 16px; height: 16px; border-radius: 50%; background: #ffffff; display: block; border: 1px solid rgba(255,255,255,0.3); }
 .ctx-ico { font-size: 10px; color: var(--text-dim, #7a8499); letter-spacing: -1px; padding: 0 2px; user-select: none; }
 .ctx-color { position: relative; }
@@ -5515,7 +5517,7 @@ Digno de toda honra"></textarea>
       <span class="ctx-sep"></span>
       <div class="ctx-stepper" title="Tamanho do texto">
         <button class="ctx-btn ctx-mini" id="ctx-size-minus" aria-label="Diminuir tamanho">−</button>
-        <span class="ctx-val" id="ctx-size-val">64</span>
+        <span class="ctx-val" id="ctx-size-val" contenteditable="true" inputmode="numeric" title="Clique e digite o tamanho">64</span>
         <button class="ctx-btn ctx-mini" id="ctx-size-plus" aria-label="Aumentar tamanho">+</button>
       </div>
       <button class="ctx-btn ctx-spacing" id="ctx-spacing-btn" title="Espaçamento">
@@ -21541,6 +21543,80 @@ function initEditor() {
     if (sMinus) sMinus.addEventListener('click', () => aplicarTamanho(-1));
     if (sPlus) sPlus.addEventListener('click', () => aplicarTamanho(1));
 
+    // Define o tamanho ABSOLUTO digitado no campo (ex: 300). Diferente de
+    // aplicarTamanho (que soma/subtrai), aqui o usuário digita o valor
+    // final. Com seleção: vira fontSizeScale (valor / fontSize global).
+    // Sem seleção: grava direto no sceneOverride da estrofe, escalando as
+    // posições free proporcionalmente (igual ao aplicarTamanho).
+    const definirTamanho = (valorPx) => {
+      let px = parseInt(valorPx, 10);
+      if (!isFinite(px)) return;
+      px = Math.max(8, Math.min(800, px)); // limites sãos (até 800px)
+      if (_ctxTemSelecao()) {
+        const globalFs = ((_ctxEstiloEfetivo().fontSize) || 64);
+        const novaEscala = Math.max(0.1, Math.round((px / globalFs) * 100) / 100);
+        if (typeof aplicarEstiloSensivel === 'function')
+          aplicarEstiloSensivel('fontSizeScale', novaEscala === 1 ? null : novaEscala, { afetaLargura: true });
+      } else {
+        const st = engine.parsed && engine.parsed.stanzas[engine.currentStanzaIndex];
+        if (!st) return;
+        const cur = (engine.sceneOverrides[st.id] && engine.sceneOverrides[st.id].style) || {};
+        const fsAtual = (typeof cur.fontSize === 'number') ? cur.fontSize : ((engine.style && engine.style.fontSize) || 64);
+        const ratio = (fsAtual > 0) ? (px / fsAtual) : 1;
+        const stzEl = (typeof getStanzaEl === 'function') ? getStanzaEl() : null;
+        const ids = stzEl ? [...stzEl.querySelectorAll('.lyric-word')].map(el => el.dataset.wordId) : [];
+        if (ratio !== 1) ids.forEach(wid => {
+          const wo = engine.wordOverrides[wid];
+          if (wo && wo.position) {
+            const nx = 0.5 + (wo.position.x - 0.5) * ratio;
+            const ny = 0.5 + (wo.position.y - 0.5) * ratio;
+            engine.setWordOverride(wid, { position: { x: nx, y: ny } });
+          }
+        });
+        if (typeof engine.setSceneOverride === 'function') {
+          engine.setSceneOverride(st.id, { style: { ...cur, fontSize: px } });
+        } else {
+          if (!engine.sceneOverrides[st.id]) engine.sceneOverrides[st.id] = {};
+          engine.sceneOverrides[st.id].style = { ...cur, fontSize: px };
+        }
+        engine.renderStanza(engine.currentStanzaIndex);
+        if (typeof engine.killAllAnimations === 'function') { try { engine.killAllAnimations(); } catch (e) {} }
+        if (stzEl) stzEl.querySelectorAll('.lyric-word').forEach(el => { el.style.opacity = '1'; el.style.animation = 'none'; });
+        const slider = document.getElementById('font-size');
+        if (slider) { slider.value = Math.min(140, px); const v2 = document.getElementById('font-size-val'); if (v2) v2.textContent = px; }
+        if (typeof markDirty === 'function') markDirty();
+      }
+      requestAnimationFrame(syncCtxToolbar);
+    };
+
+    // Campo de tamanho editável: digita o número e Enter (ou sai do campo)
+    // aplica. Seleciona tudo ao focar pra facilitar substituir o valor.
+    const szField = document.getElementById('ctx-size-val');
+    if (szField) {
+      szField.addEventListener('focus', () => {
+        // Seleciona todo o conteúdo pra digitar por cima.
+        const range = document.createRange();
+        range.selectNodeContents(szField);
+        const selc = window.getSelection();
+        selc.removeAllRanges();
+        selc.addRange(range);
+      });
+      szField.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          definirTamanho(szField.textContent);
+          szField.blur();
+        }
+        // Bloqueia letras (só números).
+        if (e.key.length === 1 && !/[0-9]/.test(e.key) && !e.ctrlKey && !e.metaKey) {
+          e.preventDefault();
+        }
+      });
+      szField.addEventListener('blur', () => {
+        definirTamanho(szField.textContent);
+      });
+    }
+
     // Espaçamento − / + : aplicarEstiloSensivel (afeta largura → reflui).
     // Espaçamento: abre um popover com 2 sliders (entre letras + entre
     // linhas), estilo Canva. Letras respeita seleção; linhas é do slide.
@@ -21771,7 +21847,7 @@ function initEditor() {
     if (bItalic) bItalic.classList.toggle('active', (s.fontStyle === 'italic'));
     // Tamanho (mostra px efetivo)
     const szVal = document.getElementById('ctx-size-val');
-    if (szVal) {
+    if (szVal && document.activeElement !== szVal) {
       const globalFs = (s.fontSize || 64);
       let escala = 1;
       if (temSel) {
