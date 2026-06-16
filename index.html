@@ -15404,6 +15404,26 @@ class VideoExporter {
       if (window.WM_CUSTOM_FONTS && typeof window.WM_CUSTOM_FONTS.waitReady === 'function') {
         await window.WM_CUSTOM_FONTS.waitReady();
       }
+      // AQUECIMENTO: desenha cada fonte uma vez no canvas de export, em
+      // tamanho grande, FORA da área visível. Isso força o navegador a
+      // rasterizar os glyphs em alta resolução ANTES da gravação. Sem isto,
+      // a primeira vez que o canvas via uma fonte do computador durante a
+      // gravação, ele rasterizava em baixa qualidade (texto pixelado) e
+      // reusava esse cache ruim nos frames seguintes.
+      if (this.ctx && this.W) {
+        const tamanhoGrande = Math.round((this.H || 1080) * 0.18); // ~fonte real
+        this.ctx.save();
+        this.ctx.fillStyle = 'rgba(0,0,0,0.001)'; // praticamente invisível
+        familias.forEach(fam => {
+          [400, 700].forEach(w => {
+            try {
+              this.ctx.font = `${w} ${tamanhoGrande}px "${fam}", sans-serif`;
+              this.ctx.fillText('ABCabcÁàÉ123', -9999, -9999); // fora da tela
+            } catch (e) {}
+          });
+        });
+        this.ctx.restore();
+      }
     } catch (e) {
       console.warn('Falha ao garantir fontes:', e.message);
     }
@@ -28077,9 +28097,11 @@ function initEditor() {
   // nítidas (curvas sem serrilhado). Calibrado pra bater ~12Mbps em 1080p24
   // e escalar pra 1440p/4K automaticamente. Teto de 60Mbps por segurança.
   function calcBitrate(w, h, fps) {
-    const BPP = 0.26;
+    // BPP (bits por pixel) mais generoso = texto mais nítido, menos
+    // pixelização na compressão (importante pra fontes finas do computador).
+    const BPP = 0.40;
     const calc = Math.round(w * h * fps * BPP);
-    return Math.min(calc, 60_000_000);
+    return Math.min(calc, 80_000_000);
   }
 
   function setProgressRing(pct) {
