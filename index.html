@@ -1734,8 +1734,13 @@ body.marking-open.marking-collapsed .editor-canvas {
   position: relative;
   isolation: isolate;
   aspect-ratio: 16 / 9;
+  /* A largura é limitada por: 900px, 100% do pai, E pela largura que
+     mantém 16:9 dentro da altura disponível (max-height × 16/9). Esse
+     último limite impede o canvas de ficar mais largo que 16:9 quando a
+     altura é o fator restritivo — antes ele esticava (proporção 1.89 em
+     vez de 1.78) e o editor não batia com o export 16:9. */
   width: 100%;
-  max-width: 900px;
+  max-width: min(900px, calc((100vh - var(--topbar-height) - var(--timeline-height) - var(--space-16)) * 16 / 9));
   max-height: calc(100vh - var(--topbar-height) - var(--timeline-height) - var(--space-16));
   background: var(--bg-canvas);
   border-radius: var(--radius-xl);
