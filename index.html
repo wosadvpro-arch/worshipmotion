@@ -26526,6 +26526,10 @@ function initEditor() {
     // Campos de texto continuam com prioridade total (digitação/cursor).
     if (e.target.tagName === 'TEXTAREA') return;
     if (e.target.tagName === 'INPUT' && e.target.type !== 'range') return;
+    // Campos editáveis (span contenteditable, ex: o tamanho da fonte na
+    // barra) também têm prioridade — senão Espaço/setas viravam atalho e
+    // impediam digitar o número.
+    if (e.target.isContentEditable) return;
     // Sliders (type=range): as SETAS navegam estrofe em vez de mexer no
     // slider. Sem isto, ao deixar um slider focado (ex: depois de ajustar
     // o tamanho) a seta incrementava o slider até o máximo por engano —
