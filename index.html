@@ -19412,25 +19412,29 @@ function initEditor() {
     close.onclick = () => box.remove();
     box.appendChild(close);
 
-    // 1. DOM normal
+    // 1. DOM normal — em tamanho GRANDE (como o usuário usa)
     const dom = document.createElement('div');
-    dom.textContent = 'DOM: ' + fam + ' Aàé';
-    dom.style.cssText = `font-family:"${fam}",sans-serif;font-size:64px;color:#fff;line-height:1.2;-webkit-font-smoothing:antialiased`;
+    dom.textContent = 'Aàé ' + fam;
+    dom.style.cssText = `font-family:"${fam}",sans-serif;font-size:200px;color:#fff;line-height:1.1;-webkit-font-smoothing:antialiased;white-space:nowrap`;
     box.appendChild(dom);
 
-    // 2. Canvas (como o export)
+    // 2. Canvas em tamanho grande, desenhado NATIVAMENTE
     const cv = document.createElement('canvas');
-    cv.width = 500; cv.height = 90;
-    cv.style.cssText = 'width:500px;height:90px;background:#222;display:block;margin-top:8px';
+    cv.width = 900; cv.height = 240;
+    cv.style.cssText = 'width:450px;height:120px;background:#222;display:block;margin-top:8px';
     const ctx = cv.getContext('2d');
     ctx.fillStyle = '#fff';
     ctx.textBaseline = 'middle';
-    ctx.font = `400 64px "${fam}", sans-serif`;
-    ctx.fillText('Canvas: ' + fam, 10, 45);
+    ctx.font = `400 200px "${fam}", sans-serif`;
+    ctx.fillText('Aàé Canvas', 10, 120);
     box.appendChild(cv);
+    box.appendChild(Object.assign(document.createElement('div'), {
+      textContent: 'Os dois acima são desenhados em 200px nativo. Se aqui estão nítidos mas no seu slide não, o problema é como o slide escala.',
+      style: 'color:#aaa;font:11px sans-serif;margin-top:8px;max-width:450px'
+    }));
     document.body.appendChild(box);
 
-    return 'Compare DOM (cima) vs Canvas (baixo). Os dois serrilhados? Só o canvas? Me diga.';
+    return 'Compare DOM (cima) vs Canvas (meio), ambos em 200px. Nítidos ou serrilhados?';
   };
 
   window.WM_DIM = function() {
