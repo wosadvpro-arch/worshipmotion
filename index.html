@@ -1560,11 +1560,13 @@ body.wm-recording-mode::after {
   justify-content: center;
   gap: var(--space-3);
   padding: var(--space-8);
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
   background:
     radial-gradient(circle at 30% 20%, rgba(139, 92, 246, 0.06), transparent 50%),
     radial-gradient(circle at 70% 80%, rgba(59, 130, 246, 0.05), transparent 50%),
     var(--bg-base);
-  overflow: hidden;
 }
 
 /* ===== BARRA CONTEXTUAL (estilo Canva) — Etapa 1 ===== */
@@ -1734,14 +1736,17 @@ body.marking-open.marking-collapsed .editor-canvas {
   position: relative;
   isolation: isolate;
   aspect-ratio: 16 / 9;
-  /* A largura é limitada por: 900px, 100% do pai, E pela largura que
-     mantém 16:9 dentro da altura disponível (max-height × 16/9). Esse
-     último limite impede o canvas de ficar mais largo que 16:9 quando a
-     altura é o fator restritivo — antes ele esticava (proporção 1.89 em
-     vez de 1.78) e o editor não batia com o export 16:9. */
-  width: 100%;
-  max-width: min(900px, calc((100vh - var(--topbar-height) - var(--timeline-height) - var(--space-16)) * 16 / 9));
-  max-height: calc(100vh - var(--topbar-height) - var(--timeline-height) - var(--space-16));
+  /* O canvas vive num flex-column (barra contextual em cima + canvas). A
+     altura disponível pro canvas é o que sobra do wrap DEPOIS da barra —
+     por isso não dá pra usar 100vh-fixos (ignora a barra). Usamos
+     min-height:0 + flex pra ocupar o espaço restante, e o aspect-ratio
+     define a largura. max-width segura o teto em telas largas. */
+  flex: 0 1 auto;
+  min-height: 0;
+  width: auto;
+  height: 100%;
+  max-width: 900px;
+  max-height: 100%;
   background: var(--bg-canvas);
   border-radius: var(--radius-xl);
   border: 1px solid var(--border-default);
@@ -26470,6 +26475,10 @@ function initEditor() {
     // aspect (suporta string '16:9' ou objeto { custom: true, w, h })
     if (project.aspect) {
       applyAspect(project.aspect);
+    } else {
+      // Sem aspect salvo: aplica 16:9 padrão pra dimensionar o canvas
+      // corretamente desde o início (senão fica com tamanho inconsistente).
+      applyAspect('16:9');
     }
 
     // scene overrides (config individual por estrofe)
@@ -26594,14 +26603,20 @@ function initEditor() {
     // Paisagem (ratio > 1): limita largura, height auto pelo ratio
     // Retrato  (ratio < 1): limita altura,  width auto pelo ratio
     // Quadrado (ratio = 1): limita ambos pela menor dimensão disponível
-    const containerH = `calc(100vh - var(--topbar-height) - var(--timeline-height) - var(--space-16))`;
+    // Altura disponível pro canvas = viewport menos topbar, timeline,
+    // paddings E a barra contextual (~52px) que fica no topo do canvas.
+    const containerH = `calc(100vh - var(--topbar-height) - var(--timeline-height) - var(--space-16) - 64px)`;
 
     canvas.style.aspectRatio = cfg.ratio;
 
     if (ratioNum > 1.05) {
-      // PAISAGEM: largura é o limite. width 100% até max-width grande, altura segue ratio.
+      // PAISAGEM: o aspect-ratio define a forma, mas a largura precisa ser
+      // limitada pela altura disponível — senão, quando a altura é o fator
+      // restritivo (barra contextual + timeline ocupam espaço), o canvas
+      // estica além do ratio (ex: 16:9 virava 2.09). Limitamos a largura a
+      // min(900px, alturaDisponível × ratio) pra travar a proporção.
       canvas.style.width = '100%';
-      canvas.style.maxWidth = '900px';
+      canvas.style.maxWidth = `min(900px, calc(${containerH} * ${ratioNum}))`;
       canvas.style.maxHeight = containerH;
     } else if (ratioNum < 0.95) {
       // RETRATO: altura é o limite. NÃO seta width 100% (deixa flex calcular pelo ratio).
