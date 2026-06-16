@@ -19385,6 +19385,54 @@ function initEditor() {
   // Chame WM_DIAG() no console com a estrofe que está bugada aberta.
   // Compara, pra cada palavra: posição (x,y), tamanho de fonte e largura
   // medida no EDITOR (DOM) vs no EXPORT (canvas measureLayout).
+  // Diagnóstico da fonte: mostra cada fonte do computador registrada,
+  // em tamanho grande, num DOM normal e num canvas — pra ver se o
+  // serrilhado vem do arquivo da fonte ou da renderização.
+  window.WM_FONT = function() {
+    const fonts = [];
+    document.fonts.forEach(f => fonts.push(f));
+    console.log('%c=== FONTES REGISTRADAS ===', 'font-weight:bold;color:#8b5cf6');
+    const custom = [];
+    fonts.forEach(f => {
+      console.log(`  "${f.family}" | weight:${f.weight} | style:${f.style} | status:${f.status}`);
+    });
+    // Pega a fonte efetiva da estrofe atual.
+    const s = (typeof _ctxEstiloEfetivo === 'function') ? _ctxEstiloEfetivo() : engine.style;
+    const fam = s.fontFamily || 'Inter';
+    console.log('Fonte da estrofe atual:', fam);
+
+    let box = document.getElementById('wm-font-box');
+    if (box) box.remove();
+    box = document.createElement('div');
+    box.id = 'wm-font-box';
+    box.style.cssText = 'position:fixed;top:20px;left:20px;z-index:99999;background:#111;border:2px solid #8b5cf6;border-radius:8px;padding:12px;box-shadow:0 8px 40px rgba(0,0,0,0.7);max-width:520px';
+    const close = document.createElement('div');
+    close.textContent = 'Diagnóstico de fonte (clique pra fechar)';
+    close.style.cssText = 'color:#fff;font:12px sans-serif;margin-bottom:8px;cursor:pointer';
+    close.onclick = () => box.remove();
+    box.appendChild(close);
+
+    // 1. DOM normal
+    const dom = document.createElement('div');
+    dom.textContent = 'DOM: ' + fam + ' Aàé';
+    dom.style.cssText = `font-family:"${fam}",sans-serif;font-size:64px;color:#fff;line-height:1.2;-webkit-font-smoothing:antialiased`;
+    box.appendChild(dom);
+
+    // 2. Canvas (como o export)
+    const cv = document.createElement('canvas');
+    cv.width = 500; cv.height = 90;
+    cv.style.cssText = 'width:500px;height:90px;background:#222;display:block;margin-top:8px';
+    const ctx = cv.getContext('2d');
+    ctx.fillStyle = '#fff';
+    ctx.textBaseline = 'middle';
+    ctx.font = `400 64px "${fam}", sans-serif`;
+    ctx.fillText('Canvas: ' + fam, 10, 45);
+    box.appendChild(cv);
+    document.body.appendChild(box);
+
+    return 'Compare DOM (cima) vs Canvas (baixo). Os dois serrilhados? Só o canvas? Me diga.';
+  };
+
   window.WM_DIM = function() {
     const els = ['.editor-canvas', '#canvas-content', '.canvas-content', '.lyric-stanza', '#editor-canvas'];
     console.log('%c=== DIMENSÕES (largura x altura, proporção) ===', 'font-weight:bold;color:#8b5cf6');
