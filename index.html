@@ -1856,7 +1856,7 @@ body.marking-open.marking-collapsed .editor-canvas {
   border: 1px solid var(--border-default);
   border-radius: var(--radius-md);
   backdrop-filter: blur(20px);
-  z-index: 10;
+  z-index: 50;
 }
 /* Indicador discreto de qual slide está no preview — "SLIDE 2 de 18".
    Fica na toolbar (fora do canvas-content), então NUNCA vai pro vídeo
@@ -2018,8 +2018,19 @@ body.marking-open.marking-collapsed .editor-canvas {
 }
 
 /* ---------- TIMELINE ---------- */
-.timeline-collapse-btn {
+.timeline-collapse-hint {
   margin-left: auto;
+  font-size: 11px;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+  user-select: none;
+  letter-spacing: 0.02em;
+}
+.timeline-collapse-hint::before { content: 'Toque para minimizar'; }
+body.timeline-collapsed .timeline-collapse-hint::before { content: 'Toque para maximizar'; }
+body.timeline-collapsed .timeline-collapse-hint { color: #3b82f6; }
+.timeline-collapse-btn {
+  margin-left: 8px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -2042,6 +2053,21 @@ body.timeline-collapsed .timeline-empty {
   display: none !important;
 }
 body.timeline-collapsed .timeline-collapse-btn svg { transform: rotate(180deg); }
+/* Colapsada: a barra inteira vira clicável (cursor) e ganha um tom AZUL
+   (azul da marca, #3b82f6) pra diferenciar visualmente do estado aberto.
+   Aberta = surface escuro padrão; colapsada = faixa azulada. */
+body.timeline-collapsed .editor-timeline {
+  cursor: pointer;
+  background: rgba(59, 130, 246, 0.14);
+  border-top: 1px solid rgba(59, 130, 246, 0.4);
+}
+body.timeline-collapsed .editor-timeline:hover {
+  background: rgba(59, 130, 246, 0.22);
+}
+body.timeline-collapsed .timeline-collapse-btn {
+  border-color: rgba(59, 130, 246, 0.5);
+  color: #3b82f6;
+}
 
 .editor-timeline {
   grid-column: 2 / -1;
@@ -3061,9 +3087,10 @@ body.is-dragging-word .lyric-word { cursor: grabbing !important; }
 /* Tooltip nos botões da canvas-toolbar aparece ABAIXO (não acima)
    porque o canvas-wrap tem overflow:hidden e cortaria o tooltip em cima */
 .canvas-toolbar [data-tooltip]::after {
-  bottom: auto;
-  top: calc(100% + 8px);
-  transform: translateX(-50%) translateY(-4px);
+  bottom: calc(100% + 8px);
+  top: auto;
+  transform: translateX(-50%) translateY(4px);
+  z-index: 200;
 }
 .canvas-toolbar [data-tooltip]:hover::after {
   transform: translateX(-50%) translateY(0);
@@ -3073,7 +3100,7 @@ body.is-dragging-word .lyric-word { cursor: grabbing !important; }
 .canvas-toolbar [data-tooltip]:last-child::after {
   left: auto;
   right: 0;
-  transform: translateX(0) translateY(-4px);
+  transform: translateX(0) translateY(4px);
 }
 .canvas-toolbar [data-tooltip]:last-child:hover::after {
   transform: translateX(0) translateY(0);
@@ -3082,7 +3109,7 @@ body.is-dragging-word .lyric-word { cursor: grabbing !important; }
 /* Primeiro botão (mais à esquerda) — tooltip alinha pela esquerda */
 .canvas-toolbar [data-tooltip]:first-child::after {
   left: 0;
-  transform: translateX(0) translateY(-4px);
+  transform: translateX(0) translateY(4px);
 }
 .canvas-toolbar [data-tooltip]:first-child:hover::after {
   transform: translateX(0) translateY(0);
@@ -6074,6 +6101,7 @@ Digno de toda honra"></textarea>
         <span id="timeline-info">Timeline da apresentação</span>
         <span id="slide-info" style="margin-left: 12px; color: var(--text-secondary); font-weight: 600;"></span>
       </div>
+      <span class="timeline-collapse-hint" id="timeline-collapse-hint"></span>
       <button class="timeline-collapse-btn" id="btn-timeline-collapse" data-tooltip="Esconder/mostrar linha do tempo (mais espaço pro slide)">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
       </button>
@@ -27953,9 +27981,13 @@ function initEditor() {
   // só o cabeçalho e o slide ganha o espaço — útil em telas menores. Ao
   // alternar, re-aplica o aspect pra o canvas recalcular o tamanho.
   {
-    const btnCol = document.getElementById('btn-timeline-collapse');
-    if (btnCol) btnCol.addEventListener('click', () => {
-      document.body.classList.toggle('timeline-collapsed');
+    // Função única de alternância (usada pela setinha e pelo clique na barra).
+    const toggleTimeline = (forceExpand) => {
+      if (forceExpand === true) {
+        document.body.classList.remove('timeline-collapsed');
+      } else {
+        document.body.classList.toggle('timeline-collapsed');
+      }
       // Recalcula o tamanho do slide após a transição de altura.
       setTimeout(() => {
         try {
@@ -27965,6 +27997,23 @@ function initEditor() {
           engine.renderStanza(engine.currentStanzaIndex);
         } catch (e) {}
       }, 60);
+    };
+
+    const btnCol = document.getElementById('btn-timeline-collapse');
+    if (btnCol) btnCol.addEventListener('click', (e) => {
+      e.stopPropagation(); // a setinha sempre alterna (não dispara o clique-pra-expandir)
+      toggleTimeline();
+    });
+
+    // Clicar em QUALQUER lugar da timeline a alterna — colapsada expande,
+    // aberta colapsa. Mais fácil de ativar/desativar durante a edição sem
+    // precisar mirar na setinha. Cliques em botões/controles são ignorados
+    // (deixa o controle agir normalmente).
+    const timelineEl = document.querySelector('.editor-timeline');
+    if (timelineEl) timelineEl.addEventListener('click', (e) => {
+      // Ignora se o clique foi num botão/controle/área interativa.
+      if (e.target.closest('button, input, a, select, .timeline-clip, .timeline-track, .timeline-audio-track, canvas')) return;
+      toggleTimeline();
     });
   }
 
