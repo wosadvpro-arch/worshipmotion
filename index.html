@@ -10536,10 +10536,13 @@ async function registerFontFromAsset(asset) {
   // ela é, e o botão B sintetiza o negrito por cima quando você clicar.
   const nomeLower = asset.name.toLowerCase();
   const ehItalico = /italic|oblique|itálico/.test(nomeLower);
-  const fontFace = new FontFace(family, buffer, {
-    weight: '400',
-    style: ehItalico ? 'italic' : 'normal'
-  });
+  // Registramos SEM forçar weight/style descriptors. Forçar weight:'400'
+  // num arquivo que não tem exatamente esse peso fazia o navegador
+  // SINTETIZAR a fonte (faux bold/regular), que renderiza serrilhada/sem
+  // anti-aliasing nas bordas. Deixando o navegador detectar o peso real do
+  // arquivo, ele rasteriza nativamente (nítido) tanto no preview quanto no
+  // export. O peso visual passa a ser o do próprio arquivo.
+  const fontFace = new FontFace(family, buffer);
   await fontFace.load();
   document.fonts.add(fontFace);
 
@@ -10950,10 +10953,7 @@ async function _ensureLocalFontRegistered(family) {
     try {
       const blob = await fontData.blob();
       const buffer = await blob.arrayBuffer();
-      const face = new FontFace(family, buffer, {
-        weight: fontData.style?.toLowerCase().includes('bold') ? '700' : '400',
-        style: fontData.style?.toLowerCase().includes('italic') ? 'italic' : 'normal',
-      });
+      const face = new FontFace(family, buffer);
       await face.load();
       document.fonts.add(face);
       registradas++;
