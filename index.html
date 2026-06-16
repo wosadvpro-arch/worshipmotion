@@ -1558,8 +1558,8 @@ body.wm-recording-mode::after {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: var(--space-3);
-  padding: var(--space-8);
+  gap: var(--space-2);
+  padding: var(--space-4);
   min-height: 0;
   height: 100%;
   overflow: hidden;
@@ -1745,7 +1745,7 @@ body.marking-open.marking-collapsed .editor-canvas {
   min-height: 0;
   width: auto;
   height: 100%;
-  max-width: 900px;
+  max-width: 1400px;
   max-height: 100%;
   background: var(--bg-canvas);
   border-radius: var(--radius-xl);
@@ -1845,12 +1845,12 @@ body.marking-open.marking-collapsed .editor-canvas {
 
 /* canvas toolbar (top-right do canvas) */
 .canvas-toolbar {
-  position: absolute;
-  top: var(--space-4);
-  right: var(--space-4);
+  position: relative;
+  margin-top: var(--space-3);
   display: flex;
   gap: var(--space-1);
   align-items: center;
+  justify-content: center;
   padding: 4px;
   background: rgba(15, 15, 22, 0.85);
   border: 1px solid var(--border-default);
@@ -1873,6 +1873,20 @@ body.marking-open.marking-collapsed .editor-canvas {
 }
 
 /* aspect ratio indicator */
+.aspect-indicator-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 4px 10px;
+  margin-left: 4px;
+  background: rgba(15, 15, 22, 0.6);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  white-space: nowrap;
+  user-select: none;
+}
 .aspect-indicator {
   position: absolute;
   bottom: var(--space-4);
@@ -2004,6 +2018,31 @@ body.marking-open.marking-collapsed .editor-canvas {
 }
 
 /* ---------- TIMELINE ---------- */
+.timeline-collapse-btn {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-md);
+  background: transparent;
+  border: 1px solid var(--border-default);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background 0.15s;
+  flex-shrink: 0;
+}
+.timeline-collapse-btn:hover { background: rgba(255,255,255,0.06); color: var(--text-primary); }
+.timeline-collapse-btn svg { transition: transform 0.2s; }
+body.timeline-collapsed { --timeline-height: 56px; }
+body.timeline-collapsed .timeline-track,
+body.timeline-collapsed .timeline-audio-track,
+body.timeline-collapsed .timeline-empty {
+  display: none !important;
+}
+body.timeline-collapsed .timeline-collapse-btn svg { transform: rotate(180deg); }
+
 .editor-timeline {
   grid-column: 2 / -1;
   height: var(--timeline-height);
@@ -5516,26 +5555,27 @@ Digno de toda honra"></textarea>
         <div class="lyric-empty">Cole uma letra à esquerda e clique em "Gerar Lyric"</div>
       </div>
 
-      <div class="canvas-toolbar">
-        <button class="icon-btn" data-tooltip="Estrofe anterior" id="btn-prev-stanza">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
-        </button>
-        <span class="canvas-slide-indicator" id="canvas-slide-indicator">SLIDE 1 de 1</span>
-        <button class="icon-btn" data-tooltip="Reproduzir (Espaço)" id="btn-play-canvas">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"/></svg>
-        </button>
-        <button class="icon-btn" data-tooltip="Próxima estrofe" id="btn-next-stanza">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-        </button>
-        <button class="icon-btn" data-tooltip="Recentralizar slide" id="btn-recentralizar">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/></svg>
-        </button>
-      </div>
 
       <div class="aspect-indicator">
         <span class="badge-dot" style="color: var(--accent); display: inline-flex; align-items: center;"></span>
         <span id="aspect-label">16:9 • 1920×1080</span>
       </div>
+    </div>
+
+    <div class="canvas-toolbar">
+      <button class="icon-btn" data-tooltip="Estrofe anterior" id="btn-prev-stanza">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <span class="canvas-slide-indicator" id="canvas-slide-indicator">SLIDE 1 de 1</span>
+      <button class="icon-btn" data-tooltip="Reproduzir (Espaço)" id="btn-play-canvas">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"/></svg>
+      </button>
+      <button class="icon-btn" data-tooltip="Próxima estrofe" id="btn-next-stanza">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+      <button class="icon-btn" data-tooltip="Recentralizar slide" id="btn-recentralizar">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/></svg>
+      </button>
     </div>
   </main>
 
@@ -6034,6 +6074,9 @@ Digno de toda honra"></textarea>
         <span id="timeline-info">Timeline da apresentação</span>
         <span id="slide-info" style="margin-left: 12px; color: var(--text-secondary); font-weight: 600;"></span>
       </div>
+      <button class="timeline-collapse-btn" id="btn-timeline-collapse" data-tooltip="Esconder/mostrar linha do tempo (mais espaço pro slide)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
     </div>
     
     <div class="timeline-audio-track" id="timeline-audio-track" style="display:none;">
@@ -27905,6 +27948,25 @@ function initEditor() {
 
   // Barra contextual (Etapa 1): liga os controles e sincroniza.
   if (typeof setupCtxToolbar === 'function') setupCtxToolbar();
+
+  // Botão de esconder/mostrar a linha do tempo. Colapsada, a timeline vira
+  // só o cabeçalho e o slide ganha o espaço — útil em telas menores. Ao
+  // alternar, re-aplica o aspect pra o canvas recalcular o tamanho.
+  {
+    const btnCol = document.getElementById('btn-timeline-collapse');
+    if (btnCol) btnCol.addEventListener('click', () => {
+      document.body.classList.toggle('timeline-collapsed');
+      // Recalcula o tamanho do slide após a transição de altura.
+      setTimeout(() => {
+        try {
+          if (typeof applyAspect === 'function') {
+            applyAspect(window.__currentAspect || '16:9');
+          }
+          engine.renderStanza(engine.currentStanzaIndex);
+        } catch (e) {}
+      }, 60);
+    });
+  }
 
   // Botão "Recentralizar slide": volta o slide atual ao layout automático.
   {
