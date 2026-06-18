@@ -28337,7 +28337,16 @@ function initLoginAnim() {
 
       try {
         if (modo === 'signup') {
-          const { data, error } = await sb.auth.signUp({ email, password: senha });
+          const { data, error } = await sb.auth.signUp({
+            email,
+            password: senha,
+            options: {
+              // Força o link de confirmação a voltar pro caminho COMPLETO
+              // (com /worshipmotion/), senão o Supabase manda pra raiz do
+              // github.io e dá 404.
+              emailRedirectTo: window.location.origin + window.location.pathname + '#editor'
+            }
+          });
           if (error) throw error;
           // Troca pro modo login mas MANTÉM a mensagem de sucesso visível
           // (antes ela sumia rápido porque setModo limpava a mensagem).
