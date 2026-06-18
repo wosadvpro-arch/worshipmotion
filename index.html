@@ -28190,8 +28190,10 @@ function initLoginAnim() {
         if (modo === 'signup') {
           const { data, error } = await sb.auth.signUp({ email, password: senha });
           if (error) throw error;
-          mostrarMsg('Conta criada! Enviamos um e-mail de confirmação. Confirme seu e-mail e depois faça login.', 'ok');
-          setTimeout(() => setModo('login'), 400);
+          // Troca pro modo login mas MANTÉM a mensagem de sucesso visível
+          // (antes ela sumia rápido porque setModo limpava a mensagem).
+          setModo('login');
+          mostrarMsg('Conta criada! Enviamos um e-mail de confirmação para ' + email + '. Confirme o e-mail e depois entre aqui.', 'ok');
         } else {
           const { data, error } = await sb.auth.signInWithPassword({ email, password: senha });
           if (error) throw error;
@@ -28243,6 +28245,22 @@ function initLoginAnim() {
 /* === Router === */
 
 (function() {
+  // Quando a pessoa volta de um e-mail de confirmação ou do Google, o
+  // Supabase devolve um #access_token=... na URL. A biblioteca lê isso e
+  // cria a sessão sozinha; aqui só limpamos a URL feia e mandamos pro
+  // editor pra não deixar a pessoa numa tela estranha cheia de token.
+  async function tratarRetornoAuth() {
+    const h = window.location.hash || '';
+    if (h.includes('access_token=') || h.includes('type=signup') || h.includes('type=recovery')) {
+      if (window.wmSupabase) {
+        try { await window.wmSupabase.auth.getSession(); } catch (e) {}
+      }
+      // type=recovery = redefinição de senha → manda pro login; resto → editor
+      const destino = h.includes('type=recovery') ? '#login' : '#editor';
+      history.replaceState(null, '', window.location.pathname + destino);
+    }
+  }
+
   async function showPage() {
     const hash = (window.location.hash || '#landing').replace('#', '');
     const pageId = hash === '' ? 'page-landing' : ('page-' + hash);
@@ -28278,7 +28296,10 @@ function initLoginAnim() {
     window.scrollTo(0, 0);
   }
   window.addEventListener('hashchange', showPage);
-  window.addEventListener('load', showPage);
+  window.addEventListener('load', async () => {
+    await tratarRetornoAuth();
+    showPage();
+  });
 })();
 
 </script>
