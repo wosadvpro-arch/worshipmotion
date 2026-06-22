@@ -5430,9 +5430,26 @@ body.is-dragging-word .lyric-word { cursor: grabbing !important; }
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 16l5-5 4 4 5-5 4 4"/></svg>
     </button>
     <div style="flex:1"></div>
-    <button class="rail-btn" data-tooltip="Conta">
+    <button class="rail-btn" id="btn-conta" data-tooltip="Conta">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg>
     </button>
+    <!-- Menu de conta (abre ao clicar no botão Conta) -->
+    <div id="conta-menu" style="display:none; position:absolute; left:64px; bottom:60px; z-index:9000; width:260px; background:var(--surface-raised, #1a1a22); border:1px solid var(--border-default, rgba(255,255,255,0.12)); border-radius:14px; box-shadow:0 12px 40px rgba(0,0,0,0.5); padding:16px; color:var(--text-primary, #e8e8ee);">
+      <div style="font-size:12px; color:var(--text-secondary, #9a9aae); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px;">Conta</div>
+      <div id="conta-email" style="font-size:14px; font-weight:600; word-break:break-all; margin-bottom:14px;">—</div>
+      <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 12px; background:rgba(139,92,246,0.1); border:1px solid rgba(139,92,246,0.25); border-radius:10px; margin-bottom:8px;">
+        <span style="font-size:13px; color:var(--text-secondary, #9a9aae);">Plano</span>
+        <span id="conta-plano" style="font-size:13px; font-weight:700; color:#c4b5fd;">—</span>
+      </div>
+      <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 12px; background:rgba(255,255,255,0.04); border-radius:10px; margin-bottom:14px;">
+        <span style="font-size:13px; color:var(--text-secondary, #9a9aae);">Créditos</span>
+        <span id="conta-creditos" style="font-size:13px; font-weight:700;">—</span>
+      </div>
+      <button id="btn-logout" style="width:100%; padding:11px; background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.3); color:#fca5a5; border-radius:10px; font-size:14px; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Sair da conta
+      </button>
+    </div>
     <button class="rail-btn" data-tooltip="Configurações">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 10v6M4.22 4.22l4.24 4.24m7.08 7.08l4.24 4.24M1 12h6m10 0h6M4.22 19.78l4.24-4.24m7.08-7.08l4.24-4.24"/></svg>
     </button>
@@ -9815,6 +9832,70 @@ window.WM_CREDITS = {
   cobrar: wmCobrarCreditos,
   atualizarBadge: wmAtualizarBadgeCreditos,
 };
+
+/* ============================================================
+   MENU DE CONTA — email, plano, créditos e sair
+   ============================================================ */
+async function wmPreencherMenuConta() {
+  const sb = window.wmSupabase;
+  const emailEl = document.getElementById('conta-email');
+  const planoEl = document.getElementById('conta-plano');
+  const credEl = document.getElementById('conta-creditos');
+  // Email do usuário logado
+  try {
+    if (sb) {
+      const { data } = await sb.auth.getSession();
+      const email = data && data.session ? data.session.user.email : null;
+      if (emailEl) emailEl.textContent = email || 'Não identificado';
+    }
+  } catch (e) { if (emailEl) emailEl.textContent = '—'; }
+  // Plano e créditos (do perfil já carregado)
+  try {
+    const info = (window.WM_CREDITS && window.WM_CREDITS.info) ? window.WM_CREDITS.info() : null;
+    if (info) {
+      if (planoEl) planoEl.textContent = info.nomePlano || 'Grátis';
+      if (credEl) credEl.textContent = info.restante + '/' + info.total;
+    }
+  } catch (e) {}
+}
+
+function wmLigarMenuConta() {
+  const btn = document.getElementById('btn-conta');
+  const menu = document.getElementById('conta-menu');
+  const btnLogout = document.getElementById('btn-logout');
+  if (!btn || !menu || btn.__wmLigado) return;
+  btn.__wmLigado = true;
+
+  btn.addEventListener('click', async (e) => {
+    e.stopPropagation();
+    const abrindo = menu.style.display === 'none';
+    if (abrindo) {
+      await wmPreencherMenuConta();
+      menu.style.display = 'block';
+    } else {
+      menu.style.display = 'none';
+    }
+  });
+
+  // Fecha ao clicar fora
+  document.addEventListener('click', (e) => {
+    if (menu.style.display === 'block' && !menu.contains(e.target) && e.target !== btn) {
+      menu.style.display = 'none';
+    }
+  });
+
+  // Sair da conta
+  if (btnLogout) btnLogout.addEventListener('click', async () => {
+    if (!confirm('Deseja sair da sua conta?')) return;
+    try {
+      if (window.wmSupabase) await window.wmSupabase.auth.signOut();
+    } catch (e) {}
+    window.__wmPerfil = null;
+    window.__wmSessaoPronta = false;
+    window.location.hash = '#login';
+  });
+}
+
 
 
 // Quando a nuvem confirma o save de um projeto novo, ele ganha um uuid
@@ -28720,6 +28801,10 @@ function initLoginAnim() {
         // Carrega o perfil de créditos (plano + saldo do mês).
         if (typeof wmCarregarPerfil === 'function') {
           await wmCarregarPerfil();
+        }
+        // Liga o menu de conta (email, plano, sair).
+        if (typeof wmLigarMenuConta === 'function') {
+          wmLigarMenuConta();
         }
       } catch (e) { /* se falhar a checagem, deixa seguir pra não travar */ }
       __routeChecking = false;
