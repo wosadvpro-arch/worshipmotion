@@ -28622,36 +28622,41 @@ function initLoginAnim() {
     if (h.includes('access_token=') || h.includes('type=signup') || h.includes('type=recovery')) {
       const ehRecovery = h.includes('type=recovery');
       if (window.wmSupabase && !ehRecovery) {
-        // Primeiro tenta o caminho automático (detectSessionInUrl).
-        let achou = false;
-        for (let i = 0; i < 10; i++) {
-          try {
-            const { data } = await window.wmSupabase.auth.getSession();
-            if (data && data.session) { window.__wmSessaoPronta = true; achou = true; if (window.__wmLog) window.__wmLog('retorno: sessão criada (auto) tentativa ' + i); break; }
-          } catch (e) {}
-          await new Promise(r => setTimeout(r, 200));
+        // Lê os tokens do hash IMEDIATAMENTE (antes que algo limpe a URL).
+        let access_token = null, refresh_token = null;
+        try {
+          const params = new URLSearchParams(h.replace(/^#/, ''));
+          access_token = params.get('access_token');
+          refresh_token = params.get('refresh_token');
+          if (window.__wmLog) window.__wmLog('retorno: access=' + (access_token?'SIM':'não') + ' refresh=' + (refresh_token?'SIM':'não'));
+        } catch (e) {
+          if (window.__wmLog) window.__wmLog('retorno: erro lendo hash = ' + e.message);
         }
-        // Se o automático falhou, tenta criar a sessão MANUALMENTE a partir
-        // do token do hash — e registra o erro exato se houver.
-        if (!achou) {
+        let achou = false;
+        // 1) Cria a sessão manualmente com os tokens lidos.
+        if (access_token && refresh_token) {
           try {
-            const params = new URLSearchParams(h.replace(/^#/, ''));
-            const access_token = params.get('access_token');
-            const refresh_token = params.get('refresh_token');
-            if (window.__wmLog) window.__wmLog('retorno: tentando setSession manual; tem refresh? ' + (refresh_token?'SIM':'não'));
-            if (access_token && refresh_token) {
-              const { data, error } = await window.wmSupabase.auth.setSession({ access_token, refresh_token });
-              if (error) {
-                if (window.__wmLog) window.__wmLog('retorno: ERRO setSession = ' + error.message);
-              } else if (data && data.session) {
-                window.__wmSessaoPronta = true; achou = true;
-                if (window.__wmLog) window.__wmLog('retorno: sessão criada (manual) OK');
-              }
-            } else {
-              if (window.__wmLog) window.__wmLog('retorno: faltou access ou refresh token no hash');
+            const { data, error } = await window.wmSupabase.auth.setSession({ access_token, refresh_token });
+            if (error) {
+              if (window.__wmLog) window.__wmLog('retorno: ERRO setSession = ' + error.message);
+            } else if (data && data.session) {
+              window.__wmSessaoPronta = true; achou = true;
+              if (window.__wmLog) window.__wmLog('retorno: sessão criada (manual) OK');
             }
           } catch (e) {
             if (window.__wmLog) window.__wmLog('retorno: exceção setSession = ' + e.message);
+          }
+        } else if (window.__wmLog) {
+          window.__wmLog('retorno: faltou um dos tokens (access=' + (access_token?'s':'n') + ' refresh=' + (refresh_token?'s':'n') + ')');
+        }
+        // 2) Se falhou, tenta o caminho automático (detectSessionInUrl).
+        if (!achou) {
+          for (let i = 0; i < 10; i++) {
+            try {
+              const { data } = await window.wmSupabase.auth.getSession();
+              if (data && data.session) { window.__wmSessaoPronta = true; achou = true; if (window.__wmLog) window.__wmLog('retorno: sessão criada (auto) tentativa ' + i); break; }
+            } catch (e) {}
+            await new Promise(r => setTimeout(r, 200));
           }
         }
         if (!achou && window.__wmLog) window.__wmLog('retorno: sessão NÃO criada de jeito nenhum');
