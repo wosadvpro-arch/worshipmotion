@@ -6474,8 +6474,7 @@ window.wmSupabase = (window.supabase && window.supabase.createClient)
       auth: {
         persistSession: true,        // guarda a sessão entre visitas
         autoRefreshToken: true,      // renova o token sozinho
-        detectSessionInUrl: true,    // lê o #access_token do retorno do OAuth
-        flowType: 'implicit',        // fluxo que devolve o token no hash
+        detectSessionInUrl: true,    // lê o token do retorno do OAuth
       }
     })
   : null;
