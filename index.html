@@ -6474,7 +6474,7 @@ window.wmSupabase = (window.supabase && window.supabase.createClient)
       auth: {
         persistSession: true,        // guarda a sessão entre visitas
         autoRefreshToken: true,      // renova o token sozinho
-        detectSessionInUrl: true,    // lê o token do retorno do OAuth
+        detectSessionInUrl: false,   // NÓS lemos o token manualmente (sem corrida)
       }
     })
   : null;
@@ -28619,6 +28619,8 @@ function initLoginAnim() {
   async function tratarRetornoAuth() {
     const h = window.location.hash || '';
     if (window.__wmLog) window.__wmLog('retorno: hash tem access_token? ' + (h.includes('access_token')?'SIM':'não'));
+    // Mostra os primeiros 60 caracteres do hash pra ver o formato real.
+    if (window.__wmLog) window.__wmLog('retorno: inicio do hash = ' + h.slice(0, 60));
     if (h.includes('access_token=') || h.includes('type=signup') || h.includes('type=recovery')) {
       const ehRecovery = h.includes('type=recovery');
       if (window.wmSupabase && !ehRecovery) {
