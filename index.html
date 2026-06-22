@@ -6475,6 +6475,20 @@ window.wmSupabase = (window.supabase && window.supabase.createClient)
 if (!window.wmSupabase) {
   console.warn('[WM] Supabase não carregou — verifique a conexão de internet.');
 }
+// Reforço: quando o login completa (inclusive Google OAuth), o Supabase
+// dispara SIGNED_IN. Se a pessoa ainda estiver na landing/login, leva pro
+// editor — cobre o caso de timing onde o roteamento na carga falha.
+if (window.wmSupabase) {
+  window.wmSupabase.auth.onAuthStateChange((event, session) => {
+    if (event === 'SIGNED_IN' && session) {
+      const h = window.location.hash || '';
+      if (h.indexOf('#editor') === -1 && (h.indexOf('#login') !== -1 || h.indexOf('#landing') !== -1 || h === '' || h.indexOf('access_token') !== -1)) {
+        window.location.hash = '#editor';
+      }
+    }
+  });
+}
+
 </script>
 
 <script>
@@ -28565,7 +28579,17 @@ function initLoginAnim() {
     const h = window.location.hash || '';
     if (h.includes('access_token=') || h.includes('type=signup') || h.includes('type=recovery')) {
       if (window.wmSupabase) {
-        try { await window.wmSupabase.auth.getSession(); } catch (e) {}
+        // O Supabase processa o token do OAuth de forma assíncrona. Esperamos
+        // a sessão ficar pronta (com algumas tentativas) ANTES de rotear, senão
+        // a proteção de rota checa cedo demais, não acha sessão e chuta pro login.
+        let temSessao = false;
+        for (let i = 0; i < 10; i++) {
+          try {
+            const { data } = await window.wmSupabase.auth.getSession();
+            if (data && data.session) { temSessao = true; break; }
+          } catch (e) {}
+          await new Promise(r => setTimeout(r, 200)); // espera 200ms e tenta de novo
+        }
       }
       // type=recovery = redefinição de senha → manda pro login; resto → editor
       const destino = h.includes('type=recovery') ? '#login' : '#editor';
@@ -28581,8 +28605,15 @@ function initLoginAnim() {
     // pro login. (O Supabase guarda a sessão entre visitas automaticamente.)
     if (pageId === 'page-editor' && window.wmSupabase) {
       try {
-        const { data } = await window.wmSupabase.auth.getSession();
-        if (!data || !data.session) {
+        // Checa a sessão com uma segunda tentativa (cobre o caso do retorno
+        // do Google, onde a sessão pode levar um instante pra ficar pronta).
+        let sessao = null;
+        for (let i = 0; i < 5; i++) {
+          const { data } = await window.wmSupabase.auth.getSession();
+          if (data && data.session) { sessao = data.session; break; }
+          await new Promise(r => setTimeout(r, 150));
+        }
+        if (!sessao) {
           window.location.hash = '#login';
           return;
         }
