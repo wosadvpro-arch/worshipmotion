@@ -6470,7 +6470,14 @@ Digno de toda honra"></textarea>
 window.WM_SUPABASE_URL = 'https://jyzkxbszitfajiuoxmbc.supabase.co';
 window.WM_SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp5emt4YnN6aXRmYWppdW94bWJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE3MjY4NjcsImV4cCI6MjA5NzMwMjg2N30.ZnwCJe0RyjXEBuOjc0qDsf0Pzc1Ys9gol0hHjd8JrFE';
 window.wmSupabase = (window.supabase && window.supabase.createClient)
-  ? window.supabase.createClient(window.WM_SUPABASE_URL, window.WM_SUPABASE_ANON)
+  ? window.supabase.createClient(window.WM_SUPABASE_URL, window.WM_SUPABASE_ANON, {
+      auth: {
+        persistSession: true,        // guarda a sessão entre visitas
+        autoRefreshToken: true,      // renova o token sozinho
+        detectSessionInUrl: true,    // lê o #access_token do retorno do OAuth
+        flowType: 'implicit',        // fluxo que devolve o token no hash
+      }
+    })
   : null;
 if (!window.wmSupabase) {
   console.warn('[WM] Supabase não carregou — verifique a conexão de internet.');
@@ -6479,12 +6486,27 @@ if (!window.wmSupabase) {
 // dispara SIGNED_IN. Marcamos uma flag global de "sessão confirmada" e
 // levamos pro editor. A proteção de rota confia nessa flag, evitando a
 // corrida onde getSession() é checado cedo demais e expulsa pro login.
+window.__WM_LOGIN_DEBUG = true; // DIAGNÓSTICO TEMPORÁRIO do login — remover depois
 window.__wmSessaoPronta = false;
 if (window.wmSupabase) {
   window.wmSupabase.auth.onAuthStateChange((event, session) => {
+    try {
+      if (window.__WM_LOGIN_DEBUG) {
+        let box = document.getElementById('wm-login-diag');
+        if (!box && document.body) {
+          box = document.createElement('div');
+          box.id = 'wm-login-diag';
+          box.style.cssText = 'position:fixed;bottom:8px;left:8px;z-index:99999;background:#000;color:#0f0;font:12px monospace;padding:8px 12px;border-radius:8px;max-width:90vw;white-space:pre-wrap;border:1px solid #0f0;';
+          document.body.appendChild(box);
+        }
+        if (box) box.textContent += 'auth: evento=' + event + ' sessao=' + (session?'SIM':'não') + '\n';
+      }
+    } catch(e){}
+    // Liga a flag sempre que houver sessão. Só desliga em logout EXPLÍCITO
+    // (SIGNED_OUT) — eventos sem sessão na inicialização não devem zerar.
     if (session) {
       window.__wmSessaoPronta = true;
-    } else {
+    } else if (event === 'SIGNED_OUT') {
       window.__wmSessaoPronta = false;
     }
     if (event === 'SIGNED_IN' && session) {
@@ -28585,26 +28607,38 @@ function initLoginAnim() {
   async function tratarRetornoAuth() {
     const h = window.location.hash || '';
     if (h.includes('access_token=') || h.includes('type=signup') || h.includes('type=recovery')) {
-      if (window.wmSupabase) {
-        // O Supabase processa o token do OAuth de forma assíncrona. Esperamos
-        // a sessão ficar pronta (com algumas tentativas) ANTES de rotear, senão
-        // a proteção de rota checa cedo demais, não acha sessão e chuta pro login.
-        let temSessao = false;
-        for (let i = 0; i < 10; i++) {
+      // Recuperação de senha vai pro login; o resto vai pro editor.
+      const ehRecovery = h.includes('type=recovery');
+      if (window.wmSupabase && !ehRecovery) {
+        // Espera o Supabase processar o token e criar a sessão (até ~4s).
+        // NÃO limpamos o hash antes disso — o detectSessionInUrl precisa
+        // do #access_token intacto pra ler o token.
+        for (let i = 0; i < 20; i++) {
           try {
             const { data } = await window.wmSupabase.auth.getSession();
-            if (data && data.session) { temSessao = true; break; }
+            if (data && data.session) { window.__wmSessaoPronta = true; break; }
           } catch (e) {}
-          await new Promise(r => setTimeout(r, 200)); // espera 200ms e tenta de novo
+          await new Promise(r => setTimeout(r, 200));
         }
       }
-      // type=recovery = redefinição de senha → manda pro login; resto → editor
-      const destino = h.includes('type=recovery') ? '#login' : '#editor';
+      const destino = ehRecovery ? '#login' : '#editor';
       history.replaceState(null, '', window.location.pathname + destino);
     }
   }
 
   let __routeChecking = false;
+  function __wmDiag(msg) {
+    // Diagnóstico temporário visível na tela (canto inferior).
+    if (!window.__WM_LOGIN_DEBUG) return;
+    let box = document.getElementById('wm-login-diag');
+    if (!box) {
+      box = document.createElement('div');
+      box.id = 'wm-login-diag';
+      box.style.cssText = 'position:fixed;bottom:8px;left:8px;z-index:99999;background:#000;color:#0f0;font:12px monospace;padding:8px 12px;border-radius:8px;max-width:90vw;white-space:pre-wrap;border:1px solid #0f0;';
+      document.body.appendChild(box);
+    }
+    box.textContent += msg + '\n';
+  }
   async function showPage() {
     const hash = (window.location.hash || '#landing').replace('#', '');
     const pageId = hash === '' ? 'page-landing' : ('page-' + hash);
@@ -28612,27 +28646,29 @@ function initLoginAnim() {
     // Proteção de rota: o editor exige login. Evita execuções concorrentes
     // (o onAuthStateChange muda o hash e re-dispara showPage) com um lock.
     if (pageId === 'page-editor' && window.wmSupabase) {
-      if (__routeChecking) return; // já tem uma checagem rolando; não duplica
+      if (__routeChecking) { __wmDiag('rota: já checando, ignora'); return; }
       __routeChecking = true;
+      __wmDiag('rota: entrando no editor, checando sessão...');
       try {
-        // Espera a sessão existir, com tentativas generosas. Só decide
-        // "não logado" depois de esgotar as tentativas E a flag estar falsa.
         let sessao = null;
         for (let i = 0; i < 15; i++) {
           if (window.__wmSessaoPronta) {
             const { data } = await window.wmSupabase.auth.getSession();
             sessao = data && data.session ? data.session : { _flag: true };
+            __wmDiag('rota: flag pronta na tentativa ' + i);
             break;
           }
           const { data } = await window.wmSupabase.auth.getSession();
-          if (data && data.session) { sessao = data.session; break; }
+          if (data && data.session) { sessao = data.session; __wmDiag('rota: sessão achada na tentativa ' + i); break; }
           await new Promise(r => setTimeout(r, 200));
         }
         if (!sessao) {
+          __wmDiag('rota: SEM sessão após tentativas → expulsando pro login');
           __routeChecking = false;
           window.location.hash = '#login';
           return;
         }
+        __wmDiag('rota: sessão OK, abrindo editor');
         // Logado: sincroniza projetos da nuvem antes de abrir o editor.
         if (!window.__wmCloudReady && typeof wmSyncProjectsFromCloud === 'function') {
           await wmSyncProjectsFromCloud();
