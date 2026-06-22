@@ -28587,7 +28587,7 @@ function initLoginAnim() {
       if (!sb) { mostrarMsg('Não foi possível conectar ao servidor.', 'erro'); return; }
       const { error } = await sb.auth.signInWithOAuth({
         provider: 'google',
-        options: { redirectTo: window.location.origin + window.location.pathname + '#editor' }
+        options: { redirectTo: window.location.origin + window.location.pathname }
       });
       if (error) mostrarMsg('Erro ao conectar com Google: ' + error.message, 'erro');
     });
@@ -28627,7 +28627,18 @@ function initLoginAnim() {
         // Lê os tokens do hash IMEDIATAMENTE (antes que algo limpe a URL).
         let access_token = null, refresh_token = null;
         try {
-          const params = new URLSearchParams(h.replace(/^#/, ''));
+          // O hash pode vir como "#editor#access_token=..." (o roteador
+          // colou #editor na frente). Pegamos só a parte DEPOIS do último #
+          // que contém o access_token, pra ler os parâmetros corretamente.
+          let hashLimpo = h;
+          const idx = h.indexOf('access_token=');
+          if (idx >= 0) {
+            // Pega tudo a partir de access_token (remove qualquer #editor antes).
+            hashLimpo = h.slice(idx);
+          } else {
+            hashLimpo = h.replace(/^#+/, '');
+          }
+          const params = new URLSearchParams(hashLimpo);
           access_token = params.get('access_token');
           refresh_token = params.get('refresh_token');
           if (window.__wmLog) window.__wmLog('retorno: access=' + (access_token?'SIM':'não') + ' refresh=' + (refresh_token?'SIM':'não'));
