@@ -5393,6 +5393,10 @@ body.is-dragging-word .lyric-word { cursor: grabbing !important; }
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0 1 15-6.7L21 13"/></svg>
       </button>
       <div style="width:1px; height:20px; background:var(--border-default); margin: 0 4px;"></div>
+      <div id="wm-credits-badge" title="Créditos disponíveis neste mês" style="display:inline-flex; align-items:center; gap:6px; padding:5px 12px; border-radius:20px; background:rgba(139,92,246,0.12); border:1px solid rgba(139,92,246,0.3); color:#c4b5fd; font-size:13px; font-weight:600; cursor:default;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+        <span id="wm-credits-text">—</span>
+      </div>
       <button class="btn btn-secondary btn-sm" id="btn-save-project">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
         Salvar
@@ -9630,6 +9634,133 @@ async function wmDeleteProjectFromCloud(id) {
     console.warn('[WM] Falha ao apagar da nuvem:', e.message);
   }
 }
+
+/* ============================================================
+   WM_CREDITS — gate de créditos (Fase 1)
+   ============================================================
+   Lê o plano e os créditos gastos do usuário (tabela profiles no
+   Supabase), zera no virar do mês, e cobra créditos quando uma
+   produção nova é gerada. Reexport (projeto já cobrado) é livre.
+   ============================================================ */
+const WM_PLANOS = {
+  gratis:   { nome: 'Grátis',   creditos: 30,  marca: true  },
+  pro:      { nome: 'Pro',      creditos: 300, marca: false },
+  pro_plus: { nome: 'Pro Plus', creditos: 600, marca: false },
+};
+
+// Estado em memória (espelho do perfil na nuvem).
+window.__wmPerfil = null;
+
+function _mesAtual() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+}
+
+// Carrega (ou cria) o perfil do usuário logado. Zera créditos no mês novo.
+async function wmCarregarPerfil() {
+  const sb = window.wmSupabase;
+  if (!sb) return null;
+  try {
+    const { data: sess } = await sb.auth.getSession();
+    if (!sess || !sess.session) return null;
+    const userId = sess.session.user.id;
+
+    let { data: perfil } = await sb.from('profiles').select('*').eq('id', userId).maybeSingle();
+
+    // Usuário antigo sem perfil ainda: cria como grátis.
+    if (!perfil) {
+      const novo = { id: userId, plano: 'gratis', creditos_gastos: 0, ciclo_mes: _mesAtual() };
+      await sb.from('profiles').upsert(novo);
+      perfil = novo;
+    }
+
+    // Virou o mês? Zera os créditos gastos.
+    if (perfil.ciclo_mes !== _mesAtual()) {
+      perfil.creditos_gastos = 0;
+      perfil.ciclo_mes = _mesAtual();
+      await sb.from('profiles').update({ creditos_gastos: 0, ciclo_mes: perfil.ciclo_mes }).eq('id', userId);
+    }
+
+    window.__wmPerfil = perfil;
+    wmAtualizarBadgeCreditos();
+    return perfil;
+  } catch (e) {
+    console.warn('[WM] Falha ao carregar perfil:', e.message);
+    return null;
+  }
+}
+
+// Quanto crédito o plano dá, e quanto sobra.
+function wmCreditosInfo() {
+  const p = window.__wmPerfil;
+  if (!p) return { plano: 'gratis', total: 30, gastos: 0, restante: 30, marca: true };
+  const plano = WM_PLANOS[p.plano] || WM_PLANOS.gratis;
+  const gastos = p.creditos_gastos || 0;
+  return {
+    plano: p.plano,
+    nomePlano: plano.nome,
+    total: plano.creditos,
+    gastos,
+    restante: Math.max(0, plano.creditos - gastos),
+    marca: plano.marca,
+  };
+}
+
+// Atualiza o badge na barra de cima.
+function wmAtualizarBadgeCreditos() {
+  const el = document.getElementById('wm-credits-text');
+  if (!el) return;
+  const info = wmCreditosInfo();
+  el.textContent = info.restante + '/' + info.total + ' créditos';
+}
+
+// Cobra créditos por uma produção. Retorna {ok, motivo}.
+// quantidade = número de slides da produção.
+async function wmCobrarCreditos(quantidade, projeto) {
+  const sb = window.wmSupabase;
+  // Se não há login/supabase, libera (modo offline não cobra).
+  if (!sb || !window.__wmPerfil) return { ok: true };
+
+  // Projeto já cobrado antes (reexport) → livre.
+  if (projeto && projeto.creditos_cobrados && projeto.creditos_cobrados > 0) {
+    return { ok: true, reexport: true };
+  }
+
+  const info = wmCreditosInfo();
+  if (quantidade > info.restante) {
+    return { ok: false, motivo: 'sem_creditos', restante: info.restante, precisa: quantidade };
+  }
+
+  // Debita: soma aos créditos gastos do mês.
+  try {
+    const novoGasto = (window.__wmPerfil.creditos_gastos || 0) + quantidade;
+    const { data: sess } = await sb.auth.getSession();
+    await sb.from('profiles').update({ creditos_gastos: novoGasto, ciclo_mes: _mesAtual() }).eq('id', sess.session.user.id);
+    window.__wmPerfil.creditos_gastos = novoGasto;
+
+    // Marca o projeto como cobrado (pra reexport não cobrar de novo).
+    if (projeto && projeto.id) {
+      try {
+        await sb.from('projects').update({ creditos_cobrados: quantidade }).eq('id', projeto.id);
+        projeto.creditos_cobrados = quantidade;
+      } catch (e) {}
+    }
+    wmAtualizarBadgeCreditos();
+    return { ok: true, debitado: quantidade };
+  } catch (e) {
+    console.warn('[WM] Falha ao cobrar créditos:', e.message);
+    return { ok: true }; // em caso de erro de rede, não trava o usuário
+  }
+}
+
+// Exposto pra uso no app.
+window.WM_CREDITS = {
+  carregar: wmCarregarPerfil,
+  info: wmCreditosInfo,
+  cobrar: wmCobrarCreditos,
+  atualizarBadge: wmAtualizarBadgeCreditos,
+};
+
 
 // Quando a nuvem confirma o save de um projeto novo, ele ganha um uuid
 // real (diferente do id otimista). Atualiza a referência do projeto atual
@@ -22871,6 +23002,7 @@ function initEditor() {
     engine.setStyle({ fontFamily: family });
   }
 
+
   // Delegation pra clicar em qualquer font-option
   document.body.addEventListener('click', (ev) => {
     const opt = ev.target.closest('.font-option');
@@ -27861,6 +27993,28 @@ function initEditor() {
   async function startExport() {
     const aspect = window.__currentAspect || '16:9';
 
+    // ===== GATE DE CRÉDITOS =====
+    // Conta os slides desta produção e cobra créditos (se logado e com
+    // perfil). Reexport de projeto já cobrado é livre. Sem créditos: bloqueia.
+    try {
+      if (window.WM_CREDITS && window.__wmPerfil) {
+        const numSlides = (engine && engine.parsed && engine.parsed.stanzas)
+          ? engine.parsed.stanzas.length : 0;
+        const projetoAtual = window.__currentProjectId
+          ? (typeof getProject === 'function' ? getProject(window.__currentProjectId) : null) : null;
+        const r = await window.WM_CREDITS.cobrar(numSlides, projetoAtual);
+        if (!r.ok && r.motivo === 'sem_creditos') {
+          const info = window.WM_CREDITS.info();
+          alert('Seus créditos acabaram este mês.\n\n' +
+            'Esta produção precisa de ' + r.precisa + ' créditos, mas você tem ' + r.restante + '.\n\n' +
+            'Plano atual: ' + info.nomePlano + ' (' + info.total + ' créditos/mês).\n' +
+            'Faça upgrade pra continuar criando, ou aguarde a renovação no próximo mês.');
+          return; // bloqueia o export
+        }
+      }
+    } catch (e) { console.warn('[WM] gate de créditos:', e); }
+    // ===== FIM DO GATE =====
+
     // (diagnóstico de posições desativado — causa já identificada e corrigida)
     window.__WM_DIAG_EXPORT = false;
 
@@ -28436,6 +28590,10 @@ function initLoginAnim() {
         if (!window.__wmCloudReady && typeof wmSyncProjectsFromCloud === 'function') {
           await wmSyncProjectsFromCloud();
         }
+        // Carrega o perfil de créditos (plano + saldo do mês).
+        if (typeof wmCarregarPerfil === 'function') {
+          await wmCarregarPerfil();
+        }
       } catch (e) { /* se falhar a checagem, deixa seguir pra não travar */ }
     }
 
@@ -28467,4 +28625,5 @@ function initLoginAnim() {
 </script>
 
 </body>
+
 </html>
