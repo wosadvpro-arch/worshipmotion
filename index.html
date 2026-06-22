@@ -14652,6 +14652,37 @@ window.WM_CANVAS_RENDERER = CanvasRenderer;
    - Safari: WebCodecs limitado, pode não funcionar
    ============================================================ */
 
+/* ============================================================
+   MARCA D'ÁGUA — desenhada nos frames do export (plano grátis)
+   Logo "WorshipMotion" centralizada, semi-transparente.
+   ============================================================ */
+function wmDesenharMarcaDagua(ctx, W, H) {
+  ctx.save();
+  // Posiciona no centro do frame.
+  ctx.translate(W / 2, H / 2);
+  // Tamanho proporcional à largura do vídeo (funciona em 720p, 1080p, 4K).
+  const fontSize = Math.round(W * 0.055);
+  ctx.font = '700 ' + fontSize + 'px Montserrat, Inter, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  // Semi-transparente: visível o bastante pra incentivar upgrade, mas
+  // sem impedir a leitura da letra no teste.
+  ctx.globalAlpha = 0.22;
+  // Contorno escuro sutil pra destacar em fundos claros.
+  ctx.lineWidth = Math.max(2, fontSize * 0.03);
+  ctx.strokeStyle = 'rgba(0,0,0,0.5)';
+  ctx.fillStyle = '#ffffff';
+  const texto = 'WorshipMotion';
+  ctx.strokeText(texto, 0, 0);
+  ctx.fillText(texto, 0, 0);
+  // Pequena linha de chamada embaixo, ainda menor.
+  ctx.globalAlpha = 0.18;
+  const subSize = Math.round(fontSize * 0.32);
+  ctx.font = '500 ' + subSize + 'px Montserrat, Inter, sans-serif';
+  ctx.fillText('Feito com WorshipMotion', 0, fontSize * 0.7);
+  ctx.restore();
+}
+
 const EXPORT_PRESETS = {
   '16:9': { width: 1920, height: 1080 },
   '9:16': { width: 1080, height: 1920 },
@@ -15514,6 +15545,14 @@ class VideoExporter {
 
         if (!podePularRedesenho) {
           renderer.drawSlide(this.ctx, slide, elapsedInSlide, this.W, this.H);
+          // MARCA D'ÁGUA: desenha por cima do slide se o plano exigir (grátis).
+          // Só quando o slide é redesenhado — frames pulados reusam o frame
+          // anterior que já tem a marca.
+          try {
+            if (window.WM_CREDITS && window.WM_CREDITS.info && window.WM_CREDITS.info().marca) {
+              wmDesenharMarcaDagua(this.ctx, this.W, this.H);
+            }
+          } catch (e) {}
         } else {
           _framesPulados++;
         }
