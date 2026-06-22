@@ -6485,7 +6485,7 @@ if (!window.wmSupabase) {
 // dispara SIGNED_IN. Marcamos uma flag global de "sessão confirmada" e
 // levamos pro editor. A proteção de rota confia nessa flag, evitando a
 // corrida onde getSession() é checado cedo demais e expulsa pro login.
-window.__WM_LOGIN_DEBUG = true; // DIAGNÓSTICO TEMPORÁRIO do login — remover depois
+window.__WM_LOGIN_DEBUG = false; // diagnóstico de login desligado (bug resolvido)
 window.__wmSessaoPronta = false;
 // Diagnóstico persistente: guarda os logs no sessionStorage pra sobreviver
 // ao redirect (login→editor→login) e mostra tudo acumulado na caixinha.
