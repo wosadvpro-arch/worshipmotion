@@ -6476,13 +6476,20 @@ if (!window.wmSupabase) {
   console.warn('[WM] Supabase não carregou — verifique a conexão de internet.');
 }
 // Reforço: quando o login completa (inclusive Google OAuth), o Supabase
-// dispara SIGNED_IN. Se a pessoa ainda estiver na landing/login, leva pro
-// editor — cobre o caso de timing onde o roteamento na carga falha.
+// dispara SIGNED_IN. Marcamos uma flag global de "sessão confirmada" e
+// levamos pro editor. A proteção de rota confia nessa flag, evitando a
+// corrida onde getSession() é checado cedo demais e expulsa pro login.
+window.__wmSessaoPronta = false;
 if (window.wmSupabase) {
   window.wmSupabase.auth.onAuthStateChange((event, session) => {
+    if (session) {
+      window.__wmSessaoPronta = true;
+    } else {
+      window.__wmSessaoPronta = false;
+    }
     if (event === 'SIGNED_IN' && session) {
       const h = window.location.hash || '';
-      if (h.indexOf('#editor') === -1 && (h.indexOf('#login') !== -1 || h.indexOf('#landing') !== -1 || h === '' || h.indexOf('access_token') !== -1)) {
+      if (h.indexOf('#editor') === -1) {
         window.location.hash = '#editor';
       }
     }
@@ -28605,15 +28612,17 @@ function initLoginAnim() {
     // pro login. (O Supabase guarda a sessão entre visitas automaticamente.)
     if (pageId === 'page-editor' && window.wmSupabase) {
       try {
-        // Checa a sessão com uma segunda tentativa (cobre o caso do retorno
-        // do Google, onde a sessão pode levar um instante pra ficar pronta).
+        // Checa a sessão com várias tentativas (cobre o retorno do Google,
+        // onde a sessão leva um instante). Se o onAuthStateChange já confirmou
+        // a sessão (flag), confiamos nela e não expulsamos.
         let sessao = null;
-        for (let i = 0; i < 5; i++) {
+        for (let i = 0; i < 8; i++) {
           const { data } = await window.wmSupabase.auth.getSession();
           if (data && data.session) { sessao = data.session; break; }
-          await new Promise(r => setTimeout(r, 150));
+          if (window.__wmSessaoPronta) break; // evento já confirmou; segue
+          await new Promise(r => setTimeout(r, 200));
         }
-        if (!sessao) {
+        if (!sessao && !window.__wmSessaoPronta) {
           window.location.hash = '#login';
           return;
         }
