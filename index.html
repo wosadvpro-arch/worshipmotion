@@ -28604,25 +28604,32 @@ function initLoginAnim() {
     }
   }
 
+  let __routeChecking = false;
   async function showPage() {
     const hash = (window.location.hash || '#landing').replace('#', '');
     const pageId = hash === '' ? 'page-landing' : ('page-' + hash);
 
-    // Proteção de rota: o editor exige login. Se não houver sessão, manda
-    // pro login. (O Supabase guarda a sessão entre visitas automaticamente.)
+    // Proteção de rota: o editor exige login. Evita execuções concorrentes
+    // (o onAuthStateChange muda o hash e re-dispara showPage) com um lock.
     if (pageId === 'page-editor' && window.wmSupabase) {
+      if (__routeChecking) return; // já tem uma checagem rolando; não duplica
+      __routeChecking = true;
       try {
-        // Checa a sessão com várias tentativas (cobre o retorno do Google,
-        // onde a sessão leva um instante). Se o onAuthStateChange já confirmou
-        // a sessão (flag), confiamos nela e não expulsamos.
+        // Espera a sessão existir, com tentativas generosas. Só decide
+        // "não logado" depois de esgotar as tentativas E a flag estar falsa.
         let sessao = null;
-        for (let i = 0; i < 8; i++) {
+        for (let i = 0; i < 15; i++) {
+          if (window.__wmSessaoPronta) {
+            const { data } = await window.wmSupabase.auth.getSession();
+            sessao = data && data.session ? data.session : { _flag: true };
+            break;
+          }
           const { data } = await window.wmSupabase.auth.getSession();
           if (data && data.session) { sessao = data.session; break; }
-          if (window.__wmSessaoPronta) break; // evento já confirmou; segue
           await new Promise(r => setTimeout(r, 200));
         }
-        if (!sessao && !window.__wmSessaoPronta) {
+        if (!sessao) {
+          __routeChecking = false;
           window.location.hash = '#login';
           return;
         }
@@ -28635,6 +28642,7 @@ function initLoginAnim() {
           await wmCarregarPerfil();
         }
       } catch (e) { /* se falhar a checagem, deixa seguir pra não travar */ }
+      __routeChecking = false;
     }
 
     document.querySelectorAll('.page').forEach(p => {
