@@ -6264,17 +6264,24 @@ Digno de toda honra"></textarea>
             <label class="label">O que exportar</label>
             <div class="segmented" id="export-scope" style="width: 100%;">
               <button class="active" data-scope="all" style="flex:1">Projeto inteiro</button>
-              <button data-scope="one" style="flex:1">Só um slide</button>
+              <button data-scope="one" style="flex:1">Slides específicos</button>
               <button data-scope="trecho" style="flex:1">Só o trecho</button>
             </div>
             <div id="export-trecho-info" style="display:none; margin-top: var(--space-3); font-size: 11px; color: var(--text-tertiary);">
               Exporta só o trecho dos slides marcados (do 1º ao último), com o áudio sincronizado daquele pedaço. Ideal pra correções rápidas sem renderizar o áudio inteiro.
             </div>
             <div id="export-slide-picker-row" style="display:none; margin-top: var(--space-3);">
-              <label class="label">Qual slide</label>
-              <select id="export-slide-picker" class="select" style="width:100%;"></select>
+              <label class="label">Quais slides exportar</label>
+              <div id="export-slide-checklist" style="max-height:180px; overflow-y:auto; border:1px solid var(--border-default); border-radius:8px; padding:6px; display:flex; flex-direction:column; gap:2px;"></div>
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px;">
+                <div style="display:flex; gap:10px;">
+                  <button type="button" id="export-slides-all" style="background:none; border:none; color:var(--accent, #8b5cf6); font-size:11px; cursor:pointer; padding:0;">Marcar todos</button>
+                  <button type="button" id="export-slides-none" style="background:none; border:none; color:var(--text-tertiary); font-size:11px; cursor:pointer; padding:0;">Limpar</button>
+                </div>
+                <span id="export-slides-count" style="font-size:11px; color:var(--text-tertiary);">0 selecionados</span>
+              </div>
               <span style="font-size: 11px; color: var(--text-tertiary); margin-top: 4px; display:block;">
-                Exporta apenas o slide escolhido como um vídeo curto.
+                Cada slide exportado custa 1 crédito. Marque os que quer exportar.
               </span>
             </div>
           </div>
@@ -14781,9 +14788,12 @@ class VideoExporter {
 
   totalDurationSeconds() {
     if (!this.engine || !this.engine.parsed) return 0;
-    // Se exportando só um slide, a duração é de 1 estrofe só.
+    // Se exportando slides específicos, a duração é proporcional à seleção.
     if (typeof this.options.onlyStanzaIdx === 'number') {
       return this.options.stanzaDuration;
+    }
+    if (Array.isArray(this.options.onlyStanzaIndices)) {
+      return this.options.onlyStanzaIndices.length * this.options.stanzaDuration;
     }
     return this.engine.parsed.stanzas.length * this.options.stanzaDuration;
   }
@@ -14794,13 +14804,18 @@ class VideoExporter {
     const allWordOverrides = this.engine.wordOverrides || {};
 
     // Se onlyStanzaIdx está definido, exporta SÓ aquele slide.
+    // Se onlyStanzaIndices (lista) está definido, exporta SÓ esses slides.
     // (null/undefined = exporta o projeto inteiro, comportamento padrão)
     const onlyIdx = (typeof this.options.onlyStanzaIdx === 'number')
       ? this.options.onlyStanzaIdx
       : null;
+    const onlyList = Array.isArray(this.options.onlyStanzaIndices)
+      ? this.options.onlyStanzaIndices
+      : null;
 
     this.engine.parsed.stanzas.forEach((stanza, idx) => {
       if (onlyIdx !== null && idx !== onlyIdx) return; // pula os outros
+      if (onlyList !== null && onlyList.indexOf(idx) === -1) return; // fora da seleção
       // Pega config efetiva: scene override + global como fallback
       const sceneConfig = (typeof this.engine.getSceneConfig === 'function')
         ? this.engine.getSceneConfig(stanza.id)
@@ -27928,6 +27943,7 @@ function initEditor() {
   // aquele índice de estrofe. Declarado aqui (junto dos outros estados
   // de export) pra estar disponível em openExportModal/updateExportSummary.
   let exportOnlyStanzaIdx = null;
+  let exportSelectedSlides = null; // lista de índices marcados (scope "one")
   let exportCortarTrecho = false;
 
   // === Log visível na UI durante export ===
@@ -28061,7 +28077,9 @@ function initEditor() {
 
     $('#export-resolution').textContent = `${realW}×${realH} @ ${fps}fps`;
 
-    const stanzaCount = (typeof exportOnlyStanzaIdx === 'number')
+    const stanzaCount = (Array.isArray(exportSelectedSlides) && exportSelectedSlides.length > 0)
+      ? exportSelectedSlides.length
+      : (typeof exportOnlyStanzaIdx === 'number')
       ? 1
       : (engine.parsed?.stanzas?.length || 0);
     const totalSec = stanzaCount * exportStanzaDuration;
@@ -28102,19 +28120,24 @@ function initEditor() {
     const aspect = window.__currentAspect || '16:9';
 
     // ===== GATE DE CRÉDITOS =====
-    // Conta os slides desta produção e cobra créditos (se logado e com
-    // perfil). Reexport de projeto já cobrado é livre. Sem créditos: bloqueia.
+    // Cobra créditos pela produção (1 slide = 1 crédito). Reexport de
+    // projeto já cobrado é livre. Sem créditos: bloqueia.
+    // REGRA: slides específicos cobram 1 crédito por slide marcado.
     try {
       if (window.WM_CREDITS && window.__wmPerfil) {
-        const numSlides = (engine && engine.parsed && engine.parsed.stanzas)
-          ? engine.parsed.stanzas.length : 0;
-        const projetoAtual = window.__currentProjectId
+        const temSelecao = Array.isArray(exportSelectedSlides) && exportSelectedSlides.length > 0;
+        const numSlides = temSelecao
+          ? exportSelectedSlides.length
+          : ((engine && engine.parsed && engine.parsed.stanzas) ? engine.parsed.stanzas.length : 0);
+        // Seleção parcial cobra avulso e NÃO marca o projeto como "cobrado"
+        // (senão o projeto inteiro ficaria liberado por causa de alguns slides).
+        const projetoAtual = (!temSelecao && window.__currentProjectId)
           ? (typeof getProject === 'function' ? getProject(window.__currentProjectId) : null) : null;
         const r = await window.WM_CREDITS.cobrar(numSlides, projetoAtual);
         if (!r.ok && r.motivo === 'sem_creditos') {
           const info = window.WM_CREDITS.info();
           alert('Seus créditos acabaram este mês.\n\n' +
-            'Esta produção precisa de ' + r.precisa + ' créditos, mas você tem ' + r.restante + '.\n\n' +
+            'Esta exportação precisa de ' + r.precisa + ' crédito(s), mas você tem ' + r.restante + '.\n\n' +
             'Plano atual: ' + info.nomePlano + ' (' + info.total + ' créditos/mês).\n' +
             'Faça upgrade pra continuar criando, ou aguarde a renovação no próximo mês.');
           return; // bloqueia o export
@@ -28217,8 +28240,10 @@ function initEditor() {
       customResolution: (typeof aspect === 'object' && aspect.custom) ? resolution : null,
       stanzaDuration: exportStanzaDuration,
       videoBitsPerSecond: bitrate,
-      // null = projeto inteiro; número = só aquele slide
+      // null = projeto inteiro; número = só aquele slide; lista = vários slides
       onlyStanzaIdx: (typeof exportOnlyStanzaIdx === 'number') ? exportOnlyStanzaIdx : null,
+      onlyStanzaIndices: (Array.isArray(exportSelectedSlides) && exportSelectedSlides.length > 0)
+        ? exportSelectedSlides.slice().sort((a,b)=>a-b) : null,
       // true = corta o vídeo só no trecho dos slides marcados (não o áudio inteiro)
       cortarNoTrecho: !!exportCortarTrecho,
     });
@@ -28243,7 +28268,10 @@ function initEditor() {
     currentExporter.onProgress = (pct) => {
       setProgressRing(pct);
       $('#export-status').textContent = pct < 0.99 ? 'Renderizando…' : 'Finalizando MP4…';
-      const totalDurSec = ((typeof exportOnlyStanzaIdx === 'number') ? 1 : engine.parsed.stanzas.length) * exportStanzaDuration;
+      const numSlidesExport = (Array.isArray(exportSelectedSlides) && exportSelectedSlides.length > 0)
+        ? exportSelectedSlides.length
+        : ((typeof exportOnlyStanzaIdx === 'number') ? 1 : engine.parsed.stanzas.length);
+      const totalDurSec = numSlidesExport * exportStanzaDuration;
       const elapsedSec = totalDurSec * pct;
       $('#export-status-detail').textContent = `Frame ${Math.round(pct * totalDurSec * 24)} • ${formatTime(elapsedSec)} de ${formatTime(totalDurSec)}`;
     };
@@ -28259,7 +28287,9 @@ function initEditor() {
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/^-+|-+$/g, '') || 'lyric';
       const ext = WM_EXPORT.detectFileExtension(blob.type);
-      const slideSuffix = (typeof exportOnlyStanzaIdx === 'number')
+      const slideSuffix = (Array.isArray(exportSelectedSlides) && exportSelectedSlides.length > 0)
+        ? (exportSelectedSlides.length === 1 ? `-slide-${exportSelectedSlides[0] + 1}` : `-${exportSelectedSlides.length}-slides`)
+        : (typeof exportOnlyStanzaIdx === 'number')
         ? `-slide-${exportOnlyStanzaIdx + 1}`
         : '';
       lastExportFilename = `${safeName}${slideSuffix}.${ext}`;
@@ -28316,29 +28346,59 @@ function initEditor() {
     });
   });
 
-  // ===== Escopo de export: projeto inteiro vs um slide só =====
-  // (exportOnlyStanzaIdx já declarado junto dos estados de export)
+  // Botões "Marcar todos" / "Limpar" da lista de slides.
+  (function ligarBotoesSelecaoSlides() {
+    const btnTodos = $('#export-slides-all');
+    const btnLimpar = $('#export-slides-none');
+    if (btnTodos) btnTodos.addEventListener('click', () => {
+      document.querySelectorAll('#export-slide-checklist .export-slide-cb').forEach(cb => { cb.checked = true; });
+      if (typeof atualizarSlidesSelecionados === 'function') atualizarSlidesSelecionados();
+    });
+    if (btnLimpar) btnLimpar.addEventListener('click', () => {
+      document.querySelectorAll('#export-slide-checklist .export-slide-cb').forEach(cb => { cb.checked = false; });
+      if (typeof atualizarSlidesSelecionados === 'function') atualizarSlidesSelecionados();
+    });
+  })();
 
   // Popula o <select> de slides com base nas estrofes atuais.
   function populateExportSlidePicker() {
-    const sel = $('#export-slide-picker');
-    if (!sel) return;
+    const lista = $('#export-slide-checklist');
+    if (!lista) return;
     const stanzas = (engine.parsed && engine.parsed.stanzas) || [];
-    sel.innerHTML = stanzas.map((st, i) => {
-      // Rótulo: número + primeiras palavras da estrofe (pra reconhecer)
+    const cur = engine.currentStanzaIndex || 0;
+    lista.innerHTML = stanzas.map((st, i) => {
       let preview = '';
       try {
         const firstLine = (st.lines && st.lines[0]) ? st.lines[0] : null;
         if (firstLine && firstLine.words) {
-          preview = firstLine.words.slice(0, 4).map(w => w.text).join(' ');
+          preview = firstLine.words.slice(0, 5).map(w => w.text).join(' ');
         }
       } catch (e) {}
       const label = `Slide ${i + 1}${preview ? ' — ' + preview : ''}`;
-      return `<option value="${i}">${escapeHtml(label)}</option>`;
+      // Por padrão marca o slide atualmente aberto no editor.
+      const marcado = (i === cur) ? 'checked' : '';
+      return `<label style="display:flex; align-items:center; gap:8px; padding:6px 8px; border-radius:6px; cursor:pointer; font-size:13px;" onmouseover="this.style.background='rgba(255,255,255,0.04)'" onmouseout="this.style.background='none'">
+        <input type="checkbox" class="export-slide-cb" value="${i}" ${marcado} style="cursor:pointer;">
+        <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(label)}</span>
+      </label>`;
     }).join('');
-    // Default: slide atualmente aberto no editor
-    const cur = engine.currentStanzaIndex || 0;
-    if (cur >= 0 && cur < stanzas.length) sel.value = String(cur);
+    // Liga os checkboxes pra atualizar a seleção e a contagem.
+    lista.querySelectorAll('.export-slide-cb').forEach(cb => {
+      cb.addEventListener('change', atualizarSlidesSelecionados);
+    });
+    atualizarSlidesSelecionados();
+  }
+
+  // Lê os checkboxes marcados e atualiza exportSelectedSlides + contagem.
+  function atualizarSlidesSelecionados() {
+    const marcados = [];
+    document.querySelectorAll('#export-slide-checklist .export-slide-cb:checked').forEach(cb => {
+      marcados.push(parseInt(cb.value, 10));
+    });
+    exportSelectedSlides = marcados;
+    const cnt = $('#export-slides-count');
+    if (cnt) cnt.textContent = marcados.length + (marcados.length === 1 ? ' selecionado' : ' selecionados');
+    if (typeof updateExportSummary === 'function') updateExportSummary();
   }
 
   $$('#export-scope button').forEach(btn => {
@@ -28351,27 +28411,21 @@ function initEditor() {
         populateExportSlidePicker();
         if (pickerRow) pickerRow.style.display = '';
         if (trechoInfo) trechoInfo.style.display = 'none';
-        const sel = $('#export-slide-picker');
-        exportOnlyStanzaIdx = sel ? parseInt(sel.value, 10) : 0;
         exportCortarTrecho = false;
+        // exportSelectedSlides já foi populado por populateExportSlidePicker.
       } else if (scope === 'trecho') {
         if (pickerRow) pickerRow.style.display = 'none';
         if (trechoInfo) trechoInfo.style.display = '';
-        exportOnlyStanzaIdx = null;
+        exportSelectedSlides = null;
         exportCortarTrecho = true;
       } else {
         if (pickerRow) pickerRow.style.display = 'none';
         if (trechoInfo) trechoInfo.style.display = 'none';
-        exportOnlyStanzaIdx = null;
+        exportSelectedSlides = null;
         exportCortarTrecho = false;
       }
       updateExportSummary();
     });
-  });
-
-  $('#export-slide-picker')?.addEventListener('change', (e) => {
-    exportOnlyStanzaIdx = parseInt(e.target.value, 10);
-    updateExportSummary();
   });
 
   $('#btn-start-export').addEventListener('click', startExport);
