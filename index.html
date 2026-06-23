@@ -28031,6 +28031,7 @@ function initEditor() {
 
     // Reset do escopo: sempre abre em "projeto inteiro"
     exportOnlyStanzaIdx = null;
+    exportSelectedSlides = null;
     exportCortarTrecho = false;
     const trechoInfo = $('#export-trecho-info');
     if (trechoInfo) trechoInfo.style.display = 'none';
@@ -28039,6 +28040,9 @@ function initEditor() {
     });
     const pickerRow = $('#export-slide-picker-row');
     if (pickerRow) pickerRow.style.display = 'none';
+
+    // Aplica a trava de qualidade conforme o plano (cadeado + força 720p).
+    if (typeof wmAtualizarBotoesQualidade === 'function') wmAtualizarBotoesQualidade();
 
     updateExportSummary();
     $('#export-modal-overlay').classList.add('active');
@@ -28145,6 +28149,14 @@ function initEditor() {
       }
     } catch (e) { console.warn('[WM] gate de créditos:', e); }
     // ===== FIM DO GATE =====
+
+    // Segurança: garante que o plano grátis exporte no máximo em 720p,
+    // mesmo que a interface tenha sido burlada.
+    try {
+      if (typeof wmQualidadePermitida === 'function' && !wmQualidadePermitida(exportQualityPreset)) {
+        exportQualityPreset = 'reels';
+      }
+    } catch (e) {}
 
     // (diagnóstico de posições desativado — causa já identificada e corrigida)
     window.__WM_DIAG_EXPORT = false;
@@ -28338,8 +28350,54 @@ function initEditor() {
 
   let exportQualityPreset = 'smooth'; // default
 
+  // Quais presets de qualidade cada plano pode usar.
+  // Grátis: só 720p (reels). Pago: todos.
+  function wmQualidadePermitida(preset) {
+    try {
+      const info = (window.WM_CREDITS && window.WM_CREDITS.info) ? window.WM_CREDITS.info() : null;
+      // Plano grátis (marca d'água = true) só pode 720p.
+      if (info && info.marca) {
+        return preset === 'reels';
+      }
+    } catch (e) {}
+    return true; // pago (ou perfil não carregado) libera tudo
+  }
+
+  // Atualiza o visual dos botões de qualidade conforme o plano (cadeado).
+  function wmAtualizarBotoesQualidade() {
+    let ehGratis = false;
+    try {
+      const info = (window.WM_CREDITS && window.WM_CREDITS.info) ? window.WM_CREDITS.info() : null;
+      ehGratis = !!(info && info.marca);
+    } catch (e) {}
+    $$('#export-quality button').forEach(btn => {
+      const liberado = wmQualidadePermitida(btn.dataset.preset);
+      if (!liberado) {
+        if (!btn.dataset.labelOriginal) btn.dataset.labelOriginal = btn.textContent;
+        btn.style.opacity = '0.5';
+        if (!btn.textContent.includes('🔒')) btn.textContent = '🔒 ' + (btn.dataset.labelOriginal || btn.textContent);
+      } else {
+        btn.style.opacity = '';
+        if (btn.dataset.labelOriginal) btn.textContent = btn.dataset.labelOriginal;
+      }
+    });
+    // Se o grátis estava num preset premium, força de volta pro 720p.
+    if (ehGratis && !wmQualidadePermitida(exportQualityPreset)) {
+      exportQualityPreset = 'reels';
+      $$('#export-quality button').forEach(b => b.classList.toggle('active', b.dataset.preset === 'reels'));
+      if (typeof updateExportSummary === 'function') updateExportSummary();
+    }
+  }
+
   $$('#export-quality button').forEach(btn => {
     btn.addEventListener('click', () => {
+      // Bloqueia qualidade premium pro plano grátis.
+      if (!wmQualidadePermitida(btn.dataset.preset)) {
+        alert('A qualidade ' + (btn.dataset.labelOriginal || btn.textContent).replace('🔒 ','') + ' está disponível nos planos Pro e Pro Plus.\n\n' +
+          'No plano Grátis, a exportação é em 720p (HD).\n' +
+          'Faça upgrade pra exportar em 1080p, 1440p ou 4K — e sem marca d\'água.');
+        return;
+      }
       $$('#export-quality button').forEach(b => b.classList.toggle('active', b === btn));
       exportQualityPreset = btn.dataset.preset;
       updateExportSummary();
