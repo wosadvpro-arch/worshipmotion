@@ -6492,33 +6492,11 @@ if (!window.wmSupabase) {
 // dispara SIGNED_IN. Marcamos uma flag global de "sessão confirmada" e
 // levamos pro editor. A proteção de rota confia nessa flag, evitando a
 // corrida onde getSession() é checado cedo demais e expulsa pro login.
-window.__WM_LOGIN_DEBUG = false; // diagnóstico de login desligado (bug resolvido)
 window.__wmSessaoPronta = false;
-// Diagnóstico persistente: guarda os logs no sessionStorage pra sobreviver
-// ao redirect (login→editor→login) e mostra tudo acumulado na caixinha.
-window.__wmLog = function(msg) {
-  if (!window.__WM_LOGIN_DEBUG) return;
-  try {
-    let hist = sessionStorage.getItem('wm_diag') || '';
-    hist += msg + '\n';
-    sessionStorage.setItem('wm_diag', hist);
-    let box = document.getElementById('wm-login-diag');
-    if (!box && document.body) {
-      box = document.createElement('div');
-      box.id = 'wm-login-diag';
-      box.style.cssText = 'position:fixed;bottom:8px;left:8px;z-index:99999;background:#000;color:#0f0;font:11px monospace;padding:8px 12px;border-radius:8px;max-width:92vw;max-height:50vh;overflow:auto;white-space:pre-wrap;border:1px solid #0f0;';
-      document.body.appendChild(box);
-    }
-    if (box) box.textContent = hist;
-  } catch(e){}
-};
-// Mostra logs acumulados assim que a página carrega (após redirect).
-if (window.__WM_LOGIN_DEBUG) {
-  window.addEventListener('DOMContentLoaded', () => {
-    const h = sessionStorage.getItem('wm_diag');
-    if (h) window.__wmLog('--- nova carga, URL tem token? ' + (location.hash.includes('access_token')?'SIM':'não') + ' ---');
-  });
-}
+// Diagnóstico de login removido para produção (bug já resolvido).
+// __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
+window.__wmLog = function(){};
+
 if (window.wmSupabase) {
   window.wmSupabase.auth.onAuthStateChange((event, session) => {
     if (window.__wmLog) window.__wmLog('auth: ' + event + ' sessao=' + (session?'SIM':'não'));
@@ -13622,17 +13600,6 @@ const CanvasRenderer = {
           cursorX += m.width + spaceW;
         });
 
-        // === DIAGNÓSTICO (temporário) ===
-        if (window.__WM_DIAG_EXPORT) {
-          try {
-            console.log('[WM-DIAG flow] linha:', words.map(w => w.text).join(' '),
-              '| W=', W, 'totalLineW=', Math.round(totalLineW), 'spaceW=', Math.round(spaceW),
-              '| larguras=', words.map(w => Math.round(w.width)),
-              '| cx=', words.map(w => Math.round(w.cx)),
-              '| font=', words[0] && words[0].font.family, words[0] && Math.round(words[0].font.size));
-          } catch (e) {}
-        }
-
         lines.push({ words, lineH: thisLineH });
       });
 
@@ -19052,255 +19019,6 @@ function initEditor() {
   // Recentraliza TODOS os slides do projeto: remove todas as posições
   // livres, voltando tudo ao layout automático centralizado. Usado quando
   // o projeto tem posições "presas" que o usuário não criou de propósito.
-  // === DIAGNÓSTICO editor vs export (temporário) ===
-  // Chame WM_DIAG() no console com a estrofe que está bugada aberta.
-  // Compara, pra cada palavra: posição (x,y), tamanho de fonte e largura
-  // medida no EDITOR (DOM) vs no EXPORT (canvas measureLayout).
-  // Diagnóstico da fonte: mostra cada fonte do computador registrada,
-  // em tamanho grande, num DOM normal e num canvas — pra ver se o
-  // serrilhado vem do arquivo da fonte ou da renderização.
-  window.WM_FONT = function() {
-    const fonts = [];
-    document.fonts.forEach(f => fonts.push(f));
-    console.log('%c=== FONTES REGISTRADAS ===', 'font-weight:bold;color:#8b5cf6');
-    const custom = [];
-    fonts.forEach(f => {
-      console.log(`  "${f.family}" | weight:${f.weight} | style:${f.style} | status:${f.status}`);
-    });
-    // Pega a fonte efetiva da estrofe atual.
-    const s = (typeof _ctxEstiloEfetivo === 'function') ? _ctxEstiloEfetivo() : engine.style;
-    const fam = s.fontFamily || 'Inter';
-    console.log('Fonte da estrofe atual:', fam);
-
-    let box = document.getElementById('wm-font-box');
-    if (box) box.remove();
-    box = document.createElement('div');
-    box.id = 'wm-font-box';
-    box.style.cssText = 'position:fixed;top:20px;left:20px;z-index:99999;background:#111;border:2px solid #8b5cf6;border-radius:8px;padding:12px;box-shadow:0 8px 40px rgba(0,0,0,0.7);max-width:520px';
-    const close = document.createElement('div');
-    close.textContent = 'Diagnóstico de fonte (clique pra fechar)';
-    close.style.cssText = 'color:#fff;font:12px sans-serif;margin-bottom:8px;cursor:pointer';
-    close.onclick = () => box.remove();
-    box.appendChild(close);
-
-    // 1. DOM normal — em tamanho GRANDE (como o usuário usa)
-    const dom = document.createElement('div');
-    dom.textContent = 'Aàé ' + fam;
-    dom.style.cssText = `font-family:"${fam}",sans-serif;font-size:200px;color:#fff;line-height:1.1;-webkit-font-smoothing:antialiased;white-space:nowrap`;
-    box.appendChild(dom);
-
-    // 2. Canvas em tamanho grande, desenhado NATIVAMENTE
-    const cv = document.createElement('canvas');
-    cv.width = 900; cv.height = 240;
-    cv.style.cssText = 'width:450px;height:120px;background:#222;display:block;margin-top:8px';
-    const ctx = cv.getContext('2d');
-    ctx.fillStyle = '#fff';
-    ctx.textBaseline = 'middle';
-    ctx.font = `400 200px "${fam}", sans-serif`;
-    ctx.fillText('Aàé Canvas', 10, 120);
-    box.appendChild(cv);
-    box.appendChild(Object.assign(document.createElement('div'), {
-      textContent: 'Os dois acima são desenhados em 200px nativo. Se aqui estão nítidos mas no seu slide não, o problema é como o slide escala.',
-      style: 'color:#aaa;font:11px sans-serif;margin-top:8px;max-width:450px'
-    }));
-    document.body.appendChild(box);
-
-    return 'Compare DOM (cima) vs Canvas (meio), ambos em 200px. Nítidos ou serrilhados?';
-  };
-
-  // Ferramenta de teste de animações: roda CADA animação como entrada na
-  // estrofe atual (caminho real), mostrando o nome. Avança automático ou
-  // manual. Use pra revisar todas e anotar as que falham/divergem da thumb.
-  window.WM_TEST_ANIM = function() {
-    const lib = window.WM_ANIM_V2;
-    const todas = (lib && lib.ANIMATIONS) ? lib.ANIMATIONS : (window.ANIMATIONS_V2 || []);
-    if (!todas || !todas.length) { console.log('Sem animacoes'); return; }
-    const stanza0 = engine.parsed && engine.parsed.stanzas[engine.currentStanzaIndex];
-    if (!stanza0) { alert('Gere uma letra primeiro (precisa de texto no slide).'); return; }
-
-    let i = 0;
-    const falhas = [];
-
-    // Overlay tela cheia
-    let ov = document.getElementById('wm-anim-test-screen');
-    if (ov) ov.remove();
-    ov = document.createElement('div');
-    ov.id = 'wm-anim-test-screen';
-    ov.style.cssText = 'position:fixed;inset:0;z-index:100000;background:#0a0a0f;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:system-ui;gap:16px;padding:24px;';
-    ov.innerHTML = `
-      <div style="position:absolute;top:16px;left:24px;color:#7a8499;font-size:13px;">TESTE DE EXPORTACAO — isto e EXATAMENTE como sai no video</div>
-      <button id="at-x" style="position:absolute;top:16px;right:24px;background:none;border:none;color:#7a8499;font-size:22px;cursor:pointer;">✕</button>
-      <div id="at-name" style="color:#fff;font-size:22px;font-weight:700;"></div>
-      <div id="at-count" style="color:#7a8499;font-size:12px;margin-top:-8px;"></div>
-      <canvas id="at-canvas" width="960" height="540" style="width:min(80vw,960px);height:auto;aspect-ratio:16/9;background:#050507;border-radius:12px;border:1px solid rgba(255,255,255,0.1);box-shadow:0 16px 60px rgba(0,0,0,0.6);"></canvas>
-      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center;">
-        <button id="at-prev" style="padding:9px 16px;border-radius:10px;border:1px solid rgba(255,255,255,0.2);background:transparent;color:#e8e8ee;cursor:pointer;font-size:14px;">◀ Anterior</button>
-        <button id="at-replay" style="padding:9px 16px;border-radius:10px;border:1px solid rgba(255,255,255,0.2);background:transparent;color:#e8e8ee;cursor:pointer;font-size:14px;">↻ Repetir</button>
-        <button id="at-fail" style="padding:9px 16px;border-radius:10px;border:1px solid rgba(239,68,68,0.5);background:rgba(239,68,68,0.18);color:#fca5a5;cursor:pointer;font-size:14px;font-weight:600;">⚑ Marcar como falha</button>
-        <button id="at-next" style="padding:9px 16px;border-radius:10px;border:1px solid rgba(139,92,246,0.5);background:rgba(139,92,246,0.2);color:#fff;cursor:pointer;font-size:14px;font-weight:600;">Proxima ▶</button>
-      </div>
-      <div id="at-fails" style="color:#fca5a5;font-size:12px;min-height:18px;text-align:center;max-width:80vw;"></div>
-      <div style="color:#6c6c80;font-size:11px;">Repete em loop. Marque as que sairem erradas; ao fechar, a lista vai pro console.</div>
-    `;
-    document.body.appendChild(ov);
-
-    const cv = document.getElementById('at-canvas');
-    const ctx = cv.getContext('2d');
-    const R = window.WM_CANVAS_RENDERER;
-    let raf = null, t0 = 0;
-
-    const desenhar = () => {
-      const a = todas[i];
-      const slide = {
-        stanza: stanza0,
-        style: { ...engine.style, ...(engine.sceneOverrides[stanza0.id] && engine.sceneOverrides[stanza0.id].style || {}) },
-        wordOverrides: engine.wordOverrides,
-        animation: { entranceId: a.id },
-        animConfig: { entrance: a.id },
-      };
-      const loop = () => {
-        let elapsed = performance.now() - t0;
-        // loop de 2.6s pra ver a animacao repetir
-        if (elapsed > 2600) { t0 = performance.now(); elapsed = 0; if (R.clearCache) R.clearCache(); }
-        try { R.drawSlide(ctx, slide, elapsed, cv.width, cv.height); } catch (e) {}
-        raf = requestAnimationFrame(loop);
-      };
-      cancelAnimationFrame(raf);
-      t0 = performance.now();
-      if (R.clearCache) R.clearCache();
-      loop();
-    };
-    const mostrar = () => {
-      const a = todas[i];
-      document.getElementById('at-name').textContent = a.name || a.id;
-      document.getElementById('at-count').textContent = `${i+1} de ${todas.length}  ·  id: ${a.id}`;
-      const fb = document.getElementById('at-fail');
-      const jaFalhou = falhas.find(f => f.id === a.id);
-      fb.style.background = jaFalhou ? 'rgba(239,68,68,0.4)' : 'rgba(239,68,68,0.18)';
-      fb.textContent = jaFalhou ? '⚑ Marcada (clique pra desmarcar)' : '⚑ Marcar como falha';
-      desenhar();
-    };
-    const atualizarLista = () => {
-      const el = document.getElementById('at-fails');
-      el.textContent = falhas.length ? ('Falhas: ' + falhas.map(f=>f.name).join(', ')) : '';
-    };
-    const next = () => { i = (i+1) % todas.length; mostrar(); };
-    const prev = () => { i = (i-1+todas.length) % todas.length; mostrar(); };
-
-    document.getElementById('at-next').onclick = next;
-    document.getElementById('at-prev').onclick = prev;
-    document.getElementById('at-replay').onclick = () => { t0 = performance.now(); if (R.clearCache) R.clearCache(); };
-    document.getElementById('at-fail').onclick = () => {
-      const a = todas[i];
-      const idx = falhas.findIndex(f => f.id === a.id);
-      if (idx >= 0) falhas.splice(idx, 1);
-      else falhas.push({ id: a.id, name: a.name || a.id });
-      mostrar(); atualizarLista();
-    };
-    document.getElementById('at-x').onclick = () => {
-      cancelAnimationFrame(raf);
-      ov.remove();
-      if (falhas.length) {
-        console.log('%c=== ANIMACOES MARCADAS COMO FALHA NO EXPORT ===', 'font-weight:bold;color:#fca5a5');
-        falhas.forEach(f => console.log(`  - ${f.name} (${f.id})`));
-        console.log('Copie a lista acima e mande pro Claude.');
-      } else {
-        console.log('[WM_TEST_ANIM] Nenhuma animacao marcada como falha.');
-      }
-    };
-
-    mostrar();
-    return 'Tela de teste do EXPORT aberta. Marque as que sairem erradas e feche no X.';
-  };
-
-  window.WM_DIM = function() {
-    const els = ['.editor-canvas', '#canvas-content', '.canvas-content', '.lyric-stanza', '#editor-canvas'];
-    console.log('%c=== DIMENSÕES (largura x altura, proporção) ===', 'font-weight:bold;color:#8b5cf6');
-    els.forEach(sel => {
-      const el = document.querySelector(sel);
-      if (el) {
-        const r = el.getBoundingClientRect();
-        const ratio = r.height > 0 ? (r.width / r.height).toFixed(2) : '?';
-        console.log(`${sel}: ${Math.round(r.width)} x ${Math.round(r.height)} | proporção ${ratio} ${Math.abs(parseFloat(ratio) - 1.78) > 0.1 ? '← NÃO é 16:9 (1.78)!' : '✓ 16:9'}`);
-      } else {
-        console.log(`${sel}: não encontrado`);
-      }
-    });
-    // Checa transform/scale aplicado
-    const stz = document.querySelector('.lyric-stanza');
-    if (stz) {
-      const cs = getComputedStyle(stz);
-      console.log('lyric-stanza transform:', cs.transform, '| width CSS:', cs.width);
-    }
-    return '16:9 = proporção 1.78. Veja qual elemento está fora disso.';
-  };
-
-  window.WM_DIAG = function() {
-    const idx = engine.currentStanzaIndex;
-    const stanza = engine.parsed && engine.parsed.stanzas[idx];
-    if (!stanza) { console.log('Sem estrofe ativa'); return; }
-
-    // Compara, pra cada palavra: posição EXIBIDA no editor (DOM) vs posição
-    // SALVA (wo.position). Se diferirem, o editor mostra uma coisa e salva
-    // outra — e o export usa a salva.
-    const stz = getStanzaEl();
-    const canvasEl = document.querySelector('.editor-canvas');
-    const cr = canvasEl ? canvasEl.getBoundingClientRect() : null;
-    console.log('%c=== POSIÇÕES: exibida (editor) vs salva (usada no export) ===', 'font-weight:bold;color:#8b5cf6');
-    if (stz && cr) {
-      stz.querySelectorAll('.lyric-word').forEach(el => {
-        const wr = el.getBoundingClientRect();
-        const wid = el.dataset.wordId;
-        const wo = engine.wordOverrides[wid];
-        const exibidaX = (((wr.left + wr.width/2) - cr.left) / cr.width).toFixed(3);
-        const exibidaY = (((wr.top + wr.height/2) - cr.top) / cr.height).toFixed(3);
-        const salvaX = wo && wo.position ? wo.position.x.toFixed(3) : 'FLOW';
-        const salvaY = wo && wo.position ? wo.position.y.toFixed(3) : 'FLOW';
-        const difere = (wo && wo.position) && (Math.abs(parseFloat(exibidaX)-wo.position.x) > 0.02 || Math.abs(parseFloat(exibidaY)-wo.position.y) > 0.02);
-        console.log(`${difere ? '⚠️' : '  '} "${el.textContent.trim()}" | EXIBIDA: ${exibidaX},${exibidaY} | SALVA: ${salvaX},${salvaY} | LARGURA editor(frac): ${(wr.width/cr.width).toFixed(3)}${difere ? '  ← DIFERENTE!' : ''}`);
-      });
-    }
-
-    // Renderiza o slide IGUAL ao export, num canvas flutuante.
-    try {
-      const R = window.WM_CANVAS_RENDERER;
-      const W = 960, H = 540;
-      const cv = document.createElement('canvas');
-      cv.width = W; cv.height = H;
-      const ctx = cv.getContext('2d');
-      const slide = {
-        stanza: stanza,
-        style: { ...engine.style, ...(engine.sceneOverrides[stanza.id] && engine.sceneOverrides[stanza.id].style || {}) },
-        wordOverrides: engine.wordOverrides,
-        animation: {},
-      };
-      if (R.clearCache) R.clearCache();
-      // Mede e loga a largura de cada palavra no EXPORT pra comparar.
-      try {
-        const layout = R.measureLayout(ctx, slide, W, H);
-        console.log('%c=== LARGURAS no EXPORT (frac) ===', 'font-weight:bold;color:#22c55e');
-        layout.lines.forEach(line => line.words.forEach(w => {
-          console.log(`  "${w.text}" | LARGURA export(frac): ${(w.width/W).toFixed(3)} | centroX(frac): ${(w.cx/W).toFixed(3)}`);
-        }));
-        if (R.clearCache) R.clearCache();
-      } catch (e) {}
-      R.drawSlide(ctx, slide, 999999, W, H);
-      let box = document.getElementById('wm-diag-box');
-      if (box) box.remove();
-      box = document.createElement('div');
-      box.id = 'wm-diag-box';
-      box.style.cssText = 'position:fixed;top:20px;right:20px;z-index:99999;background:#000;border:2px solid #8b5cf6;border-radius:8px;padding:8px;box-shadow:0 8px 40px rgba(0,0,0,0.7)';
-      const title = document.createElement('div');
-      title.textContent = 'EXPORT (clique pra fechar)';
-      title.style.cssText = 'color:#fff;font:12px sans-serif;margin-bottom:6px;cursor:pointer';
-      title.onclick = () => box.remove();
-      cv.style.cssText = 'display:block;width:480px;height:270px;background:#050507';
-      box.appendChild(title);
-      box.appendChild(cv);
-      document.body.appendChild(box);
-    } catch (e) { console.log('Erro:', e.message); }
-    return 'Veja os ⚠️ no console — palavras onde EXIBIDA ≠ SALVA';
-  };
 
   function recentralizarTodos() {
     if (!engine.parsed || !engine.parsed.stanzas) return 0;
@@ -28266,7 +27984,6 @@ function initEditor() {
     } catch (e) {}
 
     // (diagnóstico de posições desativado — causa já identificada e corrigida)
-    window.__WM_DIAG_EXPORT = false;
 
     // Captura as larguras REAIS de cada palavra no DOM do editor (em fração
     // da largura do canvas). O export usa essas frações pra desenhar com a
