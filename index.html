@@ -5184,7 +5184,11 @@ body.is-dragging-word .lyric-word { cursor: grabbing !important; }
 .page-landing .landing-nav {
   background: rgba(7,7,13,0.72); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
   border-bottom: 1px solid var(--lp-line); padding: 14px 32px;
+  display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
 }
+.page-landing .landing-nav > .logo { justify-self: start; }
+.page-landing .landing-nav > .nav-links { justify-self: center; }
+.page-landing .landing-nav > div:last-child { justify-self: end; }
 .page-landing .nav-links { gap: 30px; }
 .page-landing .nav-links a { font-size: 14px; font-weight: 500; color: var(--lp-text-dim); letter-spacing: -0.01em; transition: color 0.15s; }
 .page-landing .nav-links a:hover { color: var(--lp-text); }
@@ -5274,7 +5278,7 @@ body.is-dragging-word .lyric-word { cursor: grabbing !important; }
 .page-landing .lp-stage-hint strong { color: var(--lp-accent-3); font-weight: 600; }
 
 /* ---------- SECTIONS ---------- */
-.page-landing .section { max-width: 1120px; margin: 0 auto; padding: 96px 32px; border-top: 1px solid var(--lp-line); }
+.page-landing .section { max-width: 1120px; margin: 0 auto; padding: 96px 32px; border-top: 1px solid var(--lp-line); scroll-margin-top: 70px; }
 .page-landing .lp-eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--lp-accent-2); letter-spacing: 0.02em; margin-bottom: 16px; }
 .page-landing .lp-eyebrow::before { content: ''; width: 20px; height: 1.5px; background: var(--lp-accent); }
 .page-landing .section-title { font-family: 'Sora', sans-serif; font-size: clamp(30px,3.6vw,46px); font-weight: 700; letter-spacing: -0.035em; line-height: 1.08; margin-bottom: 16px; }
@@ -28705,9 +28709,32 @@ function initLandingAnims() {
     });
   }
 
+  // ---- Links do nav rolam suavemente até a seção (sem mexer no hash/roteador) ----
+  function initNavScroll() {
+    document.querySelectorAll('.page-landing .nav-links a[href^="#"]').forEach(link => {
+      link.addEventListener('click', (e) => {
+        const alvo = link.getAttribute('href');
+        if (!alvo || alvo === '#') return;
+        const sec = document.querySelector(alvo);
+        if (sec) {
+          e.preventDefault();
+          sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    });
+    // O botão "Ver planos" do hero também rola até os preços.
+    document.querySelectorAll('.page-landing a[href="#precos"]').forEach(link => {
+      link.addEventListener('click', (e) => {
+        const sec = document.getElementById('precos');
+        if (sec) { e.preventDefault(); sec.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+      });
+    });
+  }
+
   initStage();
   initReveal();
   initAssinarBtns();
+  initNavScroll();
 }
 
 
