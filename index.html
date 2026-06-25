@@ -2898,6 +2898,109 @@ body.is-dragging-word .lyric-word { cursor: grabbing !important; }
   transform: translateX(-50%) translateY(0);
 }
 
+/* ===== Modais customizados (substituem confirm/prompt/alert do navegador) ===== */
+.wm-dialog-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 100000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+.wm-dialog-overlay.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+.wm-dialog {
+  background: rgba(20, 20, 28, 0.98);
+  border: 1px solid var(--border-default, rgba(255,255,255,0.1));
+  border-radius: 14px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  max-width: 420px;
+  width: 100%;
+  padding: 24px;
+  transform: scale(0.96) translateY(8px);
+  transition: transform 0.15s ease;
+}
+.wm-dialog-overlay.is-visible .wm-dialog {
+  transform: scale(1) translateY(0);
+}
+.wm-dialog-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary, #fff);
+  margin: 0 0 8px;
+  line-height: 1.3;
+}
+.wm-dialog-message {
+  font-size: 14px;
+  color: var(--text-secondary, #b4b4c0);
+  line-height: 1.55;
+  margin: 0 0 20px;
+  white-space: pre-wrap;
+}
+.wm-dialog-input {
+  width: 100%;
+  padding: 10px 12px;
+  margin: 0 0 20px;
+  background: var(--bg-elevated, rgba(255,255,255,0.04));
+  border: 1px solid var(--border-default, rgba(255,255,255,0.12));
+  border-radius: 8px;
+  color: var(--text-primary, #fff);
+  font-size: 14px;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.15s;
+}
+.wm-dialog-input:focus {
+  border-color: var(--accent, #8b5cf6);
+}
+.wm-dialog-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+.wm-dialog-btn {
+  padding: 9px 18px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.15s;
+}
+.wm-dialog-btn-cancel {
+  background: transparent;
+  border-color: var(--border-default, rgba(255,255,255,0.15));
+  color: var(--text-secondary, #b4b4c0);
+}
+.wm-dialog-btn-cancel:hover {
+  background: var(--bg-elevated, rgba(255,255,255,0.06));
+  color: var(--text-primary, #fff);
+}
+.wm-dialog-btn-confirm {
+  background: var(--accent, #8b5cf6);
+  color: #fff;
+}
+.wm-dialog-btn-confirm:hover {
+  filter: brightness(1.1);
+}
+/* Variante perigosa (excluir, apagar) */
+.wm-dialog-btn-danger {
+  background: #dc2626;
+  color: #fff;
+}
+.wm-dialog-btn-danger:hover {
+  background: #b91c1c;
+}
+
 /* Botões icon-only no topbar */
 .btn.icon-only {
   padding: 6px 8px;
@@ -17842,16 +17945,19 @@ function initEditor() {
   }
 
   // Deleta uma estrofe (com confirmação)
-  function confirmDeleteStanza(idx) {
+  async function confirmDeleteStanza(idx) {
     const parsed = engine.parsed;
     if (!parsed || !parsed.stanzas[idx]) return;
     if (parsed.stanzas.length <= 1) {
-      alert('Não dá pra excluir a única estrofe. Tem que ter pelo menos uma.');
+      await wmAlert('Não dá pra excluir a única estrofe. Tem que ter pelo menos uma.', { title: 'Não é possível excluir' });
       return;
     }
     const stanza = parsed.stanzas[idx];
     const preview = stanza.lines.map(l => l.words.map(w => w.text).join(' ')).join(' / ').slice(0, 60);
-    const ok = confirm(`Excluir a estrofe "${stanza.label}"?\n\n"${preview}${preview.length >= 60 ? '...' : ''}"\n\nIsso não pode ser desfeito.`);
+    const ok = await wmConfirm(`"${preview}${preview.length >= 60 ? '...' : ''}"\n\nIsso não pode ser desfeito.`, {
+      title: `Excluir a estrofe "${stanza.label}"?`,
+      confirmText: 'Excluir', danger: true
+    });
     if (!ok) return;
     deleteStanza(idx);
   }
@@ -20320,6 +20426,167 @@ function initEditor() {
     }, 1200);
   }
 
+  // ===== Modais customizados (substituem confirm/prompt/alert do navegador) =====
+  // Todos retornam uma Promise. Use com await:
+  //   if (await wmConfirm('Excluir?')) { ... }
+  //   const nome = await wmPrompt('Nome:', 'padrão');  // null se cancelar
+  //   await wmAlert('Pronto!');
+  let _wmDialogEl = null;
+  function _wmEnsureDialog() {
+    if (_wmDialogEl) return _wmDialogEl;
+    const ov = document.createElement('div');
+    ov.className = 'wm-dialog-overlay';
+    ov.innerHTML = '<div class="wm-dialog" role="dialog" aria-modal="true"></div>';
+    document.body.appendChild(ov);
+    _wmDialogEl = ov;
+    return ov;
+  }
+  function _wmCloseDialog(ov) {
+    ov.classList.remove('is-visible');
+  }
+
+  /**
+   * Confirmação bonita. opts: { title, confirmText, cancelText, danger }
+   * Resolve true (confirmou) ou false (cancelou).
+   */
+  function wmConfirm(message, opts = {}) {
+    return new Promise((resolve) => {
+      const ov = _wmEnsureDialog();
+      const box = ov.querySelector('.wm-dialog');
+      const title = opts.title || 'Confirmar';
+      const confirmText = opts.confirmText || 'Confirmar';
+      const cancelText = opts.cancelText || 'Cancelar';
+      const confirmClass = opts.danger ? 'wm-dialog-btn-danger' : 'wm-dialog-btn-confirm';
+      box.innerHTML = `
+        <div class="wm-dialog-title">${escapeHtml(title)}</div>
+        <div class="wm-dialog-message">${escapeHtml(message)}</div>
+        <div class="wm-dialog-actions">
+          <button class="wm-dialog-btn wm-dialog-btn-cancel" data-wm-dlg="cancel">${escapeHtml(cancelText)}</button>
+          <button class="wm-dialog-btn ${confirmClass}" data-wm-dlg="confirm">${escapeHtml(confirmText)}</button>
+        </div>
+      `;
+      let done = false;
+      const finish = (val) => {
+        if (done) return; done = true;
+        _wmCloseDialog(ov);
+        cleanup();
+        resolve(val);
+      };
+      const onClick = (e) => {
+        const act = e.target.closest('[data-wm-dlg]');
+        if (act) { finish(act.dataset.wmDlg === 'confirm'); return; }
+        if (e.target === ov) finish(false); // clicou fora
+      };
+      const onKey = (e) => {
+        if (e.key === 'Escape') finish(false);
+        else if (e.key === 'Enter') finish(true);
+      };
+      function cleanup() {
+        ov.removeEventListener('click', onClick);
+        document.removeEventListener('keydown', onKey);
+      }
+      ov.addEventListener('click', onClick);
+      document.addEventListener('keydown', onKey);
+      ov.classList.add('is-visible');
+      const cbtn = box.querySelector('[data-wm-dlg="confirm"]');
+      if (cbtn) setTimeout(() => cbtn.focus(), 50);
+    });
+  }
+
+  /**
+   * Input de texto bonito. opts: { title, placeholder, confirmText, cancelText }
+   * Resolve a string digitada, ou null se cancelar.
+   */
+  function wmPrompt(message, defaultValue = '', opts = {}) {
+    return new Promise((resolve) => {
+      const ov = _wmEnsureDialog();
+      const box = ov.querySelector('.wm-dialog');
+      const title = opts.title || message || '';
+      const confirmText = opts.confirmText || 'OK';
+      const cancelText = opts.cancelText || 'Cancelar';
+      box.innerHTML = `
+        <div class="wm-dialog-title">${escapeHtml(title)}</div>
+        <input class="wm-dialog-input" type="text" data-wm-dlg-input
+               placeholder="${escapeHtml(opts.placeholder || '')}" value="${escapeHtml(defaultValue)}">
+        <div class="wm-dialog-actions">
+          <button class="wm-dialog-btn wm-dialog-btn-cancel" data-wm-dlg="cancel">${escapeHtml(cancelText)}</button>
+          <button class="wm-dialog-btn wm-dialog-btn-confirm" data-wm-dlg="confirm">${escapeHtml(confirmText)}</button>
+        </div>
+      `;
+      const input = box.querySelector('[data-wm-dlg-input]');
+      let done = false;
+      const finish = (val) => {
+        if (done) return; done = true;
+        _wmCloseDialog(ov);
+        cleanup();
+        resolve(val);
+      };
+      const onClick = (e) => {
+        const act = e.target.closest('[data-wm-dlg]');
+        if (act) { finish(act.dataset.wmDlg === 'confirm' ? input.value : null); return; }
+        if (e.target === ov) finish(null);
+      };
+      const onKey = (e) => {
+        if (e.key === 'Escape') finish(null);
+        else if (e.key === 'Enter') { e.preventDefault(); finish(input.value); }
+      };
+      function cleanup() {
+        ov.removeEventListener('click', onClick);
+        document.removeEventListener('keydown', onKey);
+      }
+      ov.addEventListener('click', onClick);
+      document.addEventListener('keydown', onKey);
+      ov.classList.add('is-visible');
+      setTimeout(() => { input.focus(); input.select(); }, 50);
+    });
+  }
+
+  /**
+   * Aviso bonito (um botão só). Resolve quando fecha.
+   */
+  function wmAlert(message, opts = {}) {
+    return new Promise((resolve) => {
+      const ov = _wmEnsureDialog();
+      const box = ov.querySelector('.wm-dialog');
+      const title = opts.title || 'Aviso';
+      const okText = opts.confirmText || 'OK';
+      box.innerHTML = `
+        <div class="wm-dialog-title">${escapeHtml(title)}</div>
+        <div class="wm-dialog-message">${escapeHtml(message)}</div>
+        <div class="wm-dialog-actions">
+          <button class="wm-dialog-btn wm-dialog-btn-confirm" data-wm-dlg="ok">${escapeHtml(okText)}</button>
+        </div>
+      `;
+      let done = false;
+      const finish = () => {
+        if (done) return; done = true;
+        _wmCloseDialog(ov);
+        cleanup();
+        resolve();
+      };
+      const onClick = (e) => {
+        if (e.target.closest('[data-wm-dlg="ok"]') || e.target === ov) finish();
+      };
+      const onKey = (e) => {
+        if (e.key === 'Escape' || e.key === 'Enter') finish();
+      };
+      function cleanup() {
+        ov.removeEventListener('click', onClick);
+        document.removeEventListener('keydown', onKey);
+      }
+      ov.addEventListener('click', onClick);
+      document.addEventListener('keydown', onKey);
+      ov.classList.add('is-visible');
+      const okbtn = box.querySelector('[data-wm-dlg="ok"]');
+      if (okbtn) setTimeout(() => okbtn.focus(), 50);
+    });
+  }
+
+  // Expõe globalmente pra usar de qualquer escopo do app
+  window.wmConfirm = wmConfirm;
+  window.wmPrompt = wmPrompt;
+  window.wmAlert = wmAlert;
+
   window.__undoRedo = {
     capture: captureSnapshot,
     undo: performUndo,
@@ -20889,12 +21156,12 @@ function initEditor() {
     }
 
     // Actions
-    const onAction = (action) => {
+    const onAction = async (action) => {
       if (action === 'reset-size') setMultiStyleOverride(wordIds, 'fontSizeScale', null);
       else if (action === 'reset-letterspacing') setMultiStyleOverride(wordIds, 'letterSpacing', null);
       else if (action === 'reset-color') setMultiStyleOverride(wordIds, 'color', null);
       else if (action === 'clear-all') {
-        if (confirm(`Limpar TODOS os overrides de ${wordIds.length} palavras?`)) {
+        if (await wmConfirm(`Limpar TODOS os overrides de ${wordIds.length} palavras?`, { confirmText: 'Limpar', danger: true })) {
           clearAllMultiOverrides(wordIds);
         }
       }
@@ -23228,7 +23495,7 @@ function initEditor() {
       try {
         await window.WM_CUSTOM_FONTS.upload(file);
       } catch (e) {
-        alert(`Não pude carregar "${file.name}": ${e.message}`);
+        showToast(`Não pude carregar "${file.name}"`);
       }
     }
     await refreshCustomFontGrid();
@@ -23240,7 +23507,7 @@ function initEditor() {
     if (!deleteBtn) return;
     ev.stopPropagation();
     const assetId = deleteBtn.dataset.deleteFont;
-    if (!confirm('Remover esta fonte?')) return;
+    if (!await wmConfirm('Remover esta fonte?', { confirmText: 'Remover', danger: true })) return;
     if (window.WM_CUSTOM_FONTS) {
       await window.WM_CUSTOM_FONTS.delete(assetId);
     }
@@ -24061,7 +24328,7 @@ function initEditor() {
       try {
         await window.WM_CUSTOM_BACKGROUNDS.upload(file);
       } catch (e) {
-        alert(`Não pude carregar "${file.name}": ${e.message}`);
+        showToast(`Não pude carregar "${file.name}"`);
       }
     }
     await refreshCustomBgGrid();
@@ -24073,7 +24340,7 @@ function initEditor() {
     if (deleteBtn) {
       ev.stopPropagation();
       const assetId = deleteBtn.dataset.deleteBg;
-      if (!confirm('Remover este background?')) return;
+      if (!await wmConfirm('Remover este background?', { confirmText: 'Remover', danger: true })) return;
       if (window.WM_CUSTOM_BACKGROUNDS) {
         await window.WM_CUSTOM_BACKGROUNDS.delete(assetId);
       }
@@ -25615,8 +25882,8 @@ function initEditor() {
     return filled;
   }
 
-  function resetAllMarks() {
-    if (!confirm('Apagar TODAS as marcações? Não tem desfazer.')) return;
+  async function resetAllMarks() {
+    if (!await wmConfirm('Apagar TODAS as marcações? Não tem desfazer.', { confirmText: 'Apagar', danger: true })) return;
     const parsed = engine?.parsed;
     if (!parsed) return;
     parsed.stanzas.forEach(s => s.lines.forEach(l => l.words.forEach(w => delete w.tStart)));
@@ -25771,7 +26038,7 @@ function initEditor() {
   async function handleAudioFileSelected(file) {
     if (!file || !window.WM_AUDIO_STORAGE) return;
     if (file.size > 30 * 1024 * 1024) {
-      alert('Arquivo muito grande. Limite: 30MB. Comprima o MP3 ou use bitrate menor.');
+      showToast('Arquivo muito grande (limite 30MB). Comprima o MP3.');
       return;
     }
     try {
@@ -25806,7 +26073,7 @@ function initEditor() {
       markDirty();
     } catch (e) {
       console.error('Erro ao salvar áudio:', e);
-      alert('Não consegui carregar esse áudio. Tenta outro arquivo.');
+      showToast('Não consegui carregar esse áudio. Tenta outro.');
     }
   }
 
@@ -25819,7 +26086,7 @@ function initEditor() {
     e.target.value = '';
   });
   $('#btn-audio-remove')?.addEventListener('click', async () => {
-    if (!confirm('Remover a música deste projeto?')) return;
+    if (!await wmConfirm('Remover a música deste projeto?', { confirmText: 'Remover', danger: true })) return;
     if (audioCurrentId && window.WM_AUDIO_STORAGE) {
       try { await window.WM_AUDIO_STORAGE.deleteAudio(audioCurrentId); } catch(e){}
     }
@@ -26076,7 +26343,7 @@ function initEditor() {
     overlay.addEventListener('click', (e) => { if (e.target === overlay) fechar(); });
     const btnLogout = card.querySelector('#wm-acc-logout');
     if (btnLogout) btnLogout.addEventListener('click', async () => {
-      if (!confirm('Deseja sair da sua conta?')) return;
+      if (!await wmConfirm('Deseja sair da sua conta?', { confirmText: 'Sair', cancelText: 'Ficar' })) return;
       try { if (window.wmSupabase) await window.wmSupabase.auth.signOut(); } catch (e) {}
       window.__wmPerfil = null;
       window.__wmSessaoPronta = false;
@@ -26089,7 +26356,7 @@ function initEditor() {
       _abrirTelaPlanos();
     });
     const btnProPlus = card.querySelector('#wm-acc-proplus');
-    if (btnProPlus) btnProPlus.addEventListener('click', () => {
+    if (btnProPlus) btnProPlus.addEventListener('click', async () => {
       const assunto = 'Quero fazer upgrade para o Pro Plus';
       const corpo = 'Olá! Sou assinante do plano Pro e quero mudar para o Pro Plus.\n\n'
         + 'Meu e-mail de cadastro: ' + email + '\n\n'
@@ -26097,8 +26364,8 @@ function initEditor() {
       const link = 'mailto:wosadvpro@gmail.com'
         + '?subject=' + encodeURIComponent(assunto)
         + '&body=' + encodeURIComponent(corpo);
+      await wmAlert('Vamos abrir seu e-mail com a mensagem pronta. É só enviar que eu te mando o convite de troca para o Pro Plus em seguida!', { title: 'Quase lá!', confirmText: 'Abrir e-mail' });
       window.location.href = link;
-      alert('Vamos abrir seu e-mail com a mensagem pronta. É só enviar que eu te mando o convite de troca para o Pro Plus em seguida!');
     });
   }
 
@@ -26176,11 +26443,11 @@ function initEditor() {
 
     // Botões de assinatura → abrem o checkout da Hotmart.
     card.querySelectorAll('.wm-btn-assinar').forEach(btn => {
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', async () => {
         const plano = btn.dataset.plano;
         let link = WM_LINKS_PAGAMENTO[plano];
         if (!link || link.indexOf('COLE_AQUI') === 0) {
-          alert('Link de pagamento ainda não configurado. Em breve!');
+          await wmAlert('Link de pagamento ainda não configurado. Em breve!', { title: 'Aguarde' });
           return;
         }
         // Pré-preenche o email no checkout da Hotmart (parâmetro padrão).
@@ -26778,7 +27045,7 @@ function initEditor() {
   //  1. Adiciona como template na sessão atual (aparece já na grade)
   //  2. Mostra o código pronto pra colar em scripts/core/templates.js
   //     (assim vira DEFINITIVO no app — embutido pra todos)
-  function saveCurrentAsTemplate() {
+  async function saveCurrentAsTemplate() {
     // 1. Captura o estado atual (mesmo serializador do "Salvar")
     let state;
     try {
@@ -26815,10 +27082,10 @@ function initEditor() {
       sceneOverrides: state.sceneOverrides || {},
     };
 
-    // Pergunta nome/descrição (prompt simples — sem dependência de modal)
-    const nome = (window.prompt('Nome do template:', 'Meu Template') || '').trim();
+    // Pergunta nome/descrição (modal bonito)
+    const nome = ((await wmPrompt('Nome do template:', 'Meu Template', { confirmText: 'Continuar' })) || '').trim();
     if (!nome) return; // cancelou
-    const desc = (window.prompt('Descrição curta (opcional):', '') || '').trim();
+    const desc = ((await wmPrompt('Descrição curta (opcional):', '', { confirmText: 'Salvar' })) || '').trim();
 
     // ID único e estável
     const slug = nome.toLowerCase()
@@ -27750,12 +28017,12 @@ function initEditor() {
 
     // ações
     $$('[data-action]').forEach(btn => {
-      btn.addEventListener('click', (e) => {
+      btn.addEventListener('click', async (e) => {
         e.stopPropagation();
         const action = btn.dataset.action;
         const id = btn.dataset.id;
         if (action === 'delete') {
-          if (confirm('Excluir este projeto? Não dá pra desfazer.')) {
+          if (await wmConfirm('Excluir este projeto? Não dá pra desfazer.', { confirmText: 'Excluir', danger: true })) {
             WM_STORAGE.delete(id);
             renderProjectList();
           }
@@ -27765,7 +28032,7 @@ function initEditor() {
         } else if (action === 'rename') {
           const atual = WM_STORAGE.get(id);
           const nomeAtual = atual ? (atual.name || '') : '';
-          const novo = (window.prompt('Novo nome do projeto:', nomeAtual) || '').trim();
+          const novo = ((await wmPrompt('Novo nome do projeto:', nomeAtual, { confirmText: 'Renomear' })) || '').trim();
           if (novo && novo !== nomeAtual) {
             WM_STORAGE.rename(id, novo);
             // se for o projeto aberto, atualiza o campo de nome no editor
@@ -27889,11 +28156,11 @@ function initEditor() {
 
     // Validação
     if (!w || w < 320 || w > 7680) {
-      alert('Largura deve estar entre 320 e 7680 pixels');
+      showToast('Largura deve estar entre 320 e 7680 pixels');
       return;
     }
     if (!h || h < 320 || h > 4320) {
-      alert('Altura deve estar entre 320 e 4320 pixels');
+      showToast('Altura deve estar entre 320 e 4320 pixels');
       return;
     }
 
@@ -27974,7 +28241,7 @@ function initEditor() {
   // Botão "Recentralizar slide": volta o slide atual ao layout automático.
   {
     const btnRec = document.getElementById('btn-recentralizar');
-    if (btnRec) btnRec.addEventListener('click', () => {
+    if (btnRec) btnRec.addEventListener('click', async () => {
       // Recentraliza o slide atual. Se houver posições livres em OUTROS
       // slides também, oferece recentralizar todos de uma vez.
       const nAtual = recentralizarSlide(engine.currentStanzaIndex);
@@ -27990,7 +28257,9 @@ function initEditor() {
         });
       }
       if (restantes > 0) {
-        const ok = confirm(`Este slide foi recentralizado.\n\nHá outros slides com posições manuais (${restantes} palavra(s)). Deseja recentralizar TODOS os slides também?`);
+        const ok = await wmConfirm(`Há outros slides com posições manuais (${restantes} palavra(s)). Deseja recentralizar TODOS os slides também?`, {
+          title: 'Slide recentralizado', confirmText: 'Recentralizar todos', cancelText: 'Só este'
+        });
         if (ok) {
           const t = recentralizarTodos();
           if (typeof window.WM_TOAST === 'function') window.WM_TOAST(`${t} palavra(s) recentralizada(s) em todos os slides`);
@@ -28127,16 +28396,15 @@ function initEditor() {
     }
   });
 
-  function openExportModal() {
+  async function openExportModal() {
     const support = WM_EXPORT.checkExportSupport();
     if (!support.supported) {
-      alert('Seu navegador não suporta exportação de vídeo: ' + support.reason +
-            '\n\nUse Chrome, Edge ou Firefox recente.');
+      await wmAlert(support.reason + '\n\nUse Chrome, Edge ou Firefox recente.', { title: 'Navegador não suportado' });
       return;
     }
 
     if (!engine.parsed || !engine.parsed.stanzas || engine.parsed.stanzas.length === 0) {
-      alert('Cole uma letra e clique em "Gerar Lyric" antes de exportar.');
+      await wmAlert('Cole uma letra e clique em "Gerar Lyric" antes de exportar.', { title: 'Nada pra exportar' });
       return;
     }
 
@@ -28164,10 +28432,10 @@ function initEditor() {
     $('#export-modal-overlay').classList.add('active');
   }
 
-  function closeExportModal() {
+  async function closeExportModal() {
     // Se está gravando, para primeiro
     if (currentExporter && currentExporter.running) {
-      if (!confirm('Cancelar a exportação em andamento?')) return;
+      if (!await wmConfirm('Cancelar a exportação em andamento?', { confirmText: 'Cancelar exportação', cancelText: 'Continuar' })) return;
       currentExporter.stop();
       currentExporter = null;
     }
@@ -28258,9 +28526,10 @@ function initEditor() {
           const info = window.WM_CREDITS.info();
           if (info.plano === 'pro') {
             // Já é Pro: oferece troca pra Pro Plus (via email, sem duplicar assinatura).
-            const querUpgrade = confirm('Seus créditos do Pro acabaram este mês (' + info.total + ' créditos).\n\n' +
-              'O Pro Plus tem o DOBRO de créditos (600/mês) e exportação em 4K.\n\n' +
-              'Deseja solicitar a mudança para o Pro Plus?');
+            const querUpgrade = await wmConfirm('O Pro Plus tem o DOBRO de créditos (600/mês) e exportação em 4K.\n\nDeseja solicitar a mudança para o Pro Plus?', {
+              title: 'Seus créditos do Pro acabaram este mês (' + info.total + ' créditos)',
+              confirmText: 'Quero o Pro Plus', cancelText: 'Agora não'
+            });
             if (querUpgrade) {
               const assunto = 'Quero fazer upgrade para o Pro Plus';
               const corpo = 'Olá! Sou assinante do plano Pro e quero mudar para o Pro Plus.\n\n'
@@ -28270,14 +28539,17 @@ function initEditor() {
             }
           } else if (info.plano === 'pro_plus') {
             // Topo de plano: nada a vender, só avisa.
-            alert('Seus créditos do Pro Plus acabaram este mês (' + info.total + ' créditos).\n\n' +
-              'Eles renovam no próximo mês. Se precisar de mais, fale com a gente: wosadvpro@gmail.com');
+            await wmAlert('Eles renovam no próximo mês. Se precisar de mais, fale com a gente: wosadvpro@gmail.com', {
+              title: 'Seus créditos do Pro Plus acabaram este mês (' + info.total + ' créditos)'
+            });
           } else {
             // Grátis: mostra os planos pra assinar.
-            const querUpgrade = confirm('Seus créditos acabaram este mês.\n\n' +
-              'Esta exportação precisa de ' + r.precisa + ' crédito(s), mas você tem ' + r.restante + '.\n\n' +
+            const querUpgrade = await wmConfirm('Esta exportação precisa de ' + r.precisa + ' crédito(s), mas você tem ' + r.restante + '.\n\n' +
               'Plano atual: ' + info.nomePlano + ' (' + info.total + ' créditos/mês).\n\n' +
-              'Deseja ver os planos para fazer upgrade?');
+              'Deseja ver os planos para fazer upgrade?', {
+              title: 'Seus créditos acabaram este mês',
+              confirmText: 'Ver planos', cancelText: 'Agora não'
+            });
             if (querUpgrade && typeof _abrirTelaPlanos === 'function') {
               try { closeExportModal(); } catch (e) {}
               _abrirTelaPlanos();
@@ -28361,7 +28633,7 @@ function initEditor() {
     const support = WM_EXPORT.checkExportSupport();
     if (!support.supported) {
       window.WM_EXPORT_LOG(`✗ ${support.reason}`, 'error');
-      alert(support.reason);
+      await wmAlert(support.reason, { title: 'Não foi possível exportar' });
       $('#export-progress-state').classList.remove('active');
       $('#export-form-state').style.display = '';
       return;
@@ -28458,7 +28730,7 @@ function initEditor() {
       window.WM_EXPORT_LOG(`✗ ERRO: ${err.message}`, 'error');
       $('#export-progress-state').classList.remove('active');
       $('#export-form-state').style.display = '';
-      alert(err.message || 'Erro durante a exportação');
+      await wmAlert(err.message || 'Erro durante a exportação', { title: 'Erro na exportação' });
     } finally {
       currentExporter = null;
     }
@@ -28528,12 +28800,13 @@ function initEditor() {
   }
 
   $$('#export-quality button').forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', async () => {
       // Bloqueia qualidade premium pro plano grátis.
       if (!wmQualidadePermitida(btn.dataset.preset)) {
-        const querUpgrade = confirm('A qualidade ' + (btn.dataset.labelOriginal || btn.textContent).replace('🔒 ','') + ' está disponível nos planos Pro e Pro Plus.\n\n' +
-          'No plano Grátis, a exportação é em 720p (HD).\n\n' +
-          'Deseja ver os planos para exportar em 1080p, 1440p ou 4K — e sem marca d\'água?');
+        const querUpgrade = await wmConfirm('No plano Grátis, a exportação é em 720p (HD).\n\nDeseja ver os planos para exportar em 1080p, 1440p ou 4K — e sem marca d\'água?', {
+          title: 'A qualidade ' + (btn.dataset.labelOriginal || btn.textContent).replace('🔒 ','') + ' é dos planos Pro',
+          confirmText: 'Ver planos', cancelText: 'Agora não'
+        });
         if (querUpgrade && typeof _abrirTelaPlanos === 'function') {
           try { closeExportModal(); } catch (e) {}
           _abrirTelaPlanos();
