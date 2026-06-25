@@ -1290,6 +1290,25 @@ h1, h2, h3, h4, h5, h6 {
 .export-modal {
   max-width: 560px;
 }
+    .export-modal {
+  display: flex;
+  flex-direction: column;
+  max-height: 88vh;
+}
+.export-modal .modal-body {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+.export-footer {
+  flex-shrink: 0;
+  padding: 16px 24px;
+  border-top: 1px solid var(--border-default);
+  background: var(--bg-surface);
+}
+.export-footer #btn-start-export {
+  width: 100%;
+}
 
 .export-form {
   display: flex;
@@ -6648,11 +6667,13 @@ Digno de toda honra"></textarea>
             <span><strong>Requer Chrome, Edge ou Opera atualizados.</strong> A renderização pode levar 2-3x a duração do vídeo. O MP4 final é gerado frame-a-frame, sem dependência de tempo real — resultado sempre fluido.</span>
           </div>
 
-          <button class="btn btn-primary btn-lg" id="btn-start-export">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="6"/></svg>
-            Iniciar gravação
-          </button>
-        </div>
+         </div>
+      </div>
+      <div class="export-footer">
+        <button class="btn btn-primary btn-lg" id="btn-start-export">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="6"/></svg>
+          Iniciar gravação
+        </button>
       </div>
 
       
