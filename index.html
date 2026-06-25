@@ -6669,12 +6669,6 @@ Digno de toda honra"></textarea>
 
          </div>
       </div>
-      <div class="export-footer">
-        <button class="btn btn-primary btn-lg" id="btn-start-export">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="6"/></svg>
-          Iniciar gravação
-        </button>
-      </div>
 
       
       <div class="export-progress" id="export-progress-state">
@@ -6730,6 +6724,13 @@ Digno de toda honra"></textarea>
         </button>
         <button class="btn btn-ghost btn-sm" id="btn-export-new">Exportar outro</button>
       </div>
+    </div>
+
+    <div class="export-footer" id="export-footer">
+      <button class="btn btn-primary btn-lg" id="btn-start-export">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="6"/></svg>
+        Iniciar gravação
+      </button>
     </div>
   </div>
 </section>
@@ -28423,6 +28424,14 @@ function initEditor() {
     }
   });
 
+  // Mostra/esconde o formulário de export junto com o rodapé fixo (botão Iniciar gravação).
+  // O rodapé só aparece na tela do formulário, nunca durante gravação ou na tela de "pronto".
+  function setExportFormVisible(visible) {
+    $('#export-form-state').style.display = visible ? '' : 'none';
+    const footer = $('#export-footer');
+    if (footer) footer.style.display = visible ? '' : 'none';
+  }
+
   async function openExportModal() {
     const support = WM_EXPORT.checkExportSupport();
     if (!support.supported) {
@@ -28436,7 +28445,7 @@ function initEditor() {
     }
 
     // Reset states
-    $('#export-form-state').style.display = '';
+    setExportFormVisible(true);
     $('#export-progress-state').classList.remove('active');
     $('#export-done-state').classList.remove('active');
 
@@ -28643,7 +28652,7 @@ function initEditor() {
     const projectName = $('#project-name-input').value.trim() || 'lyric';
 
     // Esconde form, mostra progresso
-    $('#export-form-state').style.display = 'none';
+    setExportFormVisible(false);
     $('#export-progress-state').classList.add('active');
     $('#export-done-state').classList.remove('active');
     setProgressRing(0);
@@ -28662,7 +28671,7 @@ function initEditor() {
       window.WM_EXPORT_LOG(`✗ ${support.reason}`, 'error');
       await wmAlert(support.reason, { title: 'Não foi possível exportar' });
       $('#export-progress-state').classList.remove('active');
-      $('#export-form-state').style.display = '';
+      setExportFormVisible(true);
       return;
     }
     window.WM_EXPORT_LOG('✓ Sistema de export OK', 'success');
@@ -28756,7 +28765,7 @@ function initEditor() {
       console.error('Erro na exportação:', err);
       window.WM_EXPORT_LOG(`✗ ERRO: ${err.message}`, 'error');
       $('#export-progress-state').classList.remove('active');
-      $('#export-form-state').style.display = '';
+      setExportFormVisible(true);
       await wmAlert(err.message || 'Erro durante a exportação', { title: 'Erro na exportação' });
     } finally {
       currentExporter = null;
@@ -28769,7 +28778,7 @@ function initEditor() {
       currentExporter = null;
     }
     $('#export-progress-state').classList.remove('active');
-    $('#export-form-state').style.display = '';
+    setExportFormVisible(true);
   }
 
   // ============ Wire dos controles ============
@@ -28937,7 +28946,7 @@ function initEditor() {
   });
   $('#btn-export-new').addEventListener('click', () => {
     $('#export-done-state').classList.remove('active');
-    $('#export-form-state').style.display = '';
+    setExportFormVisible(true);
     updateExportSummary();
   });
 
