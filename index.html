@@ -1192,6 +1192,52 @@ h1, h2, h3, h4, h5, h6 {
   gap: var(--space-1);
 }
 
+/* Barra de busca + contador na tela Meus Projetos */
+.project-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+.project-search {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex: 1;
+  max-width: 280px;
+  padding: 8px 12px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  transition: border-color var(--duration-fast) var(--ease-out-quart);
+}
+.project-search:focus-within {
+  border-color: var(--accent);
+}
+.project-search svg {
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+}
+.project-search input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text-primary);
+  font-size: var(--text-sm);
+  min-width: 0;
+}
+.project-search input::placeholder {
+  color: var(--text-tertiary);
+}
+.project-count {
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
 .project-empty {
   text-align: center;
   padding: var(--space-12) var(--space-4);
@@ -26722,6 +26768,7 @@ function initEditor() {
     } else {
       $('#modal-title').textContent = 'Meus projetos';
       $('#modal-subtitle').textContent = 'Seus rascunhos salvos no navegador';
+      __projFiltro = ''; // reseta a busca a cada vez que abre
       renderProjectList();
     }
   }
@@ -27610,10 +27657,15 @@ function initEditor() {
     return projeto;
   }
 
+  // termo de busca atual da tela Meus Projetos
+  let __projFiltro = '';
+
   function renderProjectList() {
     const list = $('#project-list');
-    const projects = WM_STORAGE.list();
-    if (!projects.length) {
+    const todos = WM_STORAGE.list();
+
+    // Caso geral SEM nenhum projeto: estado vazio "primeira vez".
+    if (!todos.length) {
       list.innerHTML = `
         <div class="project-empty">
           <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
@@ -27623,7 +27675,44 @@ function initEditor() {
       `;
       return;
     }
-    list.innerHTML = projects.map(p => `
+
+    // Filtro por nome (sem acento, case-insensitive)
+    const norm = (s) => (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const termo = norm(__projFiltro.trim());
+    const projects = termo
+      ? todos.filter(p => norm(p.name || '').includes(termo))
+      : todos;
+
+    // Barra de topo: busca + contador. Só mostra busca se valer a pena (3+).
+    const mostraBusca = todos.length >= 3;
+    const contadorTxt = termo
+      ? `${projects.length} de ${todos.length} projeto${todos.length === 1 ? '' : 's'}`
+      : `${todos.length} projeto${todos.length === 1 ? '' : 's'}`;
+    const barra = `
+      <div class="project-toolbar">
+        ${mostraBusca ? `
+          <div class="project-search">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <input id="project-search-input" type="text" placeholder="Buscar projeto..." value="${escapeHtml(__projFiltro)}" autocomplete="off">
+          </div>
+        ` : '<div></div>'}
+        <div class="project-count">${contadorTxt}</div>
+      </div>
+    `;
+
+    // Caso: tem projetos mas a busca não achou nada.
+    if (!projects.length) {
+      list.innerHTML = barra + `
+        <div class="project-empty">
+          <div class="project-empty-title">Nenhum projeto encontrado</div>
+          <div class="project-empty-desc">Nada com “${escapeHtml(__projFiltro)}”. Tente outro termo.</div>
+        </div>
+      `;
+      wireProjectSearch();
+      return;
+    }
+
+    list.innerHTML = barra + projects.map(p => `
       <div class="project-item" data-project-id="${p.id}">
         <div class="project-item-icon">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
@@ -27633,6 +27722,9 @@ function initEditor() {
           <div class="project-item-meta">Modificado ${formatRelativeTime(p.updatedAt)} · ${p.lyrics ? p.lyrics.split('\n').filter(x => x.trim()).length : 0} linhas</div>
         </div>
         <div class="project-item-actions">
+          <button class="icon-btn" data-action="rename" data-id="${p.id}" data-tooltip="Renomear">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+          </button>
           <button class="icon-btn" data-action="duplicate" data-id="${p.id}" data-tooltip="Duplicar">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
           </button>
@@ -27670,8 +27762,37 @@ function initEditor() {
         } else if (action === 'duplicate') {
           WM_STORAGE.duplicate(id);
           renderProjectList();
+        } else if (action === 'rename') {
+          const atual = WM_STORAGE.get(id);
+          const nomeAtual = atual ? (atual.name || '') : '';
+          const novo = (window.prompt('Novo nome do projeto:', nomeAtual) || '').trim();
+          if (novo && novo !== nomeAtual) {
+            WM_STORAGE.rename(id, novo);
+            // se for o projeto aberto, atualiza o campo de nome no editor
+            if (window.__currentProjectId === id) {
+              const campo = $('#project-name-input');
+              if (campo) campo.value = novo;
+            }
+            renderProjectList();
+          }
         }
       });
+    });
+
+    wireProjectSearch();
+  }
+
+  // Liga o campo de busca (re-renderiza preservando o foco/cursor)
+  function wireProjectSearch() {
+    const input = $('#project-search-input');
+    if (!input) return;
+    input.addEventListener('input', (e) => {
+      __projFiltro = e.target.value;
+      const pos = e.target.selectionStart;
+      renderProjectList();
+      // devolve o foco e a posição do cursor após o re-render
+      const novo = $('#project-search-input');
+      if (novo) { novo.focus(); try { novo.setSelectionRange(pos, pos); } catch (_) {} }
     });
   }
 
