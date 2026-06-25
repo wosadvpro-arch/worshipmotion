@@ -1294,7 +1294,7 @@ h1, h2, h3, h4, h5, h6 {
 .export-form {
   display: flex;
   flex-direction: column;
-  gap: var(--space-5);
+  gap: var(--space-4);
 }
 
 .export-row {
@@ -1307,10 +1307,16 @@ h1, h2, h3, h4, h5, h6 {
   background: var(--bg-elevated);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-md);
-  padding: var(--space-4);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2) var(--space-5);
+}
+
+/* Corpo do modal de export um pouco mais compacto na vertical */
+.export-modal .modal-body {
+  padding-top: var(--space-5);
+  padding-bottom: var(--space-5);
 }
 .export-summary-row {
   display: flex;
