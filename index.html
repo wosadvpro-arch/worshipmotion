@@ -25963,14 +25963,14 @@ function initEditor() {
     if (existente) existente.remove();
 
     // Pega dados reais da sessão e do perfil.
-    let email = '—', nomePlano = 'Grátis', creditos = '—', ehGratis = true;
+    let email = '—', nomePlano = 'Grátis', creditos = '—', ehGratis = true, planoCodigo = 'gratis';
     try {
       if (window.wmSupabase) {
         const { data } = await window.wmSupabase.auth.getSession();
         if (data && data.session) email = data.session.user.email || 'Conta conectada';
       }
       const info = (window.WM_CREDITS && window.WM_CREDITS.info) ? window.WM_CREDITS.info() : null;
-      if (info) { nomePlano = info.nomePlano || 'Grátis'; creditos = info.restante + '/' + info.total; ehGratis = !!info.marca; }
+      if (info) { nomePlano = info.nomePlano || 'Grátis'; creditos = info.restante + '/' + info.total; ehGratis = !!info.marca; planoCodigo = info.plano || 'gratis'; }
     } catch (e) {}
 
     const overlay = document.createElement('div');
@@ -26005,7 +26005,12 @@ function initEditor() {
           + '    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9 12 2"/></svg>'
           + '    Fazer upgrade'
           + '  </button>'
-        : '')
+        : (planoCodigo === 'pro'
+          ? '  <button id="wm-acc-proplus" style="width:100%;padding:12px;background:linear-gradient(135deg,#8b5cf6,#6366f1);border:none;color:#fff;border-radius:10px;cursor:pointer;font-family:inherit;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:4px;box-shadow:0 4px 14px rgba(139,92,246,0.35);">'
+            + '    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9 12 2"/></svg>'
+            + '    Mudar para Pro Plus'
+            + '  </button>'
+          : ''))
       + '  <button id="wm-acc-logout" style="width:100%;padding:12px;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);color:#fca5a5;border-radius:10px;cursor:pointer;font-family:inherit;font-size:14px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:4px;">'
       + '    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>'
       + '    Sair da conta'
@@ -26031,6 +26036,18 @@ function initEditor() {
     if (btnUpgrade) btnUpgrade.addEventListener('click', () => {
       fechar();
       _abrirTelaPlanos();
+    });
+    const btnProPlus = card.querySelector('#wm-acc-proplus');
+    if (btnProPlus) btnProPlus.addEventListener('click', () => {
+      const assunto = 'Quero fazer upgrade para o Pro Plus';
+      const corpo = 'Olá! Sou assinante do plano Pro e quero mudar para o Pro Plus.\n\n'
+        + 'Meu e-mail de cadastro: ' + email + '\n\n'
+        + 'Por favor, me envie o convite de troca de plano. Obrigado!';
+      const link = 'mailto:wosadvpro@gmail.com'
+        + '?subject=' + encodeURIComponent(assunto)
+        + '&body=' + encodeURIComponent(corpo);
+      window.location.href = link;
+      alert('Vamos abrir seu e-mail com a mensagem pronta. É só enviar que eu te mando o convite de troca para o Pro Plus em seguida!');
     });
   }
 
@@ -28113,13 +28130,32 @@ function initEditor() {
         const r = await window.WM_CREDITS.cobrar(numSlides, projetoAtual);
         if (!r.ok && r.motivo === 'sem_creditos') {
           const info = window.WM_CREDITS.info();
-          const querUpgrade = confirm('Seus créditos acabaram este mês.\n\n' +
-            'Esta exportação precisa de ' + r.precisa + ' crédito(s), mas você tem ' + r.restante + '.\n\n' +
-            'Plano atual: ' + info.nomePlano + ' (' + info.total + ' créditos/mês).\n\n' +
-            'Deseja ver os planos para fazer upgrade?');
-          if (querUpgrade && typeof _abrirTelaPlanos === 'function') {
-            try { closeExportModal(); } catch (e) {}
-            _abrirTelaPlanos();
+          if (info.plano === 'pro') {
+            // Já é Pro: oferece troca pra Pro Plus (via email, sem duplicar assinatura).
+            const querUpgrade = confirm('Seus créditos do Pro acabaram este mês (' + info.total + ' créditos).\n\n' +
+              'O Pro Plus tem o DOBRO de créditos (600/mês) e exportação em 4K.\n\n' +
+              'Deseja solicitar a mudança para o Pro Plus?');
+            if (querUpgrade) {
+              const assunto = 'Quero fazer upgrade para o Pro Plus';
+              const corpo = 'Olá! Sou assinante do plano Pro e quero mudar para o Pro Plus.\n\n'
+                + 'Por favor, me envie o convite de troca de plano. Obrigado!';
+              window.location.href = 'mailto:wosadvpro@gmail.com?subject='
+                + encodeURIComponent(assunto) + '&body=' + encodeURIComponent(corpo);
+            }
+          } else if (info.plano === 'pro_plus') {
+            // Topo de plano: nada a vender, só avisa.
+            alert('Seus créditos do Pro Plus acabaram este mês (' + info.total + ' créditos).\n\n' +
+              'Eles renovam no próximo mês. Se precisar de mais, fale com a gente: wosadvpro@gmail.com');
+          } else {
+            // Grátis: mostra os planos pra assinar.
+            const querUpgrade = confirm('Seus créditos acabaram este mês.\n\n' +
+              'Esta exportação precisa de ' + r.precisa + ' crédito(s), mas você tem ' + r.restante + '.\n\n' +
+              'Plano atual: ' + info.nomePlano + ' (' + info.total + ' créditos/mês).\n\n' +
+              'Deseja ver os planos para fazer upgrade?');
+            if (querUpgrade && typeof _abrirTelaPlanos === 'function') {
+              try { closeExportModal(); } catch (e) {}
+              _abrirTelaPlanos();
+            }
           }
           return; // bloqueia o export
         }
