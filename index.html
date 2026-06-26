@@ -2268,8 +2268,71 @@ body.timeline-collapsed .timeline-collapse-btn {
   .editor-shell { grid-template-columns: 56px 280px 1fr 280px; }
 }
 @media (max-width: 1080px) {
-  .editor-shell { grid-template-columns: 56px 1fr; grid-template-rows: var(--topbar-height) 1fr; }
-  .editor-left, .editor-right, .editor-timeline { display: none; }
+  /* ====== EDITOR MOBILE: coluna + régua inferior + painéis em bottom-sheet ====== */
+  .editor-shell {
+    display: flex; flex-direction: column;
+    height: 100vh; height: 100dvh; width: 100%; overflow: hidden;
+  }
+  .editor-topbar {
+    order: 0; flex: 0 0 auto; height: auto; min-height: var(--topbar-height);
+    flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden;
+    justify-content: flex-start; gap: 8px; padding: 6px 10px;
+  }
+  .editor-topbar::-webkit-scrollbar { height: 0; }
+  .editor-topbar .topbar-section { flex: 0 0 auto; }
+  .editor-topbar .topbar-section.center { flex: 0 0 auto; justify-content: flex-start; }
+  .editor-topbar .logo { transform: scale(0.82); transform-origin: left center; }
+  #project-name-input { max-width: 120px !important; min-width: 70px !important; }
+  /* esconde itens redundantes/avançados no mobile (Templates já está na régua) */
+  #btn-save-template, #btn-templates, .save-indicator { display: none !important; }
+
+  .editor-canvas-wrap { order: 1; flex: 1 1 auto; min-height: 0; padding: 10px; }
+
+  /* régua vira barra inferior horizontal */
+  .editor-rail {
+    order: 2; flex: 0 0 auto;
+    flex-direction: row; align-items: center; justify-content: space-around;
+    width: 100%; height: 58px; padding: 0 6px; gap: 4px;
+    border-right: none; border-top: 1px solid var(--border-default);
+    overflow-x: auto; position: relative; z-index: 1;
+  }
+  .editor-rail::-webkit-scrollbar { height: 0; }
+  .rail-btn { flex: 0 0 auto; width: 44px; height: 44px; }
+
+  /* painéis esquerdo/direito → bottom-sheets que sobem ao tocar na ferramenta */
+  .editor-left, .editor-right {
+    display: flex; flex-direction: column;
+    position: fixed; left: 0; right: 0; bottom: 58px;
+    width: auto; height: auto; max-height: 68vh;
+    border: 1px solid var(--border-default); border-bottom: none;
+    border-radius: 16px 16px 0 0;
+    box-shadow: 0 -18px 50px rgba(0,0,0,0.55);
+    transform: translateY(130%);
+    transition: transform .3s cubic-bezier(.22,1,.36,1);
+    z-index: 200; overflow: hidden;
+  }
+  .editor-left::before, .editor-right::before {
+    content: ''; flex: 0 0 auto; width: 40px; height: 4px;
+    margin: 8px auto 2px; border-radius: 999px;
+    background: var(--border-strong, #3a3a4a);
+  }
+  .editor-left .panel-body, .editor-right .panel-body {
+    flex: 1 1 auto; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch;
+  }
+  body.wm-sheet-left  .editor-left  { transform: translateY(0); }
+  body.wm-sheet-right .editor-right { transform: translateY(0); }
+
+  /* backdrop escurecido (injetado via JS); cobre só o canvas, deixa a régua livre */
+  .wm-sheet-backdrop {
+    position: fixed; left: 0; right: 0; top: 0; bottom: 58px;
+    background: rgba(0,0,0,0.5); z-index: 199;
+    opacity: 0; pointer-events: none; transition: opacity .25s;
+  }
+  body.wm-sheet-left .wm-sheet-backdrop,
+  body.wm-sheet-right .wm-sheet-backdrop { opacity: 1; pointer-events: auto; }
+
+  /* timeline (cenas) oculta no mobile nesta 1ª versão */
+  .editor-timeline { display: none; }
 }
 
 /* === INPUTS (modal aspect customizado, futuras configurações) === */
@@ -5305,7 +5368,7 @@ body.is-dragging-word .lyric-word { cursor: grabbing !important; }
 .auth-footer a:hover { text-decoration: underline; }
 
 /* ---- Tela de login IMERSIVA (cena de louvor + cartão de vidro) — escopado, não afeta a landing ---- */
-.page-login.auth-shell { display: block; position: relative; min-height: 100vh; background: #05050b; overflow: hidden; }
+.page-login.auth-shell { position: relative; min-height: 100vh; background: #05050b; overflow: hidden; }
 /* vence a regra do roteador .page-auth.active{display:grid} via especificidade */
 .page-login.page-auth.active { display: block; }
 
@@ -5617,6 +5680,14 @@ body.is-dragging-word .lyric-word { cursor: grabbing !important; }
   .page-landing .hero { padding: 108px 20px 56px; }
   .page-landing .section { padding: 68px 20px; }
   .page-landing .lp-stage-wrap { margin-top: 40px; }
+}
+/* ===== Modais no mobile: viram bottom-sheet full-width e roláveis ===== */
+@media (max-width: 680px) {
+  .modal-overlay { padding: 0; align-items: flex-end; }
+  .modal { max-width: 100%; width: 100%; max-height: 94vh; border-radius: 18px 18px 0 0; }
+  .modal-header { padding: 15px 18px; }
+  .modal-tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; flex-wrap: nowrap; }
+  .modal-tabs::-webkit-scrollbar { height: 0; }
 }
 @media (prefers-reduced-motion: reduce) {
   .page-landing .lp-reveal { opacity: 1; transform: none; transition: none; }
@@ -26679,9 +26750,22 @@ function initEditor() {
     });
   }
 
+  // Backdrop dos bottom-sheets do editor mobile (fecha o painel ao tocar fora).
+  if (!document.querySelector('.wm-sheet-backdrop')) {
+    const _bd = document.createElement('div');
+    _bd.className = 'wm-sheet-backdrop';
+    _bd.addEventListener('click', () => document.body.classList.remove('wm-sheet-left', 'wm-sheet-right'));
+    document.body.appendChild(_bd);
+  }
   $$('.rail-btn').forEach((btn, i) => {
     btn.addEventListener('click', () => {
       $$('.rail-btn').forEach(b => b.classList.toggle('active', b === btn));
+      // Mobile: abre o painel correspondente como bottom-sheet. No desktop estas
+      // classes não têm efeito (as regras vivem dentro da media query ≤1080px).
+      const _b = document.body;
+      if (i === 0 || i === 1) { _b.classList.add('wm-sheet-left'); _b.classList.remove('wm-sheet-right'); }
+      else if (i === 3 || i === 4) { _b.classList.add('wm-sheet-right'); _b.classList.remove('wm-sheet-left'); }
+      else { _b.classList.remove('wm-sheet-left', 'wm-sheet-right'); }
       // Mapeia cada botão da rail (por índice) pra sua ação.
       // Ordem dos botões: 0=Lyrics, 1=Animações, 2=Templates, 3=Fontes,
       // 4=Backgrounds, 5=Configurações.
