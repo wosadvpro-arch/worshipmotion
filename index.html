@@ -5319,12 +5319,13 @@ body.is-dragging-word .lyric-word { cursor: grabbing !important; }
     radial-gradient(52% 62% at 60% 82%, rgba(224,182,92,0.20), transparent 70%),
     radial-gradient(45% 55% at 12% 88%, rgba(56,189,248,0.16), transparent 70%);
   filter: blur(22px);
+  will-change: transform;
   animation: wmLoginAurora 26s ease-in-out infinite alternate;
 }
 @keyframes wmLoginAurora {
-  0%   { transform: translate3d(0,0,0) scale(1);       filter: blur(22px) hue-rotate(0deg); }
-  50%  { transform: translate3d(2.5%,-2%,0) scale(1.08); filter: blur(28px) hue-rotate(20deg); }
-  100% { transform: translate3d(-2%,1.5%,0) scale(1.04); filter: blur(24px) hue-rotate(-14deg); }
+  0%   { transform: translate3d(0,0,0) scale(1); }
+  50%  { transform: translate3d(2.5%,-2%,0) scale(1.08); }
+  100% { transform: translate3d(-2%,1.5%,0) scale(1.04); }
 }
 .page-login .wm-login-veil {
   position: absolute; inset: 0;
@@ -29359,13 +29360,13 @@ function initLoginStage() {
       setTimeout(()=>{
         if(kf){ sp.style.animation='none'; sp.offsetHeight; sp.style.animation=kf+' '+dur+'s '+easing+' forwards'; }
         else { sp.style.transition='opacity .6s'; sp.style.opacity='1'; }
-      }, i*240);
+      }, i*140);
     });
 
-    const total = phrase.length*240 + dur*1000 + 2300;
+    const total = phrase.length*140 + dur*1000 + 1300;
     timer = setTimeout(()=>{
-      words.forEach((sp,i)=> setTimeout(()=>{ sp.style.transition='opacity .5s, transform .5s'; sp.style.opacity='0'; sp.style.transform='translateY(-12px)'; }, i*50));
-      setTimeout(()=>{ pi++; si++; play(); }, 650);
+      words.forEach((sp,i)=> setTimeout(()=>{ sp.style.transition='opacity .45s, transform .45s'; sp.style.opacity='0'; sp.style.transform='translateY(-12px)'; }, i*40));
+      setTimeout(()=>{ pi++; si++; play(); }, 450);
     }, total);
   }
   play();
@@ -29374,7 +29375,7 @@ function initLoginStage() {
   const pc = document.getElementById('wm-login-particles');
   if (pc && !pc.__wmBound){
     pc.__wmBound = true;
-    for(let i=0;i<24;i++){
+    for(let i=0;i<16;i++){
       const p=document.createElement('span');
       p.className='wm-login-particle';
       const size=(Math.random()*3+1.5).toFixed(1);
