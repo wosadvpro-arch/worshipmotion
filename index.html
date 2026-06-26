@@ -2269,7 +2269,8 @@ body.timeline-collapsed .timeline-collapse-btn {
 }
 @media (max-width: 1080px) {
   /* ====== EDITOR MOBILE: coluna + régua inferior + painéis em bottom-sheet ====== */
-  .editor-shell {
+  /* especificidade pra vencer .page-editor.active{display:grid} do roteador */
+  .page-editor.editor-shell.active {
     display: flex; flex-direction: column;
     height: 100vh; height: 100dvh; width: 100%; overflow: hidden;
   }
@@ -2287,6 +2288,9 @@ body.timeline-collapsed .timeline-collapse-btn {
   #btn-save-template, #btn-templates, .save-indicator { display: none !important; }
 
   .editor-canvas-wrap { order: 1; flex: 1 1 auto; min-height: 0; padding: 10px; }
+  /* no mobile o canvas se ajusta pela LARGURA (altura deriva da proporção),
+     pra não estourar a tela nem distorcer o 16:9 */
+  .editor-canvas { width: 100%; height: auto; max-width: 100%; max-height: 100%; }
 
   /* régua vira barra inferior horizontal */
   .editor-rail {
@@ -5688,6 +5692,7 @@ body.is-dragging-word .lyric-word { cursor: grabbing !important; }
   .modal-header { padding: 15px 18px; }
   .modal-tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; flex-wrap: nowrap; }
   .modal-tabs::-webkit-scrollbar { height: 0; }
+  .landing-nav .lp-btn { padding: 9px 13px; font-size: 13px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .page-landing .lp-reveal { opacity: 1; transform: none; transition: none; }
