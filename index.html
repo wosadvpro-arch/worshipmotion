@@ -10077,6 +10077,9 @@ function buildProjectSnapshot(engine, name) {
     aspect: window.__currentAspect || '16:9',
     autoEmphasis: document.getElementById('auto-emphasis')?.checked ?? true,
     audioId: window.__currentAudioId || null,
+    audioPath: window.__currentAudioPath || null,
+    audioName: window.__currentAudioName || null,
+    audioDuration: window.__currentAudioDuration || null,
   };
 }
 
@@ -10470,6 +10473,76 @@ window.WM_AUDIO_STORAGE = {
   listAudios,
   createAudioURL,
 };
+
+
+/* === Audio Cloud (Supabase Storage) === */
+/* ============================================================
+   AUDIO CLOUD (Supabase Storage)
+   ============================================================
+   Benefício de plano PAGO: a música do projeto sobe pro Storage
+   (bucket 'project-audio', privado) em userId/audioId.ext, pra
+   seguir o usuário entre dispositivos. É 100% additivo e à prova
+   de falha: se o bucket/policies não existirem ou der erro, tudo
+   cai silenciosamente no IndexedDB local (comportamento atual).
+   Free continua só local.
+   ============================================================ */
+const WM_AUDIO_BUCKET = 'project-audio';
+window.WM_AUDIO_CLOUD = (function () {
+  function sb() { return window.wmSupabase || null; }
+
+  async function _userId() {
+    const c = sb(); if (!c) return null;
+    try { const { data } = await c.auth.getSession(); return (data && data.session && data.session.user && data.session.user.id) || null; }
+    catch (e) { return null; }
+  }
+
+  // A nuvem é benefício de assinante (Pro/Pro Plus). Free fica só local.
+  function ehPago() {
+    try {
+      const info = window.WM_CREDITS && window.WM_CREDITS.info ? window.WM_CREDITS.info() : null;
+      return !!(info && info.plano && info.plano !== 'gratis');
+    } catch (e) { return false; }
+  }
+
+  function _ext(name, type) {
+    const m = (name || '').match(/\.([a-z0-9]+)$/i);
+    if (m) return m[1].toLowerCase();
+    if (type && type.indexOf('/') > -1) return type.split('/')[1].split(';')[0];
+    return 'mp3';
+  }
+
+  // Sobe o blob; retorna o path no bucket (userId/audioId.ext) ou null se falhar.
+  async function upload(audioId, blob, meta) {
+    meta = meta || {};
+    const c = sb(); if (!c) return null;
+    const uid = await _userId(); if (!uid) return null;
+    const path = uid + '/' + audioId + '.' + _ext(meta.name, meta.type || blob.type);
+    try {
+      const { error } = await c.storage.from(WM_AUDIO_BUCKET).upload(path, blob, {
+        upsert: true, contentType: meta.type || blob.type || 'audio/mpeg',
+      });
+      if (error) { console.warn('[audio nuvem] upload falhou:', error.message); return null; }
+      return path;
+    } catch (e) { console.warn('[audio nuvem] upload erro:', e); return null; }
+  }
+
+  // Baixa um path do bucket; retorna Blob ou null.
+  async function download(path) {
+    const c = sb(); if (!c || !path) return null;
+    try {
+      const { data, error } = await c.storage.from(WM_AUDIO_BUCKET).download(path);
+      if (error) { console.warn('[audio nuvem] download falhou:', error.message); return null; }
+      return data || null;
+    } catch (e) { console.warn('[audio nuvem] download erro:', e); return null; }
+  }
+
+  async function remove(path) {
+    const c = sb(); if (!c || !path) return;
+    try { await c.storage.from(WM_AUDIO_BUCKET).remove([path]); } catch (e) {}
+  }
+
+  return { upload, download, remove, ehPago };
+})();
 
 
 /* === Asset Storage (fontes, backgrounds, etc) === */
@@ -26206,7 +26279,21 @@ function initEditor() {
       return;
     }
     try {
-      const record = await window.WM_AUDIO_STORAGE.loadAudio(audioId);
+      let record = await window.WM_AUDIO_STORAGE.loadAudio(audioId);
+      if (!record) {
+        // Não está local (provável outro dispositivo): tenta baixar da nuvem.
+        const path = window.__currentAudioPath;
+        if (path && window.WM_AUDIO_CLOUD) {
+          const blob = await window.WM_AUDIO_CLOUD.download(path);
+          if (blob) {
+            const nm = window.__currentAudioName || 'Música';
+            const dur = window.__currentAudioDuration || 0;
+            // cacheia local pros próximos loads e pro export funcionar
+            try { await window.WM_AUDIO_STORAGE.saveAudio(audioId, blob, { name: nm, type: blob.type, duration: dur }); } catch (e) {}
+            record = { blob: blob, name: nm, type: blob.type, duration: dur };
+          }
+        }
+      }
       if (!record) {
         resetAudioUI();
         return;
@@ -26228,6 +26315,9 @@ function initEditor() {
   function resetAudioUI() {
     audioCurrentId = null;
     window.__currentAudioId = null;
+    window.__currentAudioPath = null;
+    window.__currentAudioName = null;
+    window.__currentAudioDuration = null;
     const audio = getAudioElement();
     audio.pause();
     if (audio.src) {
@@ -26276,10 +26366,23 @@ function initEditor() {
 
       if (audioCurrentId && audioCurrentId !== audioId) {
         try { await window.WM_AUDIO_STORAGE.deleteAudio(audioCurrentId); } catch(e){}
+        if (window.__currentAudioPath && window.WM_AUDIO_CLOUD) {
+          try { window.WM_AUDIO_CLOUD.remove(window.__currentAudioPath); } catch(e){}
+        }
       }
 
       audioCurrentId = audioId;
       window.__currentAudioId = audioId;
+      window.__currentAudioName = file.name;
+      window.__currentAudioDuration = duration;
+      window.__currentAudioPath = null;
+      // Plano pago: sobe pra nuvem (em segundo plano) pra a música seguir o
+      // usuário entre dispositivos. Se falhar, fica só local, sem alarde.
+      if (window.WM_AUDIO_CLOUD && window.WM_AUDIO_CLOUD.ehPago()) {
+        window.WM_AUDIO_CLOUD.upload(audioId, file, { name: file.name, type: file.type }).then((path) => {
+          if (path) { window.__currentAudioPath = path; markDirty(); if (typeof showToast === 'function') showToast('Música sincronizada na nuvem ☁️'); }
+        });
+      }
       const audio = getAudioElement();
       if (audio.src) URL.revokeObjectURL(audio.src);
       audio.src = URL.createObjectURL(file);
@@ -26305,6 +26408,9 @@ function initEditor() {
     if (!await wmConfirm('Remover a música deste projeto?', { confirmText: 'Remover', danger: true })) return;
     if (audioCurrentId && window.WM_AUDIO_STORAGE) {
       try { await window.WM_AUDIO_STORAGE.deleteAudio(audioCurrentId); } catch(e){}
+    }
+    if (window.__currentAudioPath && window.WM_AUDIO_CLOUD) {
+      try { window.WM_AUDIO_CLOUD.remove(window.__currentAudioPath); } catch(e){}
     }
     resetAudioUI();
     markDirty();
@@ -27014,6 +27120,9 @@ function initEditor() {
 
     // áudio: restaura referência e carrega do IndexedDB
     window.__currentAudioId = project.audioId || null;
+    window.__currentAudioPath = project.audioPath || null;
+    window.__currentAudioName = project.audioName || null;
+    window.__currentAudioDuration = project.audioDuration || null;
     if (typeof window.__loadAudioFromProject === 'function') {
       window.__loadAudioFromProject();
     }
