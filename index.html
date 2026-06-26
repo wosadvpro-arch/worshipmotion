@@ -5361,11 +5361,11 @@ body.is-dragging-word .lyric-word { cursor: grabbing !important; }
   font-weight: 800; letter-spacing: -0.02em; line-height: 1.08; text-align: center;
   font-size: clamp(36px, 6.4vw, 92px);
   color: rgba(246,246,249,0.96);
-  text-shadow: 0 10px 60px rgba(0,0,0,0.55);
+  text-shadow: 0 4px 24px rgba(0,0,0,0.5);
 }
-.page-login .wm-login-word { display: inline-block; margin: 0 0.16em; }
-.page-login .wm-login-word.wm-login-emph { color: var(--lp-accent-3, #c4b5fd); text-shadow: 0 0 50px rgba(167,139,250,0.65); }
-.page-login .wm-login-word.is-gold { color: var(--lp-gold, #e0b65c) !important; text-shadow: 0 0 50px rgba(224,182,92,0.7); }
+.page-login .wm-login-word { display: inline-block; margin: 0 0.16em; will-change: transform, opacity; backface-visibility: hidden; }
+.page-login .wm-login-word.wm-login-emph { color: var(--lp-accent-3, #c4b5fd); text-shadow: 0 0 24px rgba(167,139,250,0.6); }
+.page-login .wm-login-word.is-gold { color: var(--lp-gold, #e0b65c) !important; text-shadow: 0 0 24px rgba(224,182,92,0.65); }
 
 /* Conteúdo por cima da cena */
 .page-login .wm-login-content {
@@ -29313,7 +29313,7 @@ function initLoginStage() {
   if (textEl.__wmBound) return;
   textEl.__wmBound = true;
 
-  function _kfToCss(k){ const t=[]; if(k.translateX!=null)t.push('translateX('+k.translateX+'px)'); if(k.translateY!=null)t.push('translateY('+k.translateY+'px)'); if(k.scale!=null)t.push('scale('+k.scale+')'); if(k.rotate!=null)t.push('rotate('+k.rotate+'deg)'); let css='opacity:'+(k.opacity!=null?k.opacity:1)+';'; if(t.length)css+='transform:'+t.join(' ')+';'; if(k.blur!=null)css+='filter:blur('+k.blur+'px);'; return css; }
+  function _kfToCss(k){ const t=[]; if(k.translateX!=null)t.push('translateX('+k.translateX+'px)'); if(k.translateY!=null)t.push('translateY('+k.translateY+'px)'); if(k.scale!=null)t.push('scale('+k.scale+')'); if(k.rotate!=null)t.push('rotate('+k.rotate+'deg)'); let css='opacity:'+(k.opacity!=null?k.opacity:1)+';'; if(t.length)css+='transform:'+t.join(' ')+';'; return css; }
   function _ensureKeyframes(animDef){ const name='wm-landing-anim-'+animDef.id; if(document.getElementById('kf-'+name))return name; if(!animDef.keyframes||!animDef.keyframes.length)return null; let rules=''; animDef.keyframes.forEach(k=>{const pct=Math.round((k.at!=null?k.at:0)*100); rules+=pct+'% {'+_kfToCss(k)+'}\n';}); const st=document.createElement('style'); st.id='kf-'+name; st.textContent='@keyframes '+name+' {\n'+rules+'}'; document.head.appendChild(st); return name; }
 
   // Estilos que se alternam sozinhos (animação + se a palavra de destaque é dourada)
