@@ -1889,6 +1889,13 @@ body.marking-open.marking-collapsed .editor-canvas {
   /* SEM flex. SEM padding. */
 }
 
+/* Mobile: palavras do EDITOR não capturam o gesto de rolagem — assim o
+   arraste por toque move a palavra em vez de rolar a página. Escopado ao
+   #canvas-content pra não afetar a rolagem da landing/preview. */
+#canvas-content .lyric-word {
+  touch-action: none;
+}
+
 .lyric-stanza {
   width: 100%;
   text-align: center;
@@ -7005,7 +7012,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'vertical2-27jun';
+window.__WM_BUILD = 'mobile-drag-27jun';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -18778,6 +18785,9 @@ function initEditor() {
     const canvas = document.getElementById('canvas-content');
     if (!canvas) return;
     canvas.addEventListener('mousedown', onCanvasMouseDown);
+    // Mobile: mesmo handler via toque. passive:false porque o handler dá
+    // preventDefault ao começar a arrastar uma palavra (impede scroll/zoom).
+    canvas.addEventListener('touchstart', onCanvasMouseDown, { passive: false });
     canvas.addEventListener('dblclick', onCanvasDblClick);
     // Nota: clicks em área vazia são tratados pelo onMarqueeMouseUp
     // (que desseleciona se não houve drag).
@@ -19151,7 +19161,16 @@ function initEditor() {
     marqueeState = null;
   }
 
+  // Coordenadas unificadas pra mouse E toque (mobile). No celular o arraste
+  // de palavra não funcionava: os handlers só liam ev.clientX (mouse), então
+  // o navegador rolava a página em vez de mover a palavra.
+  function _evXY(ev) {
+    const t = (ev.touches && ev.touches[0]) || (ev.changedTouches && ev.changedTouches[0]);
+    return t ? { x: t.clientX, y: t.clientY } : { x: ev.clientX, y: ev.clientY };
+  }
+
   function onCanvasMouseDown(ev) {
+    const _xy = _evXY(ev);
     let wordEl = ev.target.closest('.lyric-word');
 
     // CORREÇÃO: animações isoladas (wm-imported / máquina-escrever) chamam
@@ -19206,7 +19225,7 @@ function initEditor() {
         // container), o que jogava o fluxo no marquee e LIMPAVA a seleção.
         if (stEl) { void stEl.offsetHeight; }
         // Reposiciona pelo ponto clicado.
-        let under = document.elementFromPoint(ev.clientX, ev.clientY);
+        let under = document.elementFromPoint(_xy.x, _xy.y);
         wordEl = under && under.closest
           ? under.closest('.lyric-word') : null;
         // Se mesmo assim não achou (clique caiu entre palavras após o
@@ -19218,7 +19237,7 @@ function initEditor() {
             const r = w.getBoundingClientRect();
             const cx = r.left + r.width / 2;
             const cy = r.top + r.height / 2;
-            const d = Math.hypot(ev.clientX - cx, ev.clientY - cy);
+            const d = Math.hypot(_xy.x - cx, _xy.y - cy);
             // só considera se o clique está razoavelmente perto
             if (d < bestD && d < Math.max(r.width, r.height) * 2.5) {
               bestD = d; best = w;
@@ -19260,8 +19279,8 @@ function initEditor() {
     dragState = {
       wordId,
       wordEl,
-      mouseStartX: ev.clientX,
-      mouseStartY: ev.clientY,
+      mouseStartX: _xy.x,
+      mouseStartY: _xy.y,
       moved: false,
       shift, ctrl, wasSelected,
       isGroupDrag,
@@ -19269,13 +19288,21 @@ function initEditor() {
 
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('mouseup', onMouseUp);
+    // Mobile: mesmo arraste via toque. passive:false pra poder dar
+    // preventDefault no touchmove e impedir a página de rolar.
+    document.addEventListener('touchmove', onMouseMove, { passive: false });
+    document.addEventListener('touchend', onMouseUp);
+    document.addEventListener('touchcancel', onMouseUp);
   }
 
   function onMouseMove(ev) {
     if (!dragState) return;
+    // Mobile: trava a rolagem da página enquanto arrasta a palavra.
+    if (ev.cancelable && (ev.touches || ev.changedTouches)) ev.preventDefault();
 
-    const dx = ev.clientX - dragState.mouseStartX;
-    const dy = ev.clientY - dragState.mouseStartY;
+    const _xy = _evXY(ev);
+    const dx = _xy.x - dragState.mouseStartX;
+    const dy = _xy.y - dragState.mouseStartY;
     const dist = Math.sqrt(dx*dx + dy*dy);
 
     if (!dragState.moved && dist < DRAG_THRESHOLD_PX) return;
@@ -19395,8 +19422,9 @@ function initEditor() {
         deltaX = dragState._snappedDeltaX;
         deltaY = dragState._snappedDeltaY;
       } else {
-        const dx = ev.clientX - dragState.mouseStartX;
-        const dy = ev.clientY - dragState.mouseStartY;
+        const _xy = _evXY(ev);
+        const dx = _xy.x - dragState.mouseStartX;
+        const dy = _xy.y - dragState.mouseStartY;
         deltaX = dx / dragState.stanzaRect.width;
         deltaY = dy / dragState.stanzaRect.height;
       }
@@ -19450,6 +19478,9 @@ function initEditor() {
   function cleanupDrag() {
     document.removeEventListener('mousemove', onMouseMove);
     document.removeEventListener('mouseup', onMouseUp);
+    document.removeEventListener('touchmove', onMouseMove);
+    document.removeEventListener('touchend', onMouseUp);
+    document.removeEventListener('touchcancel', onMouseUp);
     document.body.classList.remove('is-dragging-word');
     if (dragState) {
       const justDragged = dragState._justDragged;
