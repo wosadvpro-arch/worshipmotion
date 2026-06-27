@@ -7005,7 +7005,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'free-grupo-27jun';
+window.__WM_BUILD = 'auto-espaco-27jun';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -27840,11 +27840,16 @@ function initEditor() {
             if (mode === 'estrofe' || mode === 'todas') {
               // Aplicação ESCOPADA por estrofe (não substitui projeto)
               _applyTemplateToStanzas(tpl, mode);
+              // Já nasce espaçado (evita palavras "grudadas" pelo glow)
+              _autoEspacarPalavras(mode === 'estrofe' ? [engine.currentStanzaIndex] : null);
             } else {
               // Modo legacy "exemplo": substitui projeto inteiro
               const projeto = _buildProjectFromTemplate(tpl, mode);
               applyProjectToEditor(projeto);
+              _autoEspacarPalavras(null);
             }
+            // Re-renderiza pra mostrar o espaçamento ajustado
+            try { engine.renderStanza(engine.currentStanzaIndex); } catch (e) {}
             window.__currentProjectId = null;
             markDirty();
             closeModal();
@@ -27998,6 +28003,59 @@ function initEditor() {
       grupos[n - 1].push(todasPalavras[idx++]);
     }
     return grupos.filter(g => g.length > 0);
+  }
+
+  /**
+   * AUTO-ESPAÇAMENTO de palavras posicionadas na MESMA linha.
+   * Os templates às vezes posicionam as palavras de uma linha coladas demais
+   * (gap de poucos px). Como o glow tem raio próprio, esse buraco minúsculo
+   * fica coberto pelo brilho e as palavras parecem "grudadas" no vídeo. Aqui,
+   * pra cada linha com 2+ palavras posicionadas, recalculamos o X centralizando
+   * a linha (mantendo o Y e o centro horizontal médio que o template definiu)
+   * com um gap confortável (0.32em) — folga suficiente pra o glow não fundir as
+   * palavras. Idêntico ao reespaçamento manual já validado. Mede com canvas
+   * (== DOM), então preview e export ficam iguais.
+   * @param {number[]|null} stanzaIdxList - índices a processar (null = todas)
+   */
+  function _autoEspacarPalavras(stanzaIdxList) {
+    try {
+      if (!engine || !engine.parsed || !engine.wordOverrides) return;
+      const W = 1280, H = 720;
+      const baseFS = (engine.style.fontSize || 64) * (H / 600);
+      const lsEm = engine.style.letterSpacing || 0;
+      const GAP = 0.32 * baseFS; // folga confortável entre palavras (px)
+      const mctx = document.createElement('canvas').getContext('2d');
+      const stanzas = engine.parsed.stanzas || [];
+      const idxs = Array.isArray(stanzaIdxList)
+        ? stanzaIdxList
+        : stanzas.map((_, i) => i);
+      idxs.forEach(si => {
+        const st = stanzas[si];
+        if (!st || !st.lines) return;
+        st.lines.forEach(ln => {
+          const ws = (ln.words || []).filter(w =>
+            engine.wordOverrides[w.id] && engine.wordOverrides[w.id].position);
+          if (ws.length < 2) return;
+          const meta = ws.map(w => {
+            const wo = engine.wordOverrides[w.id];
+            const sc = (wo.style && wo.style.fontSizeScale) || 1;
+            const ff = (wo.style && wo.style.fontFamily) || engine.style.fontFamily;
+            const fw = (wo.style && wo.style.fontWeight) || engine.style.fontWeight || 400;
+            const fs = baseFS * sc;
+            const txt = (engine.style.textTransform === 'uppercase')
+              ? w.text.toUpperCase() : w.text;
+            mctx.font = `${fw} ${fs}px "${ff}"`;
+            try { mctx.letterSpacing = `${lsEm * fs}px`; } catch (e) {}
+            return { width: mctx.measureText(txt).width, pos: wo.position };
+          });
+          meta.sort((a, b) => a.pos.x - b.pos.x);
+          const totalW = meta.reduce((s, m) => s + m.width, 0) + GAP * (meta.length - 1);
+          const meanCx = (meta.reduce((s, m) => s + m.pos.x, 0) / meta.length) * W;
+          let cur = meanCx - totalW / 2;
+          meta.forEach(m => { m.pos.x = (cur + m.width / 2) / W; cur += m.width + GAP; });
+        });
+      });
+    } catch (e) { console.warn('_autoEspacarPalavras:', e); }
   }
 
   function _applyTemplateToStanzas(tpl, escopo) {
