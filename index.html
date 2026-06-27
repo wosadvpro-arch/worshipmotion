@@ -7005,7 +7005,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'ls-fix-27jun';
+window.__WM_BUILD = 'free-grupo-27jun';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -14215,76 +14215,98 @@ const CanvasRenderer = {
       // palavras estariam no auto-layout (centralizado). Depois, palavras
       // COM position usam ela; palavras SEM usam o auto-layout calculado.
 
-      slide.stanza.lines.forEach((line, lineIdx) => {
-        // Primeiro: calcula posições auto-layout pra TODAS as palavras da linha
-        const wordsMeta = (line.words || []).map(w => {
-          const text = this._wordText(w, style.textTransform, wordOverrides);
-          const font = resolveWordFont(w);
-          ctx.font = `${font.weight} ${font.size}px "${font.family}", sans-serif`;
-          // Largura: prioriza a largura REAL do DOM do editor (mapa
-          // window.__WM_WORD_WIDTHS, fração da largura do canvas). O canvas
-          // mede levemente diferente do DOM; em palavras muito ampliadas a
-          // diferença vira vários px e a palavra invade a vizinha. Usar a
-          // largura do editor garante export == preview.
-          let width;
-          const fracDom = (window.__WM_WORD_WIDTHS && w.id) ? window.__WM_WORD_WIDTHS[w.id] : null;
-          if (typeof fracDom === 'number' && fracDom > 0) {
-            width = fracDom * W;
-          } else {
-            width = ctx.measureText(text).width;
+      // Replica o layout do PREVIEW (renderStanza, modo free):
+      //  - palavra COM position → fica na própria posição (o ponto É o centro).
+      //  - palavras SEM position → agrupadas em RUNS contíguos; cada run é
+      //    CENTRALIZADO na horizontal (gap 0.4em) num Y "âncora" perto da
+      //    palavra posicionada vizinha.
+      // ANTES o export jogava TODA palavra sem position pro CENTRO do slide
+      // (0.5,0.5) → várias palavras empilhavam umas sobre as outras
+      // ("grudadas/sobrepostas") no vídeo, enquanto no preview apareciam
+      // espaçadas. Esta era a causa real do bug. Agora export == preview.
+      const _flat = [];
+      slide.stanza.lines.forEach(line => (line.words || []).forEach(w => _flat.push(w)));
+
+      // Mede largura/fonte de cada palavra (uma vez)
+      const _metaById = {};
+      _flat.forEach(w => {
+        const font = resolveWordFont(w);
+        ctx.font = `${font.weight} ${font.size}px "${font.family}", sans-serif`;
+        const text = this._wordText(w, style.textTransform, wordOverrides);
+        let width;
+        const fracDom = (window.__WM_WORD_WIDTHS && w.id) ? window.__WM_WORD_WIDTHS[w.id] : null;
+        if (typeof fracDom === 'number' && fracDom > 0) width = fracDom * W;
+        else width = ctx.measureText(text).width;
+        _metaById[w.id] = { word: w, text, width, font };
+      });
+
+      // Resolve cx/freeY de cada palavra
+      const _posById = {};
+      // 1) palavras posicionadas
+      _flat.forEach(w => {
+        const wov = (w.id && wordOverrides[w.id]) || {};
+        if (wov.position) _posById[w.id] = { cx: wov.position.x * W, freeY: wov.position.y * H };
+      });
+      // 2) runs contíguos de palavras SEM position (idêntico ao renderStanza)
+      const _gap = 0.4 * baseFontSize; // gap:0.4em do container flex do preview
+      let _i = 0;
+      while (_i < _flat.length) {
+        if (((_flat[_i].id && wordOverrides[_flat[_i].id]) || {}).position) { _i++; continue; }
+        const _start = _i;
+        const _grupo = [];
+        while (_i < _flat.length && !(((_flat[_i].id && wordOverrides[_flat[_i].id]) || {}).position)) {
+          _grupo.push(_flat[_i]); _i++;
+        }
+        // Y âncora: palavra posicionada mais próxima ANTES; senão DEPOIS; senão 0.5
+        let _yA = null, _yPos = null, _yScale = 1;
+        for (let j = _start - 1; j >= 0; j--) {
+          const wov = wordOverrides[_flat[j].id];
+          if (wov && wov.position) { _yA = wov.position.y; _yPos = 'antes'; _yScale = (wov.style && wov.style.fontSizeScale) || 1; break; }
+        }
+        if (_yA === null) {
+          for (let j = _i; j < _flat.length; j++) {
+            const wov = wordOverrides[_flat[j].id];
+            if (wov && wov.position) { _yA = wov.position.y; _yPos = 'depois'; _yScale = (wov.style && wov.style.fontSizeScale) || 1; break; }
           }
-          return { word: w, text, width, font };
+        }
+        let _yG;
+        if (_yA === null) _yG = 0.5;
+        else {
+          const _off = Math.min(0.22, 0.10 + 0.025 * _yScale);
+          _yG = (_yPos === 'antes') ? Math.min(0.92, _yA + _off) : Math.max(0.08, _yA - _off);
+        }
+        // Centraliza o grupo na horizontal (W/2) com gap entre as palavras
+        const _ws = _grupo.map(w => _metaById[w.id].width);
+        const _tot = _ws.reduce((a, v) => a + v, 0) + _gap * Math.max(0, _grupo.length - 1);
+        let _cur = W / 2 - _tot / 2;
+        _grupo.forEach((w, gi) => {
+          _posById[w.id] = { cx: _cur + _ws[gi] / 2, freeY: _yG * H };
+          _cur += _ws[gi] + _gap;
         });
+      }
 
-        ctx.font = `${style.fontWeight || 400} ${baseFontSize}px "${style.fontFamily || 'Inter'}", sans-serif`;
-        const spaceW = ctx.measureText(' ').width;
-
-        const totalLineW = wordsMeta.reduce((a, m) => a + m.width, 0) +
-                           spaceW * Math.max(0, wordsMeta.length - 1);
-
-        const lineMaxSize = wordsMeta.reduce((max, m) => Math.max(max, m.font.size), baseFontSize);
+      // Monta a estrutura de linhas (ordem do parsed, p/ stagger das animações)
+      slide.stanza.lines.forEach(line => {
+        const lineMaxSize = (line.words || []).reduce(
+          (mx, w) => Math.max(mx, _metaById[w.id].font.size), baseFontSize);
         const thisLineH = lineMaxSize * lineHeightCss;
         if (thisLineH > maxLineH) maxLineH = thisLineH;
-
-        // Y vertical auto: centro da linha
-        // Distribui verticalmente com GAP entre linhas (semântica nova).
-        const totalLines = slide.stanza.lines.length;
-        const totalH = totalLines * thisLineH + Math.max(0, totalLines - 1) * interLineGap;
-        const autoStartY = (H - totalH) / 2;
-        const autoLineCenterY = autoStartY + lineIdx * (thisLineH + interLineGap) + thisLineH / 2;
-
-        const startX = (W - totalLineW) / 2;
-        const words = [];
-        let cursorX = startX;
-
-        wordsMeta.forEach(m => {
-          const wo = (m.word.id && wordOverrides[m.word.id]) || {};
-          let cx, freeY;
-
-          if (wo.position) {
-            cx = wo.position.x * W;
-            freeY = wo.position.y * H;
-          } else {
-            cx = 0.5 * W;
-            freeY = 0.5 * H;
-          }
-
-          words.push({
-            id: m.word.id,
+        const words = (line.words || []).map(w => {
+          const m = _metaById[w.id];
+          const pos = _posById[w.id] || { cx: 0.5 * W, freeY: 0.5 * H };
+          return {
+            id: w.id,
             text: m.text,
-            emphasized: !!m.word.emphasized,
+            emphasized: !!w.emphasized,
             width: m.width,
-            cx,
-            freeY,
+            cx: pos.cx,
+            freeY: pos.freeY,
             globalIdx: globalWordIdx++,
             font: m.font,
             isFree: true,
-          });
-
-          cursorX += m.width + spaceW;
+          };
         });
-
-        lines.push({ words, lineH: thisLineH, cy: autoLineCenterY });
+        lines.push({ words, lineH: thisLineH, cy: H / 2 });
       });
     } else {
       // ============ MODO FLOW: auto-layout puro ============
