@@ -2288,14 +2288,16 @@ body.timeline-collapsed .timeline-collapse-btn {
   #btn-save-template, #btn-templates, .save-indicator { display: none !important; }
 
   .editor-canvas-wrap { order: 1; flex: 1 1 auto; min-height: 0; padding: 10px; }
-  /* no mobile o canvas se ajusta pela LARGURA (altura deriva da proporção),
-     pra não estourar a tela nem distorcer o 16:9 */
-  .editor-canvas { width: 100%; height: auto; max-width: 100%; max-height: 100%; }
+  /* no mobile o canvas se ajusta pela LARGURA e mantém SEMPRE o 16:9.
+     max-height:none + flex-shrink:0 impedem que o painel, ao encolher a
+     área, esmague o canvas verticalmente (o que quebrava a proporção e
+     amontoava as letras). Se faltar espaço, recorta topo/base — nunca distorce. */
+  .editor-canvas { width: 100%; height: auto; max-width: 100%; max-height: none; flex-shrink: 0; }
   /* quando um painel sobe, levanta o canvas pra ele ficar VISÍVEL acima do
      painel (senão a animação aplicada fica escondida atrás dele) */
   .editor-canvas-wrap { transition: padding-bottom .28s ease; }
   body.wm-sheet-left .editor-canvas-wrap,
-  body.wm-sheet-right .editor-canvas-wrap { padding-bottom: 50vh; }
+  body.wm-sheet-right .editor-canvas-wrap { padding-bottom: 40vh; }
 
   /* régua vira barra inferior horizontal */
   .editor-rail {
