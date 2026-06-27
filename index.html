@@ -10709,9 +10709,10 @@ const _registeredFonts = new Map();
  */
 async function loadAllCustomFonts() {
   if (!window.WM_ASSETS) return [];
+  const results = [];
+  // 1. Fontes locais (IndexedDB)
   try {
     const assets = await window.WM_ASSETS.list('font');
-    const results = [];
     for (const asset of assets) {
       try {
         await registerFontFromAsset(asset);
@@ -10720,11 +10721,36 @@ async function loadAllCustomFonts() {
         console.warn(`Falha ao registrar fonte "${asset.name}":`, e);
       }
     }
-    return results;
   } catch (e) {
-    console.warn('loadAllCustomFonts:', e);
-    return [];
+    console.warn('loadAllCustomFonts (local):', e);
   }
+  // 2. Fontes da NUVEM que ainda não estão neste aparelho: baixa, cacheia
+  //    localmente e registra. É assim que uma fonte subida no PC passa a
+  //    aparecer no celular. À prova de falha: qualquer erro mantém só as locais.
+  try {
+    if (window.WM_FONTS_CLOUD) {
+      const jaTem = new Set(Array.from(_registeredFonts.values()).map(i => i.family));
+      const remotas = await window.WM_FONTS_CLOUD.list();
+      for (const r of remotas) {
+        if (jaTem.has(r.family)) continue;
+        const blob = await window.WM_FONTS_CLOUD.download(r.path);
+        if (!blob) continue;
+        const id = window.WM_ASSETS.generateId('font');
+        const asset = { id, type: 'font', name: r.name, blob, meta: { mimeType: blob.type, size: blob.size, fromCloud: true } };
+        try { await window.WM_ASSETS.save(asset); } catch (e) {}
+        try {
+          await registerFontFromAsset(asset);
+          results.push(asset);
+          jaTem.add(r.family);
+        } catch (e) {
+          console.warn(`Falha ao registrar fonte da nuvem "${r.name}":`, e);
+        }
+      }
+    }
+  } catch (e) {
+    console.warn('loadAllCustomFonts (nuvem):', e);
+  }
+  return results;
 }
 
 /**
@@ -10798,6 +10824,8 @@ async function uploadFont(file) {
   await window.WM_ASSETS.save(asset);
   // Registra no documento
   const info = await registerFontFromAsset(asset);
+  // Sobe pra nuvem (em 2º plano) pra a fonte seguir o usuário entre aparelhos.
+  if (window.WM_FONTS_CLOUD) { window.WM_FONTS_CLOUD.upload(file.name, file).catch(() => {}); }
   return { ...info, ...asset };
 }
 
@@ -10810,6 +10838,10 @@ async function deleteFontAsset(assetId) {
   if (info && info.fontFace) {
     try { document.fonts.delete(info.fontFace); } catch (e) {}
     _registeredFonts.delete(assetId);
+  }
+  // Remove da nuvem também (best-effort) pra a fonte sumir de todos os aparelhos.
+  if (info && info.name && window.WM_FONTS_CLOUD) {
+    try { window.WM_FONTS_CLOUD.remove(info.name); } catch (e) {}
   }
   return await window.WM_ASSETS.delete(assetId);
 }
@@ -10854,6 +10886,75 @@ window.WM_CUSTOM_FONTS = {
 };
 
 })();
+
+
+/* === Fonts Cloud (Supabase Storage) === */
+/* ============================================================
+   FONTS CLOUD (Supabase Storage)
+   ============================================================
+   Sincroniza as fontes que o usuário SOBE (.ttf/.otf/...) entre
+   dispositivos. Bucket 'project-fonts' (privado), organizado por
+   userId/nomeDoArquivo. Disponível pra TODOS (arquivo é pequeno).
+   100% additivo e à prova de falha: se o bucket/policies não
+   existirem, tudo continua só local (comportamento atual).
+   ============================================================ */
+const WM_FONTS_BUCKET = 'project-fonts';
+window.WM_FONTS_CLOUD = (function () {
+  function sb() { return window.wmSupabase || null; }
+
+  async function _userId() {
+    const c = sb(); if (!c) return null;
+    try { const { data } = await c.auth.getSession(); return (data && data.session && data.session.user && data.session.user.id) || null; }
+    catch (e) { return null; }
+  }
+
+  function _ext(name) { const m = (name || '').match(/\.([a-z0-9]+)$/i); return m ? m[1].toLowerCase() : 'ttf'; }
+  function _family(name) { return (name || '').replace(/\.[^.]+$/, ''); }
+
+  // Sobe o arquivo da fonte; path = userId/nomeDoArquivo. Retorna o path ou null.
+  async function upload(name, blob) {
+    const c = sb(); if (!c) return null;
+    const uid = await _userId(); if (!uid) return null;
+    const path = uid + '/' + name; // mantém o nome original (= família + extensão)
+    try {
+      const { error } = await c.storage.from(WM_FONTS_BUCKET).upload(path, blob, {
+        upsert: true, contentType: blob.type || 'font/' + _ext(name),
+      });
+      if (error) { console.warn('[fonte nuvem] upload falhou:', error.message); return null; }
+      return path;
+    } catch (e) { console.warn('[fonte nuvem] upload erro:', e); return null; }
+  }
+
+  // Lista as fontes do usuário na nuvem -> [{ name, family, path }]
+  async function list() {
+    const c = sb(); if (!c) return [];
+    const uid = await _userId(); if (!uid) return [];
+    try {
+      const { data, error } = await c.storage.from(WM_FONTS_BUCKET).list(uid, { limit: 200 });
+      if (error) { console.warn('[fonte nuvem] list falhou:', error.message); return []; }
+      return (data || [])
+        .filter(f => f.name && !f.name.startsWith('.'))
+        .map(f => ({ name: f.name, family: _family(f.name), path: uid + '/' + f.name }));
+    } catch (e) { console.warn('[fonte nuvem] list erro:', e); return []; }
+  }
+
+  async function download(path) {
+    const c = sb(); if (!c || !path) return null;
+    try {
+      const { data, error } = await c.storage.from(WM_FONTS_BUCKET).download(path);
+      if (error) { console.warn('[fonte nuvem] download falhou:', error.message); return null; }
+      return data || null;
+    } catch (e) { console.warn('[fonte nuvem] download erro:', e); return null; }
+  }
+
+  async function remove(name) {
+    const c = sb(); if (!c) return; const uid = await _userId(); if (!uid) return;
+    try { await c.storage.from(WM_FONTS_BUCKET).remove([uid + '/' + name]); } catch (e) {}
+  }
+
+  return { upload, list, download, remove };
+})();
+
 
 
 /* === Custom Backgrounds Manager === */
@@ -26736,14 +26837,14 @@ function initEditor() {
 
     const overlay = document.createElement('div');
     overlay.id = 'wm-planos-overlay';
-    overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);padding:20px;overflow-y:auto;';
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.75);display:flex;backdrop-filter:blur(4px);padding:20px;overflow-y:auto;';
 
     const card = document.createElement('div');
-    card.style.cssText = 'background:#15151b;border:1px solid #2a2a35;border-radius:16px;padding:28px;max-width:760px;width:100%;color:#f4f4f7;font-family:Inter,sans-serif;box-shadow:0 24px 70px rgba(0,0,0,0.6);';
+    card.style.cssText = 'background:#15151b;border:1px solid #2a2a35;border-radius:16px;padding:28px;max-width:760px;width:100%;margin:auto;color:#f4f4f7;font-family:Inter,sans-serif;box-shadow:0 24px 70px rgba(0,0,0,0.6);';
 
     card.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">'
       + '  <h2 style="margin:0;font-size:22px;font-weight:700;">Escolha seu plano</h2>'
-      + '  <button id="wm-planos-close" style="background:none;border:none;color:#a0a0aa;font-size:26px;cursor:pointer;line-height:1;">&times;</button>'
+      + '  <button id="wm-planos-close" style="background:none;border:none;color:#a0a0aa;font-size:32px;cursor:pointer;line-height:1;padding:2px 12px;margin:-6px -10px 0 0;">&times;</button>'
       + '</div>'
       + '<p style="margin:0 0 22px;color:#9aa;font-size:14px;">Crie mais, sem marca d\'água e em alta qualidade. Cancele quando quiser.</p>'
       + '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;">'
