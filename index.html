@@ -10948,7 +10948,7 @@ window.WM_FONTS_CLOUD = (function () {
       const { data, error } = await c.storage.from(WM_FONTS_BUCKET).list(uid, { limit: 200 });
       if (error) { console.warn('[fonte nuvem] list falhou:', error.message); return []; }
       return (data || [])
-        .filter(f => f.name && !f.name.startsWith('.'))
+        .filter(f => f.name && /\.(ttf|otf|woff2?|ttc)$/i.test(f.name))
         .map(f => ({ name: f.name, family: _family(f.name), path: uid + '/' + f.name }));
     } catch (e) { console.warn('[fonte nuvem] list erro:', e); return []; }
   }
@@ -11280,9 +11280,11 @@ async function _ensureLocalFontRegistered(family) {
   // IMPORTANTE: registra com o nome ORIGINAL que o template pede,
   // pra o CSS bater. Mesmo que o arquivo seja de outra variante.
   let registradas = 0;
+  let primeiroBlob = null;
   for (const fontData of candidatos) {
     try {
       const blob = await fontData.blob();
+      if (!primeiroBlob) primeiroBlob = blob;
       const buffer = await blob.arrayBuffer();
       const face = new FontFace(family, buffer);
       await face.load();
@@ -11290,6 +11292,16 @@ async function _ensureLocalFontRegistered(family) {
       registradas++;
     } catch (e) {
       console.warn('Falha ao registrar', family, ':', e.message);
+    }
+  }
+  // Sincroniza a fonte do SISTEMA (instalada no PC) pra nuvem — 1x por
+  // sessão, idempotente (upsert por família), à prova de falha. Isso faz
+  // a fonte seguir o usuário pro CELULAR, onde ela não está instalada.
+  if (registradas > 0 && primeiroBlob && primeiroBlob.size <= 5 * 1024 * 1024 && window.WM_FONTS_CLOUD) {
+    window.__pcFontsSynced = window.__pcFontsSynced || new Set();
+    if (!window.__pcFontsSynced.has(family)) {
+      window.__pcFontsSynced.add(family);
+      try { window.WM_FONTS_CLOUD.upload(family + '.ttf', primeiroBlob); } catch (e) {}
     }
   }
   return registradas > 0;
@@ -23650,6 +23662,16 @@ function initEditor() {
     $$('.font-option').forEach(o => {
       o.classList.toggle('selected', o.dataset.font === family);
     });
+
+    // Garante que a fonte escolhida — INCLUSIVE as "do seu PC" (Local Font
+    // Access) — seja carregada via FontFace E sincronizada pra nuvem. É isso
+    // que faz uma fonte instalada no computador seguir o usuário pro celular
+    // (lá ela não existe instalada, então vem da nuvem). Fire-and-forget:
+    // se a fonte já está registrada (ex: fontes do app), retorna na hora sem
+    // re-subir. Não bloqueia a aplicação visual abaixo.
+    if (typeof window._ensureLocalFontRegistered === 'function') {
+      try { window._ensureLocalFontRegistered(family); } catch (e) {}
+    }
 
     // Se há palavra(s) selecionada(s), aplica como override SÓ nelas
     // Senão, aplica como estilo global (todas as estrofes)
