@@ -14252,39 +14252,20 @@ const CanvasRenderer = {
         const autoStartY = (H - totalH) / 2;
         const autoLineCenterY = autoStartY + lineIdx * (thisLineH + interLineGap) + thisLineH / 2;
 
-        // Palavras SEM position ficam em FLUXO (auto-layout centralizado),
-        // exatamente como no preview; as COM position saem do fluxo
-        // (absolute) e usam a própria posição. ANTES o código mandava TODA
-        // palavra sem position pro CENTRO do slide (0.5,0.5), empilhando
-        // umas sobre as outras → no vídeo elas saíam "grudadas/sobrepostas".
-        // Acontecia muito ao trocar a fonte de só ALGUMAS palavras da linha:
-        // as trocadas viram "free" com position; as demais (sem position)
-        // colavam no centro. Agora elas fluem normalmente.
-        const flowMetas = wordsMeta.filter(m => {
-          const wo = (m.word.id && wordOverrides[m.word.id]) || {};
-          return !wo.position;
-        });
-        const totalFlowW = flowMetas.reduce((a, m) => a + m.width, 0) +
-                           spaceW * Math.max(0, flowMetas.length - 1);
+        const startX = (W - totalLineW) / 2;
         const words = [];
-        let cursorX = (W - totalFlowW) / 2;
+        let cursorX = startX;
 
         wordsMeta.forEach(m => {
           const wo = (m.word.id && wordOverrides[m.word.id]) || {};
           let cx, freeY;
 
           if (wo.position) {
-            // position.x/y é o CENTRO da palavra (consistente com o
-            // preview, que usa translate(-50%,-50%)).
             cx = wo.position.x * W;
             freeY = wo.position.y * H;
           } else {
-            // Palavra em fluxo: centro = cursor + metade da largura; Y = centro
-            // da linha. cursorX só avança pras palavras em fluxo (as
-            // posicionadas saem do fluxo, igual absolute no preview).
-            cx = cursorX + m.width / 2;
-            freeY = autoLineCenterY;
-            cursorX += m.width + spaceW;
+            cx = 0.5 * W;
+            freeY = 0.5 * H;
           }
 
           words.push({
@@ -14298,6 +14279,8 @@ const CanvasRenderer = {
             font: m.font,
             isFree: true,
           });
+
+          cursorX += m.width + spaceW;
         });
 
         lines.push({ words, lineH: thisLineH, cy: autoLineCenterY });
@@ -15003,7 +14986,19 @@ const CanvasRenderer = {
     // em cx (equivale ao translate(-50%,-50%) do preview).
     ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
-    const _wordTotalW = charWidths.reduce((a, w) => a + w, 0);
+    // letterSpacing efetivo (em → px): override da palavra tem prioridade,
+    // senão o global da estrofe. O preview (DOM) aplica letter-spacing, mas
+    // o desenho char-by-char NÃO aplicava → cada palavra saía mais larga que
+    // no preview. Com palavras posicionadas bem juntas, essa folga a mais
+    // fazia elas encostarem ("grudadas/sem espaço") no export, mesmo estando
+    // certas no preview. Aplicar o mesmo espaçamento iguala a largura.
+    const _lsEm = (wordStyleOverride && typeof wordStyleOverride.letterSpacing === 'number')
+      ? wordStyleOverride.letterSpacing
+      : ((style && typeof style.letterSpacing === 'number') ? style.letterSpacing : 0);
+    const _lsPx = _lsEm * ((word.font && word.font.size) || (style && style.fontSize) || 64);
+    // Largura da palavra = soma dos chars + espaçamento ENTRE eles (n-1).
+    const _wordTotalW = charWidths.reduce((a, w) => a + w, 0)
+      + _lsPx * Math.max(0, charWidths.length - 1);
 
     // Cor do texto (sem mix de emphasis no char-by-char por simplicidade)
     const baseColor = wordStyleOverride?.color || style?.color || '#ffffff';
@@ -15046,7 +15041,7 @@ const CanvasRenderer = {
 
       // Skip se invisível
       if (charState.opacity < 0.01) {
-        xOffset += charWidth;
+        xOffset += charWidth + _lsPx;
         return;
       }
 
@@ -15091,7 +15086,7 @@ const CanvasRenderer = {
 
       ctx.restore();
 
-      xOffset += charWidth;
+      xOffset += charWidth + _lsPx;
     });
 
     ctx.restore();
@@ -15121,8 +15116,17 @@ const CanvasRenderer = {
       ctx.font = `${word.font.weight} ${word.font.size}px "${word.font.family}", sans-serif`;
     }
 
-    // Aplica opacity
-    ctx.globalAlpha = Math.max(0, Math.min(1, state.opacity));
+    // letterSpacing por palavra (em → px) — espelha o preview (DOM). Sem isso
+    // a palavra inteira saía mais larga no export e podia encostar nas
+    // vizinhas quando posicionada justa ("grudadas"). textAlign=center já
+    // centraliza contando o espaçamento.
+    try {
+      const _lsEm = (wordStyleOverride && typeof wordStyleOverride.letterSpacing === 'number')
+        ? wordStyleOverride.letterSpacing
+        : ((style && typeof style.letterSpacing === 'number') ? style.letterSpacing : 0);
+      const _fs = (word.font && word.font.size) || (style && style.fontSize) || 64;
+      ctx.letterSpacing = `${_lsEm * _fs}px`;
+    } catch (e) { /* navegador sem suporte: ignora */ }
 
     // === TRANSFORM PIPELINE ===
     const tx = cx + state.translateX;
