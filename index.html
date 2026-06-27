@@ -7005,7 +7005,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'auto-espaco-27jun';
+window.__WM_BUILD = 'fundo-espaco-27jun';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -14125,8 +14125,11 @@ const CanvasRenderer = {
       return;
     }
 
-    // 2. Gradiente colorido com opacity 0.4 por cima
-    ctx.globalAlpha = 0.4;
+    // 2. Gradiente colorido por cima — opacity 1 (IGUAL ao preview, que usa
+    //    .canvas-bg com o gradiente a 100%). Antes era 0.4, o que "lavava" as
+    //    cores sobre a base escura e deixava o vídeo bem mais escuro que o
+    //    preview. Com 1.0 o gradiente é opaco e cobre a base — export == preview.
+    ctx.globalAlpha = 1;
     const angle = ((cfg.angle ?? 135) * Math.PI) / 180;
     const x = Math.cos(angle);
     const y = Math.sin(angle);
