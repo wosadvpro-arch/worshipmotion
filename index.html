@@ -21975,6 +21975,9 @@ function initEditor() {
     if (bAnim) bAnim.addEventListener('click', () => {
       const tab = document.querySelector('.panel-tab[data-panel="animations"]');
       if (tab) tab.click();
+      // Mobile: abre o painel esquerdo como bottom-sheet (no desktop não tem efeito).
+      document.body.classList.add('wm-sheet-left');
+      document.body.classList.remove('wm-sheet-right');
       // Garante que o grid reflita o contexto atual (palavra vs estrofe).
       requestAnimationFrame(() => {
         if (typeof updateAnimContextHeader === 'function') updateAnimContextHeader();
@@ -26868,11 +26871,15 @@ function initEditor() {
   }
 
   // Backdrop dos bottom-sheets do editor mobile (fecha o painel ao tocar fora).
+  // IMPORTANTE: tem que ser injetado DENTRO do .editor-shell — esse elemento
+  // cria um stacking context (position:relative; z-index:1), então um backdrop
+  // no <body> ficaria ACIMA dos painéis (presos nesse contexto) e engoliria
+  // todos os toques. Dentro do shell, o z-index 199 fica abaixo do 200 do painel.
   if (!document.querySelector('.wm-sheet-backdrop')) {
     const _bd = document.createElement('div');
     _bd.className = 'wm-sheet-backdrop';
     _bd.addEventListener('click', () => document.body.classList.remove('wm-sheet-left', 'wm-sheet-right'));
-    document.body.appendChild(_bd);
+    (document.querySelector('.editor-shell') || document.body).appendChild(_bd);
   }
   $$('.rail-btn').forEach((btn, i) => {
     btn.addEventListener('click', () => {
