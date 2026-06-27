@@ -7005,7 +7005,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'fundo-espaco-27jun';
+window.__WM_BUILD = 'vertical-27jun';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -15002,6 +15002,19 @@ const CanvasRenderer = {
     const chars = Array.from(text);
     const charWidths = chars.map(ch => ctx.measureText(ch).width);
 
+    // Ancoragem vertical igual ao DOM (mesma lógica do _drawWord): baseline
+    // 'alphabetic' deslocada (ascent-descent)/2 — fontes de pincel deixam de
+    // subir/invadir a linha de cima. Fallback 'middle' sem fontBoundingBox.
+    let _vOff = 0, _useAlpha = false;
+    try {
+      const _mm = ctx.measureText(text || 'M');
+      if (typeof _mm.fontBoundingBoxAscent === 'number'
+          && typeof _mm.fontBoundingBoxDescent === 'number') {
+        _vOff = (_mm.fontBoundingBoxAscent - _mm.fontBoundingBoxDescent) / 2;
+        _useAlpha = true;
+      }
+    } catch (e) { _useAlpha = false; }
+
     // CAUSA RAIZ (char-by-char saía deslocado no export): cx é o
     // CENTRO da palavra (igual translate(-50%) do preview), mas o
     // código somava xOffset a partir de cx → desenhava a palavra do
@@ -15011,7 +15024,7 @@ const CanvasRenderer = {
     // xOffset começa em -larguraTotal/2 pra a palavra ficar CENTRADA
     // em cx (equivale ao translate(-50%,-50%) do preview).
     ctx.textAlign = 'left';
-    ctx.textBaseline = 'middle';
+    ctx.textBaseline = _useAlpha ? 'alphabetic' : 'middle';
     // letterSpacing efetivo (em → px): override da palavra tem prioridade,
     // senão o global da estrofe. O preview (DOM) aplica letter-spacing, mas
     // o desenho char-by-char NÃO aplicava → cada palavra saía mais larga que
@@ -15092,6 +15105,9 @@ const CanvasRenderer = {
       const sy = charState.scaleY !== 1 ? charState.scaleY : (charState.scale || 1);
       if (sx !== 1 || sy !== 1) ctx.scale(sx, sy);
 
+      // Centraliza a CAIXA do char no centro (igual DOM) — depois do scale
+      if (_useAlpha && _vOff) ctx.translate(0, _vOff);
+
       // Blur
       if (charState.blur > 0) {
         try { ctx.filter = `blur(${charState.blur}px)`; } catch (e) {}
@@ -15154,6 +15170,24 @@ const CanvasRenderer = {
       ctx.letterSpacing = `${_lsEm * _fs}px`;
     } catch (e) { /* navegador sem suporte: ignora */ }
 
+    // === ANCORAGEM VERTICAL IGUAL AO DOM ===
+    // O canvas 'middle' apoia-se nas métricas da fonte; em fontes de pincel
+    // (ascent >> descent) isso joga a palavra pra CIMA, enquanto o preview
+    // (DOM, line-height:1) centraliza pela CAIXA da linha. Resultado: no vídeo
+    // a palavra de pincel subia e invadia a linha de cima. Fix: textBaseline
+    // 'alphabetic' + deslocar a baseline em (ascent-descent)/2 — replica
+    // EXATAMENTE o DOM (verificado por sobreposição pixel-a-pixel). Fallback
+    // pra 'middle' se o navegador não expõe fontBoundingBox.
+    let _vOff = 0, _useAlpha = false;
+    try {
+      const _mm = ctx.measureText(word.text || 'M');
+      if (typeof _mm.fontBoundingBoxAscent === 'number'
+          && typeof _mm.fontBoundingBoxDescent === 'number') {
+        _vOff = (_mm.fontBoundingBoxAscent - _mm.fontBoundingBoxDescent) / 2;
+        _useAlpha = true;
+      }
+    } catch (e) { _useAlpha = false; }
+
     // === TRANSFORM PIPELINE ===
     const tx = cx + state.translateX;
     const ty = cy + state.translateY;
@@ -15170,7 +15204,7 @@ const CanvasRenderer = {
     // só o alinhamento do texto no canvas. center+middle = equivale ao
     // translate(-50%,-50%) do preview. Agora export == editor.
     ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
+    ctx.textBaseline = _useAlpha ? 'alphabetic' : 'middle';
 
     if (state.rotate) ctx.rotate((state.rotate * Math.PI) / 180);
 
@@ -15183,6 +15217,10 @@ const CanvasRenderer = {
       const skewYRad = (state.skewY * Math.PI) / 180;
       ctx.transform(1, Math.tan(skewYRad), Math.tan(skewXRad), 1, 0, 0);
     }
+
+    // Desloca a baseline pra centralizar a CAIXA da palavra no centro (igual
+    // ao DOM). Depois das transformações geométricas, então escala junto.
+    if (_useAlpha && _vOff) ctx.translate(0, _vOff);
 
     if (state.blur > 0) {
       try { ctx.filter = `blur(${state.blur}px)`; } catch (e) { /* ignore */ }
