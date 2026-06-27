@@ -1889,10 +1889,11 @@ body.marking-open.marking-collapsed .editor-canvas {
   /* SEM flex. SEM padding. */
 }
 
-/* Mobile: palavras do EDITOR não capturam o gesto de rolagem — assim o
-   arraste por toque move a palavra em vez de rolar a página. Escopado ao
-   #canvas-content pra não afetar a rolagem da landing/preview. */
-#canvas-content .lyric-word {
+/* Mobile: a CANVAS inteira do editor segura o gesto de toque — assim, ao
+   arrastar uma palavra, o navegador não "rouba" o gesto pra rolar (o que
+   cortava o arraste no meio, travando). A rolagem da página continua pelas
+   áreas fora da canvas. Escopado ao editor pra não afetar a landing/preview. */
+#canvas-content {
   touch-action: none;
 }
 
@@ -5909,6 +5910,9 @@ body.is-dragging-word .lyric-word { cursor: grabbing !important; }
       <button class="btn btn-ghost btn-sm icon-only" id="btn-redo" disabled data-tooltip="Refazer (Ctrl+Shift+Z)">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0 1 15-6.7L21 13"/></svg>
       </button>
+      <button class="btn btn-ghost btn-sm icon-only" id="btn-select-all" data-tooltip="Selecionar tudo (Ctrl+A)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8V5a2 2 0 0 1 2-2h3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M8 21H5a2 2 0 0 1-2-2v-3"/><rect x="8" y="8" width="8" height="8" rx="1"/></svg>
+      </button>
       <div style="width:1px; height:20px; background:var(--border-default); margin: 0 4px;"></div>
       <div id="wm-credits-badge" title="Créditos disponíveis neste mês" style="display:inline-flex; align-items:center; gap:6px; padding:5px 12px; border-radius:20px; background:rgba(139,92,246,0.12); border:1px solid rgba(139,92,246,0.3); color:#c4b5fd; font-size:13px; font-weight:600; cursor:default;">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
@@ -7012,7 +7016,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'mobile-drag-27jun';
+window.__WM_BUILD = 'mobile-drag2-27jun';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -19051,16 +19055,17 @@ function initEditor() {
     if (!stanza) return;
     ev.preventDefault();
 
+    const _xy = _evXY(ev);
     const stanzaRect = stanza.getBoundingClientRect();
     marqueeState = {
       stanzaRect,
       shift: ev.shiftKey,
       ctrl: ev.ctrlKey || ev.metaKey,
-      mouseStartX: ev.clientX,
-      mouseStartY: ev.clientY,
+      mouseStartX: _xy.x,
+      mouseStartY: _xy.y,
       // Posição inicial relativa ao stanza
-      startX: ev.clientX - stanzaRect.left,
-      startY: ev.clientY - stanzaRect.top,
+      startX: _xy.x - stanzaRect.left,
+      startY: _xy.y - stanzaRect.top,
       moved: false,
       // Snapshot da seleção atual (pra Shift+drag adicionar)
       initialSelection: new Set(selectedWordIds),
@@ -19068,13 +19073,18 @@ function initEditor() {
 
     document.addEventListener('mousemove', onMarqueeMouseMove);
     document.addEventListener('mouseup', onMarqueeMouseUp);
+    document.addEventListener('touchmove', onMarqueeMouseMove, { passive: false });
+    document.addEventListener('touchend', onMarqueeMouseUp);
+    document.addEventListener('touchcancel', onMarqueeMouseUp);
   }
 
   function onMarqueeMouseMove(ev) {
     if (!marqueeState) return;
+    if (ev.cancelable && (ev.touches || ev.changedTouches)) ev.preventDefault();
 
-    const dx = ev.clientX - marqueeState.mouseStartX;
-    const dy = ev.clientY - marqueeState.mouseStartY;
+    const _xy = _evXY(ev);
+    const dx = _xy.x - marqueeState.mouseStartX;
+    const dy = _xy.y - marqueeState.mouseStartY;
     const dist = Math.sqrt(dx*dx + dy*dy);
 
     // Threshold pra começar marquee (evita disparar em clicks rápidos)
@@ -19087,8 +19097,8 @@ function initEditor() {
     }
 
     // Calcula retângulo da caixa (em coords do stanza)
-    const curX = ev.clientX - marqueeState.stanzaRect.left;
-    const curY = ev.clientY - marqueeState.stanzaRect.top;
+    const curX = _xy.x - marqueeState.stanzaRect.left;
+    const curY = _xy.y - marqueeState.stanzaRect.top;
     const left = Math.min(marqueeState.startX, curX);
     const top = Math.min(marqueeState.startY, curY);
     const width = Math.abs(curX - marqueeState.startX);
@@ -19143,6 +19153,9 @@ function initEditor() {
   function onMarqueeMouseUp(ev) {
     document.removeEventListener('mousemove', onMarqueeMouseMove);
     document.removeEventListener('mouseup', onMarqueeMouseUp);
+    document.removeEventListener('touchmove', onMarqueeMouseMove);
+    document.removeEventListener('touchend', onMarqueeMouseUp);
+    document.removeEventListener('touchcancel', onMarqueeMouseUp);
 
     if (marqueeState && !marqueeState.moved) {
       // Foi click em área vazia (não foi drag): desseleciona tudo
@@ -19288,11 +19301,19 @@ function initEditor() {
 
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('mouseup', onMouseUp);
-    // Mobile: mesmo arraste via toque. passive:false pra poder dar
-    // preventDefault no touchmove e impedir a página de rolar.
-    document.addEventListener('touchmove', onMouseMove, { passive: false });
-    document.addEventListener('touchend', onMouseUp);
-    document.addEventListener('touchcancel', onMouseUp);
+    // Mobile: no 1º movimento o renderStanza RECRIA os .lyric-word pra entrar
+    // no modo livre, soltando do DOM o elemento onde o toque começou. Os
+    // eventos de toque continuam indo pra ESSE elemento (mesmo solto), mas
+    // não borbulham até o document — então, ligados no document, o arraste
+    // travava. Ligamos os listeners de toque NO elemento tocado, que segue
+    // recebendo touchmove/touchend e mantém o arraste fluido.
+    const _touchEl = (ev.touches || ev.changedTouches) ? (ev.target || wordEl) : null;
+    dragState._touchEl = _touchEl;
+    if (_touchEl) {
+      _touchEl.addEventListener('touchmove', onMouseMove, { passive: false });
+      _touchEl.addEventListener('touchend', onMouseUp);
+      _touchEl.addEventListener('touchcancel', onMouseUp);
+    }
   }
 
   function onMouseMove(ev) {
@@ -19478,9 +19499,11 @@ function initEditor() {
   function cleanupDrag() {
     document.removeEventListener('mousemove', onMouseMove);
     document.removeEventListener('mouseup', onMouseUp);
-    document.removeEventListener('touchmove', onMouseMove);
-    document.removeEventListener('touchend', onMouseUp);
-    document.removeEventListener('touchcancel', onMouseUp);
+    if (dragState && dragState._touchEl) {
+      dragState._touchEl.removeEventListener('touchmove', onMouseMove);
+      dragState._touchEl.removeEventListener('touchend', onMouseUp);
+      dragState._touchEl.removeEventListener('touchcancel', onMouseUp);
+    }
     document.body.classList.remove('is-dragging-word');
     if (dragState) {
       const justDragged = dragState._justDragged;
@@ -28795,6 +28818,13 @@ function initEditor() {
   // Wire dos botões undo/redo
   $('#btn-undo')?.addEventListener('click', () => performUndo());
   $('#btn-redo')?.addEventListener('click', () => performRedo());
+  $('#btn-select-all')?.addEventListener('click', () => {
+    selectAllWords();
+    // Abre a aba de Efeitos (Palavra) pra já poder editar a seleção,
+    // igual ao fluxo de selecionar uma palavra.
+    const tab = $('.panel-tab[data-rpanel="style"]');
+    if (tab) tab.click();
+  });
 
   $('#btn-save-project').addEventListener('click', () => {
     const name = $('#project-name-input').value.trim() || 'Projeto sem título';
