@@ -7016,7 +7016,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'mobile-drag2-27jun';
+window.__WM_BUILD = 'inkbox-27jun';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -18952,9 +18952,22 @@ function initEditor() {
       // Correção: a palavra ocupa de (centro - metade) a (centro +
       // metade) em cada eixo.
       const left = pos.x - w / 2;
-      const top = pos.y - h / 2;
       const right = pos.x + w / 2;
-      const bottom = pos.y + h / 2;
+      // VERTICAL: usa a altura VISÍVEL (ink) em vez de offsetHeight, senão o
+      // snap centraliza pela caixa cheia (com o vão da fonte de pincel) e o
+      // texto fica fora do centro visual. inkTop/inkBottom são offsets
+      // normalizados relativos ao CENTRO da caixa (= pos.y).
+      let top = pos.y - h / 2;
+      let bottom = pos.y + h / 2;
+      try {
+        const r = el.getBoundingClientRect();
+        if (r.height > 0) {
+          const ink = _wordInkBounds(el, r);
+          const boxCenterScreen = r.top + r.height / 2;
+          top = pos.y + (ink.top - boxCenterScreen) / stanzaRect.height;
+          bottom = pos.y + (ink.bottom - boxCenterScreen) / stanzaRect.height;
+        }
+      } catch (e) { /* mantém o fallback offsetHeight */ }
       if (left < minX) minX = left;
       if (top < minY) minY = top;
       if (right > maxX) maxX = right;
@@ -19565,6 +19578,38 @@ function initEditor() {
    * Posiciona a bounding box em volta da palavra selecionada (ou TODAS se múltiplas).
    * Pra múltiplas: calcula box que envolve todas, sem rotação/scale.
    */
+  // Mede a altura VISÍVEL (ink real) de uma palavra, não a caixa de layout
+  // (line-height:1 = fontSize), que em fontes de pincel é bem mais alta que
+  // os glifos e deixava um vão grande embaixo na caixa de seleção. Usa a
+  // baseline medida (_baselineRatio) + actualBoundingBox da fonte. Faz clamp
+  // pra nunca ficar MAIOR que a caixa de layout (seguro). Cai pro rect cru se
+  // não der pra medir.
+  let _inkMeasureCtx = null;
+  function _wordInkBounds(wordEl, rect) {
+    try {
+      const text = (wordEl.textContent || '').trim();
+      const boxH = rect.height;
+      if (!text || !boxH) return { top: rect.top, bottom: rect.bottom };
+      const cs = getComputedStyle(wordEl);
+      const family = (cs.fontFamily || '').split(',')[0].replace(/["']/g, '').trim();
+      const weight = cs.fontWeight || '400';
+      const ratio = (window.WM_CANVAS_RENDERER && window.WM_CANVAS_RENDERER._baselineRatio)
+        ? window.WM_CANVAS_RENDERER._baselineRatio(family, weight) : null;
+      if (ratio == null || !isFinite(ratio)) return { top: rect.top, bottom: rect.bottom };
+      if (!_inkMeasureCtx) _inkMeasureCtx = document.createElement('canvas').getContext('2d');
+      _inkMeasureCtx.font = `${weight} ${boxH}px "${family}"`;
+      const m = _inkMeasureCtx.measureText(text);
+      if (typeof m.actualBoundingBoxAscent !== 'number') return { top: rect.top, bottom: rect.bottom };
+      const blFromTop = boxH * (0.5 + ratio);
+      const inkTop = rect.top + blFromTop - m.actualBoundingBoxAscent;
+      const inkBottom = rect.top + blFromTop + m.actualBoundingBoxDescent;
+      return {
+        top: Math.max(rect.top, Math.min(inkTop, rect.bottom)),
+        bottom: Math.min(rect.bottom, Math.max(inkBottom, rect.top)),
+      };
+    } catch (e) { return { top: rect.top, bottom: rect.bottom }; }
+  }
+
   function updateSelectionBox() {
     if (!selectedWordId) { hideSelectionBox(); return; }
     const stanza = getStanzaEl();
@@ -19581,10 +19626,11 @@ function initEditor() {
         const el = document.querySelector(`.lyric-word[data-word-id="${wid}"]`);
         if (!el) return;
         const r = el.getBoundingClientRect();
+        const ink = _wordInkBounds(el, r);
         minLeft = Math.min(minLeft, r.left);
-        minTop = Math.min(minTop, r.top);
+        minTop = Math.min(minTop, ink.top);
         maxRight = Math.max(maxRight, r.right);
-        maxBottom = Math.max(maxBottom, r.bottom);
+        maxBottom = Math.max(maxBottom, ink.bottom);
         count++;
       });
       if (count === 0) { hideSelectionBox(); return; }
@@ -19632,13 +19678,14 @@ function initEditor() {
       restore = () => { wordEl.style.transform = savedTransform; };
     }
     const wordRect = wordEl.getBoundingClientRect();
+    const ink = _wordInkBounds(wordEl, wordRect);
     restore();
 
     const stanzaRect = stanza.getBoundingClientRect();
     const left = wordRect.left - stanzaRect.left;
-    const top = wordRect.top - stanzaRect.top;
+    const top = ink.top - stanzaRect.top;
     const width = wordRect.width;
-    const height = wordRect.height;
+    const height = ink.bottom - ink.top;
 
     box.style.left = left + 'px';
     box.style.top = top + 'px';
