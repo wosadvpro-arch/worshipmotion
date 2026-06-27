@@ -2536,6 +2536,15 @@ body.timeline-collapsed .timeline-collapse-btn {
   border-radius: 4px;
 }
 
+/* No editor, a CAIXA DE SELEÇÃO (que abraça o texto visível) já é o
+   indicador. O contorno por palavra fica redundante e, em fontes de pincel,
+   mostra a caixa CHEIA do elemento (com o vão), parecendo "uma segunda
+   caixa". Suprime só dentro do #canvas-content; cards de animação e outros
+   contextos mantêm o realce por palavra. */
+#canvas-content .lyric-word.is-word-selected {
+  outline: none;
+}
+
 /* === WORD PANEL (no painel direito) === */
 .word-panel-empty {
   padding: 32px 12px;
@@ -7016,7 +7025,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'inkbox-27jun';
+window.__WM_BUILD = 'inkbox2-27jun';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
