@@ -7005,7 +7005,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'vertical-27jun';
+window.__WM_BUILD = 'vertical2-27jun';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -15002,18 +15002,15 @@ const CanvasRenderer = {
     const chars = Array.from(text);
     const charWidths = chars.map(ch => ctx.measureText(ch).width);
 
-    // Ancoragem vertical igual ao DOM (mesma lógica do _drawWord): baseline
-    // 'alphabetic' deslocada (ascent-descent)/2 — fontes de pincel deixam de
-    // subir/invadir a linha de cima. Fallback 'middle' sem fontBoundingBox.
+    // Ancoragem vertical igual ao DOM (mede a baseline real via _baselineRatio).
     let _vOff = 0, _useAlpha = false;
-    try {
-      const _mm = ctx.measureText(text || 'M');
-      if (typeof _mm.fontBoundingBoxAscent === 'number'
-          && typeof _mm.fontBoundingBoxDescent === 'number') {
-        _vOff = (_mm.fontBoundingBoxAscent - _mm.fontBoundingBoxDescent) / 2;
-        _useAlpha = true;
-      }
-    } catch (e) { _useAlpha = false; }
+    {
+      const _ff = (word.font && word.font.family) || (style && style.fontFamily);
+      const _fw = (word.font && word.font.weight) || (style && style.fontWeight) || 400;
+      const _fsz = (word.font && word.font.size) || (style && style.fontSize) || 64;
+      const _r = this._baselineRatio(_ff, _fw);
+      if (_r != null && isFinite(_r)) { _vOff = _r * _fsz; _useAlpha = true; }
+    }
 
     // CAUSA RAIZ (char-by-char saía deslocado no export): cx é o
     // CENTRO da palavra (igual translate(-50%) do preview), mas o
@@ -15134,6 +15131,36 @@ const CanvasRenderer = {
     ctx.restore();
   },
 
+  // Mede, VIA DOM, onde a baseline da fonte cai relativo ao CENTRO da caixa
+  // line-height:1 — exatamente como o preview centraliza a palavra livre.
+  // Retorna um ratio normalizado pelo tamanho (independe do font-size) e
+  // cacheia por fonte. É exato pra QUALQUER fonte, inclusive de pincel, cujas
+  // métricas fontBoundingBox do canvas NÃO batem com o que o CSS usa na caixa
+  // (foi isso que fez a palavra de pincel subir/inverter no export).
+  _baselineRatio(family, weight) {
+    try {
+      if (typeof document === 'undefined' || !document.body) return null;
+      window.__WM_BLR = window.__WM_BLR || {};
+      const key = (family || '') + '|' + (weight || 400);
+      if (key in window.__WM_BLR) return window.__WM_BLR[key];
+      const FS = 200;
+      const span = document.createElement('span');
+      span.style.cssText = 'position:absolute;left:-9999px;top:-9999px;visibility:hidden;'
+        + `font-family:'${family}',sans-serif;font-size:${FS}px;font-weight:${weight || 400};`
+        + 'line-height:1;white-space:nowrap;padding:0;margin:0;border:0;';
+      span.textContent = 'Hg';
+      const mk = document.createElement('span');
+      mk.style.cssText = 'display:inline-block;width:0;height:0;vertical-align:baseline;';
+      span.appendChild(mk);
+      document.body.appendChild(span);
+      const sr = span.getBoundingClientRect(), mr = mk.getBoundingClientRect();
+      const ratio = ((mr.top - sr.top) - sr.height / 2) / FS;
+      document.body.removeChild(span);
+      window.__WM_BLR[key] = ratio;
+      return ratio;
+    } catch (e) { return null; }
+  },
+
   _drawWord(ctx, word, state, style, colorProgress = 0, wordStyleOverride = null) {
     const { cx } = word;
     const cy = word.lineCy;
@@ -15171,22 +15198,17 @@ const CanvasRenderer = {
     } catch (e) { /* navegador sem suporte: ignora */ }
 
     // === ANCORAGEM VERTICAL IGUAL AO DOM ===
-    // O canvas 'middle' apoia-se nas métricas da fonte; em fontes de pincel
-    // (ascent >> descent) isso joga a palavra pra CIMA, enquanto o preview
-    // (DOM, line-height:1) centraliza pela CAIXA da linha. Resultado: no vídeo
-    // a palavra de pincel subia e invadia a linha de cima. Fix: textBaseline
-    // 'alphabetic' + deslocar a baseline em (ascent-descent)/2 — replica
-    // EXATAMENTE o DOM (verificado por sobreposição pixel-a-pixel). Fallback
-    // pra 'middle' se o navegador não expõe fontBoundingBox.
+    // Centraliza a CAIXA da palavra (line-height:1) no centro, como o preview.
+    // Mede a baseline real da fonte via DOM (_baselineRatio) — exato até em
+    // fontes de pincel. Fallback: 'middle' se não der pra medir.
     let _vOff = 0, _useAlpha = false;
-    try {
-      const _mm = ctx.measureText(word.text || 'M');
-      if (typeof _mm.fontBoundingBoxAscent === 'number'
-          && typeof _mm.fontBoundingBoxDescent === 'number') {
-        _vOff = (_mm.fontBoundingBoxAscent - _mm.fontBoundingBoxDescent) / 2;
-        _useAlpha = true;
-      }
-    } catch (e) { _useAlpha = false; }
+    {
+      const _ff = (word.font && word.font.family) || (style && style.fontFamily);
+      const _fw = (word.font && word.font.weight) || (style && style.fontWeight) || 400;
+      const _fsz = (word.font && word.font.size) || (style && style.fontSize) || 64;
+      const _r = this._baselineRatio(_ff, _fw);
+      if (_r != null && isFinite(_r)) { _vOff = _r * _fsz; _useAlpha = true; }
+    }
 
     // === TRANSFORM PIPELINE ===
     const tx = cx + state.translateX;
