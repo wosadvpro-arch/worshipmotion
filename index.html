@@ -5696,8 +5696,13 @@ body.is-dragging-word .lyric-word { cursor: grabbing !important; }
 /* ===== Modais no mobile: viram bottom-sheet full-width e roláveis ===== */
 @media (max-width: 680px) {
   .modal-overlay { padding: 0; align-items: flex-end; }
-  .modal { max-width: 100%; width: 100%; max-height: 94vh; border-radius: 18px 18px 0 0; }
-  .modal-header { padding: 15px 18px; }
+  .modal { max-width: 100%; width: 100%; max-height: 94vh; border-radius: 18px 18px 0 0; position: relative; }
+  /* alça de arrastar no topo do modal (mobile) */
+  .modal::before { content: ''; position: absolute; top: 8px; left: 50%; transform: translateX(-50%); width: 40px; height: 4px; border-radius: 999px; background: var(--border-strong, #3a3a4a); z-index: 3; pointer-events: none; }
+  .modal-header { padding: 22px 18px 14px; }
+  /* botão de fechar maior e mais fácil de tocar */
+  .modal-header .icon-btn { width: 40px; height: 40px; }
+  .modal-header .icon-btn svg { width: 20px; height: 20px; }
   .modal-tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; flex-wrap: nowrap; }
   .modal-tabs::-webkit-scrollbar { height: 0; }
   .landing-nav .lp-btn { padding: 9px 13px; font-size: 13px; }
@@ -26883,6 +26888,36 @@ function initEditor() {
     _bd.addEventListener('click', () => document.body.classList.remove('wm-sheet-left', 'wm-sheet-right'));
     (document.querySelector('.editor-shell') || document.body).appendChild(_bd);
   }
+
+  // Arrastar pra baixo (a partir do topo/alça) fecha os bottom-sheets e o modal.
+  function _wmSheetDrag(el, closeFn, zonePx) {
+    if (!el || el._wmDrag) return; el._wmDrag = true;
+    const ZONE = zonePx || 52;
+    let y0 = null, on = false, d = 0;
+    el.addEventListener('touchstart', (e) => {
+      const t = e.touches[0]; const r = el.getBoundingClientRect();
+      // só inicia o gesto de fechar se o toque começa na faixa do topo (alça/cabeçalho)
+      if (t.clientY - r.top <= ZONE) { y0 = t.clientY; on = true; d = 0; el.style.transition = 'none'; }
+      else { on = false; }
+    }, { passive: true });
+    el.addEventListener('touchmove', (e) => {
+      if (!on || y0 === null) return;
+      d = e.touches[0].clientY - y0; if (d < 0) d = 0;
+      el.style.transform = 'translateY(' + d + 'px)';
+    }, { passive: true });
+    const _end = () => {
+      if (!on) return; on = false;
+      el.style.transition = ''; el.style.transform = '';
+      if (d > 70 && typeof closeFn === 'function') closeFn();
+      y0 = null; d = 0;
+    };
+    el.addEventListener('touchend', _end);
+    el.addEventListener('touchcancel', _end);
+  }
+  _wmSheetDrag(document.querySelector('.editor-left'), () => document.body.classList.remove('wm-sheet-left'));
+  _wmSheetDrag(document.querySelector('.editor-right'), () => document.body.classList.remove('wm-sheet-right'));
+  _wmSheetDrag(document.querySelector('#modal-overlay .modal'), () => { if (typeof closeModal === 'function') closeModal(); });
+
   $$('.rail-btn').forEach((btn, i) => {
     btn.addEventListener('click', () => {
       $$('.rail-btn').forEach(b => b.classList.toggle('active', b === btn));
