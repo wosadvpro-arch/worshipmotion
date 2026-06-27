@@ -10710,10 +10710,11 @@ const _registeredFonts = new Map();
 async function loadAllCustomFonts() {
   if (!window.WM_ASSETS) return [];
   const results = [];
+  let locais = [];
   // 1. Fontes locais (IndexedDB)
   try {
-    const assets = await window.WM_ASSETS.list('font');
-    for (const asset of assets) {
+    locais = await window.WM_ASSETS.list('font');
+    for (const asset of locais) {
       try {
         await registerFontFromAsset(asset);
         results.push(asset);
@@ -10724,15 +10725,18 @@ async function loadAllCustomFonts() {
   } catch (e) {
     console.warn('loadAllCustomFonts (local):', e);
   }
-  // 2. Fontes da NUVEM que ainda não estão neste aparelho: baixa, cacheia
-  //    localmente e registra. É assim que uma fonte subida no PC passa a
-  //    aparecer no celular. À prova de falha: qualquer erro mantém só as locais.
+  // 2. Sincroniza com a NUVEM nos dois sentidos (à prova de falha: qualquer
+  //    erro mantém só as locais e não trava nada).
   try {
     if (window.WM_FONTS_CLOUD) {
-      const jaTem = new Set(Array.from(_registeredFonts.values()).map(i => i.family));
       const remotas = await window.WM_FONTS_CLOUD.list();
+      const famNuvem = new Set(remotas.map(r => r.family));
+      const famLocal = new Set(Array.from(_registeredFonts.values()).map(i => i.family));
+
+      // 2a. BAIXA da nuvem o que ainda não está neste aparelho (é assim que
+      //     uma fonte subida no PC passa a aparecer no celular).
       for (const r of remotas) {
-        if (jaTem.has(r.family)) continue;
+        if (famLocal.has(r.family)) continue;
         const blob = await window.WM_FONTS_CLOUD.download(r.path);
         if (!blob) continue;
         const id = window.WM_ASSETS.generateId('font');
@@ -10741,10 +10745,21 @@ async function loadAllCustomFonts() {
         try {
           await registerFontFromAsset(asset);
           results.push(asset);
-          jaTem.add(r.family);
+          famLocal.add(r.family);
         } catch (e) {
           console.warn(`Falha ao registrar fonte da nuvem "${r.name}":`, e);
         }
+      }
+
+      // 2b. SOBE pra nuvem as fontes locais que ainda não estão lá. Isso faz
+      //     as fontes ANTIGAS (subidas antes desta sincronização existir)
+      //     seguirem o usuário entre aparelhos SEM precisar do arquivo
+      //     original de novo — basta abrir o app no aparelho onde elas já estão.
+      for (const asset of locais) {
+        if (asset.meta && asset.meta.fromCloud) continue; // veio da nuvem, já está lá
+        const fam = (asset.name || '').replace(/\.[^.]+$/, '');
+        if (famNuvem.has(fam)) continue;
+        try { await window.WM_FONTS_CLOUD.upload(asset.name, asset.blob); famNuvem.add(fam); } catch (e) {}
       }
     }
   } catch (e) {
