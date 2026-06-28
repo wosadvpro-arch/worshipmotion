@@ -2537,11 +2537,13 @@ body.timeline-collapsed .timeline-collapse-btn {
 }
 
 /* No editor, a CAIXA DE SELEÇÃO (que abraça o texto visível) já é o
-   indicador. O contorno por palavra fica redundante e, em fontes de pincel,
-   mostra a caixa CHEIA do elemento (com o vão), parecendo "uma segunda
-   caixa". Suprime só dentro do #canvas-content; cards de animação e outros
+   indicador — e acompanha o arraste. O contorno por palavra fica redundante
+   e, em fontes de pincel, mostra a caixa CHEIA do elemento (com o vão),
+   parecendo "uma segunda caixa". Suprime tanto no selecionado quanto durante
+   o arraste, só dentro do #canvas-content; cards de animação e outros
    contextos mantêm o realce por palavra. */
-#canvas-content .lyric-word.is-word-selected {
+#canvas-content .lyric-word.is-word-selected,
+#canvas-content .lyric-word.is-being-dragged {
   outline: none;
 }
 
@@ -7025,7 +7027,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'inkbox2-27jun';
+window.__WM_BUILD = 'inkbox3-27jun';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
