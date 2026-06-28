@@ -2284,14 +2284,26 @@ body.timeline-collapsed .timeline-collapse-btn {
   }
   .editor-topbar {
     order: 0; flex: 0 0 auto; height: auto; min-height: var(--topbar-height);
-    flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden;
+    flex-wrap: nowrap; overflow: hidden;
     justify-content: flex-start; gap: 8px; padding: 6px 10px;
   }
   .editor-topbar::-webkit-scrollbar { height: 0; }
-  .editor-topbar .topbar-section { flex: 0 0 auto; }
-  .editor-topbar .topbar-section.center { flex: 0 0 auto; justify-content: flex-start; }
+  .editor-topbar .topbar-section { flex: 0 0 auto; min-width: 0; }
+  /* Logo + nome do projeto: encolhem se faltar espaço, em vez de empurrar o
+     Exportar pra fora da tela. */
+  .editor-topbar .topbar-section:first-child { flex: 0 1 auto; min-width: 0; }
+  /* Exportar / Salvar / créditos: SEMPRE colados à direita e visíveis (não
+     rolam, não somem). É o que resolve "ter que arrastar pra achar Exportar". */
+  .editor-topbar .topbar-section.right { flex: 0 0 auto; margin-left: auto; }
+  /* Seletor de proporção (16:9…) fica numa faixa que ROLA SOZINHA no meio —
+     assim ele nunca empurra o Exportar pra fora. */
+  .editor-topbar .topbar-section.center {
+    flex: 1 1 auto; min-width: 0; justify-content: flex-start;
+    overflow-x: auto; overflow-y: hidden;
+  }
+  .editor-topbar .topbar-section.center::-webkit-scrollbar { height: 0; }
   .editor-topbar .logo { transform: scale(0.82); transform-origin: left center; }
-  #project-name-input { max-width: 120px !important; min-width: 70px !important; }
+  #project-name-input { max-width: 120px !important; min-width: 0 !important; }
   /* esconde itens redundantes/avançados no mobile (Templates já está na régua) */
   #btn-save-template, #btn-templates, .save-indicator { display: none !important; }
 
@@ -2353,6 +2365,29 @@ body.timeline-collapsed .timeline-collapse-btn {
 
   /* timeline (cenas) oculta no mobile nesta 1ª versão */
   .editor-timeline { display: none; }
+}
+
+/* ===== CELULAR: barra de cima enxuta — créditos, Salvar e Exportar sempre
+   visíveis sem rolar. Recolhe o que é secundário pra tudo caber. ===== */
+@media (max-width: 600px) {
+  /* Nome do projeto sai da barra (renomear fica pra tela maior). */
+  .editor-topbar #project-title-wrap { display: none !important; }
+  /* Seletor de proporção e "Meus projetos" saem da barra no celular —
+     proporção raramente muda no telefone e "Meus projetos" está acessível
+     pela aba dentro de Templates (na régua de baixo). Isso garante que
+     Salvar/Exportar caibam SEM rolar. */
+  .editor-topbar .topbar-section.center,
+  .editor-topbar #btn-my-projects { display: none !important; }
+  /* Créditos: só o número, bem compacto (esconde o ícone). */
+  .editor-topbar #wm-credits-badge { padding: 4px 9px !important; font-size: 12px !important; gap: 0 !important; }
+  .editor-topbar #wm-credits-badge svg { display: none !important; }
+  /* Salvar: só o ícone (texto recolhido) pra ganhar espaço. */
+  .editor-topbar #btn-save-project { font-size: 0 !important; padding: 6px 9px !important; }
+  /* Aperta espaçamentos e botões pra caber até em telas de 360px. */
+  .editor-topbar .topbar-section { gap: 4px !important; }
+  .editor-topbar .btn-sm { padding: 6px 7px !important; }
+  .editor-topbar #btn-export { padding: 6px 11px !important; gap: 5px !important; }
+  .editor-topbar { gap: 6px; padding: 6px 8px; }
 }
 
 /* === INPUTS (modal aspect customizado, futuras configurações) === */
@@ -7033,7 +7068,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'inkbox4-27jun';
+window.__WM_BUILD = 'topbar-mobile-28jun';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
