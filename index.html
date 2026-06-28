@@ -2546,6 +2546,12 @@ body.timeline-collapsed .timeline-collapse-btn {
 #canvas-content .lyric-word.is-being-dragged {
   outline: none;
 }
+/* Remove também a SOMBRA de "levantar" do arraste — ela desenha em volta do
+   elemento CHEIO (com o vão da fonte de pincel), aparecendo como um retângulo
+   com sombra atrás do texto. A caixa de seleção justa já dá o feedback. */
+#canvas-content .lyric-word.is-being-dragged {
+  box-shadow: none;
+}
 
 /* === WORD PANEL (no painel direito) === */
 .word-panel-empty {
@@ -7027,7 +7033,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'inkbox3-27jun';
+window.__WM_BUILD = 'inkbox4-27jun';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
