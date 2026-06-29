@@ -2360,8 +2360,30 @@ body.timeline-collapsed .timeline-collapse-btn {
   body.wm-sheet-left .wm-sheet-backdrop,
   body.wm-sheet-right .wm-sheet-backdrop { opacity: 1; pointer-events: auto; }
 
-  /* timeline (cenas) oculta no mobile nesta 1ª versão */
-  .editor-timeline { display: none; }
+  /* CELULAR: as FAIXAS/cenas da timeline continuam ocultas nesta versão, MAS
+     os controles de MÚSICA ficam acessíveis numa barra de áudio enxuta logo
+     acima da régua — assim dá pra adicionar/trocar/remover a música no celular
+     (antes só aparecia no PC). */
+  .editor-timeline {
+    display: flex; order: 2; flex: 0 0 auto;
+    height: auto; min-height: 0; grid-column: auto;
+    padding: 6px 8px; gap: 6px;
+  }
+  .editor-rail { order: 3 !important; }
+  /* esconde as faixas + colapsar + textos da timeline (sem cenas no mobile) */
+  .editor-timeline .timeline-audio-track,
+  .editor-timeline .timeline-track,
+  .editor-timeline #timeline-collapse-hint,
+  .editor-timeline #btn-timeline-collapse,
+  .editor-timeline #timeline-info,
+  .editor-timeline #slide-info { display: none !important; }
+  /* não deixa o estado "colapsado" pintar/clicar a barra no mobile */
+  body.timeline-collapsed .editor-timeline { cursor: default; background: var(--bg-surface); border-top: 1px solid var(--border-subtle); }
+  .editor-timeline .timeline-header { width: 100%; gap: 8px; flex-wrap: wrap; justify-content: flex-start; }
+  .editor-timeline .audio-controls { flex: 1 1 auto; justify-content: flex-start; min-width: 0; gap: 6px; }
+  /* player de áudio compacto, cabe na largura do telefone */
+  .editor-timeline .audio-player { flex-wrap: wrap; gap: 8px 10px; padding: 5px 8px; }
+  .editor-timeline .audio-name { max-width: 130px; }
 }
 
 /* ===== CELULAR: barra de cima enxuta — créditos, Salvar e Exportar sempre
@@ -2399,6 +2421,33 @@ body.timeline-collapsed .timeline-collapse-btn {
     flex: 0 0 auto; position: sticky; right: 0;
     box-shadow: -10px 0 10px -4px var(--bg-surface);
   }
+}
+
+/* ===== iPad/TABLET DEITADO (paisagem + toque): tela LARGA e BAIXA =====
+   Mantém os painéis nas laterais (que já funcionam bem) e conserta o que
+   tornava a paisagem inutilizável:
+     (1) a barra de cima cortava o "Exportar";
+     (2) a timeline de 260px comia a altura da tela deitada.
+   Escopo por ORIENTAÇÃO + TOQUE (pointer: coarse): NÃO afeta o iPad em PÉ
+   (retrato), nem o celular (retrato), nem o PC (pointer: fine). */
+@media (orientation: landscape) and (pointer: coarse) and (min-width: 1081px) and (max-width: 1366px) {
+  /* (1) Barra de cima cabe inteira — Exportar nunca cortado. */
+  .editor-topbar #btn-save-template { display: none !important; } /* avançado/raro */
+  .editor-topbar #btn-templates,
+  .editor-topbar #btn-my-projects { font-size: 0 !important; }     /* só ícone */
+  .editor-topbar #btn-templates svg,
+  .editor-topbar #btn-my-projects svg { margin: 0 !important; }
+  .editor-topbar { gap: 10px; }
+
+  /* (2) Timeline vira barra de áudio enxuta (esconde as faixas/cenas) e deixa
+     de comer a altura — o canvas e os painéis respiram. Adicionar/Marcar
+     música continua acessível; scrubbing de cenas fica pro PC. */
+  .editor-timeline { height: auto !important; min-height: 0 !important; padding: 8px 16px !important; }
+  .editor-timeline .timeline-audio-track,
+  .editor-timeline .timeline-track,
+  .editor-timeline #timeline-collapse-hint,
+  .editor-timeline #btn-timeline-collapse,
+  .editor-timeline #timeline-info { display: none !important; }
 }
 
 /* === INPUTS (modal aspect customizado, futuras configurações) === */
@@ -3029,6 +3078,32 @@ body.is-dragging-word .lyric-word { cursor: grabbing !important; }
   background: rgba(239, 68, 68, 0.15);
   color: #ef4444;
 }
+
+/* ===== Arrastar-e-soltar áudio (PC) + estado de carregamento do upload ===== */
+.editor-canvas-wrap { position: relative; }
+.audio-drop-overlay {
+  position: absolute; inset: 0; z-index: 60;
+  display: none; align-items: center; justify-content: center;
+  background: rgba(10, 10, 18, 0.74);
+  border: 2px dashed var(--accent); border-radius: 12px;
+  pointer-events: none;
+}
+body.wm-audio-dragging .audio-drop-overlay { display: flex; }
+.audio-drop-card {
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  color: var(--accent); text-align: center; padding: 24px 32px;
+}
+.audio-drop-title { font-size: 18px; font-weight: 700; color: var(--text-primary); }
+.audio-drop-sub { font-size: 12px; color: var(--text-tertiary); }
+/* botão "Adicionar música" em estado carregando */
+.audio-btn.is-loading { opacity: 0.8; pointer-events: none; }
+.audio-spinner {
+  width: 13px; height: 13px; border-radius: 50%;
+  border: 2px solid currentColor; border-top-color: transparent;
+  animation: wm-audio-spin 0.7s linear infinite; flex-shrink: 0;
+  display: inline-block;
+}
+@keyframes wm-audio-spin { to { transform: rotate(360deg); } }
 
 /* ============ MARQUEE SELECTION (caixa de seleção) ============ */
 .marquee-selection {
@@ -6121,6 +6196,17 @@ Digno de toda honra"></textarea>
 
   
   <main class="editor-canvas-wrap">
+    <!-- Overlay de arrastar-e-soltar áudio (só PC): aparece ao arrastar um
+         arquivo de áudio sobre a área de edição. -->
+    <div class="audio-drop-overlay" id="audio-drop-overlay" aria-hidden="true">
+      <div class="audio-drop-card">
+        <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>
+        </svg>
+        <div class="audio-drop-title">Solte o áudio aqui</div>
+        <div class="audio-drop-sub">MP3, M4A, WAV ou OGG</div>
+      </div>
+    </div>
     <!-- BARRA CONTEXTUAL (estilo Canva) — Etapa 1. Aparece no topo,
          muda conforme o que está selecionado (palavra ou slide). Aciona
          a MESMA lógica das abas (selectFont, aplicarEstiloSensivel, etc).
@@ -7079,7 +7165,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'topbar-2linhas-28jun';
+window.__WM_BUILD = 'ipad-paisagem-29jun';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -26764,6 +26850,28 @@ function initEditor() {
     if (nameEl) nameEl.textContent = name;
   }
 
+  // Estado "carregando" no botão Adicionar música — dá retorno visual enquanto
+  // o áudio é lido/salvo (em conexão/aparelho lento isso pode demorar).
+  function setAudioLoading(on) {
+    const btn = $('#btn-audio-upload');
+    const label = $('#audio-btn-label');
+    if (!btn) return;
+    if (on) {
+      btn.classList.add('is-loading');
+      if (!btn.querySelector('.audio-spinner')) {
+        const sp = document.createElement('span');
+        sp.className = 'audio-spinner';
+        btn.insertBefore(sp, btn.firstChild);
+      }
+      if (label) label.textContent = 'Carregando…';
+    } else {
+      btn.classList.remove('is-loading');
+      const sp = btn.querySelector('.audio-spinner');
+      if (sp) sp.remove();
+      if (label) label.textContent = 'Adicionar música';
+    }
+  }
+
   async function handleAudioFileSelected(file) {
     if (!file || !window.WM_AUDIO_STORAGE) return;
     if (file.size > 30 * 1024 * 1024) {
@@ -26771,6 +26879,7 @@ function initEditor() {
       return;
     }
     try {
+      setAudioLoading(true);
       const tempUrl = URL.createObjectURL(file);
       const tempAudio = new Audio(tempUrl);
       const duration = await new Promise((resolve) => {
@@ -26802,6 +26911,7 @@ function initEditor() {
       // Plano pago: sobe pra nuvem (em segundo plano) pra a música seguir o
       // usuário entre dispositivos. Se falhar, fica só local, sem alarde.
       if (window.WM_AUDIO_CLOUD && window.WM_AUDIO_CLOUD.ehPago()) {
+        if (typeof showToast === 'function') showToast('Sincronizando música na nuvem…');
         window.WM_AUDIO_CLOUD.upload(audioId, file, { name: file.name, type: file.type }).then((path) => {
           if (path) { window.__currentAudioPath = path; markDirty(); if (typeof showToast === 'function') showToast('Música sincronizada na nuvem ☁️'); }
         });
@@ -26809,12 +26919,14 @@ function initEditor() {
       const audio = getAudioElement();
       if (audio.src) URL.revokeObjectURL(audio.src);
       audio.src = URL.createObjectURL(file);
+      setAudioLoading(false);
       showAudioPlayer(file.name);
       // Mostra waveform na timeline
       showAudioTrack(file);
       markDirty();
     } catch (e) {
       console.error('Erro ao salvar áudio:', e);
+      setAudioLoading(false);
       showToast('Não consegui carregar esse áudio. Tenta outro.');
     }
   }
@@ -26843,6 +26955,56 @@ function initEditor() {
     const audio = getAudioElement();
     audio.volume = parseInt(e.target.value, 10) / 100;
   });
+
+  // ===== Arrastar-e-soltar áudio (PC) =====
+  // Arrastar um arquivo de áudio pra cima da área de edição mostra um overlay
+  // "Solte o áudio aqui" e, ao soltar, carrega a música (mesma lógica do botão).
+  (function initAudioDragDrop() {
+    const shell = document.querySelector('#page-editor') || document.body;
+    if (!shell) return;
+    let dragDepth = 0;
+    const hasAudioFile = (dt) => {
+      if (!dt) return false;
+      // Durante o dragover o navegador não expõe o nome, só o tipo (items).
+      if (dt.items && dt.items.length) {
+        for (const it of dt.items) {
+          if (it.kind === 'file' && (it.type || '').startsWith('audio/')) return true;
+        }
+        // alguns navegadores não dão type no dragover; aceita "file" genérico
+        for (const it of dt.items) { if (it.kind === 'file') return true; }
+        return false;
+      }
+      return (dt.types || []).includes('Files');
+    };
+    const pickAudio = (dt) => {
+      const files = dt && dt.files ? Array.from(dt.files) : [];
+      return files.find(f => (f.type || '').startsWith('audio/'))
+          || files.find(f => /\.(mp3|m4a|wav|ogg|aac|flac)$/i.test(f.name));
+    };
+    shell.addEventListener('dragenter', (e) => {
+      if (!hasAudioFile(e.dataTransfer)) return;
+      e.preventDefault();
+      dragDepth++;
+      document.body.classList.add('wm-audio-dragging');
+    });
+    shell.addEventListener('dragover', (e) => {
+      if (!hasAudioFile(e.dataTransfer)) return;
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'copy';
+    });
+    shell.addEventListener('dragleave', (e) => {
+      dragDepth = Math.max(0, dragDepth - 1);
+      if (dragDepth === 0) document.body.classList.remove('wm-audio-dragging');
+    });
+    shell.addEventListener('drop', (e) => {
+      dragDepth = 0;
+      document.body.classList.remove('wm-audio-dragging');
+      const audioFile = pickAudio(e.dataTransfer);
+      if (!audioFile) return; // não era áudio: deixa o navegador lidar
+      e.preventDefault();
+      handleAudioFileSelected(audioFile);
+    });
+  })();
 
   window.__getAudioElement = getAudioElement;
   window.__loadAudioFromProject = loadAudioFromProject;
