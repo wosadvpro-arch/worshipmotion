@@ -3350,6 +3350,22 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
   display: flex;
 }
 
+/* Selo das fontes do Type Pack (exclusivas Pro Plus) */
+.font-option.is-pack .font-pack-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  padding: 1px 5px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #8b5cf6, #6366f1);
+  color: #fff;
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  line-height: 1.4;
+  pointer-events: none;
+}
+
 /* Background custom swatch */
 .color-swatch.is-custom {
   position: relative;
@@ -7189,7 +7205,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'resize-perf2-29jun';
+window.__WM_BUILD = 'type-pack-5fontes-29jun';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -10451,6 +10467,15 @@ async function wmCarregarPerfil() {
 
     window.__wmPerfil = perfil;
     wmAtualizarBadgeCreditos();
+    // Libera as fontes do Type Pack se for Pro Plus (ou as remove num downgrade),
+    // agora que o plano é conhecido. Atualiza o seletor se algo mudou.
+    if (typeof window._loadPackFonts === 'function') {
+      window._loadPackFonts().then(mudou => {
+        if (mudou && typeof window._refreshCustomFontGrid === 'function') {
+          try { window._refreshCustomFontGrid(); } catch (e) {}
+        }
+      }).catch(() => {});
+    }
     return perfil;
   } catch (e) {
     console.warn('[WM] Falha ao carregar perfil:', e.message);
@@ -11054,6 +11079,7 @@ function listRegisteredFonts() {
     assetId: info.assetId,
     family: info.family,
     name: info.name,
+    isPack: !!info.isPack,
   }));
 }
 
@@ -11084,6 +11110,70 @@ window.WM_CUSTOM_FONTS = {
   list: listRegisteredFonts,
   waitReady: waitForCustomFontsReady,
 };
+
+// ============================================================
+//  TYPE PACK — fontes premium exclusivas do plano Pro Plus
+// ============================================================
+// As fontes do pack ficam hospedadas no próprio site (pasta /fontes/),
+// e são liberadas SÓ pra quem é Pro Plus. Pra adicionar/remover fontes do
+// pack, edite a lista abaixo. O "family" é o nome EXATO que aparece no
+// seletor e que os projetos usam — tem que bater com o nome real da fonte.
+// O "url" é só onde o arquivo está (pode ter nome de arquivo simples).
+const WM_PACK_FONTS = [
+  { family: 'Grache Hustle',      url: 'fontes/grache-hustle.ttf' },
+  { family: 'Dalven Goofler',     url: 'fontes/dalven-goofler.ttf' },
+  { family: 'Cutie Slime Script', url: 'fontes/cutie-slime-script.ttf' },
+  { family: 'Antara Rough',       url: 'fontes/antara-rough.ttf' },
+  { family: 'Bendios Rembine',    url: 'fontes/bendios-rembine.ttf' },
+];
+
+function _ehProPlus() {
+  try {
+    const i = window.WM_CREDITS && window.WM_CREDITS.info && window.WM_CREDITS.info();
+    return !!(i && i.plano === 'pro_plus');
+  } catch (e) { return false; }
+}
+
+// Carrega (ou remove) as fontes do pack conforme o plano. Retorna true se
+// houve mudança (pra quem chamou saber se precisa atualizar o seletor).
+// À prova de falha: qualquer erro só deixa de carregar a fonte, não trava nada.
+async function loadPackFonts() {
+  if (!_ehProPlus()) {
+    // Não é Pro Plus → garante que NENHUMA fonte do pack fica registrada
+    // (cobre o caso de downgrade). Não toca nas fontes do próprio usuário.
+    let removeu = false;
+    for (const [key, info] of Array.from(_registeredFonts.entries())) {
+      if (info.isPack) {
+        try { if (info.fontFace) document.fonts.delete(info.fontFace); } catch (e) {}
+        _registeredFonts.delete(key);
+        removeu = true;
+      }
+    }
+    return removeu;
+  }
+  // É Pro Plus → registra as fontes do pack que ainda não estão registradas.
+  let registrou = false;
+  for (const pf of WM_PACK_FONTS) {
+    // Dedup por família: se já existe uma fonte com esse nome (ex.: o próprio
+    // produtor subiu a fonte na conta dele), não duplica no seletor.
+    let jaTem = false;
+    _registeredFonts.forEach(info => { if (info.family === pf.family) jaTem = true; });
+    if (jaTem) continue;
+    try {
+      const resp = await fetch(pf.url);
+      if (!resp.ok) { console.warn('[pack fontes] não encontrei', pf.url, resp.status); continue; }
+      const buffer = await resp.arrayBuffer();
+      const fontFace = new FontFace(pf.family, buffer);
+      await fontFace.load();
+      document.fonts.add(fontFace);
+      const id = 'pack:' + pf.family;
+      _registeredFonts.set(id, { fontFace, name: pf.family, family: pf.family, assetId: id, isPack: true });
+      registrou = true;
+    } catch (e) { console.warn('[pack fontes] falha em', pf.family, e); }
+  }
+  return registrou;
+}
+window._loadPackFonts = loadPackFonts;
 
 })();
 
@@ -24366,18 +24456,21 @@ function initEditor() {
     }
 
     grid.innerHTML = fonts.map(f => `
-      <div class="font-option is-custom ${engine.style.fontFamily === f.family ? 'selected' : ''}"
+      <div class="font-option is-custom ${f.isPack ? 'is-pack' : ''} ${engine.style.fontFamily === f.family ? 'selected' : ''}"
            data-font="${escapeHtml(f.family)}"
            data-asset-id="${f.assetId}"
-           title="${escapeHtml(f.name)}">
+           title="${escapeHtml(f.name)}${f.isPack ? ' — exclusiva Pro Plus' : ''}">
         <div class="font-option-sample" style="font-family: '${escapeHtml(f.family)}'">Aa</div>
         <div class="font-option-name">${escapeHtml(f.family.length > 14 ? f.family.slice(0, 14) + '…' : f.family)}</div>
-        <button class="font-delete-btn" data-delete-font="${f.assetId}" title="Remover">×</button>
+        ${f.isPack
+          ? '<span class="font-pack-badge">PRO+</span>'
+          : `<button class="font-delete-btn" data-delete-font="${f.assetId}" title="Remover">×</button>`}
       </div>
     `).join('');
     applyFontSearch();
     if (typeof window._repopularFontesCtx === 'function') window._repopularFontesCtx();
   }
+  window._refreshCustomFontGrid = refreshCustomFontGrid;
 
   // Upload manual (legacy — não está mais exposto na UI, mas mantido pra usuários antigos)
   $('#btn-upload-font')?.addEventListener('click', () => {
@@ -24422,6 +24515,9 @@ function initEditor() {
     if (window.WM_CUSTOM_FONTS) {
       try {
         await window.WM_CUSTOM_FONTS.loadAll();
+        if (typeof window._loadPackFonts === 'function') {
+          try { await window._loadPackFonts(); } catch (e) {}
+        }
         await refreshCustomFontGrid();
       } catch (e) {
         console.warn('Falha ao carregar fontes custom:', e);
