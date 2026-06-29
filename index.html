@@ -2961,6 +2961,16 @@ body.is-dragging-word .lyric-word { cursor: grabbing !important; }
   justify-content: center;
 }
 .selection-rotate:active { cursor: grabbing; }
+
+/* TOQUE: as bolinhas não podem rolar a tela ao arrastar, e ganham uma ÁREA DE
+   TOQUE maior que o ponto visível (dedo é bem maior que o cursor) — assim dá
+   pra redimensionar/girar no celular e no iPad. O visual continua igual. */
+.selection-handle, .selection-rotate { touch-action: none; }
+@media (pointer: coarse) {
+  .selection-handle::before, .selection-rotate::before {
+    content: ''; position: absolute; inset: -13px; border-radius: 50%;
+  }
+}
 .selection-rotate::after {
   content: '';
   position: absolute;
@@ -7179,7 +7189,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'ipad-mini-paisagem-29jun';
+window.__WM_BUILD = 'handles-toque-29jun';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -19727,6 +19737,7 @@ function initEditor() {
 
     selectionBoxEl.querySelectorAll('[data-handle]').forEach(h => {
       h.addEventListener('mousedown', onHandleMouseDown);
+      h.addEventListener('touchstart', onHandleMouseDown, { passive: false });
     });
     return selectionBoxEl;
   }
@@ -20319,6 +20330,15 @@ function initEditor() {
   // Assim o bloco cresce uniforme. A posição é tratada pelo modo flow
   // normal (sem freeze) — o resize só muda tamanho de fonte, não move.
 
+  // Normaliza mouse OU toque num ponto {clientX, clientY}. É o que faz as
+  // bolinhas de redimensionar/girar funcionarem no toque (celular/iPad), que
+  // antes só respondiam a mouse.
+  function wmEvtPoint(ev) {
+    const t = (ev.touches && ev.touches[0]) || (ev.changedTouches && ev.changedTouches[0]);
+    if (t) return { clientX: t.clientX, clientY: t.clientY };
+    return { clientX: ev.clientX, clientY: ev.clientY };
+  }
+
   function onMultiHandleMouseDown(ev, handle) {
     if (!selectedWordIds || selectedWordIds.size === 0) return;
 
@@ -20404,28 +20424,34 @@ function initEditor() {
       ? { x: somaX / nPos, y: somaY / nPos }
       : { x: 0.5, y: 0.5 };
 
+    const _pt = wmEvtPoint(ev);
     multiResizeState = {
       handle,
       wordsData,
       groupCenter,
-      mouseStartX: ev.clientX,
-      mouseStartY: ev.clientY,
+      mouseStartX: _pt.clientX,
+      mouseStartY: _pt.clientY,
     };
 
     selectionBoxEl?.classList.add('is-resizing');
     document.body.style.cursor = window.getComputedStyle(ev.target).cursor;
     document.addEventListener('mousemove', onMultiHandleMouseMove);
     document.addEventListener('mouseup', onMultiHandleMouseUp);
+    document.addEventListener('touchmove', onMultiHandleMouseMove, { passive: false });
+    document.addEventListener('touchend', onMultiHandleMouseUp);
+    document.addEventListener('touchcancel', onMultiHandleMouseUp);
   }
 
   function onMultiHandleMouseMove(ev) {
     if (!multiResizeState) return;
+    if (ev.touches && ev.cancelable) ev.preventDefault();
     const s = multiResizeState;
 
     // Fator de escala = quanto o mouse se afastou na direção da alça,
     // simples e proporcional. dx/dy em px → fator suave.
-    const dx = ev.clientX - s.mouseStartX;
-    const dy = ev.clientY - s.mouseStartY;
+    const _pt = wmEvtPoint(ev);
+    const dx = _pt.clientX - s.mouseStartX;
+    const dy = _pt.clientY - s.mouseStartY;
 
     // Direção do crescimento conforme a alça arrastada.
     // Cantos = média de X e Y; lados = só o eixo correspondente.
@@ -20515,6 +20541,9 @@ function initEditor() {
     document.body.style.cursor = '';
     document.removeEventListener('mousemove', onMultiHandleMouseMove);
     document.removeEventListener('mouseup', onMultiHandleMouseUp);
+    document.removeEventListener('touchmove', onMultiHandleMouseMove);
+    document.removeEventListener('touchend', onMultiHandleMouseUp);
+    document.removeEventListener('touchcancel', onMultiHandleMouseUp);
     multiResizeState = null;
     markDirty();
     // NÃO chamar engine.playFull() aqui! Isso tocava a animação de
@@ -20574,6 +20603,7 @@ function initEditor() {
 
     const stanzaRect = stanza.getBoundingClientRect();
 
+    const _pt = wmEvtPoint(ev);
     selectionState = {
       handle,
       wordEl,
@@ -20583,8 +20613,8 @@ function initEditor() {
       baseHeight: baseRect.height,
       centerX,
       centerY,
-      mouseStartX: ev.clientX,
-      mouseStartY: ev.clientY,
+      mouseStartX: _pt.clientX,
+      mouseStartY: _pt.clientY,
       // Estado base do override (será modificado em real-time)
       initialFontSizeScale: ws.fontSizeScale || 1,
       initialScaleX: ws.scaleX || 1,
@@ -20601,6 +20631,9 @@ function initEditor() {
 
     document.addEventListener('mousemove', onHandleMouseMove);
     document.addEventListener('mouseup', onHandleMouseUp);
+    document.addEventListener('touchmove', onHandleMouseMove, { passive: false });
+    document.addEventListener('touchend', onHandleMouseUp);
+    document.addEventListener('touchcancel', onHandleMouseUp);
     document.addEventListener('keydown', onHandleKeyDown);
     document.addEventListener('keyup', onHandleKeyUp);
   }
@@ -20614,13 +20647,15 @@ function initEditor() {
 
   function onHandleMouseMove(ev) {
     if (!selectionState) return;
+    if (ev.touches && ev.cancelable) ev.preventDefault(); // não rola a tela ao arrastar a bolinha
     const s = selectionState;
-    const dx = ev.clientX - s.mouseStartX;
-    const dy = ev.clientY - s.mouseStartY;
+    const _pt = wmEvtPoint(ev);
+    const dx = _pt.clientX - s.mouseStartX;
+    const dy = _pt.clientY - s.mouseStartY;
 
     // === ROTAÇÃO ===
     if (s.handle === 'rotate') {
-      const angleRad = Math.atan2(ev.clientY - s.centerY, ev.clientX - s.centerX);
+      const angleRad = Math.atan2(_pt.clientY - s.centerY, _pt.clientX - s.centerX);
       let angleDeg = angleRad * 180 / Math.PI + 90;
       if (s.shiftHeld) angleDeg = Math.round(angleDeg / 15) * 15;
       // Normaliza
@@ -20759,6 +20794,9 @@ function initEditor() {
   function onHandleMouseUp() {
     document.removeEventListener('mousemove', onHandleMouseMove);
     document.removeEventListener('mouseup', onHandleMouseUp);
+    document.removeEventListener('touchmove', onHandleMouseMove);
+    document.removeEventListener('touchend', onHandleMouseUp);
+    document.removeEventListener('touchcancel', onHandleMouseUp);
     document.removeEventListener('keydown', onHandleKeyDown);
     document.removeEventListener('keyup', onHandleKeyUp);
     document.body.style.cursor = '';
