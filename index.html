@@ -2450,6 +2450,20 @@ body.timeline-collapsed .timeline-collapse-btn {
   .editor-timeline #timeline-info { display: none !important; }
 }
 
+/* iPad mini DEITADO (≈1024×768): cai no layout de gavetas, mas a tela fica
+   BAIXA e o canvas (width-driven no mobile) ficava alto demais, empurrando a
+   barra de ferramentas pra fora. Aqui o canvas volta a ser limitado pela
+   ALTURA (height-driven, com letterbox), cabendo inteiro. O (min-height:600px)
+   garante que isso vale só pra TABLET deitado — celular deitado (tela curta)
+   fica de fora, senão o canvas ficaria minúsculo. */
+@media (orientation: landscape) and (pointer: coarse) and (max-width: 1080px) and (min-height: 600px) {
+  .editor-canvas {
+    width: auto !important; height: 100% !important;
+    max-width: 100% !important; max-height: 100% !important;
+    flex-shrink: 1 !important;
+  }
+}
+
 /* === INPUTS (modal aspect customizado, futuras configurações) === */
 .input {
   width: 100%;
@@ -7165,7 +7179,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'ipad-paisagem-29jun';
+window.__WM_BUILD = 'ipad-mini-paisagem-29jun';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
