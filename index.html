@@ -7189,7 +7189,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'resize-perf-29jun';
+window.__WM_BUILD = 'resize-perf2-29jun';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -19610,8 +19610,9 @@ function initEditor() {
     dragState._snappedDeltaX = deltaX;
     dragState._snappedDeltaY = deltaY;
 
-    // Atualiza bounding box pra seguir
-    if (typeof updateSelectionBox === 'function') updateSelectionBox();
+    // Atualiza bounding box pra seguir (throttled — 1×/frame; sem isto,
+    // updateSelectionBox forçava layout a cada movimento e travava o arraste)
+    scheduleSelectionBoxUpdate();
   }
 
   function onMouseUp(ev) {
@@ -20506,6 +20507,20 @@ function initEditor() {
       if (Object.keys(patch).length > 0) {
         engine.setWordOverride(wid, patch);
       }
+      // PREVIEW AO VIVO da palavra (sem renderStanza) — replica o que o render
+      // faria: fontSize em "em" + posição em left/top%. Consolida ao soltar.
+      const _el = document.querySelector(`.lyric-word[data-word-id="${wid}"]`);
+      if (_el) {
+        const _wo2 = engine.wordOverrides[wid] || {};
+        const _fss = (_wo2.style && _wo2.style.fontSizeScale) || 1;
+        _el.style.fontSize = (_fss !== 1) ? `${_fss}em` : '';
+        if (_wo2.position) {
+          _el.style.left = (_wo2.position.x * 100).toFixed(3) + '%';
+          _el.style.top = (_wo2.position.y * 100).toFixed(3) + '%';
+        }
+        _el.style.opacity = '1';
+        _el.style.animation = 'none';
+      }
     });
 
     // NOTA: NÃO mexemos em engine.style.lineHeight aqui. Antes o
@@ -20515,25 +20530,10 @@ function initEditor() {
     // ficando espaçadas a cada correção"). O espaçamento é controle
     // do usuário, não efeito colateral do resize.
 
-    // Re-render coalescido (no máximo um por frame) — ver scheduleResizeRerender.
-    // CRÍTICO: renderStanza recria as palavras com opacity:0 (estado "antes da
-    // animação entrar"). Sem restaurar, elas ficam INVISÍVEIS durante a edição —
-    // por isso o post restaura opacity/animação e re-sincroniza as classes.
-    scheduleResizeRerender(() => {
-      if (typeof engine.killAllAnimations === 'function') {
-        try { engine.killAllAnimations(); } catch (e) {}
-      }
-      const _st = getStanzaEl();
-      if (_st) {
-        _st.querySelectorAll('.lyric-word').forEach(el => {
-          el.style.opacity = '1';
-          el.style.animation = 'none';
-          el.classList.toggle('is-word-selected', selectedWordIds.has(el.dataset.wordId));
-          el.classList.toggle('has-anim-override', !!engine.wordOverrides[el.dataset.wordId]);
-        });
-      }
-      updateSelectionBox();
-    });
+    // Sem renderStanza no arraste (o preview já foi aplicado direto no DOM acima).
+    // Só a caixa de seleção acompanha, throttled. O render real roda ao soltar.
+    if (selectionBoxEl) selectionBoxEl.classList.add('is-resizing');
+    scheduleSelectionBoxUpdate();
   }
 
   function onMultiHandleMouseUp() {
@@ -20557,7 +20557,13 @@ function initEditor() {
     // comportamento — só re-sincroniza classes e a caixa de seleção,
     // sem re-renderizar/animar o canvas.
     requestAnimationFrame(() => {
+      // Consolida com UM render real (crisp) agora que soltou — durante o
+      // arraste foi só preview direto no DOM. renderStanza (≠ playFull) é
+      // estático, então não desloca o bloco do centro.
+      try { engine.renderStanza(engine.currentStanzaIndex); } catch (e) {}
       $$('.lyric-word').forEach(el => {
+        el.style.opacity = '1';
+        el.style.animation = 'none';
         el.classList.toggle('is-word-selected', selectedWordIds.has(el.dataset.wordId));
         el.classList.toggle('has-anim-override', !!engine.wordOverrides[el.dataset.wordId]);
       });
@@ -20757,6 +20763,15 @@ function initEditor() {
     });
   }
 
+  // Atualização throttled da caixa de seleção (no máximo 1×/frame). updateSelectionBox
+  // força layout + medições; chamá-la a cada movimento de arraste/resize travava.
+  let _boxRafPending = false;
+  function scheduleSelectionBoxUpdate() {
+    if (_boxRafPending) return;
+    _boxRafPending = true;
+    requestAnimationFrame(() => { _boxRafPending = false; try { updateSelectionBox(); } catch (e) {} });
+  }
+
   /**
    * Aplica uma atualização no engine e re-renderiza estrofe.
    * Garante consistência total: engine → DOM → bounding box.
@@ -20796,21 +20811,26 @@ function initEditor() {
       engine.wordOverrides[selectedWordId] = newWO;
     }
 
-    // Re-render coalescido (no máximo um por frame) — ver scheduleResizeRerender.
-    scheduleResizeRerender(() => {
-      // Restaura opacity (sem animação durante edição)
-      const stanza = getStanzaEl();
-      if (stanza) {
-        stanza.querySelectorAll('.lyric-word').forEach(el => {
-          el.style.opacity = '1';
-          el.style.animation = 'none';
-        });
-      }
-      // Atualiza box
-      updateSelectionBox();
-      // Mantém estado de resize visualmente (a box é recriada após rerender)
-      if (selectionBoxEl) selectionBoxEl.classList.add('is-resizing');
-    });
+    // PREVIEW AO VIVO sem renderStanza (que recria a estrofe inteira e travava
+    // no arraste). Atualiza SÓ a palavra editada, direto no DOM, replicando
+    // exatamente o que o renderStanza faria (fontSize em "em" + --wm-word-tf).
+    // O renderStanza "de verdade" (crisp) roda UMA vez ao soltar (onHandleMouseUp).
+    const _wEl = document.querySelector(`.lyric-word[data-word-id="${selectedWordId}"]`);
+    if (_wEl) {
+      const _wo = engine.wordOverrides[selectedWordId] || {};
+      const _ws = _wo.style || {};
+      _wEl.style.fontSize = (_ws.fontSizeScale && _ws.fontSizeScale !== 1) ? `${_ws.fontSizeScale}em` : '';
+      const _rot = _wo.rotation || 0;
+      const _sx = _ws.scaleX || 1, _sy = _ws.scaleY || 1;
+      const _parts = [];
+      if (_rot !== 0) _parts.push(`rotate(${_rot}deg)`);
+      if (_sx !== 1 || _sy !== 1) _parts.push(`scale(${_sx}, ${_sy})`);
+      _wEl.style.setProperty('--wm-word-tf', _parts.join(' ') || 'scale(1)');
+      _wEl.style.opacity = '1';
+      _wEl.style.animation = 'none';
+    }
+    if (selectionBoxEl) selectionBoxEl.classList.add('is-resizing');
+    scheduleSelectionBoxUpdate();
   }
 
   function onHandleMouseUp() {
@@ -20826,6 +20846,12 @@ function initEditor() {
     if (selectionState) {
       markDirty();
       selectionState = null;
+      // Consolida com UM render real (crisp) agora que soltou — durante o
+      // arraste foi só preview direto no DOM.
+      try { engine.renderStanza(engine.currentStanzaIndex); } catch (e) {}
+      const _st = getStanzaEl();
+      if (_st) _st.querySelectorAll('.lyric-word').forEach(el => { el.style.opacity = '1'; el.style.animation = 'none'; });
+      updateSelectionBox();
       requestAnimationFrame(() => {
         if (typeof renderWordPanel === 'function') renderWordPanel();
       });
