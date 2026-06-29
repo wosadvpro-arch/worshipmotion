@@ -7189,7 +7189,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'handles-toque-29jun';
+window.__WM_BUILD = 'resize-perf-29jun';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -20515,24 +20515,25 @@ function initEditor() {
     // ficando espaçadas a cada correção"). O espaçamento é controle
     // do usuário, não efeito colateral do resize.
 
-    engine.renderStanza(engine.currentStanzaIndex);
-    // CRÍTICO: renderStanza recria as palavras com opacity:0 (estado
-    // "antes da animação entrar"). Sem restaurar, elas ficam INVISÍVEIS
-    // durante a edição — esse era o bug "palavras somem no 1º clique
-    // de cada estrofe" (o single-resize já restaurava; o multi não).
-    if (typeof engine.killAllAnimations === 'function') {
-      try { engine.killAllAnimations(); } catch (e) {}
-    }
-    const _st = getStanzaEl();
-    if (_st) {
-      _st.querySelectorAll('.lyric-word').forEach(el => {
-        el.style.opacity = '1';
-        el.style.animation = 'none';
-        el.classList.toggle('is-word-selected', selectedWordIds.has(el.dataset.wordId));
-        el.classList.toggle('has-anim-override', !!engine.wordOverrides[el.dataset.wordId]);
-      });
-    }
-    requestAnimationFrame(() => updateSelectionBox());
+    // Re-render coalescido (no máximo um por frame) — ver scheduleResizeRerender.
+    // CRÍTICO: renderStanza recria as palavras com opacity:0 (estado "antes da
+    // animação entrar"). Sem restaurar, elas ficam INVISÍVEIS durante a edição —
+    // por isso o post restaura opacity/animação e re-sincroniza as classes.
+    scheduleResizeRerender(() => {
+      if (typeof engine.killAllAnimations === 'function') {
+        try { engine.killAllAnimations(); } catch (e) {}
+      }
+      const _st = getStanzaEl();
+      if (_st) {
+        _st.querySelectorAll('.lyric-word').forEach(el => {
+          el.style.opacity = '1';
+          el.style.animation = 'none';
+          el.classList.toggle('is-word-selected', selectedWordIds.has(el.dataset.wordId));
+          el.classList.toggle('has-anim-override', !!engine.wordOverrides[el.dataset.wordId]);
+        });
+      }
+      updateSelectionBox();
+    });
   }
 
   function onMultiHandleMouseUp() {
@@ -20736,6 +20737,26 @@ function initEditor() {
     }
   }
 
+  // Coalesce de render durante o arraste: re-renderizar a estrofe inteira a
+  // CADA evento de movimento (mouse e, principalmente, TOQUE — que dispara
+  // bem mais rápido que a taxa de tela) é o que travava o resize. Aqui
+  // agendamos no máximo UM render por frame; movimentos extras no mesmo frame
+  // são descartados, mantendo só o estado mais recente. O estado do engine já
+  // foi atualizado de forma síncrona antes de chamar isto, então nada se perde.
+  let _resizeRafPending = false;
+  let _resizeRafPost = null;
+  function scheduleResizeRerender(postFn) {
+    _resizeRafPost = postFn || null;
+    if (_resizeRafPending) return;
+    _resizeRafPending = true;
+    requestAnimationFrame(() => {
+      _resizeRafPending = false;
+      const post = _resizeRafPost; _resizeRafPost = null;
+      try { engine.renderStanza(engine.currentStanzaIndex); } catch (e) {}
+      if (typeof post === 'function') { try { post(); } catch (e) {} }
+    });
+  }
+
   /**
    * Aplica uma atualização no engine e re-renderiza estrofe.
    * Garante consistência total: engine → DOM → bounding box.
@@ -20775,20 +20796,21 @@ function initEditor() {
       engine.wordOverrides[selectedWordId] = newWO;
     }
 
-    // Re-renderiza estrofe (estamos em mode-free, palavra mantém posição)
-    engine.renderStanza(engine.currentStanzaIndex);
-    // Restaura opacity (sem animação durante edição)
-    const stanza = getStanzaEl();
-    if (stanza) {
-      stanza.querySelectorAll('.lyric-word').forEach(el => {
-        el.style.opacity = '1';
-        el.style.animation = 'none';
-      });
-    }
-    // Atualiza box
-    updateSelectionBox();
-    // Mantém estado de resize visualmente (a box é recriada após rerender)
-    if (selectionBoxEl) selectionBoxEl.classList.add('is-resizing');
+    // Re-render coalescido (no máximo um por frame) — ver scheduleResizeRerender.
+    scheduleResizeRerender(() => {
+      // Restaura opacity (sem animação durante edição)
+      const stanza = getStanzaEl();
+      if (stanza) {
+        stanza.querySelectorAll('.lyric-word').forEach(el => {
+          el.style.opacity = '1';
+          el.style.animation = 'none';
+        });
+      }
+      // Atualiza box
+      updateSelectionBox();
+      // Mantém estado de resize visualmente (a box é recriada após rerender)
+      if (selectionBoxEl) selectionBoxEl.classList.add('is-resizing');
+    });
   }
 
   function onHandleMouseUp() {
