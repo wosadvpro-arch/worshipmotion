@@ -7280,7 +7280,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'videoaulas-btn-29jun';
+window.__WM_BUILD = 'loops-botao-some-29jun';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -10571,6 +10571,8 @@ function wmCreditosInfo() {
     gastos,
     restante: Math.max(0, plano.creditos - gastos),
     marca: plano.marca,
+    temPack: !!p.tem_pack_fontes,
+    temLoops: !!p.tem_pack_loops,
   };
 }
 
@@ -11187,12 +11189,15 @@ window.WM_CUSTOM_FONTS = {
 };
 
 // ============================================================
-//  TYPE PACK — pack de fontes premium (compra pela Hotmart)
+//  TYPE PACK — pack de fontes premium
 // ============================================================
-// MODELO: o acesso é entregue DIRETO pela Hotmart. A pessoa compra pelo
-// botão na aba Fontes, a Hotmart entrega o pack pra ela baixar, e ela sobe
-// as fontes pelo "Carregar fonte do computador". O app NÃO libera fontes
-// por plano — por isso WM_PACK_AUTO_UNLOCK fica false.
+// MODELO (duas entregas):
+//  (1) PRO PLUS: recebe as fontes AUTOMATICAMENTE. Ao abrir o editor, o app
+//      detecta o plano pro_plus e carrega as fontes da pasta 'fontes/'
+//      (publicada no GitHub, ao lado do index.html). Sem download, sem zip.
+//  (2) FREE/PRO: compram o pack avulso pelo botão na aba Fontes; a Hotmart
+//      entrega o fontes.zip pra baixar e subir via "Carregar fonte do computador".
+// >>> Pra (1) funcionar, a pasta 'fontes/' PRECISA estar publicada no repo. <<<
 //
 // >>> COLE AQUI O LINK DE COMPRA DA HOTMART (entre as aspas): <<<
 window.WM_FONT_PACK_URL = 'https://pay.hotmart.com/R106542816D?off=ky5fkzoy';
@@ -11213,10 +11218,10 @@ window.WM_VIDEOAULAS = [
   // { titulo: 'Como adicionar fontes (Pack de Fontes)', youtube: 'https://youtu.be/SEU_ID_AQUI' },
   // { titulo: 'Como adicionar backgrounds e loops', youtube: 'https://youtu.be/SEU_ID_AQUI' },
 ];
-// Deixe false: o pack não é liberado automaticamente por nenhum plano.
-window.WM_PACK_AUTO_UNLOCK = false;
+// true = Pro Plus recebe o pack de fontes automaticamente (puxa da pasta fontes/).
+window.WM_PACK_AUTO_UNLOCK = true;
 
-// Lista mantida só pra referência/futuro (não é carregada com auto-unlock off).
+// Lista das fontes do pack (carregada automaticamente pra quem é Pro Plus).
 const WM_PACK_FONTS = [
   { family: "ALERA BLUES", url: 'fontes/alera-blues.woff2' },
   { family: "ALERA BLUES Italic", url: 'fontes/alera-blues-italic.woff2' },
@@ -11350,12 +11355,30 @@ function _ehProPlus() {
   } catch (e) { return false; }
 }
 
+// Comprou o Pack de Fontes avulso (qualquer plano)? Marca vem do perfil
+// (profiles.tem_pack_fontes), gravada pelo webhook da Hotmart na compra.
+function _temPackFontes() {
+  try {
+    const i = window.WM_CREDITS && window.WM_CREDITS.info && window.WM_CREDITS.info();
+    return !!(i && i.temPack);
+  } catch (e) { return false; }
+}
+
+// Tem direito ao pack? Pro Plus (incluso) OU comprou avulso.
+function _temAcessoAoPack() {
+  return !!window.WM_PACK_AUTO_UNLOCK && (_ehProPlus() || _temPackFontes());
+}
+
 // Carrega (ou remove) as fontes do pack conforme o plano. Retorna true se
 // houve mudança (pra quem chamou saber se precisa atualizar o seletor).
 // À prova de falha: qualquer erro só deixa de carregar a fonte, não trava nada.
 async function loadPackFonts() {
-  if (!window.WM_PACK_AUTO_UNLOCK || !_ehProPlus()) {
-    // Não é Pro Plus → garante que NENHUMA fonte do pack fica registrada
+  // Esconde o botão "Adquirir Pack de Fontes" pra quem já tem o pack.
+  try { _atualizarBotaoComprarFontes(); } catch (e) {}
+  // Aproveita o mesmo gancho (roda quando o plano carrega) pra atualizar loops.
+  try { _atualizarBotaoComprarLoops(); } catch (e) {}
+  if (!_temAcessoAoPack()) {
+    // Sem acesso ao pack → garante que NENHUMA fonte do pack fica registrada
     // (cobre o caso de downgrade). Não toca nas fontes do próprio usuário.
     let removeu = false;
     for (const [key, info] of Array.from(_registeredFonts.entries())) {
@@ -11387,6 +11410,30 @@ async function loadPackFonts() {
   }));
   return resultados.some(Boolean);
 }
+// Esconde o botão de comprar o pack pra quem já recebe automático (Pro Plus);
+// mostra pra Free/Pro. Seguro chamar a qualquer momento.
+function _atualizarBotaoComprarFontes() {
+  const b = document.getElementById('ctx-fonts-buypack');
+  if (!b) return;
+  b.style.display = _temAcessoAoPack() ? 'none' : '';
+}
+
+// Comprou o Pack de Loops avulso? Marca vem do perfil (profiles.tem_pack_loops),
+// gravada pelo webhook da Hotmart na compra. (Entrega do arquivo é pela Hotmart;
+// aqui só some o botão de comprar.)
+function _temPackLoops() {
+  try {
+    const i = window.WM_CREDITS && window.WM_CREDITS.info && window.WM_CREDITS.info();
+    return !!(i && i.temLoops);
+  } catch (e) { return false; }
+}
+function _atualizarBotaoComprarLoops() {
+  const b = document.getElementById('btn-buy-loops');
+  if (!b) return;
+  b.style.display = _temPackLoops() ? 'none' : '';
+}
+window._wmAtualizarBotaoComprarLoops = _atualizarBotaoComprarLoops;
+window._wmAtualizarBotaoComprarFontes = _atualizarBotaoComprarFontes;
 window._loadPackFonts = loadPackFonts;
 
 })();
@@ -22526,6 +22573,10 @@ function initEditor() {
     const panel = document.getElementById('ctx-fonts-panel');
     if (!panel) return;
     panel.style.display = 'flex';
+    // Pro Plus já tem o pack → esconde o botão de comprar.
+    if (typeof window._wmAtualizarBotaoComprarFontes === 'function') {
+      try { window._wmAtualizarBotaoComprarFontes(); } catch (e) {}
+    }
     renderListaFontes('');
     const search = document.getElementById('ctx-fonts-search');
     if (search) { search.value = ''; setTimeout(() => search.focus(), 50); }
@@ -24387,6 +24438,9 @@ function initEditor() {
         c.style.display = c.dataset.rpanelContent === name ? '' : 'none';
       });
       // Re-renderiza ao abrir
+      if (name === 'bg' && typeof window._wmAtualizarBotaoComprarLoops === 'function') {
+        try { window._wmAtualizarBotaoComprarLoops(); } catch (e) {}
+      }
       if (name === 'scenes' && typeof renderScenesList === 'function') {
         renderScenesList();
       }
