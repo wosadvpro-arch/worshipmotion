@@ -7278,7 +7278,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'fontes-fecha-fora-29jun';
+window.__WM_BUILD = 'palavra-desselec-29jun';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -19270,6 +19270,26 @@ function initEditor() {
     canvas.addEventListener('dblclick', onCanvasDblClick);
     // Nota: clicks em área vazia são tratados pelo onMarqueeMouseUp
     // (que desseleciona se não houve drag).
+
+    // Clicar no PALCO em volta do texto (margens do canvas, fundo) também
+    // desseleciona a palavra — mas NÃO dentro do texto (lógica própria),
+    // nem nas alças de seleção, nem nas barras de edição da palavra.
+    const stage = document.getElementById('editor-canvas');
+    if (stage && !stage.dataset.wmDeselectWired) {
+      stage.dataset.wmDeselectWired = '1';
+      const stageDeselect = (ev) => {
+        const t = ev.target;
+        if (!t || !t.closest) return;
+        if (t.closest('#canvas-content')) return;     // dentro do texto: já tratado
+        if (t.closest('.lyric-word')) return;
+        if (t.closest('.selection-box')) return;      // mexendo nas alças
+        if (t.closest('#ctx-toolbar')) return;        // barra flutuante da palavra
+        if (t.closest('#ctx-fonts-panel')) return;    // painel de fontes
+        if (typeof clearSelection === 'function') clearSelection();
+      };
+      stage.addEventListener('mousedown', stageDeselect);
+      stage.addEventListener('touchstart', stageDeselect, { passive: true });
+    }
   }
   setTimeout(bindWordInteractionHandlers, 50);
 
