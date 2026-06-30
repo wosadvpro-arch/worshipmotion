@@ -1748,6 +1748,39 @@ body.wm-recording-mode::after {
   font-size: 12px; cursor: pointer; transition: background 0.15s, border-color 0.15s;
 }
 .ctx-fonts-upload:hover { background: rgba(139,92,246,0.1); border-color: var(--accent, #8b5cf6); }
+.ctx-fonts-buypack {
+  width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 10px; margin-bottom: 12px; border-radius: 8px;
+  background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: #fff;
+  border: none; font-size: 12px; font-weight: 600; cursor: pointer;
+  transition: filter 0.15s, transform 0.05s;
+}
+.ctx-fonts-buypack:hover { filter: brightness(1.08); }
+.ctx-fonts-buypack:active { transform: scale(0.99); }
+
+/* === Videoaulas === */
+.videoaulas-player-wrap {
+  position: relative; width: 100%; aspect-ratio: 16/9;
+  border-radius: 10px; overflow: hidden; background: #000;
+  margin-bottom: 16px; border: 1px solid var(--border-default, rgba(255,255,255,0.1));
+}
+.videoaulas-player { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.videoaulas-list { display: flex; flex-direction: column; gap: 8px; }
+.videoaula-item {
+  display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;
+  padding: 11px 13px; border-radius: 9px; cursor: pointer;
+  background: var(--bg-elevated, rgba(255,255,255,0.04));
+  border: 1px solid var(--border-default, rgba(255,255,255,0.08));
+  transition: background 0.15s, border-color 0.15s;
+}
+.videoaula-item:hover { background: rgba(139,92,246,0.1); border-color: var(--accent, #8b5cf6); }
+.videoaula-item.is-active { background: rgba(139,92,246,0.16); border-color: var(--accent, #8b5cf6); }
+.videoaula-item .va-icon {
+  flex: 0 0 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: #fff;
+}
+.videoaula-item .va-title { font-size: 13.5px; font-weight: 600; color: var(--text-primary, #e8e8ee); }
+.videoaulas-empty { text-align: center; padding: 28px 16px; color: var(--text-secondary); }
 .ctx-font-item { gap: 8px; padding: 7px 12px; }
 .ctx-font-star {
   flex: 0 0 auto; width: 26px; height: 26px; padding: 4px; border: none; background: transparent;
@@ -6081,6 +6114,10 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
         Meus projetos
       </button>
+      <button class="btn btn-ghost btn-sm" id="btn-videoaulas" data-tooltip="Videoaulas">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><polygon points="10 9 15 12 10 15 10 9" fill="currentColor" stroke="none"/></svg>
+        Videoaulas
+      </button>
       <div style="width:1px; height:20px; background:var(--border-default); margin: 0 4px;"></div>
       <button class="btn btn-ghost btn-sm icon-only" id="btn-undo" disabled data-tooltip="Desfazer (Ctrl+Z)">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-15-6.7L3 13"/></svg>
@@ -6329,6 +6366,11 @@ Digno de toda honra"></textarea>
       <button class="ctx-fonts-upload" id="ctx-fonts-upload">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
         Carregar fonte do computador
+      </button>
+      <button class="ctx-fonts-buypack" id="ctx-fonts-buypack"
+        onclick="if(window.WM_FONT_PACK_URL){window.open(window.WM_FONT_PACK_URL,'_blank');}else{(window.wmAlert||window.alert)('Link do pack em breve!');}">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        Adquirir Pack de Fontes
       </button>
       <div class="ctx-fonts-list" id="ctx-fonts-list"></div>
     </div>
@@ -6639,6 +6681,11 @@ Digno de toda honra"></textarea>
           <button class="btn btn-ghost btn-sm" id="btn-upload-bg" style="margin-top: 8px; width: 100%;">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             Adicionar background (imagem ou vídeo)
+          </button>
+          <button class="ctx-fonts-buypack" id="btn-buy-loops" style="margin-top: 8px;"
+            onclick="if(window.WM_LOOP_PACK_URL){window.open(window.WM_LOOP_PACK_URL,'_blank');}else{(window.wmAlert||window.alert)('Link do pack em breve!');}">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+            Adquirir Pack de Loops
           </button>
         </div>
       </div>
@@ -6954,6 +7001,32 @@ Digno de toda honra"></textarea>
 </div>
 
 
+<div class="modal-overlay" id="videoaulas-modal-overlay">
+  <div class="modal" style="max-width: 760px;">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">Videoaulas</div>
+        <div class="modal-subtitle">Aprenda a usar o app, adicionar fontes, backgrounds e loops</div>
+      </div>
+      <button class="icon-btn" id="videoaulas-close" data-tooltip="Fechar">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" style="padding: 20px;">
+      <div id="videoaulas-player-wrap" class="videoaulas-player-wrap" style="display:none;">
+        <iframe id="videoaulas-player" class="videoaulas-player" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
+      </div>
+      <div id="videoaulas-list" class="videoaulas-list"></div>
+      <div id="videoaulas-empty" class="videoaulas-empty" style="display:none;">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:.5;"><rect x="2" y="4" width="20" height="16" rx="2"/><polygon points="10 9 15 12 10 15 10 9"/></svg>
+        <p style="margin:12px 0 4px; font-weight:600; color:var(--text-primary);">Nenhuma videoaula ainda</p>
+        <p style="margin:0; font-size:13px; color:var(--text-secondary);">As aulas vão aparecer aqui assim que forem adicionadas.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+
 <div class="modal-overlay" id="export-modal-overlay">
   <div class="modal export-modal">
     <div class="modal-header">
@@ -7205,7 +7278,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'type-pack-5fontes-29jun';
+window.__WM_BUILD = 'videoaulas-29jun';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -11112,19 +11185,160 @@ window.WM_CUSTOM_FONTS = {
 };
 
 // ============================================================
-//  TYPE PACK — fontes premium exclusivas do plano Pro Plus
+//  TYPE PACK — pack de fontes premium (compra pela Hotmart)
 // ============================================================
-// As fontes do pack ficam hospedadas no próprio site (pasta /fontes/),
-// e são liberadas SÓ pra quem é Pro Plus. Pra adicionar/remover fontes do
-// pack, edite a lista abaixo. O "family" é o nome EXATO que aparece no
-// seletor e que os projetos usam — tem que bater com o nome real da fonte.
-// O "url" é só onde o arquivo está (pode ter nome de arquivo simples).
+// MODELO: o acesso é entregue DIRETO pela Hotmart. A pessoa compra pelo
+// botão na aba Fontes, a Hotmart entrega o pack pra ela baixar, e ela sobe
+// as fontes pelo "Carregar fonte do computador". O app NÃO libera fontes
+// por plano — por isso WM_PACK_AUTO_UNLOCK fica false.
+//
+// >>> COLE AQUI O LINK DE COMPRA DA HOTMART (entre as aspas): <<<
+window.WM_FONT_PACK_URL = 'https://pay.hotmart.com/R106542816D?off=ky5fkzoy';
+// >>> COLE AQUI O LINK DO PACK DE LOOPS/VÍDEOS DA HOTMART (entre as aspas): <<<
+window.WM_LOOP_PACK_URL = 'https://pay.hotmart.com/V106543063G?off=oecg3xoc';
+
+// ============================================================
+//  VIDEOAULAS — lista de aulas que aparecem no botão "Videoaulas"
+// ============================================================
+// Pra ADICIONAR uma aula: gravar o vídeo, subir no YouTube (pode ser
+// "Não listado"), copiar o link e colar mais uma linha aqui no formato:
+//   { titulo: 'Nome da aula', youtube: 'LINK_DO_YOUTUBE' },
+// Aceita qualquer formato de link (youtu.be/..., youtube.com/watch?v=...,
+// ou só o ID). A ORDEM da lista é a ordem que aparece no app.
+window.WM_VIDEOAULAS = [
+  // EXEMPLOS (apague os // e troque o link quando gravar):
+  // { titulo: 'Primeiros passos no app', youtube: 'https://youtu.be/SEU_ID_AQUI' },
+  // { titulo: 'Como adicionar fontes (Pack de Fontes)', youtube: 'https://youtu.be/SEU_ID_AQUI' },
+  // { titulo: 'Como adicionar backgrounds e loops', youtube: 'https://youtu.be/SEU_ID_AQUI' },
+];
+// Deixe false: o pack não é liberado automaticamente por nenhum plano.
+window.WM_PACK_AUTO_UNLOCK = false;
+
+// Lista mantida só pra referência/futuro (não é carregada com auto-unlock off).
 const WM_PACK_FONTS = [
-  { family: 'Grache Hustle',      url: 'fontes/grache-hustle.ttf' },
-  { family: 'Dalven Goofler',     url: 'fontes/dalven-goofler.ttf' },
-  { family: 'Cutie Slime Script', url: 'fontes/cutie-slime-script.ttf' },
-  { family: 'Antara Rough',       url: 'fontes/antara-rough.ttf' },
-  { family: 'Bendios Rembine',    url: 'fontes/bendios-rembine.ttf' },
+  { family: "ALERA BLUES", url: 'fontes/alera-blues.woff2' },
+  { family: "ALERA BLUES Italic", url: 'fontes/alera-blues-italic.woff2' },
+  { family: "ATP Basehead", url: 'fontes/atp-basehead.woff2' },
+  { family: "ATP Mediore", url: 'fontes/atp-mediore.woff2' },
+  { family: "Actively", url: 'fontes/actively.woff2' },
+  { family: "Amsahoney", url: 'fontes/amsahoney.woff' },
+  { family: "Antara Nodes", url: 'fontes/antara-nodes.ttf' },
+  { family: "Antara Rough", url: 'fontes/antara-rough.ttf' },
+  { family: "Antara Smoth", url: 'fontes/antara-smoth.ttf' },
+  { family: "Away Days", url: 'fontes/away-days.ttf' },
+  { family: "BALTRO", url: 'fontes/baltro.woff2' },
+  { family: "BROKENZ", url: 'fontes/brokenz.woff2' },
+  { family: "Bellerind", url: 'fontes/bellerind.woff2' },
+  { family: "Beloin", url: 'fontes/beloin.ttf' },
+  { family: "Bendios Rembine", url: 'fontes/bendios-rembine.woff' },
+  { family: "Beyond Original", url: 'fontes/beyond-original.woff2' },
+  { family: "Black Fatal", url: 'fontes/black-fatal.woff2' },
+  { family: "Blackiron", url: 'fontes/blackiron.woff2' },
+  { family: "Blackiron Stamp", url: 'fontes/blackiron-stamp.woff2' },
+  { family: "Blakson Hustle", url: 'fontes/blakson-hustle.woff2' },
+  { family: "Bostone", url: 'fontes/bostone.ttf' },
+  { family: "Brawn", url: 'fontes/brawn.otf' },
+  { family: "Brione", url: 'fontes/brione.woff2' },
+  { family: "Brush Rings", url: 'fontes/brush-rings.woff2' },
+  { family: "CS Gardner", url: 'fontes/cs-gardner.woff2' },
+  { family: "CS Gretel", url: 'fontes/cs-gretel.woff2' },
+  { family: "CS Welcome", url: 'fontes/cs-welcome.woff2' },
+  { family: "Chinstrap Stucky", url: 'fontes/chinstrap-stucky.woff2' },
+  { family: "Cook Condenshine", url: 'fontes/cook-condenshine.woff2' },
+  { family: "Couture", url: 'fontes/couture.woff' },
+  { family: "Creative Torque", url: 'fontes/creative-torque.ttf' },
+  { family: "Crunch", url: 'fontes/crunch.ttf' },
+  { family: "Crusher", url: 'fontes/crusher.ttf' },
+  { family: "Cutie Slime Sans", url: 'fontes/cutie-slime-sans.woff2' },
+  { family: "Cutie Slime Script", url: 'fontes/cutie-slime-script.woff2' },
+  { family: "DARKES", url: 'fontes/darkes.ttf' },
+  { family: "Dalven Goofler", url: 'fontes/dalven-goofler.woff2' },
+  { family: "Decoupe", url: 'fontes/decoupe.otf' },
+  { family: "Diamonds", url: 'fontes/diamonds.ttf' },
+  { family: "Dispay Micko", url: 'fontes/dispay-micko.ttf' },
+  { family: "Djingo", url: 'fontes/djingo.woff2' },
+  { family: "Dlutend", url: 'fontes/dlutend.woff2' },
+  { family: "Doftplays", url: 'fontes/doftplays.woff2' },
+  { family: "Elmonta", url: 'fontes/elmonta.ttf' },
+  { family: "Eloquia Display", url: 'fontes/eloquia-display.otf' },
+  { family: "Eloquia Text", url: 'fontes/eloquia-text.otf' },
+  { family: "Encave", url: 'fontes/encave.woff2' },
+  { family: "Encave Outline", url: 'fontes/encave-outline.woff2' },
+  { family: "Flusteria Routine", url: 'fontes/flusteria-routine.woff2' },
+  { family: "Funk Yeah", url: 'fontes/funk-yeah.otf' },
+  { family: "GC Back Ford", url: 'fontes/gc-back-ford.woff2' },
+  { family: "GC Driver Company", url: 'fontes/gc-driver-company.woff2' },
+  { family: "GC Driver Company Italic", url: 'fontes/gc-driver-company-italic.woff2' },
+  { family: "GC New Times Remain", url: 'fontes/gc-new-times-remain.woff2' },
+  { family: "GC Sublime", url: 'fontes/gc-sublime.woff2' },
+  { family: "GEISTA MOND", url: 'fontes/geista-mond.ttf' },
+  { family: "GREAT RESPECT", url: 'fontes/great-respect.woff2' },
+  { family: "Galagos", url: 'fontes/galagos.woff2' },
+  { family: "Gaslight Skyline", url: 'fontes/gaslight-skyline.woff2' },
+  { family: "Ghofty", url: 'fontes/ghofty.woff' },
+  { family: "Grache Hustle", url: 'fontes/grache-hustle.woff2' },
+  { family: "Grift", url: 'fontes/grift.woff2' },
+  { family: "Highway 75", url: 'fontes/highway-75.otf' },
+  { family: "History Typeface", url: 'fontes/history-typeface.ttf' },
+  { family: "Honest Mistake", url: 'fontes/honest-mistake.woff2' },
+  { family: "Hornset", url: 'fontes/hornset.woff2' },
+  { family: "Hudson", url: 'fontes/hudson.ttf' },
+  { family: "Ibrand", url: 'fontes/ibrand.woff2' },
+  { family: "Inspires", url: 'fontes/inspires.woff' },
+  { family: "Jugho", url: 'fontes/jugho.woff2' },
+  { family: "Kartyn", url: 'fontes/kartyn.woff2' },
+  { family: "LION CRUNCH", url: 'fontes/lion-crunch.woff' },
+  { family: "LeBlanc", url: 'fontes/leblanc.otf' },
+  { family: "Link Cypher", url: 'fontes/link-cypher.woff2' },
+  { family: "Little Supply", url: 'fontes/little-supply.woff2' },
+  { family: "Maker's Serif", url: 'fontes/makers-serif.ttf' },
+  { family: "Marble Rushy", url: 'fontes/marble-rushy.woff2' },
+  { family: "Meglo", url: 'fontes/meglo.woff2' },
+  { family: "Mellow Wiggle", url: 'fontes/mellow-wiggle.woff' },
+  { family: "Merca", url: 'fontes/merca.woff2' },
+  { family: "Micelar", url: 'fontes/micelar.woff2' },
+  { family: "Might", url: 'fontes/might.ttf' },
+  { family: "Mount Sagilite", url: 'fontes/mount-sagilite.woff2' },
+  { family: "Muzzaro", url: 'fontes/muzzaro.woff2' },
+  { family: "Nelo Dream", url: 'fontes/nelo-dream.woff2' },
+  { family: "Neuething Sans", url: 'fontes/neuething-sans.woff2' },
+  { family: "Noblemoon", url: 'fontes/noblemoon.woff2' },
+  { family: "Olline", url: 'fontes/olline.woff2' },
+  { family: "Omica", url: 'fontes/omica.woff2' },
+  { family: "Onlytime", url: 'fontes/onlytime.woff2' },
+  { family: "Origin", url: 'fontes/origin.woff' },
+  { family: "Outright", url: 'fontes/outright.ttf' },
+  { family: "Outright Bold", url: 'fontes/outright-bold.ttf' },
+  { family: "Outright Italic", url: 'fontes/outright-italic.ttf' },
+  { family: "Outright Outline", url: 'fontes/outright-outline.ttf' },
+  { family: "Over Gives", url: 'fontes/over-gives.ttf' },
+  { family: "Paris", url: 'fontes/paris.woff' },
+  { family: "Playstroke", url: 'fontes/playstroke.woff2' },
+  { family: "Prime Brand", url: 'fontes/prime-brand.woff2' },
+  { family: "Qimoy", url: 'fontes/qimoy.ttf' },
+  { family: "Qimoy Soft", url: 'fontes/qimoy-soft.ttf' },
+  { family: "Refillaz", url: 'fontes/refillaz.woff' },
+  { family: "Restou", url: 'fontes/restou.woff2' },
+  { family: "Rostown", url: 'fontes/rostown.woff2' },
+  { family: "Rude Brush", url: 'fontes/rude-brush.woff2' },
+  { family: "Simple Intention", url: 'fontes/simple-intention.woff2' },
+  { family: "Standard Vertical", url: 'fontes/standard-vertical.woff2' },
+  { family: "Stats", url: 'fontes/stats.ttf' },
+  { family: "Stoplight", url: 'fontes/stoplight.woff2' },
+  { family: "Sweet Tone", url: 'fontes/sweet-tone.woff2' },
+  { family: "TIGER POPS", url: 'fontes/tiger-pops.woff' },
+  { family: "Tanisher", url: 'fontes/tanisher.woff2' },
+  { family: "Thevalo Brush", url: 'fontes/thevalo-brush.woff2' },
+  { family: "Thought", url: 'fontes/thought.ttf' },
+  { family: "Timber Slicer", url: 'fontes/timber-slicer.ttf' },
+  { family: "Twilight Script", url: 'fontes/twilight-script.otf' },
+  { family: "Twilight Swashes", url: 'fontes/twilight-swashes.otf' },
+  { family: "TypeWorn", url: 'fontes/typeworn.otf' },
+  { family: "Urban Beat", url: 'fontes/urban-beat.woff' },
+  { family: "Wackers", url: 'fontes/wackers.woff2' },
+  { family: "Wedank", url: 'fontes/wedank.woff2' },
+  { family: "Weekend Plans", url: 'fontes/weekend-plans.woff2' },
+  { family: "overmature grotesk", url: 'fontes/overmature-grotesk.ttf' },
 ];
 
 function _ehProPlus() {
@@ -11138,7 +11352,7 @@ function _ehProPlus() {
 // houve mudança (pra quem chamou saber se precisa atualizar o seletor).
 // À prova de falha: qualquer erro só deixa de carregar a fonte, não trava nada.
 async function loadPackFonts() {
-  if (!_ehProPlus()) {
+  if (!window.WM_PACK_AUTO_UNLOCK || !_ehProPlus()) {
     // Não é Pro Plus → garante que NENHUMA fonte do pack fica registrada
     // (cobre o caso de downgrade). Não toca nas fontes do próprio usuário.
     let removeu = false;
@@ -11151,27 +11365,25 @@ async function loadPackFonts() {
     }
     return removeu;
   }
-  // É Pro Plus → registra as fontes do pack que ainda não estão registradas.
-  let registrou = false;
-  for (const pf of WM_PACK_FONTS) {
+  // É Pro Plus → registra as fontes do pack (EM PARALELO) que ainda não estão registradas.
+  const _jaRegistrada = (fam) => { let t = false; _registeredFonts.forEach(info => { if (info.family === fam) t = true; }); return t; };
+  const resultados = await Promise.all(WM_PACK_FONTS.map(async (pf) => {
     // Dedup por família: se já existe uma fonte com esse nome (ex.: o próprio
     // produtor subiu a fonte na conta dele), não duplica no seletor.
-    let jaTem = false;
-    _registeredFonts.forEach(info => { if (info.family === pf.family) jaTem = true; });
-    if (jaTem) continue;
+    if (_jaRegistrada(pf.family)) return false;
     try {
       const resp = await fetch(pf.url);
-      if (!resp.ok) { console.warn('[pack fontes] não encontrei', pf.url, resp.status); continue; }
+      if (!resp.ok) { console.warn('[pack fontes] não encontrei', pf.url, resp.status); return false; }
       const buffer = await resp.arrayBuffer();
       const fontFace = new FontFace(pf.family, buffer);
       await fontFace.load();
       document.fonts.add(fontFace);
       const id = 'pack:' + pf.family;
       _registeredFonts.set(id, { fontFace, name: pf.family, family: pf.family, assetId: id, isPack: true });
-      registrou = true;
-    } catch (e) { console.warn('[pack fontes] falha em', pf.family, e); }
-  }
-  return registrou;
+      return true;
+    } catch (e) { console.warn('[pack fontes] falha em', pf.family, e); return false; }
+  }));
+  return resultados.some(Boolean);
 }
 window._loadPackFonts = loadPackFonts;
 
@@ -29321,6 +29533,67 @@ function initEditor() {
   // Botão "Salvar template" — captura projeto atual como template
   $('#btn-save-template')?.addEventListener('click', () => {
     saveCurrentAsTemplate();
+  });
+
+  // ===== Videoaulas =====
+  function _vaEmbedUrl(link) {
+    if (!link) return '';
+    const s = String(link).trim();
+    let id = '';
+    let m;
+    if ((m = s.match(/[?&]v=([A-Za-z0-9_-]{6,})/))) id = m[1];
+    else if ((m = s.match(/youtu\.be\/([A-Za-z0-9_-]{6,})/))) id = m[1];
+    else if ((m = s.match(/youtube\.com\/(?:embed|shorts)\/([A-Za-z0-9_-]{6,})/))) id = m[1];
+    else if (/^[A-Za-z0-9_-]{6,}$/.test(s)) id = s; // só o ID
+    return id ? ('https://www.youtube.com/embed/' + id + '?rel=0') : '';
+  }
+  function _vaSetActive(idx) {
+    const lista = window.WM_VIDEOAULAS || [];
+    if (!lista[idx]) return;
+    const wrap = $('#videoaulas-player-wrap');
+    const player = $('#videoaulas-player');
+    const url = _vaEmbedUrl(lista[idx].youtube);
+    if (url) { player.src = url; wrap.style.display = ''; }
+    $$('#videoaulas-list .videoaula-item').forEach((el, i) => el.classList.toggle('is-active', i === idx));
+  }
+  function renderVideoaulas() {
+    const lista = window.WM_VIDEOAULAS || [];
+    const cont = $('#videoaulas-list');
+    const vazio = $('#videoaulas-empty');
+    const wrap = $('#videoaulas-player-wrap');
+    if (!cont) return;
+    cont.innerHTML = '';
+    if (!lista.length) {
+      vazio.style.display = '';
+      wrap.style.display = 'none';
+      $('#videoaulas-player').src = '';
+      return;
+    }
+    vazio.style.display = 'none';
+    lista.forEach((aula, i) => {
+      const item = document.createElement('button');
+      item.className = 'videoaula-item';
+      item.innerHTML =
+        '<span class="va-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"/></svg></span>' +
+        '<span class="va-title"></span>';
+      item.querySelector('.va-title').textContent = aula.titulo || ('Aula ' + (i + 1));
+      item.addEventListener('click', () => _vaSetActive(i));
+      cont.appendChild(item);
+    });
+    _vaSetActive(0); // já carrega a primeira aula no player
+  }
+  function openVideoaulas() {
+    renderVideoaulas();
+    $('#videoaulas-modal-overlay')?.classList.add('active');
+  }
+  function closeVideoaulas() {
+    $('#videoaulas-modal-overlay')?.classList.remove('active');
+    const p = $('#videoaulas-player'); if (p) p.src = ''; // para o vídeo ao fechar
+  }
+  $('#btn-videoaulas')?.addEventListener('click', openVideoaulas);
+  $('#videoaulas-close')?.addEventListener('click', closeVideoaulas);
+  $('#videoaulas-modal-overlay')?.addEventListener('click', (e) => {
+    if (e.target === $('#videoaulas-modal-overlay')) closeVideoaulas();
   });
 
   // aspect switcher: delega pra applyAspect (que controla active state)
