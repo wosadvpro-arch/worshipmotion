@@ -542,10 +542,12 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--text-primary);
 }
 .logo-mark {
-  height: 28px;
+  height: 34px;
   width: auto;
+  aspect-ratio: 313 / 128;
+  object-fit: contain;
   display: block;
-  filter: drop-shadow(0 4px 12px rgba(139, 92, 246, 0.35));
+  filter: drop-shadow(0 2px 8px rgba(139, 92, 246, 0.3));
 }
 .logo-mark-lg {
   height: 36px;
@@ -7278,7 +7280,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'palavra-desselec-29jun';
+window.__WM_BUILD = 'logo-topbar-29jun';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
