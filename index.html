@@ -7278,7 +7278,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'videoaulas-29jun';
+window.__WM_BUILD = 'fontes-fecha-fora-29jun';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -22511,6 +22511,18 @@ function initEditor() {
   function fecharPainelFontes() {
     const panel = document.getElementById('ctx-fonts-panel');
     if (panel) panel.style.display = 'none';
+  }
+
+  // Fecha o painel de fontes automaticamente ao clicar fora dele
+  // (mas não no botão que o abre, nem dentro do próprio painel).
+  if (!window.__wmFontsOutsideWired) {
+    window.__wmFontsOutsideWired = true;
+    document.addEventListener('mousedown', (e) => {
+      const panel = document.getElementById('ctx-fonts-panel');
+      if (!panel || panel.style.display === 'none') return;
+      if (e.target.closest && (e.target.closest('#ctx-fonts-panel') || e.target.closest('#ctx-font-btn'))) return;
+      fecharPainelFontes();
+    });
   }
 
   function setupCtxToolbar() {
