@@ -2430,6 +2430,7 @@ body.timeline-collapsed .timeline-collapse-btn {
      O Exportar fica FIXADO à direita (sticky) — sempre inteiro, mesmo que o
      resto precise rolar; nada é cortado nem some. */
   .editor-topbar .logo { display: none !important; }   /* marca decorativa */
+  .editor-topbar .topbar-section:first-child .divider { display: none !important; } /* traço órfão do logo */
   .editor-topbar { gap: 6px !important; padding: 6px !important; }
   #project-name-input { max-width: 96px !important; min-width: 0 !important; }
   .editor-topbar #aspect-switcher button { padding: 3px 6px !important; font-size: 10.5px !important; }
@@ -2440,8 +2441,8 @@ body.timeline-collapsed .timeline-collapse-btn {
   .editor-topbar .topbar-section.center { flex: 0 1 auto !important; }
   .editor-topbar .topbar-section.right {
     flex: 1 0 100% !important; margin-left: 0 !important;
-    justify-content: flex-end; flex-wrap: nowrap;
-    overflow-x: auto; gap: 5px;
+    justify-content: flex-start; flex-wrap: nowrap;
+    overflow-x: auto; gap: 4px;
   }
   .editor-topbar .topbar-section.right::-webkit-scrollbar { height: 0; }
   /* "Meus projetos" e Salvar viram só ícone; créditos só o número — tudo
@@ -2450,10 +2451,32 @@ body.timeline-collapsed .timeline-collapse-btn {
   .editor-topbar #wm-credits-badge { padding: 5px 9px !important; font-size: 12px !important; gap: 0 !important; }
   .editor-topbar #wm-credits-badge svg { display: none !important; }
   .editor-topbar #btn-save-project { font-size: 0 !important; padding: 6px 9px !important; }
-  /* Exportar fixo na direita, sempre 100% visível. */
+  /* ===== Celular: barra ORGANIZADA (tudo visível). Botões-ícone com tamanho
+     uniforme, agrupados por divisórias: Navegar | Histórico | Créditos | Ações.
+     Nada é escondido em menu — só fica alinhado e do tamanho certo pro toque. */
+  .editor-topbar .topbar-section.right { gap: 4px; align-items: center; }
+  /* todos os botões da direita ficam do MESMO tamanho (quadrados 40px = bom
+     alvo de toque), centralizados. */
+  .editor-topbar .topbar-section.right .btn.btn-sm {
+    min-width: 34px; height: 34px; padding: 0 !important;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 9px; flex: 0 0 auto;
+  }
+  /* Videoaulas / Comparar fontes: só ícone (texto e selo saem), mas mantêm a
+     cor e entram no mesmo tamanho dos demais. */
+  .editor-topbar #btn-videoaulas,
+  .editor-topbar #btn-comparafontes { font-size: 0 !important; gap: 0 !important; }
+  .editor-topbar #btn-videoaulas svg,
+  .editor-topbar #btn-comparafontes svg { margin: 0 !important; }
+  .editor-topbar #btn-comparafontes span { display: none !important; } /* selo "Pro Plus" */
+  /* divisórias de grupo mais discretas e centralizadas. */
+  .editor-topbar .topbar-section.right > div:not([id]) { display: none !important; } /* divisórias: fora no celular p/ caber tudo */
+  /* créditos como "chip" alinhado à mesma altura. */
+  .editor-topbar #wm-credits-badge { height: 34px; box-sizing: border-box; padding: 0 10px !important; }
+  /* Exportar continua com texto (ação principal) e fixo à direita. */
   .editor-topbar #btn-export {
-    padding: 6px 12px !important; gap: 5px !important;
-    flex: 0 0 auto; position: sticky; right: 0;
+    min-width: 0; height: 34px; padding: 0 12px !important; gap: 5px !important;
+    flex: 0 0 auto; position: sticky; right: 0; border-radius: 10px;
     box-shadow: -10px 0 10px -4px var(--bg-surface);
   }
 }
@@ -7320,7 +7343,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'proplus-card-comparafontes-30jun';
+window.__WM_BUILD = 'topbar-mobile-organizada3-30jun';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
