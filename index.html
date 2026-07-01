@@ -6035,7 +6035,7 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
       <div class="lp-price-name">Pro Plus</div>
       <div class="lp-price-value">R$67<small>/mês</small></div>
       <div class="lp-price-sub">~20 produções por mês</div>
-      <ul class="lp-price-features"><li>600 créditos por mês</li><li>Exportação em 4K</li><li>Todas as animações</li><li>Sem marca d'água</li><li>Recursos exclusivos (em breve)</li></ul>
+      <ul class="lp-price-features"><li>600 créditos por mês</li><li>Exportação em 4K</li><li>Todas as animações</li><li>Sem marca d'água</li><li>Fontes Exclusivas</li><li>e muito mais...</li></ul>
       <a href="#" class="lp-price-btn lp-assinar" data-plano="pro_plus">Assinar Pro Plus</a>
     </div>
   </div>
@@ -6119,6 +6119,11 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
       <button class="btn btn-sm" id="btn-videoaulas" data-tooltip="Videoaulas" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9); color:#fff; border:1px solid transparent; box-shadow:0 2px 10px rgba(139,92,246,0.35);">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><polygon points="10 9 15 12 10 15 10 9" fill="currentColor" stroke="none"/></svg>
         Videoaulas
+      </button>
+      <button class="btn btn-sm" id="btn-comparafontes" data-tooltip="Comparar fontes (Pro Plus)" style="background:linear-gradient(135deg,#34e0ff,#8a7bff); color:#04121a; border:1px solid transparent; box-shadow:0 2px 10px rgba(52,224,255,0.32); font-weight:600;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg>
+        Comparar fontes
+        <span style="margin-left:6px; background:rgba(4,18,26,0.28); color:#04121a; font-size:9px; font-weight:800; letter-spacing:.04em; padding:2px 6px; border-radius:6px; line-height:1;">PRO+</span>
       </button>
       <div style="width:1px; height:20px; background:var(--border-default); margin: 0 4px;"></div>
       <button class="btn btn-ghost btn-sm icon-only" id="btn-undo" disabled data-tooltip="Desfazer (Ctrl+Z)">
@@ -7029,6 +7034,41 @@ Digno de toda honra"></textarea>
 </div>
 
 
+<!-- Comparafontes: modal com iframe (mesmo domínio), só Pro Plus -->
+<div class="modal-overlay" id="comparafontes-modal-overlay">
+  <div class="modal" style="max-width: 1120px; width: 96vw; height: 90vh; max-height: 90vh;">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">Comparar fontes</div>
+        <div class="modal-subtitle">Compare e visualize as fontes lado a lado</div>
+      </div>
+      <button class="icon-btn" id="comparafontes-close" data-tooltip="Fechar">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" style="padding: 0; flex: 1; overflow: hidden;">
+      <iframe id="comparafontes-frame" title="Comparar fontes" style="width:100%; height:100%; border:0; display:block; background:#0a0d13;" allow="clipboard-write" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+    </div>
+  </div>
+</div>
+
+<!-- Upsell: aparece pra quem NÃO é Pro Plus ao clicar em Comparar fontes -->
+<div class="modal-overlay" id="comparafontes-upsell-overlay">
+  <div class="modal" style="max-width: 440px;">
+    <div class="modal-body" style="padding: 28px; text-align: center;">
+      <div style="width:56px; height:56px; margin:0 auto 16px; border-radius:16px; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg,#34e0ff,#8a7bff); box-shadow:0 8px 24px -8px rgba(52,224,255,0.5);">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#04121a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg>
+      </div>
+      <div style="display:inline-block; font-size:10px; font-weight:800; letter-spacing:.06em; color:#8a7bff; background:rgba(138,123,255,0.12); padding:4px 10px; border-radius:8px; margin-bottom:12px;">RECURSO PRO+</div>
+      <h2 style="margin:0 0 8px; font-size:20px; font-weight:700; color:var(--text-primary);">Comparar fontes é do Pro Plus</h2>
+      <p style="margin:0 0 22px; font-size:14px; line-height:1.6; color:var(--text-secondary);">Visualize e compare todas as fontes lado a lado, incluindo as 123 fontes exclusivas do pack. Faça upgrade pro Pro Plus e desbloqueie esse e outros recursos.</p>
+      <button id="comparafontes-upsell-cta" class="btn btn-primary" style="width:100%; padding:13px; font-weight:700; background:linear-gradient(135deg,#8b5cf6,#6d28d9); border:none; color:#fff;">Ver planos</button>
+      <button id="comparafontes-upsell-close" class="btn btn-ghost btn-sm" style="width:100%; margin-top:8px;">Agora não</button>
+    </div>
+  </div>
+</div>
+
+
 <div class="modal-overlay" id="export-modal-overlay">
   <div class="modal export-modal">
     <div class="modal-header">
@@ -7280,7 +7320,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'loops-botao-some-29jun';
+window.__WM_BUILD = 'comparafontes-proplus-30jun';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -11435,6 +11475,7 @@ function _atualizarBotaoComprarLoops() {
 window._wmAtualizarBotaoComprarLoops = _atualizarBotaoComprarLoops;
 window._wmAtualizarBotaoComprarFontes = _atualizarBotaoComprarFontes;
 window._loadPackFonts = loadPackFonts;
+window._ehProPlus = _ehProPlus;
 
 })();
 
@@ -27827,10 +27868,12 @@ function initEditor() {
       + '    <div style="font-size:30px;font-weight:800;margin-bottom:2px;">R$67<span style="font-size:14px;font-weight:500;color:#9aa;">/mês</span></div>'
       + '    <div style="font-size:13px;color:#9aa;margin-bottom:16px;">~20 produções por mês</div>'
       + '    <ul style="list-style:none;padding:0;margin:0 0 20px;font-size:13px;line-height:1.9;color:#d4d4dd;">'
-      + '      <li>✓ 600 créditos/mês</li>'
-      + '      <li>✓ Sem marca d\'água</li>'
+      + '      <li>✓ 600 créditos por mês</li>'
       + '      <li>✓ Exportação em 4K</li>'
-      + '      <li>✓ Recursos exclusivos (em breve)</li>'
+      + '      <li>✓ Todas as animações</li>'
+      + '      <li>✓ Sem marca d\'água</li>'
+      + '      <li>✓ Fontes Exclusivas</li>'
+      + '      <li>✓ e muito mais...</li>'
       + '    </ul>'
       + '    <button class="wm-btn-assinar" data-plano="pro_plus" style="width:100%;padding:13px;background:linear-gradient(135deg,#8b5cf6,#6366f1);border:none;color:#fff;border-radius:10px;cursor:pointer;font-family:inherit;font-size:15px;font-weight:700;">Assinar Pro Plus</button>'
       + '  </div>'
@@ -29682,6 +29725,37 @@ function initEditor() {
   $('#videoaulas-close')?.addEventListener('click', closeVideoaulas);
   $('#videoaulas-modal-overlay')?.addEventListener('click', (e) => {
     if (e.target === $('#videoaulas-modal-overlay')) closeVideoaulas();
+  });
+
+  // ===== Comparar fontes (Pro Plus). Free/Pro veem upsell. =====
+  function openComparafontes() {
+    const ehProPlus = (typeof window._ehProPlus === 'function') ? window._ehProPlus() : false;
+    if (ehProPlus) {
+      const frame = document.getElementById('comparafontes-frame');
+      if (frame && !frame.getAttribute('src')) frame.setAttribute('src', 'comparafontes.html'); // carrega só na 1ª vez
+      document.getElementById('comparafontes-modal-overlay')?.classList.add('active');
+    } else {
+      document.getElementById('comparafontes-upsell-overlay')?.classList.add('active');
+    }
+  }
+  function closeComparafontes() {
+    document.getElementById('comparafontes-modal-overlay')?.classList.remove('active');
+  }
+  function closeComparafontesUpsell() {
+    document.getElementById('comparafontes-upsell-overlay')?.classList.remove('active');
+  }
+  $('#btn-comparafontes')?.addEventListener('click', openComparafontes);
+  $('#comparafontes-close')?.addEventListener('click', closeComparafontes);
+  $('#comparafontes-modal-overlay')?.addEventListener('click', (e) => {
+    if (e.target === document.getElementById('comparafontes-modal-overlay')) closeComparafontes();
+  });
+  $('#comparafontes-upsell-close')?.addEventListener('click', closeComparafontesUpsell);
+  $('#comparafontes-upsell-overlay')?.addEventListener('click', (e) => {
+    if (e.target === document.getElementById('comparafontes-upsell-overlay')) closeComparafontesUpsell();
+  });
+  $('#comparafontes-upsell-cta')?.addEventListener('click', () => {
+    closeComparafontesUpsell();
+    if (typeof _abrirTelaPlanos === 'function') _abrirTelaPlanos();
   });
 
   // aspect switcher: delega pra applyAspect (que controla active state)
