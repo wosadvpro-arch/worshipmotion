@@ -2421,63 +2421,78 @@ body.timeline-collapsed .timeline-collapse-btn {
   .editor-timeline .audio-name { max-width: 130px; }
 }
 
-/* ===== CELULAR: barra de cima enxuta — créditos, Salvar e Exportar sempre
-   visíveis sem rolar. Recolhe o que é secundário pra tudo caber. ===== */
+/* No desktop, o wrapper de rolagem não gera caixa (não altera o layout).
+   No celular ele vira a área que rola, separada do botão Exportar. */
+.editor-topbar .topbar-scroll { display: contents; }
+/* Créditos: nunca quebrar em duas linhas (vale no PC também). */
+.editor-topbar #wm-credits-badge { white-space: nowrap; flex: 0 0 auto; }
+.editor-topbar #wm-credits-badge .cred-num,
+.editor-topbar #wm-credits-badge .cred-label { white-space: nowrap; }
+
+/* ===== CELULAR: barra em 2 linhas, TUDO visível sem rolar =====
+   Linha 1: nome + Videoaulas + Comparar + proporção (16:9…).
+   Linha 2: Meus projetos + desfazer/refazer/selecionar + créditos + Salvar + Exportar.
+   Técnica: dissolve as seções (display:contents) e organiza por 'order',
+   com uma quebra de linha forçada no meio (::after). ===== */
 @media (max-width: 600px) {
-  /* Celular: NADA escondido, barra em 2 linhas:
-     - Linha 1: nome do projeto + proporção (16:9…).
-     - Linha 2: ferramentas + créditos + Salvar + Exportar, numa linha só.
-     O Exportar fica FIXADO à direita (sticky) — sempre inteiro, mesmo que o
-     resto precise rolar; nada é cortado nem some. */
-  .editor-topbar .logo { display: none !important; }   /* marca decorativa */
-  .editor-topbar .topbar-section:first-child .divider { display: none !important; } /* traço órfão do logo */
-  .editor-topbar { gap: 6px !important; padding: 6px !important; }
-  #project-name-input { max-width: 96px !important; min-width: 0 !important; }
-  .editor-topbar #aspect-switcher button { padding: 3px 6px !important; font-size: 10.5px !important; }
-  .editor-topbar #aspect-switcher { gap: 1px !important; }
-  /* "Custom" vira só ícone (mais específico p/ vencer a regra acima) — encolhe
-     a faixa de proporção e deixa nome+proporção na mesma linha. */
-  .editor-topbar #aspect-switcher #btn-aspect-custom { font-size: 0 !important; padding: 3px 7px !important; }
-  .editor-topbar .topbar-section.center { flex: 0 1 auto !important; }
-  .editor-topbar .topbar-section.right {
-    flex: 1 0 100% !important; margin-left: 0 !important;
-    justify-content: flex-start; flex-wrap: nowrap;
-    overflow-x: auto; gap: 4px;
+  .editor-topbar {
+    flex-wrap: wrap; row-gap: 6px; column-gap: 3px;
+    padding: 4px 4px !important; align-items: center;
   }
-  .editor-topbar .topbar-section.right::-webkit-scrollbar { height: 0; }
-  /* "Meus projetos" e Salvar viram só ícone; créditos só o número — tudo
-     continua clicável, só ocupa menos. */
-  .editor-topbar #btn-my-projects { font-size: 0 !important; padding: 6px 9px !important; }
-  .editor-topbar #wm-credits-badge { padding: 5px 9px !important; font-size: 12px !important; gap: 0 !important; }
-  .editor-topbar #wm-credits-badge svg { display: none !important; }
-  .editor-topbar #btn-save-project { font-size: 0 !important; padding: 6px 9px !important; }
-  /* ===== Celular: barra ORGANIZADA (tudo visível). Botões-ícone com tamanho
-     uniforme, agrupados por divisórias: Navegar | Histórico | Créditos | Ações.
-     Nada é escondido em menu — só fica alinhado e do tamanho certo pro toque. */
-  .editor-topbar .topbar-section.right { gap: 4px; align-items: center; }
-  /* todos os botões da direita ficam do MESMO tamanho (quadrados 40px = bom
-     alvo de toque), centralizados. */
-  .editor-topbar .topbar-section.right .btn.btn-sm {
-    min-width: 34px; height: 34px; padding: 0 !important;
-    display: inline-flex; align-items: center; justify-content: center;
-    border-radius: 9px; flex: 0 0 auto;
-  }
-  /* Videoaulas / Comparar fontes: só ícone (texto e selo saem), mas mantêm a
-     cor e entram no mesmo tamanho dos demais. */
+  .editor-topbar .topbar-section { display: contents; }
+  .editor-topbar .logo,
+  .editor-topbar #btn-templates,
+  .editor-topbar #btn-save-template,
+  .editor-topbar .divider,
+  .editor-topbar div[style*="width:1px"] { display: none !important; } /* decorativos/avançados */
+
+  /* quebra forçada entre linha 1 e linha 2 */
+  .editor-topbar::after { content: ""; flex-basis: 100%; height: 0; order: 20; }
+
+  /* ---- LINHA 1 ---- */
+  .editor-topbar .project-title { order: 1; flex: 0 1 auto; min-width: 0; }
+  #project-name-input { max-width: 72px !important; min-width: 0 !important; }
+  .editor-topbar #btn-videoaulas { order: 2; }
+  .editor-topbar #btn-comparafontes { order: 3; }
+  .editor-topbar #aspect-switcher { order: 4; flex: 0 0 auto; gap: 1px !important; }
+  .editor-topbar #aspect-switcher button { padding: 3px 5px !important; font-size: 10px !important; }
+  .editor-topbar #aspect-switcher #btn-aspect-custom { font-size: 0 !important; padding: 3px 6px !important; }
+
+  /* ---- LINHA 2 ---- */
+  .editor-topbar #btn-my-projects { order: 21; }
+  .editor-topbar #btn-undo { order: 22; }
+  .editor-topbar #btn-redo { order: 23; }
+  .editor-topbar #btn-select-all { order: 24; }
+  .editor-topbar #wm-credits-badge { order: 25; margin-left: auto; } /* empurra créditos/Salvar/Exportar p/ direita */
+  .editor-topbar #btn-save-project { order: 26; }
+  .editor-topbar #btn-export { order: 27; }
+
+  /* Botões com rótulo viram só ícone (mantendo a cor). */
+  .editor-topbar #btn-my-projects,
+  .editor-topbar #btn-save-project,
   .editor-topbar #btn-videoaulas,
   .editor-topbar #btn-comparafontes { font-size: 0 !important; gap: 0 !important; }
   .editor-topbar #btn-videoaulas svg,
   .editor-topbar #btn-comparafontes svg { margin: 0 !important; }
   .editor-topbar #btn-comparafontes span { display: none !important; } /* selo "Pro Plus" */
-  /* divisórias de grupo mais discretas e centralizadas. */
-  .editor-topbar .topbar-section.right > div:not([id]) { display: none !important; } /* divisórias: fora no celular p/ caber tudo */
-  /* créditos como "chip" alinhado à mesma altura. */
-  .editor-topbar #wm-credits-badge { height: 34px; box-sizing: border-box; padding: 0 10px !important; }
-  /* Exportar continua com texto (ação principal) e fixo à direita. */
+
+  /* Todos os botões-ícone do MESMO tamanho (bom alvo de toque). */
+  .editor-topbar .btn.btn-sm {
+    min-width: 32px; height: 32px; padding: 0 !important;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 9px; flex: 0 0 auto;
+  }
+  /* Créditos: chip compacto (só o número), uma linha. */
+  .editor-topbar #wm-credits-badge {
+    height: 32px; box-sizing: border-box; padding: 0 7px !important;
+    font-size: 12px !important; gap: 0 !important;
+  }
+  .editor-topbar #wm-credits-badge svg { display: none !important; }
+  .editor-topbar #wm-credits-badge .cred-label { display: none !important; } /* só o número no celular */
+  /* Exportar com rótulo, à direita. */
   .editor-topbar #btn-export {
-    min-width: 0; height: 34px; padding: 0 12px !important; gap: 5px !important;
-    flex: 0 0 auto; position: sticky; right: 0; border-radius: 10px;
-    box-shadow: -10px 0 10px -4px var(--bg-surface);
+    position: static; height: 32px; min-width: 0;
+    padding: 0 11px !important; gap: 5px !important; border-radius: 10px; box-shadow: none;
   }
 }
 
@@ -6131,6 +6146,7 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
     </div>
 
     <div class="topbar-section right">
+      <div class="topbar-scroll">
       <button class="btn btn-ghost btn-sm" id="btn-templates" data-tooltip="Templates">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
         Templates
@@ -6158,6 +6174,7 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
       <button class="btn btn-ghost btn-sm icon-only" id="btn-select-all" data-tooltip="Selecionar tudo (Ctrl+A)">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8V5a2 2 0 0 1 2-2h3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M8 21H5a2 2 0 0 1-2-2v-3"/><rect x="8" y="8" width="8" height="8" rx="1"/></svg>
       </button>
+      </div><!-- /topbar-scroll: daqui pra frente fica FIXO (créditos, Salvar, Exportar) -->
       <div style="width:1px; height:20px; background:var(--border-default); margin: 0 4px;"></div>
       <div id="wm-credits-badge" title="Créditos disponíveis neste mês" style="display:inline-flex; align-items:center; gap:6px; padding:5px 12px; border-radius:20px; background:rgba(139,92,246,0.12); border:1px solid rgba(139,92,246,0.3); color:#c4b5fd; font-size:13px; font-weight:600; cursor:default;">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
@@ -7343,7 +7360,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'topbar-mobile-organizada3-30jun';
+window.__WM_BUILD = 'topbar-mobile-2linhas4-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -10644,7 +10661,7 @@ function wmAtualizarBadgeCreditos() {
   const el = document.getElementById('wm-credits-text');
   if (!el) return;
   const info = wmCreditosInfo();
-  el.textContent = info.restante + '/' + info.total + ' créditos';
+  el.innerHTML = '<span class="cred-num">' + info.restante + '/' + info.total + '</span><span class="cred-label">\u00A0créditos</span>';
 }
 
 // Cobra créditos por uma produção. Retorna {ok, motivo}.
