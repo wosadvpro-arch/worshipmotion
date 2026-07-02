@@ -474,6 +474,25 @@ h1, h2, h3, h4, h5, h6 {
   transform: translateY(-50%) translateX(0);
 }
 
+/* Tooltips dos botões da BARRA DE CIMA: aparecem ABAIXO do botão. Se fossem
+   acima (padrão), sairiam pra fora do topo da tela e ficariam invisíveis. */
+.editor-topbar [data-tooltip]::after {
+  bottom: auto;
+  top: calc(100% + 8px);
+  transform: translateX(-50%) translateY(-4px);
+}
+.editor-topbar [data-tooltip]:hover::after {
+  transform: translateX(-50%) translateY(0);
+}
+/* Exportar fica na ponta direita → seu tooltip abre pra ESQUERDA (ancorado à
+   direita), pra nunca vazar pra fora da tela. */
+.editor-topbar #btn-export[data-tooltip]::after {
+  left: auto; right: 0; transform: translateX(0) translateY(-4px);
+}
+.editor-topbar #btn-export[data-tooltip]:hover::after {
+  transform: translateX(0) translateY(0);
+}
+
 /* ============ SLIDERS (custom range) ============ */
 .range {
   -webkit-appearance: none;
@@ -6226,7 +6245,7 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
         <span id="wm-credits-text">—</span>
       </div>
-      <button class="btn btn-secondary btn-sm" id="btn-save-project">
+      <button class="btn btn-secondary btn-sm" id="btn-save-project" data-tooltip="Salvar projeto">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
         Salvar
       </button>
@@ -6234,7 +6253,7 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
         Salvar template
       </button>
-      <button class="btn btn-primary btn-sm" id="btn-export">
+      <button class="btn btn-primary btn-sm" id="btn-export" data-tooltip="Exportar vídeo (MP4)">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         Exportar
       </button>
@@ -7406,7 +7425,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'topbar-desktop-comparar-cheio4-01jul';
+window.__WM_BUILD = 'topbar-tooltips2-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
