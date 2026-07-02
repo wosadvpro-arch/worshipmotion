@@ -2315,6 +2315,38 @@ body.timeline-collapsed .timeline-collapse-btn {
 }
 
 /* responsivo */
+/* ===== Barra do computador RESPONSIVA — garante que o "Exportar" SEMPRE
+   apareça. Em telas menores que ~1790px a barra não cabia com todos os
+   rótulos, então eles encolhem pra ícone progressivamente (a função continua;
+   o nome aparece no tooltip ao passar o mouse). Não afeta celular/tablet
+   (que usam o layout ≤1080px). ===== */
+@media (min-width: 1081px) and (max-width: 1789px) {
+  .editor-topbar #wm-credits-badge .cred-label { display: none; }   /* mostra só "299/300" */
+  .editor-topbar #btn-save-template { font-size: 0; gap: 0; }        /* Salvar template → ícone */
+  .editor-topbar #btn-save-template svg { margin: 0; }
+  .editor-topbar #btn-comparafontes { font-size: 0; gap: 0; }        /* Comparar fontes → ícone */
+  .editor-topbar #btn-comparafontes span { display: none; }          /* esconde selo Pro Plus */
+  .editor-topbar #btn-comparafontes svg { margin: 0; }
+  .editor-topbar #project-name-input { max-width: 170px; }
+  /* botões que viram ícone ganham largura mínima p/ ficarem consistentes */
+  .editor-topbar #btn-save-template,
+  .editor-topbar #btn-comparafontes { min-width: 34px; justify-content: center; }
+}
+@media (min-width: 1081px) and (max-width: 1499px) {
+  .editor-topbar #btn-templates,
+  .editor-topbar #btn-my-projects,
+  .editor-topbar #btn-videoaulas { font-size: 0; gap: 0; min-width: 34px; justify-content: center; } /* nav → ícones */
+  .editor-topbar #btn-templates svg,
+  .editor-topbar #btn-my-projects svg,
+  .editor-topbar #btn-videoaulas svg { margin: 0; }
+  .editor-topbar #project-name-input { max-width: 130px; }
+  .editor-topbar #aspect-switcher button { padding-left: 9px; padding-right: 9px; }
+}
+@media (min-width: 1081px) and (max-width: 1300px) {
+  .editor-topbar #aspect-switcher #btn-aspect-custom { font-size: 0; }  /* "Custom" → só ícone */
+  .editor-topbar #project-name-input { max-width: 96px; }
+}
+
 @media (max-width: 1280px) {
   .editor-shell { grid-template-columns: 56px 280px 1fr 280px; }
 }
@@ -7368,7 +7400,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'modal-scroll-fix-01jul';
+window.__WM_BUILD = 'topbar-desktop-responsiva2-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
