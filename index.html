@@ -961,6 +961,12 @@ h1, h2, h3, h4, h5, h6 {
   opacity: 1;
   pointer-events: auto;
 }
+/* Enquanto um modal está aberto, trava o fundo (o gesto de rolar fica DENTRO
+   do modal; a página de trás não se mexe). */
+html.wm-modal-open, body.wm-modal-open {
+  overflow: hidden !important;
+  overscroll-behavior: none;
+}
 
 .modal {
   width: 100%;
@@ -1025,6 +1031,8 @@ h1, h2, h3, h4, h5, h6 {
   flex: 1;
   overflow-y: auto;
   padding: var(--space-6);
+  overscroll-behavior: contain;      /* o scroll não "vaza" pra página de trás */
+  -webkit-overflow-scrolling: touch; /* rolagem com inércia no iOS */
 }
 
 /* === GRID DE TEMPLATES === */
@@ -7360,7 +7368,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'topbar-mobile-2linhas4-01jul';
+window.__WM_BUILD = 'modal-scroll-fix-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -28061,6 +28069,25 @@ function initEditor() {
   _wmSheetDrag(document.querySelector('.editor-left'), () => document.body.classList.remove('wm-sheet-left'));
   _wmSheetDrag(document.querySelector('.editor-right'), () => document.body.classList.remove('wm-sheet-right'));
   _wmSheetDrag(document.querySelector('#modal-overlay .modal'), () => { if (typeof closeModal === 'function') closeModal(); });
+
+  // Trava o scroll do fundo enquanto QUALQUER modal está aberto — assim, no
+  // celular, o gesto de rolar fica dentro do modal e a página de trás não anda.
+  (function () {
+    const overlays = document.querySelectorAll('.modal-overlay');
+    if (!overlays.length) return;
+    const algumAberto = () => Array.prototype.some.call(
+      document.querySelectorAll('.modal-overlay'),
+      (o) => o.classList.contains('active')
+    );
+    const sincroniza = () => {
+      const aberto = algumAberto();
+      document.documentElement.classList.toggle('wm-modal-open', aberto);
+      document.body.classList.toggle('wm-modal-open', aberto);
+    };
+    const obs = new MutationObserver(sincroniza);
+    overlays.forEach((o) => obs.observe(o, { attributes: true, attributeFilter: ['class'] }));
+    sincroniza();
+  })();
 
   $$('.rail-btn').forEach((btn, i) => {
     btn.addEventListener('click', () => {
