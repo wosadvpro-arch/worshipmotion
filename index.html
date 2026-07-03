@@ -7507,7 +7507,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'preview-anim-celular3-01jul';
+window.__WM_BUILD = 'espacamento-rodape-celular-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -23057,11 +23057,25 @@ function initEditor() {
           if (lhRange && origLh) { lhRange.value = origLh.value; if (lhNum) lhNum.textContent = (parseInt(origLh.value, 10) / 100).toFixed(2); }
           const r = spBtn.getBoundingClientRect();
           spPop.style.display = 'block';
-          const w = spPop.offsetWidth || 248;
-          let left = r.left + r.width / 2 - w / 2;
-          left = Math.max(8, Math.min(left, window.innerWidth - w - 8));
-          spPop.style.left = left + 'px';
-          spPop.style.top = (r.bottom + 8) + 'px';
+          const ehCelular = window.matchMedia && window.matchMedia('(max-width: 1080px)').matches;
+          if (ehCelular) {
+            // No celular, o popover vai pro RODAPÉ (acima da régua) pra NÃO
+            // cobrir o slide — assim dá pra ver o espaçamento mudando ao vivo.
+            spPop.style.left = '8px';
+            spPop.style.right = '8px';
+            spPop.style.width = 'auto';
+            spPop.style.top = 'auto';
+            spPop.style.bottom = 'calc(66px + env(safe-area-inset-bottom, 0px))';
+          } else {
+            const w = spPop.offsetWidth || 248;
+            let left = r.left + r.width / 2 - w / 2;
+            left = Math.max(8, Math.min(left, window.innerWidth - w - 8));
+            spPop.style.left = left + 'px';
+            spPop.style.right = 'auto';
+            spPop.style.width = '';
+            spPop.style.top = (r.bottom + 8) + 'px';
+            spPop.style.bottom = 'auto';
+          }
         } else {
           spPop.style.display = 'none';
         }
