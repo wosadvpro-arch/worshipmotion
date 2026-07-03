@@ -2445,6 +2445,20 @@ body.timeline-collapsed .timeline-collapse-btn {
     margin: 8px auto 2px; border-radius: 999px;
     background: var(--border-strong, #3a3a4a);
   }
+  /* No editor (celular), a PÁGINA fica travada — quem rola é o conteúdo de
+     dentro (a caixa da letra, os painéis). Sem isto o iOS arrasta o app
+     inteiro pra cima e a rolagem interna não funciona. */
+  html.wm-editor-locked, body.wm-editor-locked {
+    height: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+  body.wm-editor-locked {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+  }
+
   .editor-left .panel-body, .editor-right .panel-body {
     flex: 1 1 auto; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch;
   }
@@ -7498,7 +7512,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'letra-scroll-resize-01jul';
+window.__WM_BUILD = 'letra-page-lock-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -31575,6 +31589,11 @@ function initLoginAnim() {
     document.querySelectorAll('.page').forEach(p => {
       p.classList.toggle('active', p.id === pageId);
     });
+    // Trava a rolagem da PÁGINA quando está no editor (no celular, sem isto o
+    // iOS rola/quica o app inteiro por baixo e rouba o gesto de rolar a letra).
+    const _noEditor = (pageId === 'page-editor');
+    document.documentElement.classList.toggle('wm-editor-locked', _noEditor);
+    document.body.classList.toggle('wm-editor-locked', _noEditor);
 
     if (pageId === 'page-editor' && !window.__editorReady) {
       window.__editorReady = true;
