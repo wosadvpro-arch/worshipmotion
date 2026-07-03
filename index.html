@@ -2428,16 +2428,18 @@ body.timeline-collapsed .timeline-collapse-btn {
   .editor-rail::-webkit-scrollbar { height: 0; }
   .rail-btn { flex: 0 0 auto; width: 44px; height: 44px; }
 
-  /* painéis esquerdo/direito → bottom-sheets que sobem ao tocar na ferramenta */
+  /* painéis esquerdo/direito → bottom-sheets que sobem ao tocar na ferramenta.
+     A animação usa a posição `bottom` (NÃO transform): um position:fixed com
+     transform trava a rolagem por toque no iOS/WebKit. Fechado = fora da tela
+     embaixo; aberto = 58px (acima da régua). */
   .editor-left, .editor-right {
     display: flex; flex-direction: column;
-    position: fixed; left: 0; right: 0; bottom: 58px;
+    position: fixed; left: 0; right: 0; bottom: -66vh;
     width: auto; height: auto; max-height: 48vh;
     border: 1px solid var(--border-default); border-bottom: none;
     border-radius: 16px 16px 0 0;
     box-shadow: 0 -18px 50px rgba(0,0,0,0.55);
-    transform: translateY(130%);
-    transition: transform .3s cubic-bezier(.22,1,.36,1);
+    transition: bottom .3s cubic-bezier(.22,1,.36,1);
     z-index: 200; overflow: hidden;
   }
   .editor-left::before, .editor-right::before {
@@ -2462,12 +2464,10 @@ body.timeline-collapsed .timeline-collapse-btn {
     touch-action: pan-y;
     font-size: 16px;
   }
-  /* IMPORTANTE (iOS/WebKit): rolagem por toque NÃO funciona dentro de um
-     position:fixed que tenha transform. Quando o painel ABRE, tiramos o
-     transform (translateY(0) ainda contava como transform e travava o scroll).
-     A animação de subida continua (translateY(130%) → none). */
-  body.wm-sheet-left  .editor-left  { transform: none; }
-  body.wm-sheet-right .editor-right { transform: none; }
+  /* Aberto: sobe pra 58px (acima da régua). Sem transform → rolagem por toque
+     funciona no iOS. */
+  body.wm-sheet-left  .editor-left  { bottom: 58px; }
+  body.wm-sheet-right .editor-right { bottom: 58px; }
 
   /* backdrop transparente: fecha ao tocar fora, mas NÃO escurece o canvas
      (você precisa ver o fundo/efeito/animação aplicando em tempo real) */
@@ -7507,7 +7507,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'remove-page-lock-01jul';
+window.__WM_BUILD = 'painel-bottom-anim-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
