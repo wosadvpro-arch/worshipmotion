@@ -2383,6 +2383,7 @@ body.timeline-collapsed .timeline-collapse-btn {
   .page-editor.editor-shell.active {
     display: flex; flex-direction: column;
     height: 100vh; height: 100dvh; width: 100%; overflow: hidden;
+    position: fixed; inset: 0;   /* fixa o editor na tela: a página atrás não rola mais */
   }
   .editor-topbar {
     order: 0; flex: 0 0 auto; height: auto; min-height: var(--topbar-height);
@@ -7509,7 +7510,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'scroll-reverter-simples-01jul';
+window.__WM_BUILD = 'editor-fixo-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
