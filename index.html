@@ -761,6 +761,7 @@ h1, h2, h3, h4, h5, h6 {
   line-height: var(--leading-loose);
   color: var(--text-primary);
   resize: vertical;
+  -webkit-overflow-scrolling: touch;   /* rolagem com inércia no iOS */
   transition: border-color var(--duration-default) var(--ease-out-quart),
               box-shadow var(--duration-default) var(--ease-out-quart);
 }
@@ -2446,6 +2447,15 @@ body.timeline-collapsed .timeline-collapse-btn {
   }
   .editor-left .panel-body, .editor-right .panel-body {
     flex: 1 1 auto; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch;
+  }
+  /* No celular a alcinha de redimensionar (canto inferior direito) "rouba" o
+     gesto de rolar a letra pra baixo — o dedo pega a alça e trava. Sem resize,
+     o arraste rola o texto normalmente. */
+  .lyrics-textarea {
+    resize: none;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
   }
   body.wm-sheet-left  .editor-left  { transform: translateY(0); }
   body.wm-sheet-right .editor-right { transform: translateY(0); }
@@ -7488,7 +7498,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'marcacao-scroll-ios-01jul';
+window.__WM_BUILD = 'letra-scroll-resize-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
