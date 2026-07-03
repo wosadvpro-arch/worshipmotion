@@ -4740,7 +4740,7 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
   bottom: 0;
   left: 0;
   right: 0;
-  height: 60vh;
+  height: 74vh;
   background: linear-gradient(180deg, rgba(22, 20, 32, 0.99), rgba(14, 12, 20, 0.99));
   backdrop-filter: blur(20px);
   border-top: 1px solid rgba(139, 92, 246, 0.28);
@@ -4753,6 +4753,10 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
 }
 .marking-panel.is-open {
   transform: translateY(0);
+}
+/* No celular, o painel de marcação fica mais alto — mais espaço pras palavras. */
+@media (max-width: 600px) {
+  .marking-panel { height: 86dvh; }
 }
 
 .marking-panel-header {
@@ -7463,7 +7467,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'marcar-no-ritmo-botao-01jul';
+window.__WM_BUILD = 'marcacao-mais-espaco-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -26846,7 +26850,7 @@ function initEditor() {
     _tapMode = true;
     const bar = document.getElementById('marking-tap-bar'); if (bar) bar.style.display = 'flex';
     const wave = document.getElementById('marking-wave-wrap'); if (wave) wave.style.display = 'none';
-    const mini = document.querySelector('.marking-panel-title'); // some o mini-player de áudio
+    const instr = document.querySelector('.marking-panel-instructions'); if (instr) instr.style.display = 'none';
     ['mini-back5-btn','mini-fwd5-btn','mini-play-btn','mini-timer'].forEach(id => { const e = document.getElementById(id); if (e) e.style.display = 'none'; });
     const tg = document.getElementById('btn-tap-mode'); if (tg) tg.classList.add('active');
     _tapFinish(false);
@@ -26856,6 +26860,7 @@ function initEditor() {
     _tapMode = false;
     const bar = document.getElementById('marking-tap-bar'); if (bar) bar.style.display = 'none';
     const wave = document.getElementById('marking-wave-wrap'); if (wave && audioElement && audioElement.duration) wave.style.display = '';
+    const instr = document.querySelector('.marking-panel-instructions'); if (instr) instr.style.display = '';
     ['mini-back5-btn','mini-fwd5-btn','mini-play-btn','mini-timer'].forEach(id => { const e = document.getElementById(id); if (e) e.style.display = ''; });
     const tg = document.getElementById('btn-tap-mode'); if (tg) tg.classList.remove('active');
   }
