@@ -4740,7 +4740,7 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
   bottom: 0;
   left: 0;
   right: 0;
-  height: 74vh;
+  height: 60vh;
   background: linear-gradient(180deg, rgba(22, 20, 32, 0.99), rgba(14, 12, 20, 0.99));
   backdrop-filter: blur(20px);
   border-top: 1px solid rgba(139, 92, 246, 0.28);
@@ -4754,9 +4754,15 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
 .marking-panel.is-open {
   transform: translateY(0);
 }
-/* No celular, o painel de marcação fica mais alto — mais espaço pras palavras. */
+/* No celular, o painel de marcação fica um pouco mais alto — mais espaço pras
+   palavras — e o slide recua junto (fica visível acima do painel). */
 @media (max-width: 600px) {
-  .marking-panel { height: 86dvh; }
+  .marking-panel { height: 68dvh; }
+  body.marking-open .editor-canvas-wrap { padding-bottom: calc(68dvh + var(--space-6)); }
+  body.marking-open .editor-canvas {
+    max-height: calc(30dvh - var(--topbar-height));
+    max-width: calc((30dvh - var(--topbar-height)) * 16 / 9);
+  }
 }
 
 .marking-panel-header {
@@ -4894,6 +4900,15 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
   flex: 1;
   overflow-y: auto;
   padding: 12px 16px 24px;
+  overscroll-behavior: contain;       /* a rolagem não trava/vaza na borda (iOS) */
+  -webkit-overflow-scrolling: touch;  /* rolagem com inércia no celular */
+  touch-action: pan-y;                /* garante o gesto de rolar vertical */
+}
+/* Alça no topo do painel: indica que dá pra arrastar pra baixo p/ minimizar. */
+.marking-panel-header { position: relative; }
+.marking-panel-header::before {
+  content: ""; position: absolute; top: 6px; left: 50%; transform: translateX(-50%);
+  width: 40px; height: 4px; border-radius: 999px; background: var(--border-strong, rgba(255,255,255,0.22));
 }
 
 /* ===== Barra "Bater no ritmo" (tap tempo) ===== */
@@ -4903,9 +4918,9 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
   background: rgba(139,92,246,0.06);
 }
 .tap-big-btn {
-  flex: 0 0 auto; min-width: 150px; height: 72px;
+  flex: 0 0 auto; min-width: 130px; height: 52px;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 2px; border: none; border-radius: 16px; cursor: pointer;
+  gap: 0; border: none; border-radius: 14px; cursor: pointer;
   background: linear-gradient(135deg,#8b5cf6,#6d28d9); color: #fff;
   box-shadow: 0 6px 20px -6px rgba(139,92,246,0.6);
   font-family: inherit; transition: transform .08s ease, box-shadow .2s ease;
@@ -4915,8 +4930,8 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
 .tap-big-btn.is-running { background: linear-gradient(135deg,#22c55e,#15803d); box-shadow: 0 6px 20px -6px rgba(34,197,94,0.6); }
 .tap-big-btn.is-counting { background: linear-gradient(135deg,#f59e0b,#b45309); }
 .tap-big-btn:disabled { cursor: default; }
-.tap-big-btn .tap-big-label { font-size: 22px; font-weight: 800; letter-spacing: .02em; line-height: 1.1; }
-.tap-big-btn .tap-big-sub { font-size: 11px; font-weight: 600; opacity: .85; }
+.tap-big-btn .tap-big-label { font-size: 19px; font-weight: 800; letter-spacing: .02em; line-height: 1.05; }
+.tap-big-btn .tap-big-sub { display: none; }
 .tap-info { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
 .tap-info-row { display: flex; align-items: baseline; gap: 12px; }
 .tap-clock { font-size: 20px; font-weight: 800; color: var(--text-primary); font-variant-numeric: tabular-nums; }
@@ -4924,8 +4939,8 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
 .tap-next { font-size: 13px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 #btn-tap-mode.active { background: rgba(139,92,246,0.2); color: #c4b5fd; }
 @media (max-width: 600px) {
-  .marking-tap-bar { flex-direction: column; align-items: stretch; gap: 10px; padding: 12px; }
-  .tap-big-btn { width: 100%; height: 82px; }
+  .marking-tap-bar { flex-direction: column; align-items: stretch; gap: 8px; padding: 10px 12px; }
+  .tap-big-btn { width: 100%; height: 56px; }
   .tap-info-row { justify-content: space-between; }
   #tap-finish-btn { align-self: flex-end; }
 }
@@ -7467,7 +7482,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'marcacao-mais-espaco-01jul';
+window.__WM_BUILD = 'marcacao-arrastar-scroll-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -26964,6 +26979,14 @@ function initEditor() {
 
     $('#btn-close-marking', panel).addEventListener('click', closeMarkingPanel);
     $('#btn-collapse-marking', panel).addEventListener('click', toggleMarkingPanelCollapse);
+    // Arrastar o cabeçalho pra baixo minimiza (e, se já minimizado, fecha) —
+    // gesto de bottom-sheet, principalmente pro celular.
+    if (typeof _wmSheetDrag === 'function') {
+      _wmSheetDrag(panel, () => {
+        if (panel.classList.contains('is-collapsed')) closeMarkingPanel();
+        else toggleMarkingPanelCollapse();
+      }, 56);
+    }
     // Bater no ritmo (tap tempo)
     const _tapToggleBtn = $('#btn-tap-mode', panel);
     if (_tapToggleBtn) _tapToggleBtn.addEventListener('click', _toggleTapMode);
@@ -27536,6 +27559,9 @@ function initEditor() {
     markDirty();
     renderTimelineMarkers();
     if (_markingPanelOpen) renderMarkingPanel();
+    // Se estava no modo "bater no ritmo", para o cronômetro e volta o botão
+    // grande pra "Iniciar" (senão a contagem continua e o botão não muda).
+    if (_tapMode) _tapFinish(false);
   }
 
   // ------ Atalhos com o painel aberto ------
