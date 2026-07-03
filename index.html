@@ -4892,6 +4892,40 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
   padding: 12px 16px 24px;
 }
 
+/* ===== Barra "Bater no ritmo" (tap tempo) ===== */
+.marking-tap-bar {
+  display: flex; align-items: center; gap: 14px;
+  padding: 12px 16px; border-bottom: 1px solid var(--border-default);
+  background: rgba(139,92,246,0.06);
+}
+.tap-big-btn {
+  flex: 0 0 auto; min-width: 150px; height: 72px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 2px; border: none; border-radius: 16px; cursor: pointer;
+  background: linear-gradient(135deg,#8b5cf6,#6d28d9); color: #fff;
+  box-shadow: 0 6px 20px -6px rgba(139,92,246,0.6);
+  font-family: inherit; transition: transform .08s ease, box-shadow .2s ease;
+  user-select: none; -webkit-tap-highlight-color: transparent;
+}
+.tap-big-btn:active { transform: scale(0.96); }
+.tap-big-btn.is-running { background: linear-gradient(135deg,#22c55e,#15803d); box-shadow: 0 6px 20px -6px rgba(34,197,94,0.6); }
+.tap-big-btn.is-counting { background: linear-gradient(135deg,#f59e0b,#b45309); }
+.tap-big-btn:disabled { cursor: default; }
+.tap-big-btn .tap-big-label { font-size: 22px; font-weight: 800; letter-spacing: .02em; line-height: 1.1; }
+.tap-big-btn .tap-big-sub { font-size: 11px; font-weight: 600; opacity: .85; }
+.tap-info { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.tap-info-row { display: flex; align-items: baseline; gap: 12px; }
+.tap-clock { font-size: 20px; font-weight: 800; color: var(--text-primary); font-variant-numeric: tabular-nums; }
+.tap-progress { font-size: 12px; color: var(--text-tertiary); }
+.tap-next { font-size: 13px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#btn-tap-mode.active { background: rgba(139,92,246,0.2); color: #c4b5fd; }
+@media (max-width: 600px) {
+  .marking-tap-bar { flex-direction: column; align-items: stretch; gap: 10px; padding: 12px; }
+  .tap-big-btn { width: 100%; height: 82px; }
+  .tap-info-row { justify-content: space-between; }
+  #tap-finish-btn { align-self: flex-end; }
+}
+
 .mark-stanza {
   margin-bottom: 16px;
   padding: 10px 12px;
@@ -7425,7 +7459,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'marcacao-instrucao-mobile-01jul';
+window.__WM_BUILD = 'bater-no-ritmo-tab-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -26696,6 +26730,138 @@ function initEditor() {
 
   // ------ Painel pop-up de marcação ------
   // Mostra TODAS as palavras organizadas por estrofe pra você marcar
+  // ===================== BATER NO RITMO (tap tempo) =====================
+  // Marca as palavras SEM precisar carregar a música: a pessoa ouve a música
+  // onde quiser (Spotify/YouTube/ao vivo) e vai tocando no botão grande no
+  // ritmo. Usa um cronômetro interno no lugar do tempo do áudio.
+  let _tapMode = false, _tapRunning = false, _tapStartMs = 0, _tapRAF = 0, _tapCountTimer = 0;
+
+  function _markClock() {
+    if (_tapMode && _tapRunning) return (performance.now() - _tapStartMs) / 1000;
+    return (audioElement && audioElement.duration) ? audioElement.currentTime : 0;
+  }
+  function _tapNextUnit() {
+    const parsed = engine?.parsed;
+    if (!parsed || !parsed.stanzas) return null;
+    for (let si = 0; si < parsed.stanzas.length; si++) {
+      const st = parsed.stanzas[si];
+      if (!st || !st.lines) continue;
+      const lineMode = getStanzaMarkMode(si) === 'line';
+      for (let li = 0; li < st.lines.length; li++) {
+        const words = (st.lines[li] && st.lines[li].words) || [];
+        if (lineMode) {
+          if (words.some(w => typeof w.tStart !== 'number')) return { si, li, lineMode: true, words };
+        } else {
+          for (let wi = 0; wi < words.length; wi++) {
+            if (typeof words[wi].tStart !== 'number') return { si, li, wi, lineMode: false, word: words[wi] };
+          }
+        }
+      }
+    }
+    return null;
+  }
+  function _tapMarkNext() {
+    if (!_tapMode || !_tapRunning) return;
+    const u = _tapNextUnit();
+    if (!u) { _tapFinish(true); return; }
+    const t = _markClock();
+    if (u.lineMode) {
+      const novas = u.words.filter(w => typeof w.tStart !== 'number');
+      u.words.forEach(w => { w.tStart = t; });
+      if (novas.length) _pushMarkHistory(novas);
+    } else {
+      u.word.tStart = t;
+      _pushMarkHistory([u.word]);
+    }
+    if (typeof markDirty === 'function') markDirty();
+    renderMarkingPanel();
+    if (typeof renderTimelineMarkers === 'function') renderTimelineMarkers();
+    _updateTapBar();
+    if (!_tapNextUnit()) _tapFinish(true);
+  }
+  function _tapTick() {
+    if (!_tapRunning) return;
+    const c = document.getElementById('tap-clock');
+    if (c) c.textContent = formatTime(_markClock());
+    _tapRAF = requestAnimationFrame(_tapTick);
+  }
+  function _tapSetBig(label, sub, cls) {
+    const big = document.getElementById('tap-big-btn');
+    if (!big) return;
+    big.classList.remove('is-running', 'is-counting');
+    if (cls) big.classList.add(cls);
+    const l = big.querySelector('.tap-big-label'); if (l) l.textContent = label;
+    const s = big.querySelector('.tap-big-sub'); if (s) s.textContent = sub;
+  }
+  function _tapStartCountdown() {
+    const big = document.getElementById('tap-big-btn');
+    if (!big) return;
+    let n = 3;
+    big.disabled = true;
+    _tapSetBig(String(n), 'prepara…', 'is-counting');
+    clearInterval(_tapCountTimer);
+    _tapCountTimer = setInterval(() => {
+      n--;
+      if (n > 0) { _tapSetBig(String(n), 'prepara…', 'is-counting'); }
+      else {
+        clearInterval(_tapCountTimer);
+        big.disabled = false;
+        _tapRunning = true;
+        _tapStartMs = performance.now();
+        _tapSetBig('MARCAR', 'toque no ritmo', 'is-running');
+        _tapTick();
+        _updateTapBar();
+      }
+    }, 1000);
+  }
+  function _tapFinish(done) {
+    _tapRunning = false;
+    cancelAnimationFrame(_tapRAF);
+    clearInterval(_tapCountTimer);
+    const big = document.getElementById('tap-big-btn');
+    if (big) big.disabled = false;
+    _tapSetBig(done ? 'Concluído ✓' : 'Iniciar', done ? 'todas marcadas' : 'contagem 3, 2, 1', null);
+    _updateTapBar();
+  }
+  function _updateTapBar() {
+    const st = (typeof markStats === 'function') ? markStats() : { marked: 0, total: 0 };
+    const prog = document.getElementById('tap-progress');
+    if (prog) prog.textContent = `${st.marked}/${st.total} palavras`;
+    const nextEl = document.getElementById('tap-next');
+    if (nextEl) {
+      const nx = _tapNextUnit();
+      if (!nx) nextEl.textContent = '🎉 Tudo marcado! Toque em Concluir.';
+      else if (!_tapRunning) nextEl.textContent = 'Toque em Iniciar e vá batendo no ritmo da música';
+      else {
+        const txt = nx.lineMode ? (nx.words.map(w => w.text).join(' ')) : (nx.word.text || '');
+        nextEl.textContent = 'Próxima: “' + (txt || '').slice(0, 42) + '”';
+      }
+    }
+  }
+  function _enterTapMode() {
+    _tapMode = true;
+    const bar = document.getElementById('marking-tap-bar'); if (bar) bar.style.display = 'flex';
+    const wave = document.getElementById('marking-wave-wrap'); if (wave) wave.style.display = 'none';
+    const mini = document.querySelector('.marking-panel-title'); // some o mini-player de áudio
+    ['mini-back5-btn','mini-fwd5-btn','mini-play-btn','mini-timer'].forEach(id => { const e = document.getElementById(id); if (e) e.style.display = 'none'; });
+    const tg = document.getElementById('btn-tap-mode'); if (tg) tg.classList.add('active');
+    _tapFinish(false);
+  }
+  function _exitTapMode() {
+    _tapFinish(false);
+    _tapMode = false;
+    const bar = document.getElementById('marking-tap-bar'); if (bar) bar.style.display = 'none';
+    const wave = document.getElementById('marking-wave-wrap'); if (wave && audioElement && audioElement.duration) wave.style.display = '';
+    ['mini-back5-btn','mini-fwd5-btn','mini-play-btn','mini-timer'].forEach(id => { const e = document.getElementById(id); if (e) e.style.display = ''; });
+    const tg = document.getElementById('btn-tap-mode'); if (tg) tg.classList.remove('active');
+  }
+  function _toggleTapMode() { _tapMode ? _exitTapMode() : _enterTapMode(); }
+  function _tapBigClick() {
+    if (!_tapMode) return;
+    if (_tapRunning) _tapMarkNext();
+    else _tapStartCountdown();
+  }
+
   function openMarkingPanel() {
     _markingPanelOpen = true;
     const panel = ensureMarkingPanel();
@@ -26745,6 +26911,9 @@ function initEditor() {
           <span class="marking-panel-progress" id="marking-progress">0/0</span>
         </div>
         <div class="marking-panel-tools">
+          <button class="btn btn-ghost btn-sm" id="btn-tap-mode" title="Marcar sem carregar música: você ouve a música onde quiser e vai batendo no ritmo">
+            🎵 Bater no ritmo
+          </button>
           <button class="btn btn-ghost btn-sm" id="btn-undo-mark" title="Desfazer a última marcação (atalho: Shift+Tab)">
             ↶ Desfazer
           </button>
@@ -26762,6 +26931,20 @@ function initEditor() {
       <div class="marking-panel-instructions">
         <strong>No celular:</strong> toque no <strong>▶</strong> pra tocar e <strong>toque na palavra</strong> no momento dela pra marcar; <strong>↶ Desfazer</strong> corrige. • <strong>No computador:</strong> <kbd>Espaço</kbd> toca/pausa, <kbd>Tab</kbd> marca próxima, <kbd>Shift+Tab</kbd> desfaz. • Clique/toque na <strong>barra de áudio</strong> abaixo pra ir a qualquer ponto • Cada estrofe: modo <strong>Palavra</strong> ou <strong>Linha</strong>
       </div>
+      <div class="marking-tap-bar" id="marking-tap-bar" style="display:none;">
+        <button class="tap-big-btn" id="tap-big-btn" type="button">
+          <span class="tap-big-label">Iniciar</span>
+          <span class="tap-big-sub">contagem 3, 2, 1</span>
+        </button>
+        <div class="tap-info">
+          <div class="tap-info-row">
+            <span class="tap-clock" id="tap-clock">0:00</span>
+            <span class="tap-progress" id="tap-progress">0/0 palavras</span>
+          </div>
+          <div class="tap-next" id="tap-next">Toque em Iniciar e vá batendo no ritmo da música</div>
+          <button class="btn btn-ghost btn-sm" id="tap-finish-btn" type="button">Concluir</button>
+        </div>
+      </div>
       <div class="marking-wave-wrap" id="marking-wave-wrap" title="Clique ou arraste pra navegar no áudio">
         <canvas id="marking-wave-canvas"></canvas>
         <div class="marking-wave-playhead" id="marking-wave-playhead"></div>
@@ -26772,6 +26955,13 @@ function initEditor() {
 
     $('#btn-close-marking', panel).addEventListener('click', closeMarkingPanel);
     $('#btn-collapse-marking', panel).addEventListener('click', toggleMarkingPanelCollapse);
+    // Bater no ritmo (tap tempo)
+    const _tapToggleBtn = $('#btn-tap-mode', panel);
+    if (_tapToggleBtn) _tapToggleBtn.addEventListener('click', _toggleTapMode);
+    const _tapBig = $('#tap-big-btn', panel);
+    if (_tapBig) _tapBig.addEventListener('click', _tapBigClick);
+    const _tapFin = $('#tap-finish-btn', panel);
+    if (_tapFin) _tapFin.addEventListener('click', () => _tapFinish(false));
     $('#btn-distribute-marks', panel).addEventListener('click', () => {
       const filled = distributeUnmarkedWords();
       if (filled > 0) {
@@ -27164,28 +27354,29 @@ function initEditor() {
         const li = parseInt(btn.dataset.li, 10);
         const wi = parseInt(btn.dataset.wi, 10);
         const audio = audioElement;
-        if (!audio || !audio.duration) {
-          if (typeof showToast === 'function') showToast('Carregue um áudio antes de marcar');
+        // No modo "bater no ritmo" não precisa de áudio (usa o cronômetro).
+        if (!_tapMode && (!audio || !audio.duration)) {
+          if (typeof showToast === 'function') showToast('Carregue um áudio ou use 🎵 Bater no ritmo');
           return;
         }
+        const _t = _markClock();
         // Respeita o modo da estrofe: clicar em modo LINHA marca a linha
         // inteira (mesmo tempo em todas as palavras dela).
         if (getStanzaMarkMode(si) === 'line') {
           const ln = parsed.stanzas[si].lines[li];
           const novas = ln.words.filter(w => typeof w.tStart !== 'number');
-          ln.words.forEach(w => { w.tStart = audio.currentTime; });
-          // Só registra no histórico as que ainda não estavam marcadas
-          // (re-clicar numa linha já marcada não cria entrada nova).
+          ln.words.forEach(w => { w.tStart = _t; });
           if (novas.length) _pushMarkHistory(novas);
         } else {
           const w = parsed.stanzas[si].lines[li].words[wi];
           const eraNova = typeof w.tStart !== 'number';
-          w.tStart = audio.currentTime;
+          w.tStart = _t;
           if (eraNova) _pushMarkHistory([w]);
         }
         markDirty();
         renderMarkingPanel();
         renderTimelineMarkers();
+        if (_tapMode) _updateTapBar();
       });
     });
 
@@ -27222,15 +27413,20 @@ function initEditor() {
         }
       }
     }
+    // Mantém a barra "Bater no ritmo" em sincronia (progresso, próxima palavra).
+    if (_tapMode && typeof _updateTapBar === 'function') _updateTapBar();
   }
 
   // Tab pra marcar a próxima palavra com o tempo atual do áudio
   function markNextWord() {
     const audio = audioElement;
-    if (!audio || !audio.duration) return;
+    // No modo "bater no ritmo" não precisa de áudio (usa o cronômetro), mas
+    // exige ter começado (Iniciar) pra não marcar tudo no tempo 0.
+    if (_tapMode) { if (!_tapRunning) return; }
+    else if (!audio || !audio.duration) return;
     const parsed = engine?.parsed;
     if (!parsed) return;
-    const t = audio.currentTime;
+    const t = _markClock();
     // Acha primeira não marcada, respeitando o MODO da estrofe.
     for (let si = 0; si < parsed.stanzas.length; si++) {
       const stanza = parsed.stanzas[si];
