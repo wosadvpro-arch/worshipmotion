@@ -2470,8 +2470,12 @@ body.timeline-collapsed .timeline-collapse-btn {
     touch-action: pan-y;
     font-size: 16px;
   }
-  body.wm-sheet-left  .editor-left  { transform: translateY(0); }
-  body.wm-sheet-right .editor-right { transform: translateY(0); }
+  /* IMPORTANTE (iOS/WebKit): rolagem por toque NÃO funciona dentro de um
+     position:fixed que tenha transform. Quando o painel ABRE, tiramos o
+     transform (translateY(0) ainda contava como transform e travava o scroll).
+     A animação de subida continua (translateY(130%) → none). */
+  body.wm-sheet-left  .editor-left  { transform: none; }
+  body.wm-sheet-right .editor-right { transform: none; }
 
   /* backdrop transparente: fecha ao tocar fora, mas NÃO escurece o canvas
      (você precisa ver o fundo/efeito/animação aplicando em tempo real) */
@@ -7511,7 +7515,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'painel-scroll-selo-01jul';
+window.__WM_BUILD = 'ios-fixed-transform-scroll-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
