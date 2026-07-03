@@ -4929,6 +4929,8 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
 .tap-big-btn:active { transform: scale(0.96); }
 .tap-big-btn.is-running { background: linear-gradient(135deg,#22c55e,#15803d); box-shadow: 0 6px 20px -6px rgba(34,197,94,0.6); }
 .tap-big-btn.is-counting { background: linear-gradient(135deg,#f59e0b,#b45309); }
+.tap-big-btn.is-paused { background: linear-gradient(135deg,#8b5cf6,#6d28d9); }
+.tap-actions { display: flex; gap: 8px; align-items: center; }
 .tap-big-btn:disabled { cursor: default; }
 .tap-big-btn .tap-big-label { font-size: 19px; font-weight: 800; letter-spacing: .02em; line-height: 1.05; }
 .tap-big-btn .tap-big-sub { display: none; }
@@ -7482,7 +7484,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'marcacao-arrastar-scroll-01jul';
+window.__WM_BUILD = 'tap-pausar-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -26757,10 +26759,13 @@ function initEditor() {
   // Marca as palavras SEM precisar carregar a música: a pessoa ouve a música
   // onde quiser (Spotify/YouTube/ao vivo) e vai tocando no botão grande no
   // ritmo. Usa um cronômetro interno no lugar do tempo do áudio.
-  let _tapMode = false, _tapRunning = false, _tapStartMs = 0, _tapRAF = 0, _tapCountTimer = 0;
+  let _tapMode = false, _tapRunning = false, _tapPaused = false, _tapStartMs = 0, _tapElapsedBase = 0, _tapRAF = 0, _tapCountTimer = 0;
 
   function _markClock() {
-    if (_tapMode && _tapRunning) return (performance.now() - _tapStartMs) / 1000;
+    if (_tapMode) {
+      if (_tapRunning) return _tapElapsedBase + (performance.now() - _tapStartMs) / 1000;
+      return _tapElapsedBase; // pausado: relógio congelado no tempo acumulado
+    }
     return (audioElement && audioElement.duration) ? audioElement.currentTime : 0;
   }
   function _tapNextUnit() {
@@ -26811,7 +26816,7 @@ function initEditor() {
   function _tapSetBig(label, sub, cls) {
     const big = document.getElementById('tap-big-btn');
     if (!big) return;
-    big.classList.remove('is-running', 'is-counting');
+    big.classList.remove('is-running', 'is-counting', 'is-paused');
     if (cls) big.classList.add(cls);
     const l = big.querySelector('.tap-big-label'); if (l) l.textContent = label;
     const s = big.querySelector('.tap-big-sub'); if (s) s.textContent = sub;
@@ -26829,22 +26834,55 @@ function initEditor() {
       else {
         clearInterval(_tapCountTimer);
         big.disabled = false;
+        _tapPaused = false;
+        _tapElapsedBase = 0;
         _tapRunning = true;
         _tapStartMs = performance.now();
         _tapSetBig('MARCAR', 'toque no ritmo', 'is-running');
         _tapTick();
         _updateTapBar();
+        _updatePauseBtn();
       }
     }, 1000);
   }
+  function _tapPause() {
+    if (!_tapRunning) return;
+    _tapElapsedBase += (performance.now() - _tapStartMs) / 1000; // guarda o tempo até aqui
+    _tapRunning = false;
+    _tapPaused = true;
+    cancelAnimationFrame(_tapRAF);
+    _tapSetBig('Continuar', 'retoma de onde parou', 'is-paused');
+    const c = document.getElementById('tap-clock'); if (c) c.textContent = formatTime(_markClock());
+    _updateTapBar();
+    _updatePauseBtn();
+  }
+  function _tapResume() {
+    if (!_tapPaused) return;
+    _tapPaused = false;
+    _tapRunning = true;
+    _tapStartMs = performance.now(); // continua contando a partir do tempo acumulado
+    _tapSetBig('MARCAR', 'toque no ritmo', 'is-running');
+    _tapTick();
+    _updatePauseBtn();
+  }
+  function _updatePauseBtn() {
+    const btn = document.getElementById('tap-pause-btn');
+    if (!btn) return;
+    // Só mostra o Pausar/Continuar depois que a marcação começou.
+    btn.style.display = (_tapRunning || _tapPaused) ? '' : 'none';
+    btn.textContent = _tapPaused ? '▶ Continuar' : '⏸ Pausar';
+  }
   function _tapFinish(done) {
     _tapRunning = false;
+    _tapPaused = false;
+    _tapElapsedBase = 0;
     cancelAnimationFrame(_tapRAF);
     clearInterval(_tapCountTimer);
     const big = document.getElementById('tap-big-btn');
     if (big) big.disabled = false;
     _tapSetBig(done ? 'Concluído ✓' : 'Iniciar', done ? 'todas marcadas' : 'contagem 3, 2, 1', null);
     _updateTapBar();
+    _updatePauseBtn();
   }
   function _updateTapBar() {
     const st = (typeof markStats === 'function') ? markStats() : { marked: 0, total: 0 };
@@ -26882,7 +26920,8 @@ function initEditor() {
   function _toggleTapMode() { _tapMode ? _exitTapMode() : _enterTapMode(); }
   function _tapBigClick() {
     if (!_tapMode) return;
-    if (_tapRunning) _tapMarkNext();
+    if (_tapPaused) _tapResume();
+    else if (_tapRunning) _tapMarkNext();
     else _tapStartCountdown();
   }
 
@@ -26966,7 +27005,10 @@ function initEditor() {
             <span class="tap-progress" id="tap-progress">0/0 palavras</span>
           </div>
           <div class="tap-next" id="tap-next">Toque em Iniciar e vá batendo no ritmo da música</div>
-          <button class="btn btn-ghost btn-sm" id="tap-finish-btn" type="button">Concluir</button>
+          <div class="tap-actions">
+            <button class="btn btn-ghost btn-sm" id="tap-pause-btn" type="button" style="display:none;">⏸ Pausar</button>
+            <button class="btn btn-ghost btn-sm" id="tap-finish-btn" type="button">Concluir</button>
+          </div>
         </div>
       </div>
       <div class="marking-wave-wrap" id="marking-wave-wrap" title="Clique ou arraste pra navegar no áudio">
@@ -26994,6 +27036,8 @@ function initEditor() {
     if (_tapBig) _tapBig.addEventListener('click', _tapBigClick);
     const _tapFin = $('#tap-finish-btn', panel);
     if (_tapFin) _tapFin.addEventListener('click', () => _tapFinish(false));
+    const _tapPauseBtn = $('#tap-pause-btn', panel);
+    if (_tapPauseBtn) _tapPauseBtn.addEventListener('click', () => { if (_tapPaused) _tapResume(); else _tapPause(); });
     $('#btn-distribute-marks', panel).addEventListener('click', () => {
       const filled = distributeUnmarkedWords();
       if (filled > 0) {
