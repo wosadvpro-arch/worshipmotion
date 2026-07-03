@@ -160,7 +160,6 @@ html {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overscroll-behavior-y: none;   /* desliga o "puxar pra atualizar" do navegador */
 }
 
 body {
@@ -7508,7 +7507,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'scroll-manual-js-01jul';
+window.__WM_BUILD = 'templates-minimizar-refresh-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -28436,27 +28435,43 @@ function initEditor() {
   // Rolagem MANUAL (JS) dos painéis do celular. A rolagem nativa desses painéis
   // flutuantes (position:fixed) falha no iOS/WebKit; então movemos o conteúdo na
   // mão conforme o dedo arrasta — funciona onde o navegador não rola sozinho.
-  function _wmManualScroll(el) {
+  function _wmManualScroll(el, closeFn) {
     if (!el || el._wmMS) return; el._wmMS = true;
-    let sy = 0, sTop = 0, on = false, lastY = 0, lastT = 0, vy = 0, raf = 0;
+    let sy = 0, sTop = 0, on = false, lastY = 0, lastT = 0, vy = 0, raf = 0, closing = false;
     el.addEventListener('touchstart', (e) => {
       if (e.touches.length !== 1) { on = false; return; }
       cancelAnimationFrame(raf);
-      sy = e.touches[0].clientY; sTop = el.scrollTop; on = true;
+      sy = e.touches[0].clientY; sTop = el.scrollTop; on = true; closing = false;
       lastY = sy; lastT = performance.now(); vy = 0;
     }, { passive: true });
     el.addEventListener('touchmove', (e) => {
       if (!on || e.touches.length !== 1) return;
       const y = e.touches[0].clientY;
-      el.scrollTop = sTop - (y - sy);
+      const dy = y - sy;
+      // No TOPO e arrastando pra BAIXO → minimiza (arrasta o painel pra baixo).
+      if (closeFn && sTop <= 0 && dy > 0) {
+        closing = true;
+        el.style.transition = 'none';
+        el.style.bottom = (58 - dy) + 'px';
+      } else {
+        closing = false;
+        el.style.bottom = '';
+        el.scrollTop = sTop - dy;
+      }
       const now = performance.now(), dt = now - lastT;
       if (dt > 0) vy = (y - lastY) / dt;
       lastY = y; lastT = now;
-      if (e.cancelable) e.preventDefault();   // impede o comportamento nativo (que falha) e o scroll da página
+      if (e.cancelable) e.preventDefault();
     }, { passive: false });
     const end = () => {
       if (!on) return; on = false;
-      let v = vy * 16;                          // inércia simples
+      if (closing) {
+        el.style.transition = '';
+        el.style.bottom = '';
+        if ((lastY - sy) > 80 && typeof closeFn === 'function') closeFn();
+        return;
+      }
+      let v = vy * 16;
       const step = () => {
         if (Math.abs(v) < 0.6) return;
         el.scrollTop -= v; v *= 0.92;
@@ -28467,8 +28482,10 @@ function initEditor() {
     el.addEventListener('touchend', end);
     el.addEventListener('touchcancel', end);
   }
-  _wmManualScroll(document.querySelector('.editor-left'));
-  _wmManualScroll(document.querySelector('.editor-right'));
+  _wmManualScroll(document.querySelector('.editor-left'), () => document.body.classList.remove('wm-sheet-left'));
+  _wmManualScroll(document.querySelector('.editor-right'), () => document.body.classList.remove('wm-sheet-right'));
+  // Templates e outros modais também rolam por JS no celular.
+  document.querySelectorAll('.modal-overlay .modal-body').forEach((mb) => _wmManualScroll(mb));
   // Caixa de letra no celular cresce com o conteúdo (sem scroll próprio), pra
   // rolar junto com o painel via _wmManualScroll.
   (function () {
