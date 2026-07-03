@@ -7524,7 +7524,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'sem-pull-refresh-01jul';
+window.__WM_BUILD = 'scroll-limpo-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -31627,82 +31627,14 @@ function initLoginAnim() {
   window.addEventListener('load', async () => {
     await tratarRetornoAuth();
     showPage();
-    // Selo de versão + DIAGNÓSTICO de scroll (temporário). Toque nele com um
-    // painel de baixo aberto pra ver o que está travando a rolagem no aparelho.
+    // Rótulo de versão minúsculo, no topo, que NÃO bloqueia toque (pointer-events:none).
     try {
       const _v = document.createElement('div');
       _v.id = 'wm-build-badge';
-      _v.textContent = 'v ' + (window.__WM_BUILD || '?') + ' · toque p/ diagnóstico';
-      _v.style.cssText = 'position:fixed;left:6px;bottom:6px;z-index:99999;'
-        + 'font:600 10px/1.3 monospace;color:#c4b5fd;background:rgba(20,18,30,0.9);'
-        + 'padding:5px 8px;border-radius:6px;border:1px solid rgba(139,92,246,0.6);'
-        + 'max-width:70vw;pointer-events:auto;opacity:0.92;';
-      _v.addEventListener('click', () => {
-        const linhas = [];
-        linhas.push('BUILD: ' + (window.__WM_BUILD || '?'));
-        linhas.push('sheet-left=' + document.body.classList.contains('wm-sheet-left')
-          + ' sheet-right=' + document.body.classList.contains('wm-sheet-right'));
-        const vh = window.innerHeight;
-        linhas.push('viewport altura=' + vh);
-        const _rect = (el) => { if (!el) return 'n/a'; const r = el.getBoundingClientRect(); return 'top=' + Math.round(r.top) + ' bottom=' + Math.round(r.bottom) + ' h=' + Math.round(r.height); };
-        const elLeft = document.querySelector('.editor-left');
-        const cw = document.querySelector('.editor-canvas-wrap');
-        linhas.push('editor-left: ' + _rect(elLeft) + ' pos=' + (elLeft ? getComputedStyle(elLeft).position : '?'));
-        linhas.push('canvas-wrap: ' + _rect(cw) + ' ovf=' + (cw ? getComputedStyle(cw).overflowY : '?'));
-        const cx = Math.round(window.innerWidth / 2);
-        const _fromPt = (y) => { const e = document.elementFromPoint(cx, y); return e ? (e.id ? '#' + e.id : '.' + String(e.className || e.tagName).split(' ')[0]) : '?'; };
-        linhas.push('sob o dedo @30%=' + _fromPt(Math.round(vh * 0.3)) + ' @55%=' + _fromPt(Math.round(vh * 0.55)) + ' @80%=' + _fromPt(Math.round(vh * 0.8)));
-        const aberto = elLeft;
-        if (aberto) {
-          const pb = aberto.querySelector('.panel-body') || aberto;
-          const cs = getComputedStyle(pb);
-          linhas.push('--- .panel-body ---');
-          linhas.push('scrollH=' + pb.scrollHeight + ' clientH=' + pb.clientHeight + ' PODEROLAR=' + (pb.scrollHeight > pb.clientHeight + 4));
-          linhas.push('overflowY=' + cs.overflowY + ' tf=' + getComputedStyle(aberto).transform.slice(0, 14));
-        }
-        // mostra num overlay grande pra tirar print
-        let ov = document.getElementById('wm-diag-overlay');
-        if (ov) ov.remove();
-        ov = document.createElement('div');
-        ov.id = 'wm-diag-overlay';
-        ov.style.cssText = 'position:fixed;left:8px;right:8px;bottom:40px;z-index:100000;'
-          + 'background:#0d0d14;color:#e5e5f0;border:1px solid #8b5cf6;border-radius:10px;'
-          + 'padding:12px;font:600 12px/1.5 monospace;white-space:pre-wrap;max-height:70vh;overflow:auto;';
-        linhas.push('');
-        linhas.push('>>> AGORA ARRASTE PRA CIMA DENTRO DO PAINEL <<<');
-        linhas.push('(capturando o toque ao vivo…)');
-        ov.textContent = linhas.join('\n');
-        document.body.appendChild(ov);
-
-        // CAPTURA AO VIVO: escuta o próximo arraste e registra o que acontece
-        const pbAlvo = (aberto && (aberto.querySelector('.panel-body') || aberto)) || null;
-        const cwAlvo = document.querySelector('.editor-canvas-wrap');
-        const log = [];
-        let capturas = 0;
-        const pageAntes = window.scrollY || document.documentElement.scrollTop || 0;
-        const onMove = (ev) => {
-          if (capturas >= 6) return;
-          capturas++;
-          const t = ev.target;
-          const alvoNome = t ? (t.id ? '#' + t.id : (t.className && t.className.toString ? '.' + String(t.className).split(' ')[0] : t.tagName)) : '?';
-          log.push('mv' + capturas + ': alvo=' + alvoNome
-            + ' bloq=' + ev.defaultPrevented
-            + ' painel=' + (pbAlvo ? pbAlvo.scrollTop : '?')
-            + ' pagina=' + Math.round(window.scrollY || document.documentElement.scrollTop || 0)
-            + ' canvas=' + (cwAlvo ? Math.round(cwAlvo.scrollTop) : '?'));
-          atualiza();
-        };
-        const atualiza = () => {
-          ov.textContent = linhas.join('\n') + '\n--- TOQUE AO VIVO ---\n'
-            + 'pagina inicial=' + pageAntes + '\n'
-            + (log.length ? log.join('\n') : '(arraste agora dentro do painel…)')
-            + '\n\n(toque aqui p/ fechar)';
-        };
-        // captura na fase de captura e passiva (não interfere), pra ver o estado real
-        document.addEventListener('touchmove', onMove, { passive: true, capture: true });
-        ov.addEventListener('click', () => { document.removeEventListener('touchmove', onMove, { capture: true }); ov.remove(); });
-        setTimeout(atualiza, 50);
-      });
+      _v.textContent = 'v ' + (window.__WM_BUILD || '?');
+      _v.style.cssText = 'position:fixed;top:2px;right:4px;z-index:99999;'
+        + 'font:600 8px/1 monospace;color:rgba(196,181,253,0.7);'
+        + 'pointer-events:none;';
       document.body.appendChild(_v);
     } catch (e) {}
   });
