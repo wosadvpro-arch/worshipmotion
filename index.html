@@ -7484,7 +7484,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'tap-pausar-01jul';
+window.__WM_BUILD = 'marcacao-scroll-ancora-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -27462,18 +27462,24 @@ function initEditor() {
         e.stopPropagation();
         const si = parseInt(btn.dataset.si, 10);
         const mode = btn.dataset.mode;
-        // Preserva a posição do scroll: trocar o modo NÃO deve jogar o
-        // painel de volta pro topo (o re-render + scroll-pra-próxima
-        // fazia isso). Salva antes, restaura depois, e sinaliza pro
-        // render NÃO fazer o auto-scroll desta vez.
-        const scrollEl = content;
-        const savedScroll = scrollEl ? scrollEl.scrollTop : 0;
+        // Trocar o modo muda a ALTURA da estrofe (Linha é mais compacto que
+        // Palavra), então guardar só o scrollTop não basta — a lista encolhe
+        // e o scroll "corta" pro máximo, jogando pra cima. Em vez disso,
+        // ancoramos NA ESTROFE clicada: guardamos onde ela está na tela e,
+        // depois do re-render, reposicionamos o scroll pra ela ficar no
+        // mesmo lugar. Assim a sua vista não pula.
+        const stanzaEl = btn.closest('.mark-stanza');
+        const beforeTop = stanzaEl ? stanzaEl.getBoundingClientRect().top : null;
         _suppressMarkAutoScroll = true;
         setStanzaMarkMode(si, mode);
         renderMarkingPanel();
         _suppressMarkAutoScroll = false;
         const newContent = $('#marking-panel-content');
-        if (newContent) newContent.scrollTop = savedScroll;
+        const newStanza = newContent ? newContent.querySelector(`.mark-stanza[data-si="${si}"]`) : null;
+        if (newContent && newStanza && beforeTop !== null) {
+          const afterTop = newStanza.getBoundingClientRect().top;
+          newContent.scrollTop += (afterTop - beforeTop);
+        }
       });
     });
 
