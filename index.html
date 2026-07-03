@@ -2464,12 +2464,15 @@ body.timeline-collapsed .timeline-collapse-btn {
   }
   /* No celular a alcinha de redimensionar (canto inferior direito) "rouba" o
      gesto de rolar a letra pra baixo — o dedo pega a alça e trava. Sem resize,
-     o arraste rola o texto normalmente. */
+     o arraste rola o texto normalmente. E font-size 16px é OBRIGATÓRIO: abaixo
+     disso o iOS dá ZOOM automático ao focar o campo, e esse zoom empurra o
+     layout e quebra a rolagem (não chega ao fim da letra). */
   .lyrics-textarea {
     resize: none;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     touch-action: pan-y;
+    font-size: 16px;
   }
   body.wm-sheet-left  .editor-left  { transform: translateY(0); }
   body.wm-sheet-right .editor-right { transform: translateY(0); }
@@ -7512,7 +7515,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'letra-page-lock-01jul';
+window.__WM_BUILD = 'letra-no-zoom-16px-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
