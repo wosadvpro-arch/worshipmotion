@@ -7507,7 +7507,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'templates-minimizar-refresh-01jul';
+window.__WM_BUILD = 'preview-anim-celular3-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -24342,6 +24342,35 @@ function initEditor() {
         engine.animConfig[category] = id;
       });
     });
+
+    // CELULAR: não há hover, então o preview das animações nunca tocava.
+    // Aqui tocamos automaticamente os cards VISÍVEIS na tela, repetindo a cada
+    // ~2.6s (e parando quando a aba fecha). Só no celular.
+    if (window.matchMedia && window.matchMedia('(max-width: 1080px)').matches) {
+      if (grid._wmAnimTimer) { clearInterval(grid._wmAnimTimer); grid._wmAnimTimer = null; }
+      const rootEl = grid.closest('.editor-left') || grid.closest('.editor-right');
+      const tocarVisiveis = () => {
+        // não faz nada se a aba de animações não está visível
+        if (!grid.offsetParent) return;
+        const rr = rootEl ? rootEl.getBoundingClientRect() : { top: 0, bottom: window.innerHeight };
+        grid.querySelectorAll('.anim-card').forEach((card) => {
+          const cr = card.getBoundingClientRect();
+          const visivel = cr.bottom > rr.top + 4 && cr.top < rr.bottom - 4;
+          const preview = card.querySelector('.anim-card-preview');
+          if (!preview) return;
+          if (visivel) {
+            try { previewAnimInCard(card.dataset.id, preview); } catch (e) {}
+          } else if (preview._wmPreviewInst) {
+            try { preview._wmPreviewInst.stop(); } catch (e) {}
+            preview._wmPreviewInst = null;
+          }
+        });
+      };
+      // toca já e repete
+      setTimeout(tocarVisiveis, 60);
+      grid._wmAnimTimer = setInterval(tocarVisiveis, 2600);
+      grid._wmTocarVisiveis = tocarVisiveis; // exposto p/ o scroll chamar ao rolar
+    }
   }
 
   function previewAnimInCard(animId, container) {
@@ -28478,6 +28507,9 @@ function initEditor() {
         raf = requestAnimationFrame(step);
       };
       if (Math.abs(vy) > 0.06) raf = requestAnimationFrame(step);
+      // se rolou a aba de animações, toca o preview dos cards que apareceram
+      const g = el.querySelector && el.querySelector('#anim-grid');
+      if (g && typeof g._wmTocarVisiveis === 'function') g._wmTocarVisiveis();
     };
     el.addEventListener('touchend', end);
     el.addEventListener('touchcancel', end);
