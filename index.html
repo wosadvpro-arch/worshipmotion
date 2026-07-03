@@ -2445,22 +2445,18 @@ body.timeline-collapsed .timeline-collapse-btn {
     margin: 8px auto 2px; border-radius: 999px;
     background: var(--border-strong, #3a3a4a);
   }
-  /* No editor (celular), a PÁGINA fica travada — quem rola é o conteúdo de
-     dentro (a caixa da letra, os painéis). Sem isto o iOS arrasta o app
-     inteiro pra cima e a rolagem interna não funciona. */
+  /* No editor (celular), a PÁGINA não rola (só o conteúdo de dentro dos
+     painéis). Trava LEVE: sem position:fixed (que travava tudo) — só impede o
+     documento de rolar/quicar. Quem impede o arraste de fato é o
+     overscroll-behavior:contain nos painéis (abaixo). */
   html.wm-editor-locked, body.wm-editor-locked {
-    height: 100%;
     overflow: hidden;
     overscroll-behavior: none;
-  }
-  body.wm-editor-locked {
-    position: fixed;
-    inset: 0;
-    width: 100%;
   }
 
   .editor-left .panel-body, .editor-right .panel-body {
     flex: 1 1 auto; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;   /* o scroll do painel não "vaza" e arrasta a página */
   }
   /* No celular a alcinha de redimensionar (canto inferior direito) "rouba" o
      gesto de rolar a letra pra baixo — o dedo pega a alça e trava. Sem resize,
@@ -7515,7 +7511,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'letra-no-zoom-16px-01jul';
+window.__WM_BUILD = 'painel-scroll-selo-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -31616,6 +31612,19 @@ function initLoginAnim() {
   window.addEventListener('load', async () => {
     await tratarRetornoAuth();
     showPage();
+    // Selo de versão visível (temporário, pra diagnóstico de cache): mostra qual
+    // build está carregado. Toque nele pra esconder. Fica discreto no canto.
+    try {
+      const _v = document.createElement('div');
+      _v.id = 'wm-build-badge';
+      _v.textContent = 'v ' + (window.__WM_BUILD || '?');
+      _v.style.cssText = 'position:fixed;left:6px;bottom:6px;z-index:99999;'
+        + 'font:600 10px/1 monospace;color:#c4b5fd;background:rgba(20,18,30,0.85);'
+        + 'padding:4px 7px;border-radius:6px;border:1px solid rgba(139,92,246,0.5);'
+        + 'pointer-events:auto;opacity:0.9;';
+      _v.addEventListener('click', () => _v.remove());
+      document.body.appendChild(_v);
+    } catch (e) {}
   });
 })();
 
