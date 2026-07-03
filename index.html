@@ -2442,14 +2442,7 @@ body.timeline-collapsed .timeline-collapse-btn {
     border-radius: 16px 16px 0 0;
     box-shadow: 0 -18px 50px rgba(0,0,0,0.55);
     transition: bottom .3s cubic-bezier(.22,1,.36,1);
-    z-index: 200;
-    overflow-y: auto; -webkit-overflow-scrolling: touch;  /* o PAINEL INTEIRO rola */
-    overscroll-behavior: contain; touch-action: pan-y;
-  }
-  /* Abas grudadas no topo enquanto rola → arrastar NELAS também rola o painel. */
-  .editor-left .panel-tabs, .editor-right .panel-tabs {
-    position: sticky; top: 0; z-index: 3; background: var(--bg-surface);
-    touch-action: pan-y;
+    z-index: 200; overflow: hidden;   /* rolagem controlada por JS (nativa falha no iOS aqui) */
   }
   .editor-left::before, .editor-right::before {
     content: ''; flex: 0 0 auto; width: 40px; height: 4px;
@@ -2468,9 +2461,7 @@ body.timeline-collapsed .timeline-collapse-btn {
      layout e quebra a rolagem (não chega ao fim da letra). */
   .lyrics-textarea {
     resize: none;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    touch-action: pan-y;
+    overflow: hidden;      /* sem scroll interno — cresce com o conteúdo e rola junto com o painel */
     font-size: 16px;
   }
   /* Aberto: sobe pra 58px (acima da régua). Sem transform → rolagem por toque
@@ -7517,7 +7508,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'painel-rola-abas-01jul';
+window.__WM_BUILD = 'scroll-manual-js-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -28442,8 +28433,57 @@ function initEditor() {
     el.addEventListener('touchend', _end);
     el.addEventListener('touchcancel', _end);
   }
-  _wmSheetDrag(document.querySelector('.editor-left'), () => document.body.classList.remove('wm-sheet-left'));
-  _wmSheetDrag(document.querySelector('.editor-right'), () => document.body.classList.remove('wm-sheet-right'));
+  // Rolagem MANUAL (JS) dos painéis do celular. A rolagem nativa desses painéis
+  // flutuantes (position:fixed) falha no iOS/WebKit; então movemos o conteúdo na
+  // mão conforme o dedo arrasta — funciona onde o navegador não rola sozinho.
+  function _wmManualScroll(el) {
+    if (!el || el._wmMS) return; el._wmMS = true;
+    let sy = 0, sTop = 0, on = false, lastY = 0, lastT = 0, vy = 0, raf = 0;
+    el.addEventListener('touchstart', (e) => {
+      if (e.touches.length !== 1) { on = false; return; }
+      cancelAnimationFrame(raf);
+      sy = e.touches[0].clientY; sTop = el.scrollTop; on = true;
+      lastY = sy; lastT = performance.now(); vy = 0;
+    }, { passive: true });
+    el.addEventListener('touchmove', (e) => {
+      if (!on || e.touches.length !== 1) return;
+      const y = e.touches[0].clientY;
+      el.scrollTop = sTop - (y - sy);
+      const now = performance.now(), dt = now - lastT;
+      if (dt > 0) vy = (y - lastY) / dt;
+      lastY = y; lastT = now;
+      if (e.cancelable) e.preventDefault();   // impede o comportamento nativo (que falha) e o scroll da página
+    }, { passive: false });
+    const end = () => {
+      if (!on) return; on = false;
+      let v = vy * 16;                          // inércia simples
+      const step = () => {
+        if (Math.abs(v) < 0.6) return;
+        el.scrollTop -= v; v *= 0.92;
+        raf = requestAnimationFrame(step);
+      };
+      if (Math.abs(vy) > 0.06) raf = requestAnimationFrame(step);
+    };
+    el.addEventListener('touchend', end);
+    el.addEventListener('touchcancel', end);
+  }
+  _wmManualScroll(document.querySelector('.editor-left'));
+  _wmManualScroll(document.querySelector('.editor-right'));
+  // Caixa de letra no celular cresce com o conteúdo (sem scroll próprio), pra
+  // rolar junto com o painel via _wmManualScroll.
+  (function () {
+    const ta = document.getElementById('lyrics-input');
+    if (!ta) return;
+    const ehCelular = () => window.matchMedia('(max-width: 1080px)').matches;
+    const grow = () => {
+      if (!ehCelular()) { ta.style.height = ''; return; }
+      ta.style.height = 'auto';
+      ta.style.height = (ta.scrollHeight + 4) + 'px';
+    };
+    ta.addEventListener('input', grow);
+    window.addEventListener('resize', grow);
+    setTimeout(grow, 120);
+  })();
   _wmSheetDrag(document.querySelector('#modal-overlay .modal'), () => { if (typeof closeModal === 'function') closeModal(); });
 
   // Trava o scroll do fundo enquanto QUALQUER modal está aberto — assim, no
