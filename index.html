@@ -7515,7 +7515,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'ios-fixed-transform-scroll-01jul';
+window.__WM_BUILD = 'diag-scroll-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -31616,17 +31616,60 @@ function initLoginAnim() {
   window.addEventListener('load', async () => {
     await tratarRetornoAuth();
     showPage();
-    // Selo de versão visível (temporário, pra diagnóstico de cache): mostra qual
-    // build está carregado. Toque nele pra esconder. Fica discreto no canto.
+    // Selo de versão + DIAGNÓSTICO de scroll (temporário). Toque nele com um
+    // painel de baixo aberto pra ver o que está travando a rolagem no aparelho.
     try {
       const _v = document.createElement('div');
       _v.id = 'wm-build-badge';
-      _v.textContent = 'v ' + (window.__WM_BUILD || '?');
+      _v.textContent = 'v ' + (window.__WM_BUILD || '?') + ' · toque p/ diagnóstico';
       _v.style.cssText = 'position:fixed;left:6px;bottom:6px;z-index:99999;'
-        + 'font:600 10px/1 monospace;color:#c4b5fd;background:rgba(20,18,30,0.85);'
-        + 'padding:4px 7px;border-radius:6px;border:1px solid rgba(139,92,246,0.5);'
-        + 'pointer-events:auto;opacity:0.9;';
-      _v.addEventListener('click', () => _v.remove());
+        + 'font:600 10px/1.3 monospace;color:#c4b5fd;background:rgba(20,18,30,0.9);'
+        + 'padding:5px 8px;border-radius:6px;border:1px solid rgba(139,92,246,0.6);'
+        + 'max-width:70vw;pointer-events:auto;opacity:0.92;';
+      _v.addEventListener('click', () => {
+        // acha o painel de baixo aberto
+        const painel = document.querySelector('.editor-left, .editor-right');
+        const aberto = document.body.classList.contains('wm-sheet-left') ? document.querySelector('.editor-left')
+          : document.body.classList.contains('wm-sheet-right') ? document.querySelector('.editor-right')
+          : painel;
+        const linhas = [];
+        linhas.push('BUILD: ' + (window.__WM_BUILD || '?'));
+        linhas.push('sheet-left aberto: ' + document.body.classList.contains('wm-sheet-left'));
+        if (!aberto) { linhas.push('NENHUM painel de baixo encontrado'); }
+        else {
+          const pb = aberto.querySelector('.panel-body') || aberto;
+          const cs = getComputedStyle(pb);
+          linhas.push('--- .panel-body ---');
+          linhas.push('scrollH=' + pb.scrollHeight + ' clientH=' + pb.clientHeight + ' → PODE ROLAR: ' + (pb.scrollHeight > pb.clientHeight + 4));
+          linhas.push('overflowY=' + cs.overflowY + ' touchAction=' + cs.touchAction);
+          linhas.push('minHeight=' + cs.minHeight + ' webkitOF=' + (cs.webkitOverflowScrolling || '?'));
+          linhas.push('height=' + Math.round(pb.getBoundingClientRect().height) + 'px');
+          // sobe pelos pais procurando transform/filter que quebram scroll no iOS
+          linhas.push('--- pais com transform/filter ---');
+          let el = pb, n = 0, achou = false;
+          while (el && el !== document.body && n < 10) {
+            const s = getComputedStyle(el);
+            const t = s.transform, f = s.filter, w = s.willChange, bf = s.backdropFilter || s.webkitBackdropFilter;
+            if ((t && t !== 'none') || (f && f !== 'none') || (bf && bf !== 'none') || (w && w !== 'auto')) {
+              achou = true;
+              linhas.push((el.className || el.tagName) + ': tf=' + (t !== 'none' ? 'SIM' : '-') + ' filter=' + (f !== 'none' ? 'SIM' : '-') + ' backdrop=' + (bf && bf !== 'none' ? 'SIM' : '-'));
+            }
+            el = el.parentElement; n++;
+          }
+          if (!achou) linhas.push('(nenhum)');
+        }
+        // mostra num overlay grande pra tirar print
+        let ov = document.getElementById('wm-diag-overlay');
+        if (ov) ov.remove();
+        ov = document.createElement('div');
+        ov.id = 'wm-diag-overlay';
+        ov.style.cssText = 'position:fixed;left:8px;right:8px;bottom:40px;z-index:100000;'
+          + 'background:#0d0d14;color:#e5e5f0;border:1px solid #8b5cf6;border-radius:10px;'
+          + 'padding:12px;font:600 12px/1.5 monospace;white-space:pre-wrap;max-height:60vh;overflow:auto;';
+        ov.textContent = linhas.join('\n') + '\n\n(toque aqui p/ fechar)';
+        ov.addEventListener('click', () => ov.remove());
+        document.body.appendChild(ov);
+      });
       document.body.appendChild(_v);
     } catch (e) {}
   });
