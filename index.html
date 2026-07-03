@@ -7507,7 +7507,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'painel-bottom-anim-01jul';
+window.__WM_BUILD = 'diag-layout2-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -31614,36 +31614,27 @@ function initLoginAnim() {
         + 'padding:5px 8px;border-radius:6px;border:1px solid rgba(139,92,246,0.6);'
         + 'max-width:70vw;pointer-events:auto;opacity:0.92;';
       _v.addEventListener('click', () => {
-        // acha o painel de baixo aberto
-        const painel = document.querySelector('.editor-left, .editor-right');
-        const aberto = document.body.classList.contains('wm-sheet-left') ? document.querySelector('.editor-left')
-          : document.body.classList.contains('wm-sheet-right') ? document.querySelector('.editor-right')
-          : painel;
         const linhas = [];
         linhas.push('BUILD: ' + (window.__WM_BUILD || '?'));
-        linhas.push('sheet-left aberto: ' + document.body.classList.contains('wm-sheet-left'));
-        if (!aberto) { linhas.push('NENHUM painel de baixo encontrado'); }
-        else {
+        linhas.push('sheet-left=' + document.body.classList.contains('wm-sheet-left')
+          + ' sheet-right=' + document.body.classList.contains('wm-sheet-right'));
+        const vh = window.innerHeight;
+        linhas.push('viewport altura=' + vh);
+        const _rect = (el) => { if (!el) return 'n/a'; const r = el.getBoundingClientRect(); return 'top=' + Math.round(r.top) + ' bottom=' + Math.round(r.bottom) + ' h=' + Math.round(r.height); };
+        const elLeft = document.querySelector('.editor-left');
+        const cw = document.querySelector('.editor-canvas-wrap');
+        linhas.push('editor-left: ' + _rect(elLeft) + ' pos=' + (elLeft ? getComputedStyle(elLeft).position : '?'));
+        linhas.push('canvas-wrap: ' + _rect(cw) + ' ovf=' + (cw ? getComputedStyle(cw).overflowY : '?'));
+        const cx = Math.round(window.innerWidth / 2);
+        const _fromPt = (y) => { const e = document.elementFromPoint(cx, y); return e ? (e.id ? '#' + e.id : '.' + String(e.className || e.tagName).split(' ')[0]) : '?'; };
+        linhas.push('sob o dedo @30%=' + _fromPt(Math.round(vh * 0.3)) + ' @55%=' + _fromPt(Math.round(vh * 0.55)) + ' @80%=' + _fromPt(Math.round(vh * 0.8)));
+        const aberto = elLeft;
+        if (aberto) {
           const pb = aberto.querySelector('.panel-body') || aberto;
           const cs = getComputedStyle(pb);
           linhas.push('--- .panel-body ---');
-          linhas.push('scrollH=' + pb.scrollHeight + ' clientH=' + pb.clientHeight + ' → PODE ROLAR: ' + (pb.scrollHeight > pb.clientHeight + 4));
-          linhas.push('overflowY=' + cs.overflowY + ' touchAction=' + cs.touchAction);
-          linhas.push('minHeight=' + cs.minHeight + ' webkitOF=' + (cs.webkitOverflowScrolling || '?'));
-          linhas.push('height=' + Math.round(pb.getBoundingClientRect().height) + 'px');
-          // sobe pelos pais procurando transform/filter que quebram scroll no iOS
-          linhas.push('--- pais com transform/filter ---');
-          let el = pb, n = 0, achou = false;
-          while (el && el !== document.body && n < 10) {
-            const s = getComputedStyle(el);
-            const t = s.transform, f = s.filter, w = s.willChange, bf = s.backdropFilter || s.webkitBackdropFilter;
-            if ((t && t !== 'none') || (f && f !== 'none') || (bf && bf !== 'none') || (w && w !== 'auto')) {
-              achou = true;
-              linhas.push((el.className || el.tagName) + ': tf=' + (t !== 'none' ? 'SIM' : '-') + ' filter=' + (f !== 'none' ? 'SIM' : '-') + ' backdrop=' + (bf && bf !== 'none' ? 'SIM' : '-'));
-            }
-            el = el.parentElement; n++;
-          }
-          if (!achou) linhas.push('(nenhum)');
+          linhas.push('scrollH=' + pb.scrollHeight + ' clientH=' + pb.clientHeight + ' PODEROLAR=' + (pb.scrollHeight > pb.clientHeight + 4));
+          linhas.push('overflowY=' + cs.overflowY + ' tf=' + getComputedStyle(aberto).transform.slice(0, 14));
         }
         // mostra num overlay grande pra tirar print
         let ov = document.getElementById('wm-diag-overlay');
@@ -31661,23 +31652,26 @@ function initLoginAnim() {
 
         // CAPTURA AO VIVO: escuta o próximo arraste e registra o que acontece
         const pbAlvo = (aberto && (aberto.querySelector('.panel-body') || aberto)) || null;
+        const cwAlvo = document.querySelector('.editor-canvas-wrap');
         const log = [];
         let capturas = 0;
-        const scrollAntes = pbAlvo ? pbAlvo.scrollTop : 0;
+        const pageAntes = window.scrollY || document.documentElement.scrollTop || 0;
         const onMove = (ev) => {
           if (capturas >= 6) return;
           capturas++;
           const t = ev.target;
           const alvoNome = t ? (t.id ? '#' + t.id : (t.className && t.className.toString ? '.' + String(t.className).split(' ')[0] : t.tagName)) : '?';
-          log.push('toque ' + capturas + ': alvo=' + alvoNome
-            + ' bloqueado(preventDefault)=' + ev.defaultPrevented
-            + ' scrollTopPainel=' + (pbAlvo ? pbAlvo.scrollTop : '?'));
+          log.push('mv' + capturas + ': alvo=' + alvoNome
+            + ' bloq=' + ev.defaultPrevented
+            + ' painel=' + (pbAlvo ? pbAlvo.scrollTop : '?')
+            + ' pagina=' + Math.round(window.scrollY || document.documentElement.scrollTop || 0)
+            + ' canvas=' + (cwAlvo ? Math.round(cwAlvo.scrollTop) : '?'));
           atualiza();
         };
         const atualiza = () => {
           ov.textContent = linhas.join('\n') + '\n--- TOQUE AO VIVO ---\n'
-            + 'scrollTop inicial=' + scrollAntes + '\n'
-            + (log.length ? log.join('\n') : '(arraste agora…)')
+            + 'pagina inicial=' + pageAntes + '\n'
+            + (log.length ? log.join('\n') : '(arraste agora dentro do painel…)')
             + '\n\n(toque aqui p/ fechar)';
         };
         // captura na fase de captura e passiva (não interfere), pra ver o estado real
