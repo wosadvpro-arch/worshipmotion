@@ -2445,14 +2445,6 @@ body.timeline-collapsed .timeline-collapse-btn {
     margin: 8px auto 2px; border-radius: 999px;
     background: var(--border-strong, #3a3a4a);
   }
-  /* No editor (celular), a PÁGINA não rola (só o conteúdo de dentro dos
-     painéis). Trava LEVE: sem position:fixed (que travava tudo) — só impede o
-     documento de rolar/quicar. Quem impede o arraste de fato é o
-     overscroll-behavior:contain nos painéis (abaixo). */
-  html.wm-editor-locked, body.wm-editor-locked {
-    overflow: hidden;
-    overscroll-behavior: none;
-  }
 
   .editor-left .panel-body, .editor-right .panel-body {
     flex: 1 1 auto; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch;
@@ -7515,7 +7507,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'diag-scroll-01jul';
+window.__WM_BUILD = 'remove-page-lock-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -31592,11 +31584,6 @@ function initLoginAnim() {
     document.querySelectorAll('.page').forEach(p => {
       p.classList.toggle('active', p.id === pageId);
     });
-    // Trava a rolagem da PÁGINA quando está no editor (no celular, sem isto o
-    // iOS rola/quica o app inteiro por baixo e rouba o gesto de rolar a letra).
-    const _noEditor = (pageId === 'page-editor');
-    document.documentElement.classList.toggle('wm-editor-locked', _noEditor);
-    document.body.classList.toggle('wm-editor-locked', _noEditor);
 
     if (pageId === 'page-editor' && !window.__editorReady) {
       window.__editorReady = true;
@@ -31665,10 +31652,38 @@ function initLoginAnim() {
         ov.id = 'wm-diag-overlay';
         ov.style.cssText = 'position:fixed;left:8px;right:8px;bottom:40px;z-index:100000;'
           + 'background:#0d0d14;color:#e5e5f0;border:1px solid #8b5cf6;border-radius:10px;'
-          + 'padding:12px;font:600 12px/1.5 monospace;white-space:pre-wrap;max-height:60vh;overflow:auto;';
-        ov.textContent = linhas.join('\n') + '\n\n(toque aqui p/ fechar)';
-        ov.addEventListener('click', () => ov.remove());
+          + 'padding:12px;font:600 12px/1.5 monospace;white-space:pre-wrap;max-height:70vh;overflow:auto;';
+        linhas.push('');
+        linhas.push('>>> AGORA ARRASTE PRA CIMA DENTRO DO PAINEL <<<');
+        linhas.push('(capturando o toque ao vivo…)');
+        ov.textContent = linhas.join('\n');
         document.body.appendChild(ov);
+
+        // CAPTURA AO VIVO: escuta o próximo arraste e registra o que acontece
+        const pbAlvo = (aberto && (aberto.querySelector('.panel-body') || aberto)) || null;
+        const log = [];
+        let capturas = 0;
+        const scrollAntes = pbAlvo ? pbAlvo.scrollTop : 0;
+        const onMove = (ev) => {
+          if (capturas >= 6) return;
+          capturas++;
+          const t = ev.target;
+          const alvoNome = t ? (t.id ? '#' + t.id : (t.className && t.className.toString ? '.' + String(t.className).split(' ')[0] : t.tagName)) : '?';
+          log.push('toque ' + capturas + ': alvo=' + alvoNome
+            + ' bloqueado(preventDefault)=' + ev.defaultPrevented
+            + ' scrollTopPainel=' + (pbAlvo ? pbAlvo.scrollTop : '?'));
+          atualiza();
+        };
+        const atualiza = () => {
+          ov.textContent = linhas.join('\n') + '\n--- TOQUE AO VIVO ---\n'
+            + 'scrollTop inicial=' + scrollAntes + '\n'
+            + (log.length ? log.join('\n') : '(arraste agora…)')
+            + '\n\n(toque aqui p/ fechar)';
+        };
+        // captura na fase de captura e passiva (não interfere), pra ver o estado real
+        document.addEventListener('touchmove', onMove, { passive: true, capture: true });
+        ov.addEventListener('click', () => { document.removeEventListener('touchmove', onMove, { capture: true }); ov.remove(); });
+        setTimeout(atualiza, 50);
       });
       document.body.appendChild(_v);
     } catch (e) {}
