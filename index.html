@@ -160,6 +160,7 @@ html {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overscroll-behavior-y: none;   /* desliga o "puxar pra atualizar" do navegador */
 }
 
 body {
@@ -2442,7 +2443,7 @@ body.timeline-collapsed .timeline-collapse-btn {
     transition: bottom .3s cubic-bezier(.22,1,.36,1);
     z-index: 200;
     overflow-y: auto; -webkit-overflow-scrolling: touch;  /* o PAINEL INTEIRO rola */
-    overscroll-behavior: contain; touch-action: pan-y;     /* e não vaza pros slides */
+    overscroll-behavior: none; touch-action: pan-y;     /* e não vaza pros slides nem puxa refresh */
   }
   /* Abas fixas no topo enquanto rola; arrastar nelas também rola o painel. */
   .editor-left .panel-tabs, .editor-right .panel-tabs {
@@ -7523,7 +7524,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'painel-lock-doc-01jul';
+window.__WM_BUILD = 'sem-pull-refresh-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
