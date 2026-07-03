@@ -7516,7 +7516,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'espacamento-mais-transparente-01jul';
+window.__WM_BUILD = 'espacamento-limpo-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -31711,16 +31711,6 @@ function initLoginAnim() {
   window.addEventListener('load', async () => {
     await tratarRetornoAuth();
     showPage();
-    // Rótulo de versão minúsculo, no topo, que NÃO bloqueia toque (pointer-events:none).
-    try {
-      const _v = document.createElement('div');
-      _v.id = 'wm-build-badge';
-      _v.textContent = 'v ' + (window.__WM_BUILD || '?');
-      _v.style.cssText = 'position:fixed;top:2px;right:4px;z-index:99999;'
-        + 'font:600 8px/1 monospace;color:rgba(196,181,253,0.7);'
-        + 'pointer-events:none;';
-      document.body.appendChild(_v);
-    } catch (e) {}
   });
 })();
 
