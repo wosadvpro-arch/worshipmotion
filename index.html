@@ -2441,22 +2441,7 @@ body.timeline-collapsed .timeline-collapse-btn {
     border-radius: 16px 16px 0 0;
     box-shadow: 0 -18px 50px rgba(0,0,0,0.55);
     transition: bottom .3s cubic-bezier(.22,1,.36,1);
-    z-index: 200;
-    overflow-y: auto; -webkit-overflow-scrolling: touch;  /* o PAINEL INTEIRO rola */
-    overscroll-behavior: none; touch-action: pan-y;     /* e não vaza pros slides nem puxa refresh */
-  }
-  /* Abas fixas no topo enquanto rola; arrastar nelas também rola o painel. */
-  .editor-left .panel-tabs, .editor-right .panel-tabs {
-    position: sticky; top: 0; z-index: 3;
-    background: var(--bg-surface); touch-action: pan-y;
-  }
-  /* Trava a rolagem do DOCUMENTO no editor (só overflow — SEM position:fixed,
-     que quebrava a rolagem interna no iOS). Assim não sobra "espaço" no fim
-     nem o gesto vaza pros slides. */
-  html.wm-editor-locked, body.wm-editor-locked {
-    height: 100%;
-    overflow: hidden;
-    overscroll-behavior: none;
+    z-index: 200; overflow: hidden;
   }
   .editor-left::before, .editor-right::before {
     content: ''; flex: 0 0 auto; width: 40px; height: 4px;
@@ -2465,8 +2450,8 @@ body.timeline-collapsed .timeline-collapse-btn {
   }
 
   .editor-left .panel-body, .editor-right .panel-body {
-    flex: 0 0 auto; min-height: 0; overflow: visible;
-    touch-action: pan-y;   /* arrastar o conteúdo rola o painel */
+    flex: 1 1 auto; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
   }
   /* No celular a alcinha de redimensionar (canto inferior direito) "rouba" o
      gesto de rolar a letra pra baixo — o dedo pega a alça e trava. Sem resize,
@@ -7524,7 +7509,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'scroll-limpo-01jul';
+window.__WM_BUILD = 'scroll-reverter-simples-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -31601,13 +31586,6 @@ function initLoginAnim() {
     document.querySelectorAll('.page').forEach(p => {
       p.classList.toggle('active', p.id === pageId);
     });
-    // No editor, trava a rolagem do DOCUMENTO (só overflow:hidden, sem
-    // position:fixed). Sem isso, o body fica ~42px mais alto que a tela no iOS
-    // (100vh conta a barra de endereço) e esse excesso rola, fazendo o gesto
-    // vazar pros slides e aparecer aquele "espaço" no fim.
-    const _ehEditor = (pageId === 'page-editor');
-    document.documentElement.classList.toggle('wm-editor-locked', _ehEditor);
-    document.body.classList.toggle('wm-editor-locked', _ehEditor);
 
     if (pageId === 'page-editor' && !window.__editorReady) {
       window.__editorReady = true;
