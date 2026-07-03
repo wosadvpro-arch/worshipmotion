@@ -2442,6 +2442,9 @@ body.timeline-collapsed .timeline-collapse-btn {
     transition: bottom .3s cubic-bezier(.22,1,.36,1);
     z-index: 200; overflow: hidden;
   }
+  /* Só as ABAS travam o gesto de rolar a página (é onde o dedo escapava).
+     O conteúdo (.panel-body) continua livre pra rolar. */
+  .editor-left .panel-tabs, .editor-right .panel-tabs { touch-action: none; }
   .editor-left::before, .editor-right::before {
     content: ''; flex: 0 0 auto; width: 40px; height: 4px;
     margin: 8px auto 2px; border-radius: 999px;
@@ -2451,6 +2454,7 @@ body.timeline-collapsed .timeline-collapse-btn {
   .editor-left .panel-body, .editor-right .panel-body {
     flex: 1 1 auto; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;   /* o scroll do painel não "vaza" e arrasta a página */
+    touch-action: pan-y;            /* AQUI o gesto vertical rola o conteúdo (só aqui) */
   }
   /* No celular a alcinha de redimensionar (canto inferior direito) "rouba" o
      gesto de rolar a letra pra baixo — o dedo pega a alça e trava. Sem resize,
@@ -2475,6 +2479,7 @@ body.timeline-collapsed .timeline-collapse-btn {
     position: fixed; left: 0; right: 0; top: 0; bottom: 58px;
     background: transparent; z-index: 199;
     opacity: 0; pointer-events: none; transition: opacity .25s;
+    touch-action: none;   /* arrastar no fundo NÃO rola os slides atrás */
   }
   body.wm-sheet-left .wm-sheet-backdrop,
   body.wm-sheet-right .wm-sheet-backdrop { opacity: 1; pointer-events: auto; }
@@ -7507,7 +7512,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'diag-layout2-01jul';
+window.__WM_BUILD = 'painel-touchaction-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
