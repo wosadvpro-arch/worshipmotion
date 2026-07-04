@@ -7516,7 +7516,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'letra-vazia-limpa-tudo-01jul';
+window.__WM_BUILD = 'fonte-estilo-correto-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -12061,12 +12061,26 @@ async function _ensureLocalFontRegistered(family) {
   // pra o CSS bater. Mesmo que o arquivo seja de outra variante.
   let registradas = 0;
   let primeiroBlob = null;
+  let regularBlob = null;
   for (const fontData of candidatos) {
     try {
       const blob = await fontData.blob();
       if (!primeiroBlob) primeiroBlob = blob;
       const buffer = await blob.arrayBuffer();
-      const face = new FontFace(family, buffer);
+      const nomeVar = ((fontData.style || '') + ' ' + (fontData.fullName || fontData.postscriptName || '')).toLowerCase();
+      const style = /italic|oblique|itálico|kursiv/.test(nomeVar) ? 'italic' : 'normal';
+      const weight =
+        /thin|hairline/.test(nomeVar) ? '100' :
+        /extralight|ultralight/.test(nomeVar) ? '200' :
+        /(^|[^i])light/.test(nomeVar) ? '300' :
+        /medium/.test(nomeVar) ? '500' :
+        /semibold|demibold/.test(nomeVar) ? '600' :
+        /extrabold|ultrabold/.test(nomeVar) ? '800' :
+        /black|heavy/.test(nomeVar) ? '900' :
+        /bold/.test(nomeVar) ? '700' : '400';
+      // guarda a variante REGULAR (normal 400) pra sincronizar com a nuvem
+      if (style === 'normal' && weight === '400' && !regularBlob) regularBlob = blob;
+      const face = new FontFace(family, buffer, { style, weight });
       await face.load();
       document.fonts.add(face);
       registradas++;
@@ -12074,14 +12088,15 @@ async function _ensureLocalFontRegistered(family) {
       console.warn('Falha ao registrar', family, ':', e.message);
     }
   }
+  const blobParaNuvem = regularBlob || primeiroBlob;
   // Sincroniza a fonte do SISTEMA (instalada no PC) pra nuvem — 1x por
   // sessão, idempotente (upsert por família), à prova de falha. Isso faz
   // a fonte seguir o usuário pro CELULAR, onde ela não está instalada.
-  if (registradas > 0 && primeiroBlob && primeiroBlob.size <= 5 * 1024 * 1024 && window.WM_FONTS_CLOUD) {
+  if (registradas > 0 && blobParaNuvem && blobParaNuvem.size <= 5 * 1024 * 1024 && window.WM_FONTS_CLOUD) {
     window.__pcFontsSynced = window.__pcFontsSynced || new Set();
     if (!window.__pcFontsSynced.has(family)) {
       window.__pcFontsSynced.add(family);
-      try { window.WM_FONTS_CLOUD.upload(family + '.ttf', primeiroBlob); } catch (e) {}
+      try { window.WM_FONTS_CLOUD.upload(family + '.ttf', blobParaNuvem); } catch (e) {}
     }
   }
   return registradas > 0;
