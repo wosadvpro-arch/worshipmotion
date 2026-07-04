@@ -7516,7 +7516,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'destaque-palavra-sem-vazar-01jul';
+window.__WM_BUILD = 'slider-escala-grupo-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -20522,8 +20522,16 @@ function initEditor() {
     // Ordena pela posição X atual (esquerda → direita)
     palavras.sort((a, b) => a.x - b.x);
 
-    // Gap mínimo entre palavras (relativo à largura do canvas)
-    const GAP = 0.015;
+    // Gap entre palavras: proporcional ao TAMANHO das palavras da linha.
+    // Antes era fixo (0.015), então ao aumentar as palavras o espaço ficava
+    // minúsculo perto delas (parecia grudado). Agora cresce com a escala.
+    let _escalaMax = 1;
+    palavras.forEach(p => {
+      const _wo = engine.wordOverrides[p.id];
+      const _sc = (_wo && _wo.style && _wo.style.fontSizeScale) || 1;
+      if (_sc > _escalaMax) _escalaMax = _sc;
+    });
+    const GAP = 0.015 * _escalaMax;
 
     // Largura total do bloco (somatório das larguras + gaps)
     let larguraTotal = 0;
@@ -20655,10 +20663,19 @@ function initEditor() {
       if (palavras.length < 2) return;
       palavras.sort((a, b) => a.x - b.x);
 
+      // gap proporcional ao tamanho das palavras (igual ao reflow autoritativo)
+      let _escMax = 1;
+      palavras.forEach(p => {
+        const _wo = engine.wordOverrides[p.id];
+        const _sc = (_wo && _wo.style && _wo.style.fontSizeScale) || 1;
+        if (_sc > _escMax) _escMax = _sc;
+      });
+      const gap = GAP * _escMax;
+
       let larguraTotal = 0;
       palavras.forEach((p, i) => {
         larguraTotal += p.wFrac;
-        if (i < palavras.length - 1) larguraTotal += GAP;
+        if (i < palavras.length - 1) larguraTotal += gap;
       });
       const primeira = palavras[0], ultima = palavras[palavras.length - 1];
       const bordaEsq = primeira.x - primeira.wFrac / 2;
@@ -20668,7 +20685,7 @@ function initEditor() {
       let cursor = centroGrupo - larguraTotal / 2;
       palavras.forEach(p => {
         const novoCentroX = cursor + p.wFrac / 2;
-        cursor += p.wFrac + GAP;
+        cursor += p.wFrac + gap;
         const w = engine.wordOverrides[p.id];
         if (w && w.position) {
           w.position.x = novoCentroX; // atualiza override (persiste)
@@ -22548,30 +22565,76 @@ function initEditor() {
     const container = $('#word-panel-content');
     if (!container) return;
 
-    // Tamanho (slider)
+    // Tamanho (slider) — escala o GRUPO igual às alças: aumenta o tamanho E
+    // afasta as palavras do centro do grupo no mesmo fator, então o espaço
+    // entre elas cresce junto (preservado). Antes, o slider só mudava o tamanho
+    // e re-espaçava com um gap fixo — por isso "ignorava o espaço".
     const sizeSlider = $('#multi-size', container);
     const sizeVal = $('#multi-size-val', container);
     if (sizeSlider && sizeVal) {
+      let _sizeStart = null;
+      const _capSizeStart = () => {
+        const words = [];
+        let sx = 0, sy = 0, n = 0, sScale = 0;
+        wordIds.forEach(wid => {
+          if (typeof ensureWordIsFree === 'function') ensureWordIsFree(wid);
+          const wo = engine.wordOverrides[wid] || {};
+          const initialScale = (wo.style && wo.style.fontSizeScale) || 1;
+          const initialPos = wo.position ? { x: wo.position.x, y: wo.position.y } : null;
+          words.push({ wid, initialScale, initialPos });
+          if (initialPos) { sx += initialPos.x; sy += initialPos.y; n++; }
+          sScale += initialScale;
+        });
+        const groupCenter = n > 0 ? { x: sx / n, y: sy / n } : { x: 0.5, y: 0.5 };
+        const refScale = words.length ? (sScale / words.length) : 1;
+        _sizeStart = { words, groupCenter, refScale };
+      };
+      const _aplicaSize = (escala, commit) => {
+        if (!_sizeStart) _capSizeStart();
+        const s = _sizeStart;
+        const factor = escala / (s.refScale || 1);
+        const stz = (typeof getStanzaEl === 'function') ? getStanzaEl() : null;
+        s.words.forEach(({ wid, initialPos }) => {
+          const wo = engine.wordOverrides[wid] || {};
+          const newStyle = { ...(wo.style || {}) };
+          newStyle.fontSizeScale = escala;
+          const patch = { style: newStyle };
+          let novoPos = wo.position;
+          if (initialPos) {
+            novoPos = {
+              x: s.groupCenter.x + (initialPos.x - s.groupCenter.x) * factor,
+              y: s.groupCenter.y + (initialPos.y - s.groupCenter.y) * factor,
+            };
+            patch.position = novoPos;
+          }
+          engine.setWordOverride(wid, patch);
+          if (stz) {
+            const el = stz.querySelector(`.lyric-word[data-word-id="${wid}"]`);
+            if (el) {
+              el.style.fontSize = escala + 'em';
+              if (novoPos) { el.style.left = (novoPos.x * 100).toFixed(3) + '%'; el.style.top = (novoPos.y * 100).toFixed(3) + '%'; }
+            }
+          }
+        });
+        if (commit) {
+          engine.renderStanza(engine.currentStanzaIndex);
+          if (typeof engine.killAllAnimations === 'function') { try { engine.killAllAnimations(); } catch (e) {} }
+          const stz2 = (typeof getStanzaEl === 'function') ? getStanzaEl() : null;
+          if (stz2) stz2.querySelectorAll('.lyric-word').forEach(el => { el.style.opacity = '1'; el.style.animation = 'none'; });
+        }
+        if (typeof markDirty === 'function') markDirty();
+      };
+      sizeSlider.addEventListener('pointerdown', _capSizeStart);
+      sizeSlider.addEventListener('touchstart', _capSizeStart, { passive: true });
       sizeSlider.addEventListener('input', e => {
         const pct = parseInt(e.target.value, 10);
         sizeVal.textContent = pct + '%';
-        // PREVIEW SUAVE: grava override + DOM direto + reflui (tamanho
-        // alarga a palavra; sem reflow elas sobrepõem). Sem renderStanza.
-        const escala = pct / 100;
-        wordIds.forEach(wid => {
-          const wo = engine.wordOverrides[wid] || {};
-          engine.setWordOverride(wid, { style: { ...(wo.style || {}), fontSizeScale: escala } });
-        });
-        if (typeof previewEstiloLeve === 'function') {
-          previewEstiloLeve(wordIds, (el) => { el.style.fontSize = escala + 'em'; }, { afetaLargura: true });
-        }
+        _aplicaSize(pct / 100, false);
       });
       sizeSlider.addEventListener('change', e => {
         const pct = parseInt(e.target.value, 10);
-        // Commit: tamanho muda largura → free + override + reflui.
-        wordIds.forEach(id => { if (typeof ensureWordIsFree === 'function') ensureWordIsFree(id); });
-        setMultiStyleOverride(wordIds, 'fontSizeScale', pct === 100 ? null : pct / 100);
-        if (typeof reflowLinhasDasPalavras === 'function') reflowLinhasDasPalavras(wordIds);
+        _aplicaSize(pct / 100, true);
+        _sizeStart = null;
       });
     }
 
