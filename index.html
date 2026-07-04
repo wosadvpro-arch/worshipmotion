@@ -7516,7 +7516,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'fonte-estilo-correto-01jul';
+window.__WM_BUILD = 'destaque-palavra-sem-vazar-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -18978,15 +18978,18 @@ function initEditor() {
   function _collectOverrideSequence(parsed) {
     const seq = [];
     if (!parsed || !parsed.stanzas || !engine.wordOverrides) return seq;
+    let idx = 0;
     parsed.stanzas.forEach(st => st.lines.forEach(ln => ln.words.forEach(w => {
       const ov = engine.wordOverrides[w.id];
       if (ov && Object.keys(ov).length) {
         // Clona o override pra não perder referência no setParsed.
         seq.push({
+          index: idx,   // posição na lista "flat" (pra reaplicar na palavra certa, não na 1ª de mesmo texto)
           text: (w.text || '').trim().toLowerCase(),
           override: JSON.parse(JSON.stringify(ov)),
         });
       }
+      idx++;
     })));
     return seq;
   }
@@ -19027,71 +19030,40 @@ function initEditor() {
     const novos = {};
 
     // PASSADA 1: matching por texto+ordem
-    let wi = 0;
+    // Reaplica cada override na palavra da MESMA posição (se o texto ainda
+    // bate ali). Se a posição mudou (usuário editou texto), cai num fallback
+    // por texto em ordem. Nunca espalha pra palavras não marcadas.
     let applied = 0;
+    let cursor = 0; // pro fallback sequencial por texto
     for (const item of seq) {
       const targetText = norm(item.text);
-      while (wi < flat.length && norm(flat[wi].text) !== targetText) {
+      // 1) tenta a MESMA posição (exata) — resolve navegar/re-render sem edição
+      //    e o caso de palavras repetidas em slides diferentes.
+      if (typeof item.index === 'number' && flat[item.index]
+          && norm(flat[item.index].text) === targetText && !novos[flat[item.index].id]) {
+        novos[flat[item.index].id] = item.override;
+        applied++;
+        continue;
+      }
+      // 2) fallback: procura a próxima palavra de mesmo texto ainda sem override
+      let wi = cursor;
+      while (wi < flat.length && (norm(flat[wi].text) !== targetText || novos[flat[wi].id])) {
         wi++;
       }
       if (wi < flat.length) {
         novos[flat[wi].id] = item.override;
-        wi++;
+        cursor = wi + 1;
         applied++;
-      } else {
-        break;
       }
     }
 
-    // PASSADA 2: índice posicional pras palavras sem override
-    // Pra cada palavra do flat sem override aplicado, se existe item
-    // na seq no mesmo índice posicional, aplica.
-    for (let i = 0; i < flat.length; i++) {
-      const w = flat[i];
-      if (novos[w.id]) continue; // já tem
-      if (i < seq.length) {
-        novos[w.id] = seq[i].override;
-      }
-    }
+    // NOTA: antes havia passadas 2 (por índice) e 3 (herdar da anterior) que
+    // ESPALHAVAM o estilo pra palavras que o usuário não marcou — fazendo a
+    // fonte de um destaque "pular" pra outros slides e ficar "montada" quando
+    // havia muitas palavras. Foram removidas: agora um estilo de palavra só é
+    // reaplicado na palavra que REALMENTE bate (mesma posição/texto), sem vazar.
 
-    // PASSADA 3: herda da palavra anterior do flat
-    // Pra cada palavra ainda sem override, copia da anterior (se tiver).
-    // Útil pra palavras adicionadas no fim (nova linha/estrofe).
-    //
-    // IMPORTANTE: ao buscar "última anterior com override", PULA palavras
-    // de força (fontSizeScale > 1.5). A fonte dela é decoração pontual
-    // (ex: "Antara Rough" só pra palavra "fôlego" do template) — herdar
-    // dela daria fonte errada pras palavras novas. Procura a anterior
-    // NORMAL (fonte da maioria do template).
-    let lastNormalOverride = null;
-    for (let i = 0; i < flat.length; i++) {
-      const w = flat[i];
-      if (novos[w.id]) {
-        const ov = novos[w.id];
-        // Só atualiza "última normal" se NÃO for palavra de força
-        const isForca = ov.style?.fontSizeScale && ov.style.fontSizeScale > 1.5;
-        if (!isForca) {
-          lastNormalOverride = ov;
-        }
-      } else if (lastNormalOverride) {
-        // Herda só STYLE (fonte, cor) — NÃO position e NÃO fontSizeScale.
-        //
-        // Não-position: palavra nova precisa de posição própria, não ficar
-        // empilhada em cima da anterior. Auto-layout calcula depois.
-        //
-        // Não-fontSizeScale: fontSizeScale é palavra-de-força (decisão de
-        // design pontual: UMA palavra grande no centro). Herdar isso faz
-        // palavras novas adicionadas DEPOIS dela ficarem gigantes também.
-        if (lastNormalOverride.style) {
-          const styleHerdado = { ...lastNormalOverride.style };
-          delete styleHerdado.fontSizeScale;
-          delete styleHerdado.textTransform; // 'capitalize' é decoração de força
-          if (Object.keys(styleHerdado).length > 0) {
-            novos[w.id] = { style: styleHerdado };
-          }
-        }
-      }
-    }
+
 
     // Substitui o mapa inteiro pelos overrides remapeados pros IDs novos
     if (Object.keys(novos).length > 0) {
