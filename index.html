@@ -7516,7 +7516,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'canvas-16-9-final-01jul';
+window.__WM_BUILD = 'canvas-fit-e-corrige-espaco-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -19607,6 +19607,16 @@ function initEditor() {
     canvas.style.maxHeight = 'none';
   }
   window._wmFitCanvas = _fitCanvas16x9;
+  // Corrige palavras salvas SOBREPOSTAS em todos os slides. Garante o canvas
+  // em 16:9 primeiro (senão a medida sai errada) e re-espaça as sobrepostas.
+  // Chame window.__wmFixSpacing() no console.
+  window.__wmFixSpacing = function () {
+    try { if (typeof _fitCanvas16x9 === 'function') _fitCanvas16x9(); } catch (e) {}
+    let n = 0;
+    try { if (typeof rearrumarSlidesSobrepostos === 'function') n = rearrumarSlidesSobrepostos(); } catch (e) {}
+    console.log('Espaçamento corrigido em ' + n + ' linha(s) sobreposta(s).');
+    return n;
+  };
 
   setTimeout(() => {
     const canvasEl = document.getElementById('canvas-content');
@@ -30541,15 +30551,18 @@ function initEditor() {
       } else {
         document.body.classList.toggle('timeline-collapsed');
       }
-      // Recalcula o tamanho do slide após a transição de altura.
-      setTimeout(() => {
+      // Recalcula o tamanho do slide após a transição de altura (a barra
+      // anima em ~0.3s, então ajustamos no fim pra o canvas ficar 16:9 exato).
+      const _reajusta = () => {
         try {
-          if (typeof applyAspect === 'function') {
-            applyAspect(window.__currentAspect || '16:9');
-          }
+          if (typeof _fitCanvas16x9 === 'function') _fitCanvas16x9();
+          if (typeof applyAspect === 'function') applyAspect(window.__currentAspect || '16:9');
           engine.renderStanza(engine.currentStanzaIndex);
+          if (typeof _fitCanvas16x9 === 'function') _fitCanvas16x9();
         } catch (e) {}
-      }, 60);
+      };
+      setTimeout(_reajusta, 60);
+      setTimeout(_reajusta, 380);
     };
 
     const btnCol = document.getElementById('btn-timeline-collapse');
