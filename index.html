@@ -1982,11 +1982,16 @@ body.marking-open.marking-collapsed .editor-canvas {
 .lyric-word {
   display: inline-block;
   position: relative;
-  /* NÃO incluir 'filter' aqui: no WebKit (Safari/Chrome do iPhone) o
-     will-change:filter cria uma camada que CORTA o que vaza da caixa da
-     palavra — e a letra inicial de fontes itálicas/decorativas começa antes
-     da margem esquerda, então aparecia cortada no preview (o export desenha
-     a letra inteira, por isso saía certo). */
+  /* Folga lateral pra letras cursivas/itálicas cujo desenho "vaza" da caixa
+     (ex: o "p" de "perdoado"). No iPhone (WebKit) a camada de composição da
+     palavra CORTA o que passa da caixa — o padding dá espaço pra letra
+     aparecer inteira. A margem negativa cancela o efeito no layout, então a
+     POSIÇÃO e o ESPAÇAMENTO das palavras não mudam. (No PC já aparecia certo;
+     isto conserta o corte no celular.) */
+  padding: 0 0.16em;
+  margin: 0 -0.16em;
+  /* NÃO incluir 'filter' aqui: no WebKit o will-change:filter também criava
+     camada que cortava a letra. */
   will-change: transform, opacity;
 }
 /* Palavra em edição inline (duplo-clique): contorno claro + cursor de
@@ -7523,7 +7528,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'letra-inicial-nao-corta-02jul';
+window.__WM_BUILD = 'letra-cursiva-folga-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
