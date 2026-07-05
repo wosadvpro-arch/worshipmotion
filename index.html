@@ -7516,7 +7516,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'applyaspect-16-9-fix-01jul';
+window.__WM_BUILD = 'fixspacing-16-9-settle-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -19590,11 +19590,19 @@ function initEditor() {
   // em 16:9 primeiro (senão a medida sai errada) e re-espaça as sobrepostas.
   // Chame window.__wmFixSpacing() no console.
   window.__wmFixSpacing = function () {
-    try { if (typeof _fitCanvas16x9 === 'function') _fitCanvas16x9(); } catch (e) {}
-    let n = 0;
-    try { if (typeof rearrumarSlidesSobrepostos === 'function') n = rearrumarSlidesSobrepostos(); } catch (e) {}
-    console.log('Espaçamento corrigido em ' + n + ' linha(s) sobreposta(s).');
-    return n;
+    // Força o canvas em 16:9 e ESPERA assentar antes de medir/corrigir — assim
+    // não importa o estado da barra de áudio quando você roda; a medida sempre
+    // sai no canvas certo (se medir num canvas distorcido, corrige errado).
+    try { if (typeof applyAspect === 'function') applyAspect(window.__currentAspect || '16:9'); } catch (e) {}
+    console.log('Ajustando canvas para 16:9 e corrigindo espaçamento… aguarde.');
+    return new Promise(function (resolve) {
+      setTimeout(function () {
+        let n = 0;
+        try { if (typeof rearrumarSlidesSobrepostos === 'function') n = rearrumarSlidesSobrepostos(); } catch (e) {}
+        console.log('✓ Espaçamento corrigido em ' + n + ' linha(s) sobreposta(s). Agora SALVE o projeto.');
+        resolve(n);
+      }, 300);
+    });
   };
 
   setTimeout(() => {
