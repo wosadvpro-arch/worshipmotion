@@ -7516,7 +7516,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'detecta-grudado-01jul';
+window.__WM_BUILD = 'limpeza-diagnostico-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -19621,52 +19621,6 @@ function initEditor() {
     });
     ro.observe(canvasEl);
   }, 100);
-
-  // === DIAGNÓSTICO DE ESPAÇAMENTO (temporário) ===
-  // Chame window.__wmDiagSpacing() no console (F12) com o slide na tela.
-  // Despeja, pra cada palavra: se é posicionada(free) ou em grupo, a largura
-  // e o centro como FRAÇÃO do canvas, o fontSize, e o gap medido entre palavras
-  // vizinhas. Rode no canvas PEQUENO e no GRANDE e compare — se as frações
-  // diferem, o espaçamento não escala proporcional.
-  window.__wmDiagSpacing = function () {
-    const c = document.querySelector('.editor-canvas');
-    if (!c) { console.log('sem canvas'); return; }
-    const cr = c.getBoundingClientRect();
-    const stanza = document.querySelector('.lyric-stanza');
-    const grupos = document.querySelectorAll('.auto-layout-group');
-    const out = {
-      canvas: { w: Math.round(cr.width), h: Math.round(cr.height), ratio: +(cr.width / cr.height).toFixed(4) },
-      stanzaFontPx: stanza ? getComputedStyle(stanza).fontSize : '?',
-      numGruposFlex: grupos.length,
-      gruposGapCss: [...grupos].map(g => getComputedStyle(g).gap),
-      palavras: [],
-    };
-    const words = [...document.querySelectorAll('.lyric-word')];
-    words.forEach(el => {
-      const r = el.getBoundingClientRect();
-      const cs = getComputedStyle(el);
-      out.palavras.push({
-        txt: (el.textContent || '').slice(0, 8),
-        modo: el.classList.contains('is-free-positioned') ? 'free(posicionada)' : 'grupo-flex',
-        fontPx: +parseFloat(cs.fontSize).toFixed(1),
-        letterSpacing: cs.letterSpacing,
-        wFrac: +((r.width) / cr.width).toFixed(4),
-        cxFrac: +(((r.left + r.width / 2) - cr.left) / cr.width).toFixed(4),
-      });
-    });
-    // gaps entre vizinhas (por linha aproximada de Y)
-    const sorted = words.map(el => el.getBoundingClientRect()).sort((a, b) => (a.top - b.top) || (a.left - b.left));
-    const gaps = [];
-    for (let i = 0; i < sorted.length - 1; i++) {
-      if (Math.abs(sorted[i].top - sorted[i + 1].top) < sorted[i].height * 0.5) {
-        gaps.push(+(((sorted[i + 1].left - sorted[i].right)) / cr.width).toFixed(4));
-      }
-    }
-    out.gapsEntrePalavrasFrac = gaps;
-    console.log('=== DIAG ESPAÇAMENTO ===');
-    console.log(JSON.stringify(out, null, 2));
-    return out;
-  };
 
   /**
    * Pega o elemento .lyric-stanza atual. É a referência ÚNICA pra coordenadas.
