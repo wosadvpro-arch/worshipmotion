@@ -461,6 +461,16 @@ h1, h2, h3, h4, h5, h6 {
   opacity: 1;
   transform: translateX(-50%) translateY(0);
 }
+/* A lixeira "Limpar" fica no topo do painel de letra: o tooltip acima ficava
+   cortado pela borda. Aqui ele aparece EMBAIXO do botão, onde há espaço. */
+#btn-clear-lyrics[data-tooltip]::after {
+  bottom: auto;
+  top: calc(100% + 8px);
+  transform: translateX(-50%) translateY(-4px);
+}
+#btn-clear-lyrics[data-tooltip]:hover::after {
+  transform: translateX(-50%) translateY(0);
+}
 
 /* Tooltips dos botões da rail esquerda: aparecem à DIREITA do botão
  * (não acima), senão ficam cortados pela borda esquerda da tela. */
@@ -7532,7 +7542,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'centralizacao-free-corrigida-01jul';
+window.__WM_BUILD = 'tooltip-lixeira-embaixo-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
