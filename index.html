@@ -7528,7 +7528,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'letra-cursiva-folga-01jul';
+window.__WM_BUILD = 'undo-redo-mantem-slide-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -21856,7 +21856,16 @@ function initEditor() {
         }
       } catch (eLyr) {}
 
-      const targetIdx = Math.min(snap.currentStanzaIndex || 0, engine.parsed.stanzas.length - 1);
+      // MANTÉM o slide que o usuário está vendo AGORA ao desfazer/refazer,
+      // em vez de pular pro índice guardado no snapshot (que podia jogar pro
+      // slide 1, principalmente no celular). Só cai no índice do snapshot se
+      // o slide atual não existir mais (ex: desfazer removeu slides).
+      const _idxAtual = (engine && typeof engine.currentStanzaIndex === 'number')
+        ? engine.currentStanzaIndex : 0;
+      let targetIdx = _idxAtual;
+      if (typeof targetIdx !== 'number' || targetIdx < 0 || targetIdx >= engine.parsed.stanzas.length) {
+        targetIdx = Math.min(snap.currentStanzaIndex || 0, engine.parsed.stanzas.length - 1);
+      }
       engine.currentStanzaIndex = Math.max(0, targetIdx);
 
       if (engine.parsed.stanzas.length > 0) {
