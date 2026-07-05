@@ -7516,7 +7516,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'canvas-fit-e-corrige-espaco-01jul';
+window.__WM_BUILD = 'applyaspect-16-9-fix-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -19576,35 +19576,14 @@ function initEditor() {
   // Quando o canvas muda de tamanho (resize de janela, troca de aspect),
   // re-aplica o estilo no stanza pra recalcular o fontSize escalado.
   // Isso garante que palavra ocupa mesma % do canvas em qualquer tamanho.
-  // Ajusta o canvas pro MAIOR retângulo 16:9 que cabe no espaço disponível.
-  // (O CSS sozinho não garante isso: height:100% esticava o canvas quando a
-  // LARGURA limitava, quebrando o 16:9 no editor — e o preview não batia com o
-  // export, que é 16:9 exato. Aqui medimos o espaço e fixamos width/height.)
+  // O dimensionamento oficial do canvas é o applyAspect (agora correto e
+  // reativo via CSS). Esta função só o re-aplica no aspecto atual — usada em
+  // pontos onde o layout muda (resize, toggle da barra).
   function _fitCanvas16x9() {
-    const canvas = document.querySelector('.editor-canvas');
-    if (!canvas || !canvas.offsetParent) return;
-    // No modo marcação o canvas tem dimensionamento próprio (CSS). Devolve o
-    // controle pro CSS (limpa o inline) e não interfere.
-    if (document.body.classList.contains('marking-open')) {
-      canvas.style.width = ''; canvas.style.height = '';
-      canvas.style.maxWidth = ''; canvas.style.maxHeight = '';
-      return;
+    if (document.body.classList.contains('marking-open')) return;
+    if (typeof applyAspect === 'function') {
+      try { applyAspect(window.__currentAspect || '16:9'); } catch (e) {}
     }
-    const parent = canvas.parentElement;
-    if (!parent) return;
-    const cs = getComputedStyle(parent);
-    const padL = parseFloat(cs.paddingLeft) || 0, padR = parseFloat(cs.paddingRight) || 0;
-    const padB = parseFloat(cs.paddingBottom) || 0;
-    let availW = Math.min(parent.clientWidth - padL - padR, 1400);
-    let availH = parent.clientHeight - canvas.offsetTop - padB;
-    if (availW <= 10 || availH <= 10) return;
-    // maior 16:9 que cabe: limitado pela largura OU pela altura
-    let w = availW, h = w * 9 / 16;
-    if (h > availH) { h = availH; w = h * 16 / 9; }
-    canvas.style.width = Math.round(w) + 'px';
-    canvas.style.height = Math.round(h) + 'px';
-    canvas.style.maxWidth = 'none';
-    canvas.style.maxHeight = 'none';
   }
   window._wmFitCanvas = _fitCanvas16x9;
   // Corrige palavras salvas SOBREPOSTAS em todos os slides. Garante o canvas
@@ -19620,12 +19599,11 @@ function initEditor() {
 
   setTimeout(() => {
     const canvasEl = document.getElementById('canvas-content');
-    const wrapEl = document.querySelector('.editor-canvas-wrap');
-    if (!wrapEl || typeof ResizeObserver === 'undefined') return;
+    if (!canvasEl || typeof ResizeObserver === 'undefined') return;
     const ro = new ResizeObserver(() => {
-      _fitCanvas16x9();                      // 1º: fixa o canvas em 16:9 exato
-      // Re-aplica estilo no stanza atual (recalcula fontSize pro novo tamanho)
-      const stanza = document.querySelector('.lyric-stanza');
+      // O canvas re-dimensiona sozinho (CSS reativo do applyAspect). Aqui só
+      // recalculamos o fontSize pro novo tamanho e atualizamos a seleção.
+      const stanza = canvasEl.querySelector('.lyric-stanza');
       if (stanza && engine && typeof engine._applyStyleToStanzaEl === 'function') {
         engine._applyStyleToStanzaEl(stanza);
       }
@@ -19633,9 +19611,7 @@ function initEditor() {
         requestAnimationFrame(() => updateSelectionBox());
       }
     });
-    // Observa o WRAP (não o canvas) — assim ajustar o canvas não dispara loop.
-    ro.observe(wrapEl);
-    _fitCanvas16x9(); // ajuste inicial
+    ro.observe(canvasEl);
   }, 100);
 
   // === DIAGNÓSTICO DE ESPAÇAMENTO (temporário) ===
@@ -29090,6 +29066,7 @@ function initEditor() {
       // estica além do ratio (ex: 16:9 virava 2.09). Limitamos a largura a
       // min(900px, alturaDisponível × ratio) pra travar a proporção.
       canvas.style.width = '100%';
+      canvas.style.height = 'auto';   // CRÍTICO: sem isto, o CSS height:100% + width:100% IGNORA o aspect-ratio e o canvas distorce (fica "quadrado") quando a barra muda de altura. Com height:auto o 16:9 é calculado a partir da largura.
       canvas.style.maxWidth = `min(900px, calc(${containerH} * ${ratioNum}))`;
       canvas.style.maxHeight = containerH;
     } else if (ratioNum < 0.95) {
