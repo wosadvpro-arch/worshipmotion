@@ -1982,7 +1982,12 @@ body.marking-open.marking-collapsed .editor-canvas {
 .lyric-word {
   display: inline-block;
   position: relative;
-  will-change: transform, opacity, filter;
+  /* NÃO incluir 'filter' aqui: no WebKit (Safari/Chrome do iPhone) o
+     will-change:filter cria uma camada que CORTA o que vaza da caixa da
+     palavra — e a letra inicial de fontes itálicas/decorativas começa antes
+     da margem esquerda, então aparecia cortada no preview (o export desenha
+     a letra inteira, por isso saía certo). */
+  will-change: transform, opacity;
 }
 /* Palavra em edição inline (duplo-clique): contorno claro + cursor de
    texto, pra ficar óbvio que está editável ali mesmo. */
@@ -2001,7 +2006,9 @@ body.marking-open.marking-collapsed .editor-canvas {
 .lyric-char {
   display: inline-block;
   position: relative;
-  will-change: transform, opacity, filter;
+  /* Igual .lyric-word: sem 'filter' no will-change pra o WebKit não cortar
+     o que vaza da caixa (a letra inicial de fontes itálicas/decorativas). */
+  will-change: transform, opacity;
 }
 .lyric-word.is-emphasized {
   color: var(--wm-emphasis-color, #fbbf24);
@@ -7516,7 +7523,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'limpeza-diagnostico-01jul';
+window.__WM_BUILD = 'letra-inicial-nao-corta-02jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -28569,6 +28576,14 @@ function initEditor() {
     let sy = 0, sTop = 0, on = false, lastY = 0, lastT = 0, vy = 0, raf = 0, closing = false;
     el.addEventListener('touchstart', (e) => {
       if (e.touches.length !== 1) { on = false; return; }
+      // Se o toque começou dentro de OUTRO scroll manual ANINHADO (ex: a lista
+      // de slides do export dentro do modal), deixa o de dentro cuidar — senão
+      // o externo "rouba" o gesto e o de dentro não rola.
+      let node = e.target;
+      while (node && node !== el) {
+        if (node._wmMS) { on = false; return; }
+        node = node.parentElement;
+      }
       cancelAnimationFrame(raf);
       sy = e.touches[0].clientY; sTop = el.scrollTop; on = true; closing = false;
       lastY = sy; lastT = performance.now(); vy = 0;
@@ -28618,6 +28633,11 @@ function initEditor() {
   _wmManualScroll(document.querySelector('.editor-right'), () => document.body.classList.remove('wm-sheet-right'));
   // Templates e outros modais também rolam por JS no celular.
   document.querySelectorAll('.modal-overlay .modal-body').forEach((mb) => _wmManualScroll(mb));
+  // Lista de slides do export ("Slides específicos") — scroll aninhado próprio.
+  (function () {
+    const cl = document.getElementById('export-slide-checklist');
+    if (cl) _wmManualScroll(cl);
+  })();
   // Caixa de letra no celular cresce com o conteúdo (sem scroll próprio), pra
   // rolar junto com o painel via _wmManualScroll.
   (function () {
