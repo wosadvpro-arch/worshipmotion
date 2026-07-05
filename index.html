@@ -1983,16 +1983,20 @@ body.marking-open.marking-collapsed .editor-canvas {
   display: inline-block;
   position: relative;
   /* Folga lateral pra letras cursivas/itálicas cujo desenho "vaza" da caixa
-     (ex: o "p" de "perdoado"). No iPhone (WebKit) a camada de composição da
-     palavra CORTA o que passa da caixa — o padding dá espaço pra letra
-     aparecer inteira. A margem negativa cancela o efeito no layout, então a
-     POSIÇÃO e o ESPAÇAMENTO das palavras não mudam. (No PC já aparecia certo;
-     isto conserta o corte no celular.) */
+     (ex: o "p" de "perdoado") não ser cortado pela camada de composição do
+     WebKit no iPhone. O padding é simétrico, então em palavra POSICIONADA
+     (free, centralizada por translate) o centro visual não muda. */
   padding: 0 0.16em;
-  margin: 0 -0.16em;
   /* NÃO incluir 'filter' aqui: no WebKit o will-change:filter também criava
      camada que cortava a letra. */
   will-change: transform, opacity;
+}
+/* A margem negativa que compensa o padding no LAYOUT só vale pras palavras em
+   FLUXO (inline-block numa linha). Em palavra POSICIONADA (absolute) a margem
+   negativa DESLOCAVA a posição ~0.16em — então a palavra não centralizava na
+   linha guia. Excluímos as free daqui. */
+.lyric-word:not(.is-free-positioned) {
+  margin: 0 -0.16em;
 }
 /* Palavra em edição inline (duplo-clique): contorno claro + cursor de
    texto, pra ficar óbvio que está editável ali mesmo. */
@@ -7528,7 +7532,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'undo-redo-mantem-slide-01jul';
+window.__WM_BUILD = 'centralizacao-free-corrigida-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
