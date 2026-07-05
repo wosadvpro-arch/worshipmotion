@@ -7516,7 +7516,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'fixspacing-16-9-settle-01jul';
+window.__WM_BUILD = 'detecta-grudado-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -20912,11 +20912,17 @@ function initEditor() {
       Object.values(linhas).forEach(palavras => {
         if (palavras.length < 2) return;
         palavras.sort((a, b) => a.x - b.x);
+        // Re-espaça a linha se QUALQUER par estiver grudado ou perto demais.
+        // Antes só corrigia sobreposição > 1px, então palavras coladas ou com
+        // sobreposição minúscula (ex: 0.7px) passavam batido e ficavam grudadas.
+        // Agora o critério é: gap menor que ~1.2% da largura (abaixo do espaço
+        // mínimo confortável) dispara o reflow.
+        const gapMinPx = stanzaRect.width * 0.012;
         let sobrepoe = false;
         for (let i = 0; i < palavras.length - 1; i++) {
           const a = palavras[i].el.getBoundingClientRect();
           const b = palavras[i + 1].el.getBoundingClientRect();
-          if (a.right > b.left + 1) { sobrepoe = true; break; }
+          if ((b.left - a.right) < gapMinPx) { sobrepoe = true; break; }
         }
         if (sobrepoe && typeof _reflowLinhaDaPalavra === 'function') {
           _reflowLinhaDaPalavra(palavras[0].id);
