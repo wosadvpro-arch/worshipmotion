@@ -7542,7 +7542,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'tooltip-lixeira-embaixo-01jul';
+window.__WM_BUILD = 'anim-linha-inteira-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -24726,11 +24726,19 @@ function initEditor() {
       ensureWordIsFree(selectedWordId);
     }
 
-    if (!animId) {
-      engine.clearWordOverride(selectedWordId, prop);
-    } else {
-      engine.setWordOverride(selectedWordId, { [prop]: animId });
-    }
+    // Aplica a animação em TODAS as palavras selecionadas (antes gravava só na
+    // última — selectedWordId — mesmo com a linha inteira selecionada).
+    const _alvos = (typeof selectedWordIds !== 'undefined' && selectedWordIds && selectedWordIds.size > 0)
+      ? [...selectedWordIds]
+      : [selectedWordId];
+    _alvos.forEach(wid => {
+      if (!wid) return;
+      if (!animId) {
+        engine.clearWordOverride(wid, prop);
+      } else {
+        engine.setWordOverride(wid, { [prop]: animId });
+      }
+    });
 
     // O engine só respeita overrides de palavra quando o grain é 'word'.
     // Se o usuário aplicou animação custom em palavra, forçar grain=word
