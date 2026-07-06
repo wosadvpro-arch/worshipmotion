@@ -7542,7 +7542,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'anim-todas-selecionadas-01jul';
+window.__WM_BUILD = 'template-preview-fontes-02jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -29528,16 +29528,39 @@ function initEditor() {
         });
       });
     });
+
+    // Garante que as FONTES dos templates carreguem e re-renderiza os previews
+    // quando prontas. Sem isto, os previews apareciam na fonte padrão (neutros),
+    // porque as fontes dos templates (ex: "Antara Nodes") ainda não tinham sido
+    // carregadas quando a grade abria.
+    _ensureTemplateFontsLoaded();
   }
 
-  /**
-   * Aplica template em uma estrofe específica (ou todas), SEM substituir
-   * o projeto. Modifica apenas wordOverrides + sceneOverrides + style das
-   * estrofes selecionadas. Não toca em lyrics, parsed, audio, background.
-   *
-   * @param {Object} tpl - Template a aplicar
-   * @param {'estrofe'|'todas'} escopo - Onde aplicar
-   */
+  let _tplFontsLoaded = false;
+  function _ensureTemplateFontsLoaded() {
+    if (_tplFontsLoaded || typeof document === 'undefined' || !document.fonts) return;
+    const fams = new Set();
+    (WM_TEMPLATES && WM_TEMPLATES.all ? WM_TEMPLATES.all : []).forEach(t => {
+      const cfg = t.config || {};
+      if (cfg.style && cfg.style.fontFamily) fams.add(cfg.style.fontFamily);
+      const wo = cfg.wordOverrides || {};
+      Object.values(wo).forEach(o => { if (o && o.style && o.style.fontFamily) fams.add(o.style.fontFamily); });
+    });
+    if (fams.size === 0) { _tplFontsLoaded = true; return; }
+    const jobs = [];
+    fams.forEach(fam => {
+      [400, 600, 700].forEach(w => {
+        jobs.push(document.fonts.load(`${w} 32px "${fam}"`).catch(() => {}));
+      });
+    });
+    Promise.all(jobs).then(() => {
+      _tplFontsLoaded = true;
+      // Re-renderiza a grade agora que as fontes estão prontas (o flag evita loop).
+      const grid = $('#template-grid');
+      if (grid && grid.offsetParent !== null) renderTemplateGrid();
+    });
+  }
+
   /**
    * Extrai o "schema por linha" de um template: pra cada linha visual
    * (agrupada por coordenada Y das palavras), determina a fonte e o
