@@ -7542,7 +7542,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'segurar-seleciona-linha-01jul';
+window.__WM_BUILD = 'anim-todas-selecionadas-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -24442,8 +24442,14 @@ function initEditor() {
           } else if (typeof ensureWordIsFree === 'function') {
             ensureWordIsFree(selectedWordId);
           }
-          // Aplica na palavra selecionada
-          engine.setWordOverride(selectedWordId, { [category]: id });
+          // Aplica em TODAS as palavras selecionadas (antes só na última —
+          // selectedWordId — mesmo com a linha inteira selecionada).
+          const _alvosAnim = (typeof selectedWordIds !== 'undefined' && selectedWordIds && selectedWordIds.size > 0)
+            ? [...selectedWordIds]
+            : [selectedWordId];
+          _alvosAnim.forEach(wid => {
+            if (wid) engine.setWordOverride(wid, { [category]: id });
+          });
           // Força grain=word (senão o override de palavra é ignorado e
           // o stanza anima inteiro). Igual applyWordAnimFromInline.
           if (engine.animConfig.target !== 'word') {
@@ -24467,7 +24473,9 @@ function initEditor() {
             $$('.lyric-word').forEach(el => {
               const wid = el.dataset.wordId;
               el.classList.toggle('has-anim-override', !!engine.wordOverrides[wid]);
-              el.classList.toggle('is-word-selected', wid === selectedWordId);
+              const _estaSel = (typeof selectedWordIds !== 'undefined' && selectedWordIds && selectedWordIds.size > 0)
+                ? selectedWordIds.has(wid) : (wid === selectedWordId);
+              el.classList.toggle('is-word-selected', _estaSel);
             });
             if (typeof renderWordPanel === 'function') renderWordPanel();
           });
