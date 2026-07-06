@@ -7542,7 +7542,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'anim-linha-inteira-01jul';
+window.__WM_BUILD = 'segurar-seleciona-linha-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -20143,6 +20143,19 @@ function initEditor() {
 
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('mouseup', onMouseUp);
+
+    // TOQUE LONGO (segurar ~0.45s SEM mover) → seleciona a LINHA inteira.
+    // Não conflita com arrastar (que move e cancela o timer no 1º movimento)
+    // nem com o clique simples (que solta antes dos 0.45s).
+    dragState._longPressTimer = setTimeout(() => {
+      if (dragState && !dragState.moved) {
+        selectWholeLineOf(wordId);
+        dragState._lineSelected = true;
+        if (navigator.vibrate) { try { navigator.vibrate(25); } catch (e) {} }
+        const tab = $('.panel-tab[data-rpanel="style"]');
+        if (tab) tab.click();
+      }
+    }, 450);
     // Mobile: no 1º movimento o renderStanza RECRIA os .lyric-word pra entrar
     // no modo livre, soltando do DOM o elemento onde o toque começou. Os
     // eventos de toque continuam indo pra ESSE elemento (mesmo solto), mas
@@ -20173,6 +20186,8 @@ function initEditor() {
     if (!dragState.moved) {
       // === Primeiro movimento real: ativa modo drag ===
       dragState.moved = true;
+      // Moveu → não é toque longo: cancela a seleção de linha.
+      if (dragState._longPressTimer) { clearTimeout(dragState._longPressTimer); dragState._longPressTimer = null; }
       document.body.classList.add('is-dragging-word');
 
       // Decide o conjunto de palavras a mover:
@@ -20324,7 +20339,9 @@ function initEditor() {
     } else {
       // === FOI CLICK (não drag): resolve seleção ===
       const wid = dragState.wordId;
-      if (dragState.shift || dragState.ctrl) {
+      if (dragState._lineSelected) {
+        // Toque longo já selecionou a linha inteira — não sobrescreve.
+      } else if (dragState.shift || dragState.ctrl) {
         toggleWordInSelection(wid);
       } else if (dragState.isGroupDrag) {
         setSelection([wid]);
@@ -20340,6 +20357,7 @@ function initEditor() {
   }
 
   function cleanupDrag() {
+    if (dragState && dragState._longPressTimer) { clearTimeout(dragState._longPressTimer); dragState._longPressTimer = null; }
     document.removeEventListener('mousemove', onMouseMove);
     document.removeEventListener('mouseup', onMouseUp);
     if (dragState && dragState._touchEl) {
@@ -21755,6 +21773,19 @@ function initEditor() {
     wordIds.forEach(id => { if (id) selectedWordIds.add(id); });
     setSelection([...selectedWordIds]);
   }
+
+  // Seleciona TODAS as palavras da mesma LINHA da palavra dada (usado no
+  // toque longo / segurar — jeito fácil de pegar a linha inteira e aplicar
+  // animação/estilo em todas de uma vez).
+  function selectWholeLineOf(wordId) {
+    const info = findWordInfo(wordId);
+    if (!info) return;
+    const line = info.stanza.lines[info.lineIdx];
+    if (!line) return;
+    const ids = line.words.map(w => w.id).filter(Boolean);
+    if (ids.length) setSelection(ids);
+  }
+  window.selectWholeLineOf = selectWholeLineOf;
 
   function selectAllWords() {
     if (!engine.parsed) return;
