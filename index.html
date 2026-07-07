@@ -4971,14 +4971,14 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
 
 /* ===== Barra "Bater no ritmo" (tap tempo) ===== */
 .marking-tap-bar {
-  display: flex; align-items: center; gap: 14px;
-  padding: 12px 16px; border-bottom: 1px solid var(--border-default);
+  display: flex; align-items: center; gap: 12px;
+  padding: 7px 14px; border-bottom: 1px solid var(--border-default);
   background: rgba(139,92,246,0.06);
 }
 .tap-big-btn {
-  flex: 0 0 auto; min-width: 130px; height: 52px;
+  flex: 0 0 auto; min-width: 112px; height: 40px;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 0; border: none; border-radius: 14px; cursor: pointer;
+  gap: 0; border: none; border-radius: 12px; cursor: pointer;
   background: linear-gradient(135deg,#8b5cf6,#6d28d9); color: #fff;
   box-shadow: 0 6px 20px -6px rgba(139,92,246,0.6);
   font-family: inherit; transition: transform .08s ease, box-shadow .2s ease;
@@ -4990,7 +4990,7 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
 .tap-big-btn.is-paused { background: linear-gradient(135deg,#8b5cf6,#6d28d9); }
 .tap-actions { display: flex; gap: 8px; align-items: center; }
 .tap-big-btn:disabled { cursor: default; }
-.tap-big-btn .tap-big-label { font-size: 19px; font-weight: 800; letter-spacing: .02em; line-height: 1.05; }
+.tap-big-btn .tap-big-label { font-size: 16px; font-weight: 800; letter-spacing: .02em; line-height: 1.05; }
 .tap-big-btn .tap-big-sub { display: none; }
 .tap-info { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
 .tap-info-row { display: flex; align-items: baseline; gap: 12px; }
@@ -7542,7 +7542,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'template-preview-fontes-02jul';
+window.__WM_BUILD = 'faixa-iniciar-menor-pc-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -27172,6 +27172,15 @@ function initEditor() {
     // em vez de ficar escondido ATRÁS do painel (que ocupa 70vh).
     document.body.classList.add('marking-open');
     document.body.classList.remove('marking-collapsed');
+    // Limpa o dimensionamento INLINE do canvas (width/height/max* setados pelo
+    // applyAspect no modo normal). Sem isto, esses inline SOBREPUNHAM o CSS do
+    // modo marcação (que tem a proteção de 16:9) → o slide distorcia e as
+    // palavras ficavam muito separadas. Zerado, o CSS do modo marcação assume.
+    const _cvMark = document.querySelector('.editor-canvas');
+    if (_cvMark) {
+      _cvMark.style.width = ''; _cvMark.style.height = '';
+      _cvMark.style.maxWidth = ''; _cvMark.style.maxHeight = '';
+    }
     renderMarkingPanel();
   }
   function closeMarkingPanel() {
@@ -27181,6 +27190,10 @@ function initEditor() {
     if (tl) tl.style.display = '';
     document.body.classList.remove('marking-open');
     document.body.classList.remove('marking-collapsed');
+    // Restaura o dimensionamento normal do canvas (16:9 via applyAspect).
+    setTimeout(() => {
+      try { if (typeof applyAspect === 'function') applyAspect(window.__currentAspect || '16:9'); } catch (e) {}
+    }, 60);
     const panel = $('#marking-panel');
     if (panel) {
       panel.classList.remove('is-open');
@@ -29077,6 +29090,14 @@ function initEditor() {
   }
 
   function applyAspect(a) {
+    // No modo marcação o canvas é dimensionado pelo CSS (que tem a proteção de
+    // 16:9 pro painel aberto). Não setamos inline aqui pra não sobrepor — só
+    // limpamos qualquer inline residual e deixamos o CSS mandar.
+    if (document.body.classList.contains('marking-open')) {
+      const cv = document.querySelector('.editor-canvas');
+      if (cv) { cv.style.width = ''; cv.style.height = ''; cv.style.maxWidth = ''; cv.style.maxHeight = ''; }
+      return;
+    }
     const ASPECTS = {
       '16:9': { ratio: '16 / 9', label: '1920×1080', w: 1920, h: 1080 },
       '9:16': { ratio: '9 / 16', label: '1080×1920', w: 1080, h: 1920 },
