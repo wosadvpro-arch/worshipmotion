@@ -7536,7 +7536,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'botao-marcar-palavras-removido-01jul';
+window.__WM_BUILD = 'marcar-no-ritmo-unificado-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -26821,11 +26821,14 @@ function initEditor() {
           <div class="timeline-empty-icon">⊕</div>
           <div>Nenhuma palavra marcada ainda</div>
           <button class="btn btn-primary btn-sm" id="btn-open-marking-empty" style="margin-top: 10px;">
-            Marcar palavras agora
+            Marcar no ritmo
           </button>
         </div>
       `;
-      $('#btn-open-marking-empty')?.addEventListener('click', openMarkingPanel);
+      $('#btn-open-marking-empty')?.addEventListener('click', () => {
+        openMarkingPanel();
+        if (!_tapMode && typeof _enterTapMode === 'function') _enterTapMode();
+      });
       return;
     }
 
@@ -27237,7 +27240,7 @@ function initEditor() {
             <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"/></svg>
           </button>
           <span class="marking-mini-timer" id="mini-timer">0:00 / 0:00</span>
-          <strong style="margin-left: 8px;">Marcar palavras</strong>
+          <strong style="margin-left: 8px;">Marcar no ritmo</strong>
           <span class="marking-panel-progress" id="marking-progress">0/0</span>
         </div>
         <div class="marking-panel-tools">
