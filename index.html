@@ -7573,7 +7573,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'video-fundo-webkit-01jul';
+window.__WM_BUILD = 'diag-video-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -11922,6 +11922,63 @@ async function deleteBackgroundAsset(assetId) {
   }
   return await window.WM_ASSETS.delete(assetId);
 }
+
+/**
+ * DIAGNÓSTICO DE VÍDEO (temporário). No iPhone, digite na barra de endereço:
+ *   javascript:__wmDiagVideo()
+ * Mostra num alerta: build, dados do arquivo salvo, se o navegador diz que
+ * consegue tocar aquele tipo, que tipo de URL foi gerada, e o erro real do
+ * elemento <video> depois de tentar carregar.
+ */
+window.__wmDiagVideo = async function () {
+  const L = [];
+  const mostrar = () => { try { alert(L.join('\n')); } catch (e) {} console.log(L.join('\n')); };
+  L.push('BUILD: ' + (window.__WM_BUILD || '?'));
+  try {
+    const todos = await window.WM_ASSETS.list('background');
+    const videos = (todos || []).filter(a => a.meta && a.meta.mediaKind === 'video');
+    L.push('backgrounds salvos: ' + (todos || []).length + ' | vídeos: ' + videos.length);
+    if (!videos.length) { L.push('NENHUM VÍDEO SALVO -> o upload falhou antes de gravar.'); return mostrar(); }
+
+    const a = videos[0];
+    L.push('nome: ' + a.name);
+    L.push('mimeType salvo: "' + ((a.meta && a.meta.mimeType) || '(vazio)') + '"');
+    L.push('blob.type: "' + ((a.blob && a.blob.type) || '(vazio)') + '"');
+    L.push('tamanho: ' + Math.round(((a.blob && a.blob.size) || 0) / 1024) + ' KB');
+
+    const t = document.createElement('video');
+    const tipo = (a.blob && a.blob.type) || 'video/mp4';
+    L.push('canPlayType("' + tipo + '") = "' + (t.canPlayType(tipo) || '(vazio = NAO SUPORTA)') + '"');
+    L.push('canPlayType(h264) = "' + (t.canPlayType('video/mp4; codecs="avc1.42E01E"') || '(vazio)') + '"');
+    L.push('canPlayType(hevc) = "' + (t.canPlayType('video/mp4; codecs="hvc1"') || '(vazio)') + '"');
+
+    const url = await window.WM_CUSTOM_BACKGROUNDS.getUrl(a.id);
+    L.push('URL gerada: ' + (url ? url.slice(0, 22) + '...' : 'NULA'));
+
+    await new Promise(res => {
+      const v = document.createElement('video');
+      v.muted = true; v.playsInline = true;
+      v.setAttribute('playsinline', ''); v.setAttribute('muted', '');
+      v.preload = 'auto';
+      const fim = (motivo) => {
+        L.push('resultado: ' + motivo);
+        L.push('readyState: ' + v.readyState + ' (0=nada, 4=pronto)');
+        L.push('videoWidth: ' + v.videoWidth + 'x' + v.videoHeight);
+        if (v.error) L.push('ERRO code=' + v.error.code + ' msg=' + (v.error.message || '(sem msg)'));
+        try { v.src = ''; } catch (e) {}
+        res();
+      };
+      v.addEventListener('loadeddata', () => fim('CARREGOU (loadeddata)'), { once: true });
+      v.addEventListener('error', () => fim('ERRO no elemento video'), { once: true });
+      setTimeout(() => fim('TIMEOUT 8s sem carregar'), 8000);
+      v.src = url;
+      v.load();
+    });
+  } catch (e) {
+    L.push('EXCEÇÃO: ' + (e && e.message ? e.message : String(e)));
+  }
+  mostrar();
+};
 
 window.WM_CUSTOM_BACKGROUNDS = {
   loadAll: loadAllCustomBackgrounds,
