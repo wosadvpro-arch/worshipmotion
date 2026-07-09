@@ -6168,6 +6168,25 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
 }
 
   </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "WorshipMotion",
+    "url": "https://worshipmotion.com.br/",
+    "applicationCategory": "MultimediaApplication",
+    "operatingSystem": "Web (navegador)",
+    "inLanguage": "pt-BR",
+    "description": "Crie lyrics animados em vídeo para o louvor da sua igreja. Cole a letra, escolha o estilo e exporte em MP4, direto no navegador.",
+    "image": "https://worshipmotion.com.br/favicon.png",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "BRL",
+      "description": "Plano gratuito disponível"
+    }
+  }
+  </script>
 </head>
 <body>
 
@@ -7483,7 +7502,7 @@ Digno de toda honra"></textarea>
     </a>
 
     <div class="wm-login-card">
-      <h1 class="auth-title" id="auth-title">Entrar</h1>
+      <h2 class="auth-title" id="auth-title">Entrar</h2>
       <p class="auth-subtitle" id="auth-subtitle">Bem-vindo de volta. Vamos animar a próxima música?</p>
 
       <form id="login-form" style="display:flex; flex-direction:column; gap:var(--space-4);">
@@ -7555,7 +7574,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'favicon-e-meta-01jul';
+window.__WM_BUILD = 'seo-basico-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
