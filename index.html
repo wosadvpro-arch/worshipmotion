@@ -7573,7 +7573,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'diag-video-01jul';
+window.__WM_BUILD = 'video-load-timeout-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -11932,7 +11932,27 @@ async function deleteBackgroundAsset(assetId) {
  */
 window.__wmDiagVideo = async function () {
   const L = [];
-  const mostrar = () => { try { alert(L.join('\n')); } catch (e) {} console.log(L.join('\n')); };
+  const mostrar = () => {
+    const txt = L.join('\n');
+    console.log(txt);
+    try {
+      const velho = document.getElementById('wm-diag-video-painel');
+      if (velho) velho.remove();
+      const p = document.createElement('div');
+      p.id = 'wm-diag-video-painel';
+      p.style.cssText = 'position:fixed; inset:8px; z-index:2147483647; background:#0b0b12;'
+        + 'color:#e5e7eb; border:2px solid #8b5cf6; border-radius:12px; padding:12px;'
+        + 'font:12px/1.5 monospace; overflow:auto; white-space:pre-wrap; -webkit-user-select:text; user-select:text;';
+      const btn = document.createElement('button');
+      btn.textContent = 'Fechar';
+      btn.style.cssText = 'position:sticky; top:0; float:right; background:#8b5cf6; color:#fff;'
+        + 'border:none; border-radius:8px; padding:8px 14px; font:600 13px sans-serif;';
+      btn.onclick = () => p.remove();
+      p.appendChild(btn);
+      p.appendChild(document.createTextNode(txt));
+      document.body.appendChild(p);
+    } catch (e) { try { alert(txt); } catch (e2) {} }
+  };
   L.push('BUILD: ' + (window.__WM_BUILD || '?'));
   try {
     const todos = await window.WM_ASSETS.list('background');
@@ -25906,20 +25926,33 @@ function initEditor() {
 
             // Se o vídeo NÃO conseguir tocar, não deixa a tela preta em
             // silêncio: volta pro fundo padrão e avisa o usuário.
-            const _falhouVideo = () => {
+            let _tid = 0;
+            let _ok = false;
+            const _cancelaFalha = () => { _ok = true; if (_tid) clearTimeout(_tid); };
+            const _falhouVideo = (motivo) => {
+              if (_ok) return;
+              _ok = true;
+              if (_tid) clearTimeout(_tid);
+              const cod = (video.error && video.error.code) || '-';
               try { video.remove(); } catch (e) {}
               window.__currentBgVideoEl = null;
               if (typeof showToast === 'function') {
-                showToast('Não consegui reproduzir este vídeo de fundo neste aparelho.');
+                showToast('Vídeo de fundo não reproduziu (' + motivo + ', erro ' + cod + ', estado ' + video.readyState + ').');
               }
               applyBg('brand');
             };
-            video.addEventListener('error', _falhouVideo, { once: true });
-            setTimeout(() => {
-              if (video.isConnected && video.readyState === 0) _falhouVideo();
-            }, 6000);
+            // Qualquer sinal de que carregou cancela o fallback.
+            video.addEventListener('loadeddata', _cancelaFalha, { once: true });
+            video.addEventListener('canplay', _cancelaFalha, { once: true });
+            video.addEventListener('playing', _cancelaFalha, { once: true });
+            video.addEventListener('error', () => _falhouVideo('erro'), { once: true });
 
             video.src = url;
+            video.load();               // sem isto o readyState podia ficar em 0
+            _tid = setTimeout(() => {
+              if (!_ok && video.isConnected && video.readyState === 0) _falhouVideo('timeout');
+            }, 20000);                  // era 6s: pouco pra vídeo grande no celular
+
             video.play().catch(e => console.warn('Autoplay bloqueado:', e));
             window.__currentBgVideoEl = video;
             window.__currentBg = key;
@@ -32129,6 +32162,17 @@ function initLoginAnim() {
   }
   window.addEventListener('hashchange', showPage);
   window.addEventListener('load', async () => {
+    // BOTÃO TEMPORÁRIO DE DIAGNÓSTICO DE VÍDEO (remover depois de achar o bug).
+    try {
+      const b = document.createElement('button');
+      b.id = 'wm-diag-video-btn';
+      b.textContent = 'DIAG VÍDEO';
+      b.style.cssText = 'position:fixed; left:8px; bottom:8px; z-index:2147483646;'
+        + 'background:#8b5cf6; color:#fff; border:none; border-radius:10px;'
+        + 'padding:10px 14px; font:700 12px sans-serif; box-shadow:0 6px 20px rgba(0,0,0,.5);';
+      b.onclick = () => { if (window.__wmDiagVideo) window.__wmDiagVideo(); };
+      document.body.appendChild(b);
+    } catch (e) {}
     await tratarRetornoAuth();
     showPage();
   });
