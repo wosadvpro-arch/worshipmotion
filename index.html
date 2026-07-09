@@ -7573,7 +7573,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'video-load-timeout-01jul';
+window.__WM_BUILD = 'video-autoplay-toque-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -25954,6 +25954,24 @@ function initEditor() {
             }, 20000);                  // era 6s: pouco pra vídeo grande no celular
 
             video.play().catch(e => console.warn('Autoplay bloqueado:', e));
+
+            // AUTOPLAY BLOQUEADO (típico do Modo de Baixo Consumo do iPhone):
+            // o vídeo CARREGA mas fica pausado no 1º quadro — e um vídeo pausado
+            // aparece PRETO no iOS. Aqui detectamos e deixamos o primeiro toque
+            // na tela iniciar a reprodução.
+            setTimeout(() => {
+              if (!video.isConnected || !video.paused) return;
+              if (typeof showToast === 'function') {
+                showToast('Toque na tela para iniciar o vídeo de fundo (autoplay bloqueado).');
+              }
+              const _destrava = () => {
+                video.play().catch(() => {});
+                document.removeEventListener('touchend', _destrava);
+                document.removeEventListener('click', _destrava);
+              };
+              document.addEventListener('touchend', _destrava, { once: true });
+              document.addEventListener('click', _destrava, { once: true });
+            }, 1200);
             window.__currentBgVideoEl = video;
             window.__currentBg = key;
             return;
