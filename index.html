@@ -7107,12 +7107,6 @@ Digno de toda honra"></textarea>
         <div class="audio-player" id="audio-player" style="display:none">
           <span class="audio-name" id="audio-name"></span>
           <span id="audio-timer">0:00 / 0:00</span>
-          <button class="btn btn-primary btn-sm" id="btn-open-marking" style="display:none; gap: 6px; padding: 4px 10px;">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M3 12h18M3 6h18M3 18h18"/>
-            </svg>
-            Marcar palavras
-          </button>
           <div class="audio-volume-wrap" data-tooltip="Volume">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
@@ -7542,7 +7536,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'duracao-real-mp3-01jul';
+window.__WM_BUILD = 'botao-marcar-palavras-removido-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -26681,9 +26675,6 @@ function initEditor() {
       // 2 frames de delay pra garantir que o display:block já pintou
       requestAnimationFrame(() => requestAnimationFrame(() => {
         drawWaveform();
-        // Mostra botão "Marcar palavras" no audio player
-        const btnMark = $('#btn-open-marking');
-        if (btnMark) btnMark.style.display = 'inline-flex';
         // Renderiza markers
         renderTimelineMarkers();
       }));
@@ -26699,9 +26690,6 @@ function initEditor() {
     if (track) track.style.display = 'none';
     audioPeaks = null;
     _waveformDrawn = false;
-    // Esconde botão de marcação
-    const btnMark = $('#btn-open-marking');
-    if (btnMark) btnMark.style.display = 'none';
     // Fecha painel se aberto
     closeMarkingPanel();
     const tt = $('#timeline-track');
@@ -27210,6 +27198,10 @@ function initEditor() {
       _cvMark.style.maxWidth = ''; _cvMark.style.maxHeight = '';
     }
     renderMarkingPanel();
+    // Garante o modo bater-no-ritmo (Iniciar + contagem 3,2,1) sempre que o
+    // painel abrir — com ou sem MP3. Sem isto, abrir pelo botão que aparece
+    // com música deixava o painel sem o botão Iniciar.
+    if (!_tapMode && typeof _enterTapMode === 'function') _enterTapMode();
   }
   function closeMarkingPanel() {
     _markingPanelOpen = false;
@@ -28148,7 +28140,6 @@ function initEditor() {
     resetAudioUI();
     markDirty();
   });
-  $('#btn-open-marking')?.addEventListener('click', openMarkingPanel);
   // "Marcar no ritmo" (sempre visível): abre o painel já no modo bater-no-ritmo.
   $('#btn-open-marking-tap')?.addEventListener('click', () => {
     openMarkingPanel();
