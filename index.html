@@ -7542,7 +7542,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'play-sem-musica-01jul';
+window.__WM_BUILD = 'play-sem-audio-visivel-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -26514,85 +26514,6 @@ function initEditor() {
   // Pra evitar trocar estrofe toda hora, guarda a última auto-mudada
   let _lastAutoStanzaIdx = -1;
 
-  // ===== RELÓGIO VIRTUAL (play SEM música) =====
-  // O app deixa marcar o ritmo sem MP3, mas o play dependia do áudio pra
-  // avançar os slides. Aqui um "relógio" em JS substitui o áudio: conta o
-  // tempo e avança os slides pelos tStart marcados. Assim dá pra pré-visualizar
-  // a apresentação inteira sem música.
-  let _virtualClock = null; // { t0, paused, pausedAt, raf }
-
-  function _virtualNow() {
-    if (!_virtualClock) return 0;
-    if (_virtualClock.paused) return _virtualClock.pausedAt;
-    return (performance.now() - _virtualClock.t0) / 1000;
-  }
-
-  function _virtualIsRunning() {
-    return !!(_virtualClock && !_virtualClock.paused);
-  }
-
-  // Último tempo marcado (fim da apresentação sem música).
-  function _ultimoTempoMarcado() {
-    let max = 0;
-    try {
-      (engine.parsed && engine.parsed.stanzas ? engine.parsed.stanzas : []).forEach(st => {
-        st.lines.forEach(ln => ln.words.forEach(w => {
-          if (typeof w.tStart === 'number' && w.tStart > max) max = w.tStart;
-        }));
-      });
-    } catch (e) {}
-    return max;
-  }
-
-  function _pararRelogioVirtual() {
-    if (_virtualClock && _virtualClock.raf) cancelAnimationFrame(_virtualClock.raf);
-    _virtualClock = null;
-    _lastAutoStanzaIdx = -1;
-    if (typeof updatePlayButtonIcon === 'function') updatePlayButtonIcon();
-  }
-
-  function _iniciarRelogioVirtual() {
-    const fim = _ultimoTempoMarcado();
-    if (fim <= 0) return false; // nada marcado: não há o que reproduzir
-    _lastAutoStanzaIdx = -1;
-    // começa um pouco antes do 1º tStart da estrofe atual (respiro)
-    let inicio = 0;
-    try {
-      const st = engine.parsed.stanzas[engine.currentStanzaIndex];
-      let first = null;
-      st.lines.forEach(ln => ln.words.forEach(w => {
-        if (typeof w.tStart === 'number' && (first === null || w.tStart < first)) first = w.tStart;
-      }));
-      if (first !== null) inicio = Math.max(0, first - 1.0);
-    } catch (e) {}
-    _virtualClock = { t0: performance.now() - inicio * 1000, paused: false, pausedAt: inicio, raf: 0 };
-
-    const loop = () => {
-      if (!_virtualClock || _virtualClock.paused) return;
-      const t = _virtualNow();
-      _checkAvancoPorTempo(t);
-      if (t >= fim + 4) { _pararRelogioVirtual(); return; } // acabou
-      _virtualClock.raf = requestAnimationFrame(loop);
-    };
-    _virtualClock.raf = requestAnimationFrame(loop);
-    if (typeof updatePlayButtonIcon === 'function') updatePlayButtonIcon();
-    return true;
-  }
-
-  // Avança a estrofe conforme um tempo (segundos) — serve pro áudio e pro
-  // relógio virtual.
-  function _checkAvancoPorTempo(tempoSeg) {
-    const targetIdx = getStanzaForAudioTime(tempoSeg);
-    if (targetIdx < 0) return;
-    if (targetIdx === _lastAutoStanzaIdx) return;
-    if (targetIdx === engine.currentStanzaIndex) { _lastAutoStanzaIdx = targetIdx; return; }
-    _lastAutoStanzaIdx = targetIdx;
-    engine.currentStanzaIndex = targetIdx;
-    engine.playFull({ useTransition: true });
-    if (typeof updateActiveStanzaInList === 'function') updateActiveStanzaInList(targetIdx);
-    if (typeof renderTimelineMarkers === 'function') renderTimelineMarkers();
-  }
-
   /**
    * Verifica se precisa avançar estrofe baseado no tempo atual.
    * Chamada do loop do playhead.
@@ -26600,7 +26521,25 @@ function initEditor() {
   function checkAutoAdvanceStanza() {
     const audio = audioElement;
     if (!audio || audio.paused || !audio.duration) return;
-    _checkAvancoPorTempo(audio.currentTime);
+
+    const targetIdx = getStanzaForAudioTime(audio.currentTime);
+    if (targetIdx < 0) return; // nenhuma estrofe marcada ainda
+    if (targetIdx === _lastAutoStanzaIdx) return; // já estamos na estrofe certa
+    if (targetIdx === engine.currentStanzaIndex) {
+      _lastAutoStanzaIdx = targetIdx;
+      return;
+    }
+
+    // MUDA pra estrofe correta
+    _lastAutoStanzaIdx = targetIdx;
+    engine.currentStanzaIndex = targetIdx;
+    // playFull sem transição (rápido) e que respeite o tempo absoluto do áudio
+    engine.playFull({ useTransition: true });
+    if (typeof updateActiveStanzaInList === 'function') {
+      updateActiveStanzaInList(targetIdx);
+    }
+    // Re-renderiza markers pra mostrar pills da nova estrofe atual
+    renderTimelineMarkers();
   }
 
   function startPlayheadAnimation() {
@@ -28254,13 +28193,6 @@ function initEditor() {
       updatePlayButtonIcon();
       return;
     }
-    // SEM MÚSICA: se o relógio virtual está rodando, para (funciona como pause).
-    const _temAudio = !!(audio && audio.src && audio.duration > 0);
-    if (!_temAudio && typeof _virtualIsRunning === 'function' && _virtualIsRunning()) {
-      _pararRelogioVirtual();
-      if (typeof engine.killAllAnimations === 'function') { try { engine.killAllAnimations(); } catch (e) {} }
-      return;
-    }
 
     // === SLIDE SÓ COM BACKGROUND ANTES DAS LETRAS ===
     // Ao iniciar, renderiza a estrofe SEM disparar a entrada das letras
@@ -28294,7 +28226,12 @@ function initEditor() {
         }
         // Se a 1ª palavra tem tStart, espera até ele (em ms). O próprio
         // pipeline (delay = tStart - audioTime) ajusta o resto fino.
-        if (firstTStart !== null) {
+        //
+        // IMPORTANTE: isso só vale COM ÁUDIO (que pula pro ponto certo).
+        // SEM áudio, o tStart é um tempo absoluto da música (ex: 180s), e
+        // esperar por ele deixava o slide VAZIO por minutos — parecia que o
+        // slide "sumia" ao dar play. Sem áudio, usa só o respiro curto.
+        if (firstTStart !== null && hadAudio) {
           startDelayMs = Math.max(0, firstTStart * 1000);
         }
       }
@@ -28331,15 +28268,6 @@ function initEditor() {
       }
       audio.currentTime = audioStartSec;
       audio.play().catch(e => console.warn('Audio play falhou:', e));
-    } else {
-      // SEM MÚSICA: usa o relógio virtual pra percorrer os slides pelos tempos
-      // marcados. Se não há nenhuma marcação, apenas anima o slide atual.
-      const iniciou = (typeof _iniciarRelogioVirtual === 'function') && _iniciarRelogioVirtual();
-      if (iniciou) {
-        // O relógio já começa perto do 1º tStart; a entrada das letras dispara
-        // no timer abaixo com o mesmo respiro.
-        startDelayMs = Math.min(startDelayMs, 1000);
-      }
     }
 
     // 4) Revela as letras (dispara a entrada) só quando começam.
@@ -28350,8 +28278,6 @@ function initEditor() {
     window.__lyricStartTimer = setTimeout(() => {
       // Se o usuário pausou nesse meio-tempo, não dispara.
       if (hadAudio && audio && audio.paused) return;
-      if (!hadAudio && typeof _virtualClock !== 'undefined' && _virtualClock === null
-          && _ultimoTempoMarcado() > 0) return; // parou o relógio virtual
       if (typeof engine.playEntrance === 'function') {
         engine.playEntrance();
       } else {
@@ -28365,9 +28291,7 @@ function initEditor() {
   // Atualiza o ícone do botão de play (play vs pause)
   function updatePlayButtonIcon() {
     const audio = audioElement;
-    // "Tocando" = áudio rodando OU relógio virtual (play sem música) rodando.
-    const playing = (audio && !audio.paused)
-      || (typeof _virtualIsRunning === 'function' && _virtualIsRunning());
+    const playing = audio && !audio.paused;
     const playIcon = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"/></svg>';
     const pauseIcon = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>';
     const btn = $('#btn-timeline-play');
