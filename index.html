@@ -7542,7 +7542,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'marcar-toca-musica-01jul';
+window.__WM_BUILD = 'duracao-real-mp3-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -19371,8 +19371,13 @@ function initEditor() {
       });
     });
 
-    // total mockado: ~6s por estrofe
-    const totalSec = parsed.stanzas.length * 6;
+    // Duração exibida: a REAL da música carregada. (Antes era um valor
+    // "mockado": nº de estrofes × 6s — por isso mostrava 5:18 com 53 estrofes
+    // e não mudava ao trocar o MP3.) Sem música, cai na estimativa por estrofe.
+    const _aud = (typeof audioElement !== 'undefined') ? audioElement : null;
+    const totalSec = (_aud && _aud.duration > 0)
+      ? _aud.duration
+      : parsed.stanzas.length * 6;
     $('#timeline-duration').textContent = formatTime(totalSec);
   }
 
@@ -26475,6 +26480,11 @@ function initEditor() {
       const dur = formatTime(audio.duration || 0);
       const el = $('#audio-timer');
       if (el) el.textContent = `${cur} / ${dur}`;
+      // Contador ao lado do play (ficava congelado em 0:00 — nunca era atualizado).
+      const elT = $('#timeline-time');
+      if (elT) elT.textContent = cur;
+      const elD = $('#timeline-duration');
+      if (elD && audio.duration) elD.textContent = dur;
     }
     // Slide info: "Estrofe 2 de 5"
     const slideEl = $('#slide-info');
@@ -28327,6 +28337,25 @@ function initEditor() {
     audio.addEventListener('play', updatePlayButtonIcon);
     audio.addEventListener('pause', updatePlayButtonIcon);
     audio.addEventListener('ended', updatePlayButtonIcon);
+    // Mantém o contador (0:00 / 5:18) sempre certo: ao tocar, ao arrastar o
+    // playhead, ao pausar e quando a duração do MP3 fica conhecida.
+    if (typeof updateTimerDisplay === 'function') {
+      audio.addEventListener('timeupdate', updateTimerDisplay);
+      audio.addEventListener('seeked', updateTimerDisplay);
+      audio.addEventListener('loadedmetadata', updateTimerDisplay);
+      audio.addEventListener('durationchange', updateTimerDisplay);
+      audio.addEventListener('pause', updateTimerDisplay);
+    }
+    // Quando um novo MP3 carrega (ou troca), a duração real fica conhecida:
+    // atualiza o "/ 5:18" na hora, senão fica o valor da música anterior.
+    const _refreshDur = () => {
+      const el = $('#timeline-duration');
+      if (el && audio.duration > 0) el.textContent = formatTime(audio.duration);
+      if (typeof updateTimerDisplay === 'function') updateTimerDisplay();
+    };
+    audio.addEventListener('loadedmetadata', _refreshDur);
+    audio.addEventListener('durationchange', _refreshDur);
+    audio.addEventListener('canplay', _refreshDur);
   };
   _ensureAudioPlayPauseIconSync();
 
