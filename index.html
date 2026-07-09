@@ -5016,7 +5016,6 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
 .tap-clock { font-size: 20px; font-weight: 800; color: var(--text-primary); font-variant-numeric: tabular-nums; }
 .tap-progress { font-size: 12px; color: var(--text-tertiary); }
 .tap-next { font-size: 13px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-#btn-tap-mode.active { background: rgba(139,92,246,0.2); color: #c4b5fd; }
 @media (max-width: 600px) {
   .marking-tap-bar { flex-direction: column; align-items: stretch; gap: 8px; padding: 10px 12px; }
   .tap-big-btn { width: 100%; height: 56px; }
@@ -7574,7 +7573,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'seo-basico-01jul';
+window.__WM_BUILD = 'so-marcar-no-ritmo-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -27196,19 +27195,10 @@ function initEditor() {
     const wave = document.getElementById('marking-wave-wrap'); if (wave) wave.style.display = 'none';
     const instr = document.querySelector('.marking-panel-instructions'); if (instr) instr.style.display = 'none';
     ['mini-back5-btn','mini-fwd5-btn','mini-play-btn','mini-timer'].forEach(id => { const e = document.getElementById(id); if (e) e.style.display = 'none'; });
-    const tg = document.getElementById('btn-tap-mode'); if (tg) tg.classList.add('active');
     _tapFinish(false);
   }
-  function _exitTapMode() {
-    _tapFinish(false);
-    _tapMode = false;
-    const bar = document.getElementById('marking-tap-bar'); if (bar) bar.style.display = 'none';
-    const wave = document.getElementById('marking-wave-wrap'); if (wave && audioElement && audioElement.duration) wave.style.display = '';
-    const instr = document.querySelector('.marking-panel-instructions'); if (instr) instr.style.display = '';
-    ['mini-back5-btn','mini-fwd5-btn','mini-play-btn','mini-timer'].forEach(id => { const e = document.getElementById(id); if (e) e.style.display = ''; });
-    const tg = document.getElementById('btn-tap-mode'); if (tg) tg.classList.remove('active');
-  }
-  function _toggleTapMode() { _tapMode ? _exitTapMode() : _enterTapMode(); }
+  // Modo "onda" (marcar clicando na forma de onda) foi removido: o app usa
+  // apenas o modo bater no ritmo (Iniciar + Tab), que é o fluxo real de uso.
   function _tapBigClick() {
     if (!_tapMode) return;
     if (_tapPaused) _tapResume();
@@ -27282,9 +27272,6 @@ function initEditor() {
           <span class="marking-panel-progress" id="marking-progress">0/0</span>
         </div>
         <div class="marking-panel-tools">
-          <button class="btn btn-ghost btn-sm" id="btn-tap-mode" title="Marcar sem carregar música: você ouve a música onde quiser e vai batendo no ritmo">
-            🎵 Bater no ritmo
-          </button>
           <button class="btn btn-ghost btn-sm" id="btn-undo-mark" title="Desfazer a última marcação (atalho: Shift+Tab)">
             ↶ Desfazer
           </button>
@@ -27338,8 +27325,6 @@ function initEditor() {
       }, 56);
     }
     // Bater no ritmo (tap tempo)
-    const _tapToggleBtn = $('#btn-tap-mode', panel);
-    if (_tapToggleBtn) _tapToggleBtn.addEventListener('click', _toggleTapMode);
     const _tapBig = $('#tap-big-btn', panel);
     if (_tapBig) _tapBig.addEventListener('click', _tapBigClick);
     const _tapFin = $('#tap-finish-btn', panel);
