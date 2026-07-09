@@ -7100,7 +7100,7 @@ Digno de toda honra"></textarea>
           </svg>
           <span id="audio-btn-label">Adicionar música</span>
         </button>
-        <button class="audio-btn" id="btn-open-marking-tap" data-tooltip="Marcar as letras sem música: você ouve onde quiser e vai batendo no ritmo" style="gap:6px;">
+        <button class="audio-btn" id="btn-open-marking-tap" data-tooltip="Marcar no ritmo: com música carregada ela toca ao clicar em Iniciar; sem música, você ouve por fora e vai batendo" style="gap:6px;">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
           <span>Marcar no ritmo</span>
         </button>
@@ -7542,7 +7542,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'play-sem-audio-visivel-01jul';
+window.__WM_BUILD = 'marcar-toca-musica-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -26997,10 +26997,17 @@ function initEditor() {
 
   function _markClock() {
     if (_tapMode) {
+      // COM MÚSICA: o relógio da marcação é o tempo do próprio áudio, pra as
+      // marcações baterem exatamente com o MP3. Sem música, usa o cronômetro
+      // interno (modo "ouço por fora e vou batendo").
+      if (_temAudioCarregado()) return audioElement.currentTime;
       if (_tapRunning) return _tapElapsedBase + (performance.now() - _tapStartMs) / 1000;
       return _tapElapsedBase; // pausado: relógio congelado no tempo acumulado
     }
     return (audioElement && audioElement.duration) ? audioElement.currentTime : 0;
+  }
+  function _temAudioCarregado() {
+    return !!(audioElement && audioElement.src && audioElement.duration > 0);
   }
   function _tapNextUnit() {
     const parsed = engine?.parsed;
@@ -27072,6 +27079,14 @@ function initEditor() {
         _tapElapsedBase = 0;
         _tapRunning = true;
         _tapStartMs = performance.now();
+        // COM MÚSICA: toca o MP3 do início — você marca ouvindo a música e as
+        // marcações ficam atreladas ao tempo dela.
+        if (_temAudioCarregado()) {
+          try {
+            audioElement.currentTime = 0;
+            audioElement.play().catch(e => console.warn('Audio play falhou:', e));
+          } catch (e) {}
+        }
         _tapSetBig('MARCAR', 'toque no ritmo', 'is-running');
         _tapTick();
         _updateTapBar();
@@ -27085,6 +27100,7 @@ function initEditor() {
     _tapRunning = false;
     _tapPaused = true;
     cancelAnimationFrame(_tapRAF);
+    if (_temAudioCarregado()) { try { audioElement.pause(); } catch (e) {} }
     _tapSetBig('Continuar', 'retoma de onde parou', 'is-paused');
     const c = document.getElementById('tap-clock'); if (c) c.textContent = formatTime(_markClock());
     _updateTapBar();
@@ -27095,6 +27111,7 @@ function initEditor() {
     _tapPaused = false;
     _tapRunning = true;
     _tapStartMs = performance.now(); // continua contando a partir do tempo acumulado
+    if (_temAudioCarregado()) { try { audioElement.play().catch(() => {}); } catch (e) {} }
     _tapSetBig('MARCAR', 'toque no ritmo', 'is-running');
     _tapTick();
     _updatePauseBtn();
@@ -27112,6 +27129,7 @@ function initEditor() {
     _tapElapsedBase = 0;
     cancelAnimationFrame(_tapRAF);
     clearInterval(_tapCountTimer);
+    if (_temAudioCarregado()) { try { audioElement.pause(); } catch (e) {} }
     const big = document.getElementById('tap-big-btn');
     if (big) big.disabled = false;
     _tapSetBig(done ? 'Concluído ✓' : 'Iniciar', done ? 'todas marcadas' : 'contagem 3, 2, 1', null);
