@@ -7573,7 +7573,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'so-marcar-no-ritmo-01jul';
+window.__WM_BUILD = 'video-fundo-webkit-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -11870,11 +11870,37 @@ async function uploadBackground(file) {
 /**
  * Obtém URL temporária pra um background. Cacheia pra evitar criar várias.
  */
+/**
+ * Converte um blob em data: URL (base64). Necessário pra VÍDEO no WebKit
+ * (Safari / Chrome do iPhone): o navegador NÃO reproduz vídeo a partir de
+ * `blob:` (precisa de uma fonte buscável) — o vídeo ficava preto, tanto na
+ * miniatura quanto no slide. Imagem funciona bem com blob:, então só o vídeo
+ * paga o custo da conversão (e só até um limite de tamanho).
+ */
+function _blobParaDataUrl(blob) {
+  return new Promise((resolve, reject) => {
+    const fr = new FileReader();
+    fr.onload = () => resolve(fr.result);
+    fr.onerror = () => reject(new Error('falha ao ler o vídeo'));
+    fr.readAsDataURL(blob);
+  });
+}
+
+// Acima disto, um vídeo em base64 pesa demais na memória: mantém blob: URL.
+const WM_VIDEO_DATAURL_MAX = 16 * 1024 * 1024; // 16MB
+
 async function getBackgroundUrl(assetId) {
   if (_backgroundUrls.has(assetId)) return _backgroundUrls.get(assetId);
   const asset = await window.WM_ASSETS.get(assetId);
   if (!asset || !asset.blob) return null;
-  const url = URL.createObjectURL(asset.blob);
+
+  const ehVideo = asset.meta && asset.meta.mediaKind === 'video';
+  let url = null;
+  if (ehVideo && asset.blob.size <= WM_VIDEO_DATAURL_MAX) {
+    try { url = await _blobParaDataUrl(asset.blob); } catch (e) { url = null; }
+  }
+  if (!url) url = URL.createObjectURL(asset.blob);
+
   _backgroundUrls.set(assetId, url);
   return url;
 }
@@ -16583,15 +16609,21 @@ class VideoExporter {
           const asset = await window.WM_ASSETS.get(assetId);
           if (!asset || !asset.blob) continue;
           const isVideo = asset.meta && asset.meta.mediaKind === 'video';
-          const url = URL.createObjectURL(asset.blob);
+          // Vídeo: usa a MESMA entrega do preview (data: URL em WebKit), senão
+          // o export pelo celular sai com o fundo preto.
+          const url = (isVideo && typeof getBackgroundUrl === 'function')
+            ? await window.WM_CUSTOM_BACKGROUNDS.getUrl(assetId)
+            : URL.createObjectURL(asset.blob);
 
           if (isVideo) {
             // Carrega vídeo, espera ele estar pronto pra seek
             const video = document.createElement('video');
-            video.src = url;
             video.muted = true;
+            video.playsInline = true;
+            video.setAttribute('playsinline', '');
+            video.setAttribute('muted', '');
             video.preload = 'auto';
-            video.crossOrigin = 'anonymous';
+            video.src = url;
             await new Promise((resolve, reject) => {
               const tid = setTimeout(() => reject(new Error('video load timeout')), 10000);
               video.addEventListener('loadeddata', () => {
@@ -25799,15 +25831,38 @@ function initEditor() {
           if (url && isVideo) {
             const video = document.createElement('video');
             video.className = 'canvas-bg-video';
-            video.src = url;
             video.autoplay = true;
             video.loop = true;
             video.muted = true;
             video.playsInline = true;
+            // Atributos (não só propriedades): o WebKit do iPhone respeita
+            // estes; sem eles o vídeo não decodifica e a tela fica PRETA.
+            video.setAttribute('playsinline', '');
+            video.setAttribute('muted', '');
+            video.setAttribute('autoplay', '');
+            video.setAttribute('loop', '');
+            video.preload = 'auto';
             video.style.cssText = 'position:absolute; inset:0; width:100%; height:100%; object-fit:cover;';
             canvasBg.style.background = '#000';
             canvasBg.style.opacity = '1';
             canvasBg.appendChild(video);
+
+            // Se o vídeo NÃO conseguir tocar, não deixa a tela preta em
+            // silêncio: volta pro fundo padrão e avisa o usuário.
+            const _falhouVideo = () => {
+              try { video.remove(); } catch (e) {}
+              window.__currentBgVideoEl = null;
+              if (typeof showToast === 'function') {
+                showToast('Não consegui reproduzir este vídeo de fundo neste aparelho.');
+              }
+              applyBg('brand');
+            };
+            video.addEventListener('error', _falhouVideo, { once: true });
+            setTimeout(() => {
+              if (video.isConnected && video.readyState === 0) _falhouVideo();
+            }, 6000);
+
+            video.src = url;
             video.play().catch(e => console.warn('Autoplay bloqueado:', e));
             window.__currentBgVideoEl = video;
             window.__currentBg = key;
@@ -26043,7 +26098,12 @@ function initEditor() {
     return new Promise((resolve, reject) => {
       const video = document.createElement('video');
       video.muted = true;
-      video.crossOrigin = 'anonymous';
+      // iOS exige playsinline + muted pra deixar o vídeo carregar/decodificar
+      // fora de tela. E NÃO usar crossOrigin: em blob:/data: ele atrapalha.
+      video.setAttribute('playsinline', '');
+      video.setAttribute('muted', '');
+      video.playsInline = true;
+      video.preload = 'auto';
       video.src = videoUrl;
       let resolved = false;
       const cleanup = () => {
