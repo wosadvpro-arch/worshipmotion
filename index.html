@@ -7580,7 +7580,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'aviso-ios-versao-01jul';
+window.__WM_BUILD = 'diag-audio-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -32204,8 +32204,107 @@ function initLoginAnim() {
     }
     window.scrollTo(0, 0);
   }
+
+/**
+ * DIAGNÓSTICO DE ÁUDIO DO EXPORT (temporário).
+ * Botão "DIAG ÁUDIO" no canto. Mostra num painel: build, versão do WebKit,
+ * se AudioEncoder existe, se a config AAC é aceita, e se a música do projeto
+ * é decodificável. É isso que decide por que o MP4 sai mudo.
+ */
+window.__wmDiagAudio = async function () {
+  const L = [];
+  const mostrar = () => {
+    const txt = L.join('\n');
+    console.log(txt);
+    try {
+      const velho = document.getElementById('wm-diag-audio-painel');
+      if (velho) velho.remove();
+      const p = document.createElement('div');
+      p.id = 'wm-diag-audio-painel';
+      p.style.cssText = 'position:fixed; inset:8px; z-index:2147483647; background:#0b0b12;'
+        + 'color:#e5e7eb; border:2px solid #22d3ee; border-radius:12px; padding:12px;'
+        + 'font:12px/1.5 monospace; overflow:auto; white-space:pre-wrap; -webkit-user-select:text; user-select:text;';
+      const btn = document.createElement('button');
+      btn.textContent = 'Fechar';
+      btn.style.cssText = 'position:sticky; top:0; float:right; background:#22d3ee; color:#000;'
+        + 'border:none; border-radius:8px; padding:8px 14px; font:600 13px sans-serif;';
+      btn.onclick = () => p.remove();
+      p.appendChild(btn);
+      p.appendChild(document.createTextNode(txt));
+      document.body.appendChild(p);
+    } catch (e) { try { alert(txt); } catch (e2) {} }
+  };
+
+  L.push('BUILD: ' + (window.__WM_BUILD || '?'));
+  L.push('navegador: ' + navigator.userAgent.slice(0, 90));
+  L.push('');
+  L.push('AudioEncoder existe: ' + (typeof AudioEncoder !== 'undefined'));
+  L.push('VideoEncoder existe: ' + (typeof VideoEncoder !== 'undefined'));
+  L.push('EncodedAudioChunk   : ' + (typeof EncodedAudioChunk !== 'undefined'));
+  L.push('AudioData           : ' + (typeof AudioData !== 'undefined'));
+  L.push('Mp4Muxer carregado  : ' + (typeof window.Mp4Muxer !== 'undefined'));
+  L.push('');
+  L.push('música no projeto (__currentAudioId): ' + (window.__currentAudioId || 'NENHUMA'));
+
+  if (typeof AudioEncoder === 'undefined') {
+    L.push('');
+    L.push('>>> SEM AudioEncoder: o MP4 SEMPRE sai mudo neste aparelho.');
+    L.push('    (precisa de iOS com Safari 26 ou mais novo)');
+    return mostrar();
+  }
+
+  // Testa a config exata que o export usa
+  for (const [sr, ch] of [[44100, 2], [48000, 2], [44100, 1]]) {
+    const cfg = { codec: 'mp4a.40.2', sampleRate: sr, numberOfChannels: ch, bitrate: 128000 };
+    try {
+      const r = await AudioEncoder.isConfigSupported(cfg);
+      L.push(`AAC ${sr}Hz ${ch}ch -> suportado: ${r && r.supported}`);
+    } catch (e) {
+      L.push(`AAC ${sr}Hz ${ch}ch -> ERRO: ${e.message}`);
+    }
+  }
+
+  // Tenta configurar de verdade (é onde o Safari costuma reclamar)
+  try {
+    const enc = new AudioEncoder({ output: () => {}, error: (e) => { L.push('callback de erro: ' + e.message); } });
+    enc.configure({ codec: 'mp4a.40.2', sampleRate: 44100, numberOfChannels: 2, bitrate: 128000 });
+    L.push('configure() AAC: OK (estado ' + enc.state + ')');
+    enc.close();
+  } catch (e) {
+    L.push('configure() AAC FALHOU: ' + e.message);
+  }
+
+  // Decodifica a música do projeto
+  if (window.__currentAudioId && window.WM_AUDIO_STORAGE) {
+    try {
+      const rec = await window.WM_AUDIO_STORAGE.loadAudio(window.__currentAudioId);
+      if (!rec || !rec.blob) { L.push('música: registro sem blob'); return mostrar(); }
+      L.push('');
+      L.push('arquivo: ' + rec.name + ' | ' + Math.round(rec.blob.size / 1024) + ' KB | tipo "' + (rec.blob.type || '(vazio)') + '"');
+      const AC = window.AudioContext || window.webkitAudioContext;
+      const ctx = new AC();
+      const buf = await ctx.decodeAudioData((await rec.blob.arrayBuffer()).slice(0));
+      L.push('decodeAudioData: OK -> ' + buf.sampleRate + 'Hz, ' + buf.numberOfChannels + ' canal(is), ' + buf.duration.toFixed(1) + 's');
+      ctx.close();
+    } catch (e) {
+      L.push('decodeAudioData FALHOU: ' + (e && e.message ? e.message : String(e)));
+    }
+  }
+  mostrar();
+};
+
   window.addEventListener('hashchange', showPage);
   window.addEventListener('load', async () => {
+    try {
+      const b = document.createElement('button');
+      b.id = 'wm-diag-audio-btn';
+      b.textContent = 'DIAG ÁUDIO';
+      b.style.cssText = 'position:fixed; left:8px; bottom:8px; z-index:2147483646;'
+        + 'background:#22d3ee; color:#000; border:none; border-radius:10px;'
+        + 'padding:10px 14px; font:700 12px sans-serif; box-shadow:0 6px 20px rgba(0,0,0,.5);';
+      b.onclick = () => { if (window.__wmDiagAudio) window.__wmDiagAudio(); };
+      document.body.appendChild(b);
+    } catch (e) {}
     await tratarRetornoAuth();
     showPage();
   });
