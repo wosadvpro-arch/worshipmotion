@@ -7581,7 +7581,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'recuperar-download-idb-10jul';
+window.__WM_BUILD = 'diag-export-celular-10jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -17520,9 +17520,13 @@ class VideoExporter {
       }
 
       // === 9. Finaliza muxer ===
+      try { if (window.WM_DIAG) window.WM_DIAG.marca('ANTES_FINALIZE'); } catch (e) {}
       this.muxer.finalize();
+      try { if (window.WM_DIAG) window.WM_DIAG.marca('POS_FINALIZE'); } catch (e) {}
       const buffer = this.muxer.target.buffer;
+      try { if (window.WM_DIAG) window.WM_DIAG.marca('ANTES_BLOB', { mb: (buffer && buffer.byteLength ? (buffer.byteLength / 1048576).toFixed(1) : '?') }); } catch (e) {}
       const blob = new Blob([buffer], { type: 'video/mp4' });
+      try { if (window.WM_DIAG) window.WM_DIAG.marca('BLOB_OK', { mb: (blob.size / 1048576).toFixed(1) }); } catch (e) {}
 
       const elapsedRender = (performance.now() - renderStartTime) / 1000;
       if (typeof window.WM_EXPORT_LOG === 'function') {
@@ -19257,6 +19261,9 @@ function initEditor() {
   // Se a última exportação ficou salva localmente (ex: o iOS descartou a aba no
   // fim do render e a página recarregou), oferece o download ao abrir o editor.
   try { if (window.__wmVerificarExportsPendentes) window.__wmVerificarExportsPendentes(); } catch (e) {}
+  // Diagnóstico: se a última exportação NÃO chegou ao fim, mostra a trilha do
+  // que aconteceu (até onde a aba sobreviveu) com botão de copiar.
+  try { if (window.__wmMostrarDiag) setTimeout(window.__wmMostrarDiag, 400); } catch (e) {}
 
   let currentAnimCategory = 'entrance';
 
@@ -31810,7 +31817,18 @@ function initEditor() {
       if (btnDeNovo1) btnDeNovo1.style.display = '';
 
       window.WM_EXPORT_LOG('Renderizando frames…', 'info');
+      try {
+        if (window.WM_DIAG) {
+          const _res = ($('#export-resolution') && $('#export-resolution').textContent) || '?';
+          const _dur = ($('#export-duration') && $('#export-duration').textContent) || '?';
+          const _sl = (currentExporter && currentExporter.options && Array.isArray(currentExporter.options.onlyStanzaIndices))
+            ? currentExporter.options.onlyStanzaIndices.length : 'todos';
+          window.WM_DIAG.novaSessao({ res: _res, dur: _dur, slides: _sl });
+        }
+      } catch (e) {}
+      try { if (window.WM_DIAG) window.WM_DIAG.marca('ANTES_RECORD'); } catch (e) {}
       const blob = await currentExporter.record();
+      try { if (window.WM_DIAG) window.WM_DIAG.marca('RECORD_RETORNOU', { mb: (blob.size / 1048576).toFixed(1) }); } catch (e) {}
       window.WM_EXPORT_LOG(`✓ Vídeo gerado: ${(blob.size/1024/1024).toFixed(2)} MB`, 'success');
       lastExportBlob = blob;
 
@@ -31827,6 +31845,7 @@ function initEditor() {
       // arquivo já está no IndexedDB, ele sobrevive ao reload e reaparece na
       // tela de recuperação ao reabrir o editor.
       let _localExpId = 'exp-' + Date.now();
+      try { if (window.WM_DIAG) window.WM_DIAG.marca('ANTES_SALVAR_IDB'); } catch (e) {}
       try {
         if (window.WM_EXPORT_STORE) {
           await window.WM_EXPORT_STORE.salvar({
@@ -31837,6 +31856,7 @@ function initEditor() {
             type: blob.type,
             createdAt: Date.now(),
           });
+          try { if (window.WM_DIAG) window.WM_DIAG.marca('IDB_SALVO'); } catch (e) {}
           if (window.WM_EXPORT_LOG) window.WM_EXPORT_LOG('vídeo salvo localmente (recuperável se a aba cair)', 'info');
         }
       } catch (e) { console.warn('não consegui salvar o export localmente:', e); }
@@ -32688,8 +32708,112 @@ function initLoginAnim() {
    aparelho. Ao reabrir o editor, se houver algo salvo, mostramos
    uma tela pra baixar — o arquivo sobrevive ao reload.
    ============================================================ */
+/* ============================================================
+   DIAGNÓSTICO DE EXPORT (migalhas síncronas em localStorage)
+   ------------------------------------------------------------
+   Grava um marcador em CADA etapa da finalização. localStorage é
+   SÍNCRONO: mesmo que o iOS descarte a aba no passo seguinte, a
+   última migalha já ficou salva. Ao reabrir, mostramos a trilha
+   pra ver EXATAMENTE até onde chegou antes de morrer.
+   ============================================================ */
+window.WM_DIAG = (function () {
+  const K = 'wm_diag_trilha';
+  function marca(step, extra) {
+    try {
+      const arr = JSON.parse(localStorage.getItem(K) || '[]');
+      arr.push(Object.assign({ step: step, t: Date.now() }, extra || {}));
+      localStorage.setItem(K, JSON.stringify(arr.slice(-60)));
+    } catch (e) {}
+  }
+  function novaSessao(extra) {
+    try {
+      localStorage.setItem(K, JSON.stringify([
+        Object.assign({ step: 'SESSAO_NOVA', t: Date.now(), ua: (navigator.userAgent || '').slice(0, 120) }, extra || {})
+      ]));
+    } catch (e) {}
+  }
+  function ler() { try { return JSON.parse(localStorage.getItem(K) || '[]'); } catch (e) { return []; } }
+  function limpar() { try { localStorage.removeItem(K); } catch (e) {} }
+  return { marca, novaSessao, ler, limpar };
+})();
+
+window.__wmMostrarDiag = function () {
+  const trilha = window.WM_DIAG.ler();
+  if (!trilha || !trilha.length) return;
+  // Só mostra se a última sessão NÃO chegou até o fim (UI pronta / baixado).
+  const chegouAoFim = trilha.some(function (m) { return m.step === 'UI_PRONTA' || m.step === 'DOWNLOAD_OK'; });
+  if (chegouAoFim) { window.WM_DIAG.limpar(); return; }
+
+  const t0 = trilha[0].t || Date.now();
+  const linhas = trilha.map(function (m) {
+    const dt = (((m.t || t0) - t0) / 1000).toFixed(1);
+    let ex = '';
+    if (m.mb != null) ex += ' — ' + m.mb + ' MB';
+    if (m.slides != null) ex += ' — ' + m.slides + ' slides';
+    if (m.res) ex += ' — ' + m.res;
+    if (m.dur != null) ex += ' — ' + m.dur + 's';
+    if (m.ua) ex += ' — ' + m.ua;
+    return '+' + dt + 's  ' + m.step + ex;
+  });
+  const texto = 'DIAG EXPORT WorshipMotion\n' + linhas.join('\n');
+
+  const antigo = document.getElementById('wm-diag-panel');
+  if (antigo) antigo.remove();
+  const box = document.createElement('div');
+  box.id = 'wm-diag-panel';
+  box.style.cssText = [
+    'position:fixed', 'top:16px', 'left:50%', 'transform:translateX(-50%)',
+    'z-index:99998', 'width:calc(100% - 32px)', 'max-width:420px',
+    'background:#0f1424', 'border:1px solid rgba(251,191,36,0.6)',
+    'border-radius:14px', 'box-shadow:0 12px 40px rgba(0,0,0,0.5)',
+    'padding:16px', 'color:#e9e9f2', 'font-family:inherit'
+  ].join(';');
+
+  const tit = document.createElement('div');
+  tit.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;';
+  tit.innerHTML = '<span style="font-size:14px;font-weight:700;">🔎 Diagnóstico da última exportação</span>';
+  const x = document.createElement('button');
+  x.textContent = '✕';
+  x.style.cssText = 'background:none;border:none;color:#9a9ab0;font-size:16px;cursor:pointer;padding:2px 6px;';
+  x.onclick = function () { box.remove(); };
+  tit.appendChild(x);
+  box.appendChild(tit);
+
+  const pre = document.createElement('pre');
+  pre.style.cssText = 'font-size:11px;line-height:1.5;color:#cfd2e6;background:rgba(255,255,255,0.04);border-radius:8px;padding:10px;max-height:200px;overflow:auto;white-space:pre-wrap;word-break:break-word;margin:0 0 10px;';
+  pre.textContent = texto;
+  box.appendChild(pre);
+
+  const btnCopiar = document.createElement('button');
+  btnCopiar.textContent = 'Copiar diagnóstico';
+  btnCopiar.style.cssText = 'display:block;width:100%;margin-bottom:8px;padding:11px;background:linear-gradient(135deg,#8b5cf6,#3b82f6);color:#fff;border:none;border-radius:10px;font-size:13.5px;font-weight:600;cursor:pointer;';
+  btnCopiar.onclick = function () {
+    const done = function () { btnCopiar.textContent = '✓ Copiado — cole aqui na conversa'; };
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(texto).then(done, function () {
+          pre.focus(); done();
+        });
+      } else {
+        const r = document.createRange(); r.selectNodeContents(pre);
+        const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
+        try { document.execCommand('copy'); } catch (e) {}
+        done();
+      }
+    } catch (e) { done(); }
+  };
+  box.appendChild(btnCopiar);
+
+  const btnLimpar = document.createElement('button');
+  btnLimpar.textContent = 'Limpar';
+  btnLimpar.style.cssText = 'display:block;width:100%;padding:8px;background:none;border:none;color:#9a9ab0;font-size:12.5px;cursor:pointer;';
+  btnLimpar.onclick = function () { window.WM_DIAG.limpar(); box.remove(); };
+  box.appendChild(btnLimpar);
+
+  document.body.appendChild(box);
+};
+
 window.WM_EXPORT_STORE = (function () {
-  const DB = 'worshipmotion_exports', VER = 1, STORE = 'pending';
   let dbP = null;
   function open() {
     if (dbP) return dbP;
