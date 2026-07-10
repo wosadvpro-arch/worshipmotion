@@ -7581,7 +7581,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'botoes-download-por-arquivo-01jul';
+window.__WM_BUILD = 'fundo-volta-apos-export-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -26075,6 +26075,43 @@ function initEditor() {
 
   let _previewBg = null;  // bg em preview (não-salvo)
 
+  // ===== VOLTAR AO APP (celular): retoma o fundo de vídeo =====
+  // No iOS, sair do app/aba PAUSA o vídeo de fundo. Vídeo pausado renderiza
+  // PRETO, e o canvasBg já é '#000' por baixo — então a tela ficava toda preta
+  // e só voltava recarregando a página. Ninguém mandava o vídeo tocar de novo.
+  (function _wmRetomarAoVoltar() {
+    if (window.__wmVisibilidadeLigada) return;
+    window.__wmVisibilidadeLigada = true;
+
+    const retomar = async () => {
+      if (document.hidden) return;
+      try {
+        const v = window.__currentBgVideoEl;
+        if (v && v.isConnected) {
+          if (v.readyState >= 2) {
+            if (v.paused) { try { await v.play(); } catch (e) {} }
+          } else {
+            // O navegador descartou o vídeo: recria o fundo do zero.
+            if (window.__currentBg) { try { await applyBg(window.__currentBg); } catch (e) {} }
+          }
+        }
+        // Repinta o slide (a tela pode ter sido descartada pelo sistema).
+        if (engine && engine.parsed && engine.parsed.stanzas
+            && engine.parsed.stanzas.length) {
+          engine.renderStanza(engine.currentStanzaIndex);
+        }
+      } catch (e) {}
+    };
+
+    document.addEventListener('visibilitychange', retomar);
+    window.addEventListener('pageshow', retomar);
+    window.addEventListener('focus', retomar);
+    // Exposto pra ser chamado também ao FIM DO EXPORT: o _cleanup do exporter
+    // pausa os vídeos de fundo, e no iOS vídeo pausado renderiza PRETO. Sem
+    // isto, ao sair pra salvar o arquivo e voltar, a tela ficava preta.
+    window.__wmRetomarFundo = retomar;
+  })();
+
   async function applyBg(key) {
     const canvasBg = $('#canvas-bg');
     if (!canvasBg) return;
@@ -31762,6 +31799,10 @@ function initEditor() {
       await wmAlert(err.message || 'Erro durante a exportação', { title: 'Erro na exportação' });
     } finally {
       currentExporter = null;
+      // O _cleanup do exporter PAUSA os vídeos de fundo. No iOS, vídeo pausado
+      // renderiza PRETO — e a tela do editor ficava preta ao voltar de salvar o
+      // arquivo. Retoma o fundo assim que o export termina (ou falha).
+      try { if (window.__wmRetomarFundo) window.__wmRetomarFundo(); } catch (e) {}
     }
   }
 
