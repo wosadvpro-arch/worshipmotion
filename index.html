@@ -7581,7 +7581,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'sem-autodownload-celular-01jul';
+window.__WM_BUILD = 'recuperar-download-idb-10jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -19253,6 +19253,10 @@ function initEditor() {
   const canvas = document.getElementById('canvas-content');
   const engine = new RenderEngine(canvas);
   window.__wm = { engine }; // debug
+
+  // Se a última exportação ficou salva localmente (ex: o iOS descartou a aba no
+  // fim do render e a página recarregou), oferece o download ao abrir o editor.
+  try { if (window.__wmVerificarExportsPendentes) window.__wmVerificarExportsPendentes(); } catch (e) {}
 
   let currentAnimCategory = 'entrance';
 
@@ -31746,6 +31750,22 @@ function initEditor() {
         lastExportBlob = _arquivos[0].blob;
         lastExportFilename = _arquivos[0].nome;
 
+        // Salva CADA arquivo no armazenamento local antes de montar a lista,
+        // pra sobreviverem caso o iOS descarte a aba (ver tela de recuperação).
+        try {
+          if (window.WM_EXPORT_STORE) {
+            for (const _it of _arquivos) {
+              if (!_it.blob) continue;
+              _it._localId = 'exp-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7);
+              await window.WM_EXPORT_STORE.salvar({
+                id: _it._localId,
+                nome: _it.nome, blob: _it.blob, size: _it.blob.size,
+                type: _it.blob.type, createdAt: Date.now(),
+              });
+            }
+          }
+        } catch (e) { console.warn('não consegui salvar os exports localmente:', e); }
+
         const lista = $('#export-files-list');
         if (lista) {
           lista.innerHTML = '';
@@ -31767,6 +31787,7 @@ function initEditor() {
               // fazia o sistema MATAR a aba (voltava tela preta, página morta).
               item.blob = null;
               if (lastExportBlob === item.blob) lastExportBlob = null;
+              try { if (window.WM_EXPORT_STORE && item._localId) window.WM_EXPORT_STORE.remover(item._localId); } catch (e) {}
             });
             lista.appendChild(btn);
           });
@@ -31801,6 +31822,25 @@ function initEditor() {
         : '';
       lastExportFilename = `${safeName}${slideSuffix}.${ext}`;
 
+      // SALVA o vídeo no armazenamento local ANTES de montar a UI. No iPhone o
+      // pico de memória da finalização pode matar a aba justamente aqui — se o
+      // arquivo já está no IndexedDB, ele sobrevive ao reload e reaparece na
+      // tela de recuperação ao reabrir o editor.
+      let _localExpId = 'exp-' + Date.now();
+      try {
+        if (window.WM_EXPORT_STORE) {
+          await window.WM_EXPORT_STORE.salvar({
+            id: _localExpId,
+            nome: lastExportFilename,
+            blob: blob,
+            size: blob.size,
+            type: blob.type,
+            createdAt: Date.now(),
+          });
+          if (window.WM_EXPORT_LOG) window.WM_EXPORT_LOG('vídeo salvo localmente (recuperável se a aba cair)', 'info');
+        }
+      } catch (e) { console.warn('não consegui salvar o export localmente:', e); }
+
       // Mostra a tela de conclusão ANTES de tentar baixar. No iOS um clique
       // programático em link de download pode ser ignorado ou lançar — e o
       // erro caía no catch: a tela de conclusão nunca aparecia e o usuário
@@ -31819,6 +31859,7 @@ function initEditor() {
         btn.textContent = `⬇ ${lastExportFilename}  (${sizeMB} MB)`;
         btn.addEventListener('click', () => {
           WM_EXPORT.downloadBlob(blob, lastExportFilename);
+          try { if (window.WM_EXPORT_STORE && _localExpId) window.WM_EXPORT_STORE.remover(_localExpId); } catch (e) {}
           btn.textContent = `✓ ${lastExportFilename} — baixado`;
           btn.classList.remove('btn-primary');
           btn.classList.add('btn-ghost');
@@ -32634,6 +32675,176 @@ function initLoginAnim() {
   });
 })();
 
+</script>
+
+<script>
+/* ============================================================
+   RECUPERAÇÃO DE EXPORTS (IndexedDB)
+   ------------------------------------------------------------
+   No iPhone, o pico de memória ao FINALIZAR um MP4 grande pode
+   fazer o iOS descartar a aba: a página recarrega e o usuário
+   nunca chega a ver o botão de download. Solução: assim que o
+   vídeo fica pronto ele é salvo aqui, no armazenamento local do
+   aparelho. Ao reabrir o editor, se houver algo salvo, mostramos
+   uma tela pra baixar — o arquivo sobrevive ao reload.
+   ============================================================ */
+window.WM_EXPORT_STORE = (function () {
+  const DB = 'worshipmotion_exports', VER = 1, STORE = 'pending';
+  let dbP = null;
+  function open() {
+    if (dbP) return dbP;
+    dbP = new Promise((res, rej) => {
+      if (typeof indexedDB === 'undefined') return rej(new Error('sem IndexedDB'));
+      const r = indexedDB.open(DB, VER);
+      r.onerror = () => rej(r.error);
+      r.onsuccess = () => res(r.result);
+      r.onupgradeneeded = (e) => {
+        const d = e.target.result;
+        if (!d.objectStoreNames.contains(STORE)) d.createObjectStore(STORE, { keyPath: 'id' });
+      };
+    });
+    return dbP;
+  }
+  async function salvar(rec) {
+    const d = await open();
+    return new Promise((res, rej) => {
+      const tx = d.transaction([STORE], 'readwrite');
+      tx.objectStore(STORE).put(rec);
+      tx.oncomplete = () => res(rec);
+      tx.onerror = () => rej(tx.error);
+    });
+  }
+  async function listar() {
+    try {
+      const d = await open();
+      return await new Promise((res, rej) => {
+        const tx = d.transaction([STORE], 'readonly');
+        const rq = tx.objectStore(STORE).getAll();
+        rq.onsuccess = () => res(rq.result || []);
+        rq.onerror = () => rej(rq.error);
+      });
+    } catch (e) { return []; }
+  }
+  async function remover(id) {
+    try {
+      const d = await open();
+      return await new Promise((res) => {
+        const tx = d.transaction([STORE], 'readwrite');
+        tx.objectStore(STORE).delete(id);
+        tx.oncomplete = () => res(true);
+        tx.onerror = () => res(false);
+      });
+    } catch (e) { return false; }
+  }
+  async function limparTudo() {
+    try {
+      const d = await open();
+      return await new Promise((res) => {
+        const tx = d.transaction([STORE], 'readwrite');
+        tx.objectStore(STORE).clear();
+        tx.oncomplete = () => res(true);
+        tx.onerror = () => res(false);
+      });
+    } catch (e) { return false; }
+  }
+  return { salvar, listar, remover, limparTudo };
+})();
+
+function _wmBaixarBlob(blob, nome) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = nome;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1500);
+}
+
+window.__wmMostrarRecuperacao = function (itens) {
+  if (!itens || !itens.length) return;
+  const antigo = document.getElementById('wm-export-recovery');
+  if (antigo) antigo.remove();
+
+  const box = document.createElement('div');
+  box.id = 'wm-export-recovery';
+  box.style.cssText = [
+    'position:fixed', 'top:16px', 'left:50%', 'transform:translateX(-50%)',
+    'z-index:99999', 'width:calc(100% - 32px)', 'max-width:400px',
+    'background:#16162a', 'border:1px solid rgba(139,92,246,0.6)',
+    'border-radius:14px', 'box-shadow:0 12px 40px rgba(0,0,0,0.5)',
+    'padding:16px', 'color:#e9e9f2', 'font-family:inherit'
+  ].join(';');
+
+  const titulo = document.createElement('div');
+  titulo.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px;';
+  titulo.innerHTML = '<span style="font-size:15px;font-weight:700;">🎬 Vídeo pronto para baixar</span>';
+  const fechar = document.createElement('button');
+  fechar.textContent = '✕';
+  fechar.style.cssText = 'background:none;border:none;color:#9a9ab0;font-size:16px;cursor:pointer;padding:2px 6px;';
+  fechar.onclick = () => box.remove();
+  titulo.appendChild(fechar);
+  box.appendChild(titulo);
+
+  const sub = document.createElement('div');
+  sub.style.cssText = 'font-size:12.5px;color:#b8b8c8;line-height:1.45;margin-bottom:12px;';
+  sub.textContent = itens.length > 1
+    ? 'Sua última renderização ficou salva no aparelho. Toque para baixar cada arquivo.'
+    : 'Sua última renderização ficou salva no aparelho. Toque para baixar.';
+  box.appendChild(sub);
+
+  let restantes = itens.length;
+  itens.slice().sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)).forEach((item) => {
+    const mb = (item.size / (1024 * 1024)).toFixed(1);
+    const btn = document.createElement('button');
+    btn.style.cssText = [
+      'display:block', 'width:100%', 'margin-bottom:8px', 'padding:12px 14px',
+      'background:linear-gradient(135deg,#8b5cf6,#3b82f6)', 'color:#fff',
+      'border:none', 'border-radius:10px', 'font-size:14px', 'font-weight:600',
+      'cursor:pointer', 'text-align:center'
+    ].join(';');
+    btn.textContent = '⬇ ' + item.nome + '  (' + mb + ' MB)';
+    btn.onclick = async () => {
+      try { _wmBaixarBlob(item.blob, item.nome); } catch (e) {}
+      btn.textContent = '✓ ' + item.nome + ' — baixado';
+      btn.style.background = 'rgba(255,255,255,0.08)';
+      btn.style.cursor = 'default';
+      btn.disabled = true;
+      try { await window.WM_EXPORT_STORE.remover(item.id); } catch (e) {}
+      restantes--;
+      if (restantes <= 0) setTimeout(() => box.remove(), 1500);
+    };
+    box.appendChild(btn);
+  });
+
+  const descartar = document.createElement('button');
+  descartar.textContent = 'Descartar';
+  descartar.style.cssText = 'display:block;width:100%;margin-top:4px;padding:8px;background:none;border:none;color:#9a9ab0;font-size:12.5px;cursor:pointer;';
+  descartar.onclick = async () => {
+    try { await window.WM_EXPORT_STORE.limparTudo(); } catch (e) {}
+    box.remove();
+  };
+  box.appendChild(descartar);
+
+  document.body.appendChild(box);
+};
+
+window.__wmVerificarExportsPendentes = async function () {
+  try {
+    const itens = await window.WM_EXPORT_STORE.listar();
+    if (!itens || !itens.length) return;
+    const agora = Date.now();
+    const validos = [];
+    for (const it of itens) {
+      if (!it || !it.blob || (agora - (it.createdAt || 0)) > 12 * 3600 * 1000) {
+        try { await window.WM_EXPORT_STORE.remover(it && it.id); } catch (e) {}
+      } else {
+        validos.push(it);
+      }
+    }
+    validos.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+    const manter = validos.slice(0, 8);
+    for (const it of validos.slice(8)) { try { await window.WM_EXPORT_STORE.remover(it.id); } catch (e) {} }
+    if (manter.length) window.__wmMostrarRecuperacao(manter);
+  } catch (e) { /* silencioso */ }
+};
 </script>
 
 </body>
