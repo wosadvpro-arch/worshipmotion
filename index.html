@@ -7580,7 +7580,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'audio-intercalado-01jul';
+window.__WM_BUILD = 'diag-meta-audio-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -17089,6 +17089,32 @@ class VideoExporter {
             output: (chunk, meta) => {
               if (this.muxer && !this.aborted) {
                 try {
+                  // DIAGNÓSTICO: o muxer precisa da "ficha técnica" (decoderConfig
+                  // com a description AAC). Se o encoder não mandar, a faixa de
+                  // áudio fica sem instruções e TODO player toca silêncio.
+                  if (!this._logouMeta) {
+                    this._logouMeta = true;
+                    const dc = meta && meta.decoderConfig;
+                    const desc = dc && dc.description;
+                    const tam = desc ? (desc.byteLength != null ? desc.byteLength : (desc.length || '?')) : null;
+                    window.__wmAudioMeta = {
+                      temMeta: !!meta,
+                      temDecoderConfig: !!dc,
+                      codec: dc ? dc.codec : null,
+                      sampleRate: dc ? dc.sampleRate : null,
+                      canais: dc ? dc.numberOfChannels : null,
+                      temDescription: !!desc,
+                      tamanhoDescription: tam,
+                      tipoChunk: chunk ? chunk.type : null,
+                      tamanhoChunk: chunk ? chunk.byteLength : null,
+                    };
+                    if (typeof window.WM_EXPORT_LOG === 'function') {
+                      window.WM_EXPORT_LOG('meta do 1º chunk: decoderConfig=' + (!!dc)
+                        + ' description=' + (!!desc) + (tam != null ? ' (' + tam + ' bytes)' : '')
+                        + ' codec=' + (dc ? dc.codec : '-')
+                        + ' chunk=' + (chunk ? chunk.byteLength + 'B tipo ' + chunk.type : '-'), (dc && desc) ? 'info' : 'error');
+                    }
+                  }
                   this.muxer.addAudioChunk(chunk, meta);
                   this._audioChunks = (this._audioChunks || 0) + 1;
                 } catch (e) {
@@ -32267,8 +32293,14 @@ window.__wmDiagAudio = async function () {
   if (!_lg.length) {
     L.push('(vazio — exporte primeiro, depois toque aqui)');
   } else {
-    _lg.filter(l => /udio|rror|✗|⚠|hunk/i.test(l)).slice(-14).forEach(l => L.push('  ' + l));
+    _lg.filter(l => /udio|rror|✗|⚠|hunk|meta/i.test(l)).slice(-16).forEach(l => L.push('  ' + l));
     L.push('  chunks de áudio no muxer: ' + (window.__wmUltimoExportChunks != null ? window.__wmUltimoExportChunks : '?'));
+    if (window.__wmAudioMeta) {
+      L.push('  FICHA TÉCNICA do áudio (decoderConfig):');
+      L.push('    ' + JSON.stringify(window.__wmAudioMeta));
+    } else {
+      L.push('  FICHA TÉCNICA do áudio: (não capturada)');
+    }
   }
   L.push('');
   L.push('');
