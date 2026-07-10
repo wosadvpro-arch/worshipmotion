@@ -7472,6 +7472,7 @@ Digno de toda honra"></textarea>
         </div>
         <div class="export-done-title">Vídeo pronto!</div>
         <div class="export-done-subtitle" id="export-done-subtitle">O download deve começar automaticamente. Se não, clique abaixo.</div>
+        <div id="export-files-list" style="display:none; flex-direction:column; gap:8px; width:100%; max-width:360px; margin:0 auto 14px;"></div>
         <button class="btn btn-primary btn-lg" id="btn-download-again">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           Baixar novamente
@@ -7580,7 +7581,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'blocos-fix-cancelado-01jul';
+window.__WM_BUILD = 'botoes-download-por-arquivo-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -31655,7 +31656,7 @@ function initEditor() {
         // opções (onlyStanzaIndices) mudam.
         window.WM_EXPORT_LOG(`Seleção não sequencial: ${_blocos.length} arquivos separados`, 'info');
         const _opcoesBase = currentExporter ? currentExporter.options : null;
-        let _ultimoBlob = null, _ultimoNome = '';
+        const _arquivos = [];
 
         for (let bi = 0; bi < _blocos.length; bi++) {
           if (currentExporter && currentExporter.aborted) break;
@@ -31685,20 +31686,51 @@ function initEditor() {
           const extB = WM_EXPORT.detectFileExtension(b.type);
           const nomeB = _nomeDoBloco(bloco, extB);
           window.WM_EXPORT_LOG(`✓ ${nomeB}: ${(b.size / 1024 / 1024).toFixed(2)} MB`, 'success');
-          WM_EXPORT.downloadBlob(b, nomeB);
-          _ultimoBlob = b; _ultimoNome = nomeB;
-
-          // Respiro entre downloads (o Safari bloqueia downloads em rajada).
-          if (bi < _blocos.length - 1) await new Promise(r => setTimeout(r, 1200));
+          _arquivos.push({ blob: b, nome: nomeB });
         }
 
-        lastExportBlob = _ultimoBlob;
-        lastExportFilename = _ultimoNome;
+        if (!_arquivos.length) return;
+
+        // NÃO dispara downloads automáticos em sequência: o navegador bloqueia
+        // o segundo (o Safari simplesmente ignora, o Chrome pede permissão).
+        // Mostra um botão por arquivo — um clique do usuário sempre é aceito.
+        lastExportBlob = _arquivos[0].blob;
+        lastExportFilename = _arquivos[0].nome;
+
+        const lista = $('#export-files-list');
+        if (lista) {
+          lista.innerHTML = '';
+          _arquivos.forEach(({ blob: fb, nome }) => {
+            const btn = document.createElement('button');
+            btn.className = 'btn btn-primary';
+            btn.style.cssText = 'width:100%; justify-content:center;';
+            const mb = (fb.size / (1024 * 1024)).toFixed(1);
+            btn.textContent = `⬇ ${nome}  (${mb} MB)`;
+            btn.addEventListener('click', () => {
+              WM_EXPORT.downloadBlob(fb, nome);
+              btn.textContent = `✓ ${nome} — baixado`;
+              btn.classList.remove('btn-primary');
+              btn.classList.add('btn-ghost');
+            });
+            lista.appendChild(btn);
+          });
+          lista.style.display = 'flex';
+        }
+        const btnDeNovo = $('#btn-download-again');
+        if (btnDeNovo) btnDeNovo.style.display = 'none';
+
         $('#export-progress-state').classList.remove('active');
         $('#export-done-state').classList.add('active');
-        $('#export-done-subtitle').textContent = `${_blocos.length} arquivos gerados — downloads iniciados`;
+        $('#export-done-subtitle').textContent =
+          `${_arquivos.length} arquivos prontos — toque em cada um para baixar`;
         return;
       }
+
+      // Um arquivo só: esconde a lista (pode ter sobrado de um export anterior)
+      const listaAntiga = $('#export-files-list');
+      if (listaAntiga) { listaAntiga.style.display = 'none'; listaAntiga.innerHTML = ''; }
+      const btnDeNovo1 = $('#btn-download-again');
+      if (btnDeNovo1) btnDeNovo1.style.display = '';
 
       window.WM_EXPORT_LOG('Renderizando frames…', 'info');
       const blob = await currentExporter.record();
