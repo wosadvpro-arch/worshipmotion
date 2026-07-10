@@ -7580,7 +7580,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'diag-audio-formato-01jul';
+window.__WM_BUILD = 'diag-log-audio-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -16887,6 +16887,10 @@ class VideoExporter {
         this.audioEncoder.encode(audioData);
       } catch (e) {
         console.warn('Erro encoding audio frame:', e);
+        if (!this._logouErroEncode && typeof window.WM_EXPORT_LOG === 'function') {
+          this._logouErroEncode = true;
+          window.WM_EXPORT_LOG('✗ encode de áudio falhou (frame ' + Math.round(offset / FRAME_SAMPLES) + '): ' + e.message, 'error');
+        }
       }
       audioData.close();
       offset += samplesThisFrame;
@@ -16900,6 +16904,9 @@ class VideoExporter {
     // Flush ao final
     try {
       await this.audioEncoder.flush();
+      try { window.__wmUltimoExportChunks = this._audioChunks || 0;
+        if (typeof window.WM_EXPORT_LOG === 'function') window.WM_EXPORT_LOG('chunks de áudio gerados: ' + (this._audioChunks || 0), 'info');
+      } catch (e) {}
     } catch (e) {
       console.warn('Erro flushing audio encoder:', e);
     }
@@ -17081,13 +17088,21 @@ class VideoExporter {
               if (this.muxer && !this.aborted) {
                 try {
                   this.muxer.addAudioChunk(chunk, meta);
+                  this._audioChunks = (this._audioChunks || 0) + 1;
                 } catch (e) {
                   console.error('Erro adicionando audio chunk:', e);
+                  if (!this._logouErroChunk && typeof window.WM_EXPORT_LOG === 'function') {
+                    this._logouErroChunk = true;
+                    window.WM_EXPORT_LOG('✗ muxer recusou chunk de áudio: ' + e.message, 'error');
+                  }
                 }
               }
             },
             error: (err) => {
               console.error('AudioEncoder erro:', err);
+              if (typeof window.WM_EXPORT_LOG === 'function') {
+                window.WM_EXPORT_LOG('✗ AudioEncoder falhou: ' + (err && err.message ? err.message : err), 'error');
+              }
               // Não aborta o export — continua sem áudio
               this.hasAudio = false;
             },
@@ -31008,6 +31023,13 @@ function initEditor() {
   }
 
   window.WM_EXPORT_LOG = function(msg, level = 'info') {
+    // Guarda TODAS as mensagens (o painel some, mas o histórico fica) pra que
+    // o diagnóstico consiga mostrá-las no celular, onde não há console.
+    try {
+      window.__wmExportLog = window.__wmExportLog || [];
+      window.__wmExportLog.push('[' + level + '] ' + msg);
+      if (window.__wmExportLog.length > 300) window.__wmExportLog.shift();
+    } catch (e) {}
     const c = $('#export-log-content');
     if (!c) return;
     const elapsed = ((performance.now() - exportLogStartTime.t) / 1000).toFixed(2);
@@ -32237,6 +32259,16 @@ window.__wmDiagAudio = async function () {
 
   L.push('BUILD: ' + (window.__WM_BUILD || '?'));
   L.push('navegador: ' + navigator.userAgent.slice(0, 90));
+  L.push('');
+  L.push('=== LOG DO ÚLTIMO EXPORT ===');
+  const _lg = window.__wmExportLog || [];
+  if (!_lg.length) {
+    L.push('(vazio — exporte primeiro, depois toque aqui)');
+  } else {
+    _lg.filter(l => /udio|rror|✗|⚠|hunk/i.test(l)).slice(-14).forEach(l => L.push('  ' + l));
+    L.push('  chunks de áudio no muxer: ' + (window.__wmUltimoExportChunks != null ? window.__wmUltimoExportChunks : '?'));
+  }
+  L.push('');
   L.push('');
   L.push('AudioEncoder existe: ' + (typeof AudioEncoder !== 'undefined'));
   L.push('VideoEncoder existe: ' + (typeof VideoEncoder !== 'undefined'));
