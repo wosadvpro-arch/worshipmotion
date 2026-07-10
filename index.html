@@ -7581,7 +7581,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'export-mais-rapido-10jul';
+window.__WM_BUILD = 'compartilhar-ios-nao-morrer-10jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -31888,7 +31888,7 @@ function initEditor() {
             btn.textContent = `⬇ ${item.nome}  (${mb} MB)`;
             btn.addEventListener('click', () => {
               if (!item.blob) return;
-              WM_EXPORT.downloadBlob(item.blob, item.nome);
+              _wmBaixarBlob(item.blob, item.nome);
               btn.textContent = `✓ ${item.nome} — baixado`;
               btn.classList.remove('btn-primary');
               btn.classList.add('btn-ghost');
@@ -31983,7 +31983,7 @@ function initEditor() {
         btn.style.cssText = 'width:100%; justify-content:center;';
         btn.textContent = `⬇ ${lastExportFilename}  (${sizeMB} MB)`;
         btn.addEventListener('click', () => {
-          WM_EXPORT.downloadBlob(blob, lastExportFilename);
+          _wmBaixarBlob(blob, lastExportFilename);
           try { if (window.WM_EXPORT_STORE && _localExpId) window.WM_EXPORT_STORE.remover(_localExpId); } catch (e) {}
           btn.textContent = `✓ ${lastExportFilename} — baixado`;
           btn.classList.remove('btn-primary');
@@ -32004,7 +32004,7 @@ function initEditor() {
         || /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
       if (!_ehToque) {
         try {
-          WM_EXPORT.downloadBlob(blob, lastExportFilename);
+          _wmBaixarBlob(blob, lastExportFilename);
         } catch (e) {
           console.warn('Download automático falhou (use o botão):', e);
         }
@@ -32194,7 +32194,7 @@ function initEditor() {
   $('#btn-cancel-export').addEventListener('click', cancelExport);
   $('#btn-download-again').addEventListener('click', () => {
     if (lastExportBlob && lastExportFilename) {
-      WM_EXPORT.downloadBlob(lastExportBlob, lastExportFilename);
+      _wmBaixarBlob(lastExportBlob, lastExportFilename);
     }
   });
   $('#btn-export-new').addEventListener('click', () => {
@@ -32847,8 +32847,13 @@ window.__wmMostrarDiag = function () {
   const trilha = window.WM_DIAG.ler();
   if (!trilha || !trilha.length) return;
   // Só mostra se a última sessão NÃO chegou até o fim (UI pronta / baixado).
-  const chegouAoFim = trilha.some(function (m) { return m.step === 'UI_PRONTA' || m.step === 'DOWNLOAD_OK'; });
-  if (chegouAoFim) { window.WM_DIAG.limpar(); return; }
+  // Só mostra se a última exportação NÃO terminou bem. "Terminar bem" = a
+  // ÚLTIMA migalha é DOWNLOAD_OK (baixou/compartilhou) ou UI_PRONTA (chegou na
+  // tela de download e o usuário simplesmente não baixou). Se a última migalha
+  // for um 'ANTES_*' (ex: morreu em ANTES_DOWNLOAD ao clicar), o painel aparece.
+  const ultima = trilha[trilha.length - 1] || {};
+  const terminouBem = (ultima.step === 'DOWNLOAD_OK' || ultima.step === 'UI_PRONTA');
+  if (terminouBem) { window.WM_DIAG.limpar(); return; }
 
   const t0 = trilha[0].t || Date.now();
   const linhas = trilha.map(function (m) {
@@ -32981,11 +32986,46 @@ window.WM_EXPORT_STORE = (function () {
 })();
 
 function _wmBaixarBlob(blob, nome) {
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = nome;
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  setTimeout(() => URL.revokeObjectURL(url), 1500);
+  // Entrega o arquivo. No iPhone, o link de download comum (<a download>) engasga
+  // com arquivo grande: o WebKit tenta materializar o MP4 inteiro e a aba MORRE
+  // (tela preta). O caminho confiável é o COMPARTILHAMENTO NATIVO (Web Share):
+  // abre a folha do iOS e deixa salvar em Arquivos/Fotos sem a página carregar
+  // tudo. No PC (sem toque) usa o link comum, que lá funciona bem.
+  try { if (window.WM_DIAG) window.WM_DIAG.marca('ANTES_DOWNLOAD', { mb: (blob.size / 1048576).toFixed(1) }); } catch (e) {}
+
+  const _ehToque = (window.matchMedia && window.matchMedia('(pointer: coarse)').matches)
+    || /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+  function _viaLink() {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = nome;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    // No iOS o download de arquivo grande pode demorar; revoga só bem depois pra
+    // não abortar no meio.
+    setTimeout(() => { try { URL.revokeObjectURL(url); } catch (e) {} }, 60000);
+    try { if (window.WM_DIAG) window.WM_DIAG.marca('DOWNLOAD_OK', { via: 'link' }); } catch (e) {}
+  }
+
+  if (_ehToque && navigator.share && navigator.canShare) {
+    let file = null;
+    try { file = new File([blob], nome, { type: blob.type || 'video/mp4' }); } catch (e) {}
+    if (file && navigator.canShare({ files: [file] })) {
+      navigator.share({ files: [file], title: nome })
+        .then(function () { try { if (window.WM_DIAG) window.WM_DIAG.marca('DOWNLOAD_OK', { via: 'share' }); } catch (e) {} })
+        .catch(function (err) {
+          // Usuário cancelou (AbortError) → NÃO cai pro link (evita 2 fluxos).
+          // Qualquer outro erro → tenta o link comum como último recurso.
+          if (err && err.name === 'AbortError') {
+            try { if (window.WM_DIAG) window.WM_DIAG.marca('DOWNLOAD_OK', { via: 'share-cancelado' }); } catch (e) {}
+            return;
+          }
+          try { _viaLink(); } catch (e) {}
+        });
+      return;
+    }
+  }
+  _viaLink();
 }
 
 window.__wmMostrarRecuperacao = function (itens) {
