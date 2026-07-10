@@ -7581,7 +7581,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'faststart-progressivo-10jul';
+window.__WM_BUILD = 'streamtarget-disco-10jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -17101,21 +17101,33 @@ class VideoExporter {
       const codecConfig = await this._pickH264Config();
 
       // === 4. Setup muxer (com ou sem audio track) ===
+      // StreamTarget + fastStart:false: o muxer ENTREGA o arquivo em pedaços
+      // durante o render. Cada pedaço vira um Blob (o WebKit guarda EM DISCO),
+      // então o MP4 de ~250MB NUNCA fica inteiro na memória — some o pico que
+      // matava a aba no iPhone (diag: ANTES_FINALIZE / ANTES_BLOB). Verificado no
+      // node com mp4-muxer@5.2.2: as escritas são sequenciais + 1 único remendo
+      // de 8 bytes (tamanho do mdat) no início; acumular na ordem de chegada e
+      // aplicar sobrescrevendo reproduz o arquivo IDÊNTICO ao ArrayBufferTarget.
+      this._muxOps = [];       // { pos, blob } na ordem de chegada
+      this._muxMaxEnd = 0;
+      const _streamTarget = new window.Mp4Muxer.StreamTarget({
+        onData: (data, position) => {
+          // copia a fatia pra um Blob (o buffer do muxer é reaproveitado, então
+          // não dá pra guardar a referência crua); o Blob vai pro disco.
+          this._muxOps.push({ pos: position, blob: new Blob([data.slice()]) });
+          const end = position + data.byteLength;
+          if (end > this._muxMaxEnd) this._muxMaxEnd = end;
+        },
+      });
       const muxerOpts = {
-        target: new window.Mp4Muxer.ArrayBufferTarget(),
+        target: _streamTarget,
         video: {
           codec: 'avc',
           width: this.W,
           height: this.H,
           frameRate: this.fps,
         },
-        // fastStart: false → escreve o arquivo PROGRESSIVAMENTE durante o render
-        // (o índice 'moov' vai pro FIM). Com 'in-memory' o muxer segurava tudo e
-        // no finalize() montava um bloco contíguo com o moov na frente — o que
-        // DUPLICAVA a memória e matava a aba no iPhone (diag parou em
-        // ANTES_FINALIZE num arquivo de 256MB). Com false, o finalize() só ajusta
-        // alguns bytes — sem remontar. moov no fim é MP4 válido (o player lê o
-        // arquivo todo); só não é "streaming progressivo", o que não importa aqui.
+        // moov no FIM, escrita progressiva — sem remontar no finalize.
         fastStart: false,
       };
       if (this.hasAudio && audioConfig) {
@@ -17569,30 +17581,46 @@ class VideoExporter {
       try { if (window.WM_DIAG) window.WM_DIAG.marca('ANTES_FINALIZE'); } catch (e) {}
       this.muxer.finalize();
       try { if (window.WM_DIAG) window.WM_DIAG.marca('POS_FINALIZE'); } catch (e) {}
-      const buffer = this.muxer.target.buffer;
-      try { if (window.WM_DIAG) window.WM_DIAG.marca('ANTES_BLOB', { mb: (buffer && buffer.byteLength ? (buffer.byteLength / 1048576).toFixed(1) : '?') }); } catch (e) {}
-      // Monta o Blob em FATIAS de ~16MB em vez de `new Blob([buffer])` de uma vez.
-      // O diag mostrou que a aba morria EXATO no `new Blob([256MB])`: criar o Blob
-      // do buffer inteiro faz uma cópia — pico ~2x que o iPhone não aguenta.
-      // Fatiando, cada pedaço é pequeno e o navegador vai mandando pro disco sem
-      // segurar uma segunda cópia de 256MB de uma vez. Solta o ArrayBuffer do
-      // muxer logo em seguida pra liberar os 256MB originais.
+      // Monta o arquivo a partir dos pedaços que o StreamTarget guardou em disco.
+      // Cada `op.blob` já está no disco (não na RAM), então a costura é barata:
+      // - writes chegam em ordem crescente de posição + 1 remendo pequeno (o
+      //   tamanho do mdat, ~8 bytes no início). Aplicando na ORDEM de chegada,
+      //   com os posteriores sobrescrevendo, o arquivo sai idêntico (verificado).
+      // Blob.slice() é uma VISTA (não copia bytes), então recortar as bordas do
+      // trecho remendado também não gasta memória.
+      const ops = this._muxOps || [];
+      const totalLen = this._muxMaxEnd || 0;
+      try { if (window.WM_DIAG) window.WM_DIAG.marca('ANTES_BLOB', { mb: (totalLen / 1048576).toFixed(1), pedacos: ops.length }); } catch (e) {}
+      // Constrói a lista de segmentos finais respeitando sobrescritas.
+      // Estratégia: percorre os ops em ordem; mantém um array de {ini, fim, blob,
+      // off} e, quando um op novo sobrepõe um anterior, recorta o antigo.
       let blob;
       try {
-        const FATIA = 16 * 1024 * 1024;
-        if (buffer && buffer.byteLength > FATIA) {
-          const partes = [];
-          for (let off = 0; off < buffer.byteLength; off += FATIA) {
-            partes.push(buffer.slice(off, Math.min(off + FATIA, buffer.byteLength)));
+        // marcadores de corte: todo início/fim de op vira uma fronteira.
+        const fronteiras = new Set([0, totalLen]);
+        for (const op of ops) { fronteiras.add(op.pos); fronteiras.add(op.pos + op.blob.size); }
+        const pontos = Array.from(fronteiras).filter(p => p >= 0 && p <= totalLen).sort((a, b) => a - b);
+        // pra cada intervalo [pontos[i], pontos[i+1]), acha o ÚLTIMO op que o cobre.
+        const partes = [];
+        for (let i = 0; i < pontos.length - 1; i++) {
+          const ini = pontos[i], fim = pontos[i + 1];
+          if (fim <= ini) continue;
+          let escolhido = null;
+          for (const op of ops) { // último que cobre vence (sobrescrita)
+            if (op.pos <= ini && (op.pos + op.blob.size) >= fim) escolhido = op;
           }
-          blob = new Blob(partes, { type: 'video/mp4' });
-        } else {
-          blob = new Blob([buffer], { type: 'video/mp4' });
+          if (escolhido) {
+            partes.push(escolhido.blob.slice(ini - escolhido.pos, fim - escolhido.pos));
+          } else {
+            partes.push(new Blob([new Uint8Array(fim - ini)])); // buraco (não deve ocorrer)
+          }
         }
+        blob = new Blob(partes, { type: 'video/mp4' });
       } catch (e) {
-        blob = new Blob([buffer], { type: 'video/mp4' });
+        // fallback defensivo: concatena tudo na ordem de chegada
+        blob = new Blob(ops.map(o => o.blob), { type: 'video/mp4' });
       }
-      try { if (this.muxer && this.muxer.target) this.muxer.target.buffer = null; } catch (e) {}
+      this._muxOps = null; // solta as referências dos pedaços
       try { if (window.WM_DIAG) window.WM_DIAG.marca('BLOB_OK', { mb: (blob.size / 1048576).toFixed(1) }); } catch (e) {}
 
       const elapsedRender = (performance.now() - renderStartTime) / 1000;
