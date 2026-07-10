@@ -7580,7 +7580,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'diag-audio-01jul';
+window.__WM_BUILD = 'diag-audio-formato-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -32272,6 +32272,42 @@ window.__wmDiagAudio = async function () {
     enc.close();
   } catch (e) {
     L.push('configure() AAC FALHOU: ' + e.message);
+  }
+
+  // TESTE DECISIVO: o Safari aceita 'f32-planar' (o que o export usa) ou só 'f32'?
+  L.push('');
+  L.push('--- teste de encode real (é aqui que costuma falhar) ---');
+  for (const fmt of ['f32-planar', 'f32']) {
+    await new Promise((resolve) => {
+      let chunks = 0, erro = null;
+      let enc;
+      try {
+        enc = new AudioEncoder({
+          output: () => { chunks++; },
+          error: (e) => { erro = e.message || String(e); },
+        });
+        enc.configure({ codec: 'mp4a.40.2', sampleRate: 48000, numberOfChannels: 2, bitrate: 128000 });
+        const N = 1024, CH = 2;
+        const dados = new Float32Array(N * CH); // silêncio, só pra testar o formato
+        const ad = new AudioData({
+          format: fmt, sampleRate: 48000, numberOfFrames: N,
+          numberOfChannels: CH, timestamp: 0, data: dados,
+        });
+        enc.encode(ad);
+        ad.close();
+        enc.flush().then(() => {
+          L.push(`formato "${fmt}": ${erro ? 'ERRO -> ' + erro : (chunks > 0 ? 'FUNCIONA (' + chunks + ' chunk[s])' : 'sem erro mas 0 chunks')}`);
+          try { enc.close(); } catch (e) {}
+          resolve();
+        }).catch((e) => {
+          L.push(`formato "${fmt}": flush FALHOU -> ${e.message}`);
+          resolve();
+        });
+      } catch (e) {
+        L.push(`formato "${fmt}": EXCEÇÃO -> ${e.message}`);
+        resolve();
+      }
+    });
   }
 
   // Decodifica a música do projeto
