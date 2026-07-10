@@ -7580,7 +7580,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'diag-log-audio-01jul';
+window.__WM_BUILD = 'audio-intercalado-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -16859,14 +16859,16 @@ class VideoExporter {
 
       const samplesThisFrame = Math.min(FRAME_SAMPLES, totalSamples - offset);
 
-      // Monta buffer interleaved (canal0[0], canal1[0], canal0[1], canal1[1], ...)
-      // Mas AudioData "f32-planar" aceita planar (sequencial por canal)
-      // Vou usar planar pra evitar interleave manual
-      const planarData = new Float32Array(samplesThisFrame * numChannels);
-      for (let ch = 0; ch < numChannels; ch++) {
-        const src = channelsData[ch];
-        for (let i = 0; i < samplesThisFrame; i++) {
-          planarData[ch * samplesThisFrame + i] = src[offset + i] || 0;
+      // Monta buffer INTERCALADO (canal0[0], canal1[0], canal0[1], canal1[1], ...).
+      // Antes usávamos 'f32-planar' (canais em sequência) "pra evitar interleave
+      // manual". O Chrome do PC interpretava certo, mas o WebKit do iPhone
+      // ACEITAVA o formato e gerava áudio SILENCIOSO — o MP4 saía com faixa de
+      // som vazia (237 chunks, zero áudio audível). 'f32' intercalado é o
+      // formato universalmente suportado.
+      const interleaved = new Float32Array(samplesThisFrame * numChannels);
+      for (let i = 0; i < samplesThisFrame; i++) {
+        for (let ch = 0; ch < numChannels; ch++) {
+          interleaved[i * numChannels + ch] = channelsData[ch][offset + i] || 0;
         }
       }
 
@@ -16875,12 +16877,12 @@ class VideoExporter {
       // os slides (que também começam em 0 no modo corte).
       const timestamp = Math.round(((offset - startSample) / sampleRate) * 1_000_000); // µs
       const audioData = new AudioData({
-        format: 'f32-planar',
+        format: 'f32',
         sampleRate: sampleRate,
         numberOfFrames: samplesThisFrame,
         numberOfChannels: numChannels,
         timestamp: timestamp,
-        data: planarData,
+        data: interleaved,
       });
 
       try {
@@ -17196,7 +17198,7 @@ class VideoExporter {
         if (typeof window.WM_EXPORT_LOG === 'function') {
           window.WM_EXPORT_LOG(`SYNC ATIVO: estrofes posicionadas pelos tStart marcados`, 'info');
           window.WM_EXPORT_LOG(`Início de cada estrofe: ${slideStarts.slice(0, -1).map(t => (t/1000).toFixed(1)+'s').join(', ')}`, 'info');
-          window.WM_EXPORT_LOG(`Duração total: ${(audioDurationMs/1000).toFixed(1)}s (= áudio)`, 'info');
+          window.WM_EXPORT_LOG(`Duração do vídeo: ${(totalDurMs/1000).toFixed(1)}s (música tem ${(audioDurationMs/1000).toFixed(1)}s)`, 'info');
         }
       } else {
         // === MODO ANTIGO: stanzaDuration fixo ===
