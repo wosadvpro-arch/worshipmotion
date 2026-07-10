@@ -7581,7 +7581,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'fundo-volta-apos-export-01jul';
+window.__WM_BUILD = 'memoria-liberada-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -16953,6 +16953,18 @@ class VideoExporter {
       await this.audioEncoder.flush();
       try { window.__wmUltimoExportChunks = this._audioChunks || 0;
         if (typeof window.WM_EXPORT_LOG === 'function') window.WM_EXPORT_LOG('chunks de áudio gerados: ' + (this._audioChunks || 0), 'info');
+      } catch (e) {}
+      // LIBERA a música decodificada AGORA (~274MB numa música de 12min).
+      // Ela só era liberada no fim de tudo; enquanto o usuário ficava na tela
+      // de download, o iPhone segurava isso + os MP4s gerados e MATAVA a aba
+      // quando ele saía pro app Arquivos (tela preta, página morta).
+      try {
+        this.audioBuffer = null;
+        this.audioChannels = null;
+        if (this._audioCtx) { try { this._audioCtx.close(); } catch (e) {} this._audioCtx = null; }
+        if (typeof window.WM_EXPORT_LOG === 'function') {
+          window.WM_EXPORT_LOG('memória do áudio liberada', 'info');
+        }
       } catch (e) {}
     } catch (e) {
       console.warn('Erro flushing audio encoder:', e);
@@ -31737,17 +31749,24 @@ function initEditor() {
         const lista = $('#export-files-list');
         if (lista) {
           lista.innerHTML = '';
-          _arquivos.forEach(({ blob: fb, nome }) => {
+          _arquivos.forEach((item) => {
             const btn = document.createElement('button');
             btn.className = 'btn btn-primary';
             btn.style.cssText = 'width:100%; justify-content:center;';
-            const mb = (fb.size / (1024 * 1024)).toFixed(1);
-            btn.textContent = `⬇ ${nome}  (${mb} MB)`;
+            const mb = (item.blob.size / (1024 * 1024)).toFixed(1);
+            btn.textContent = `⬇ ${item.nome}  (${mb} MB)`;
             btn.addEventListener('click', () => {
-              WM_EXPORT.downloadBlob(fb, nome);
-              btn.textContent = `✓ ${nome} — baixado`;
+              if (!item.blob) return;
+              WM_EXPORT.downloadBlob(item.blob, item.nome);
+              btn.textContent = `✓ ${item.nome} — baixado`;
               btn.classList.remove('btn-primary');
               btn.classList.add('btn-ghost');
+              btn.disabled = true;
+              // LIBERA o arquivo da memória depois de baixado. No iPhone, ficar
+              // segurando vários MP4 enquanto o usuário sai pro app Arquivos
+              // fazia o sistema MATAR a aba (voltava tela preta, página morta).
+              item.blob = null;
+              if (lastExportBlob === item.blob) lastExportBlob = null;
             });
             lista.appendChild(btn);
           });
