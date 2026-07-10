@@ -7581,7 +7581,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'blob-em-fatias-nao-morrer-10jul';
+window.__WM_BUILD = 'faststart-progressivo-10jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -17109,7 +17109,14 @@ class VideoExporter {
           height: this.H,
           frameRate: this.fps,
         },
-        fastStart: 'in-memory',
+        // fastStart: false → escreve o arquivo PROGRESSIVAMENTE durante o render
+        // (o índice 'moov' vai pro FIM). Com 'in-memory' o muxer segurava tudo e
+        // no finalize() montava um bloco contíguo com o moov na frente — o que
+        // DUPLICAVA a memória e matava a aba no iPhone (diag parou em
+        // ANTES_FINALIZE num arquivo de 256MB). Com false, o finalize() só ajusta
+        // alguns bytes — sem remontar. moov no fim é MP4 válido (o player lê o
+        // arquivo todo); só não é "streaming progressivo", o que não importa aqui.
+        fastStart: false,
       };
       if (this.hasAudio && audioConfig) {
         muxerOpts.audio = {
