@@ -7573,7 +7573,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'export-rapido-blob-01jul';
+window.__WM_BUILD = 'export-slide-especifico-fix-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -11870,15 +11870,47 @@ async function uploadBackground(file) {
 /**
  * Obtém URL temporária pra um background. Cacheia pra evitar criar várias.
  */
+/**
+ * Converte um blob em data: URL (base64). Usado SÓ pra miniatura do vídeo.
+ * O WebKit (iPhone) não consegue capturar um quadro de um vídeo entregue via
+ * `blob:` — a miniatura sai preta. Com data: URL funciona.
+ * NÃO usar isto pra reprodução nem pro export: data: URL não permite ler
+ * pedaços do arquivo, e o export faz um seek por frame — ficaria lentíssimo.
+ */
+function _blobParaDataUrl(blob) {
+  return new Promise((resolve, reject) => {
+    const fr = new FileReader();
+    fr.onload = () => resolve(fr.result);
+    fr.onerror = () => reject(new Error('falha ao ler o vídeo'));
+    fr.readAsDataURL(blob);
+  });
+}
+
+// Acima disto, base64 pesa demais: a miniatura desiste e fica com o ícone ▶.
+const WM_VIDEO_THUMB_MAX = 16 * 1024 * 1024; // 16MB
+const _backgroundThumbUrls = new Map();
+
+/** URL só pra MINIATURA (data: no vídeo, blob: na imagem). */
+async function getBackgroundThumbUrl(assetId) {
+  if (_backgroundThumbUrls.has(assetId)) return _backgroundThumbUrls.get(assetId);
+  const asset = await window.WM_ASSETS.get(assetId);
+  if (!asset || !asset.blob) return null;
+  const ehVideo = asset.meta && asset.meta.mediaKind === 'video';
+  let url = null;
+  if (ehVideo && asset.blob.size <= WM_VIDEO_THUMB_MAX) {
+    try { url = await _blobParaDataUrl(asset.blob); } catch (e) { url = null; }
+  }
+  if (!url) url = await getBackgroundUrl(assetId);
+  _backgroundThumbUrls.set(assetId, url);
+  return url;
+}
+
 async function getBackgroundUrl(assetId) {
   if (_backgroundUrls.has(assetId)) return _backgroundUrls.get(assetId);
   const asset = await window.WM_ASSETS.get(assetId);
   if (!asset || !asset.blob) return null;
-  // SEMPRE blob: URL. Já tentamos data: URL (base64) achando que era isso que
-  // deixava o vídeo preto no iPhone — não era (a causa real é autoplay
-  // bloqueado). E data: URL não permite ler pedaços do arquivo, então cada
-  // seek do EXPORT (_seekVideoBg roda por frame) ficava lentíssimo, sobretudo
-  // no celular. blob: é rápido e buscável.
+  // SEMPRE blob: aqui — é o que toca no slide e o que o export busca quadro a
+  // quadro. blob: é rápido e permite seek; data: URL travava o export.
   const url = URL.createObjectURL(asset.blob);
   _backgroundUrls.set(assetId, url);
   return url;
@@ -11906,6 +11938,7 @@ window.WM_CUSTOM_BACKGROUNDS = {
   loadAll: loadAllCustomBackgrounds,
   upload: uploadBackground,
   getUrl: getBackgroundUrl,
+  getThumbUrl: getBackgroundThumbUrl,
   getBlob: getBackgroundBlob,
   delete: deleteBackgroundAsset,
 };
@@ -17106,8 +17139,14 @@ class VideoExporter {
         // - 'cortarNoTrecho' (Só o trecho): termina no fim do último slide
         // - onlyStanzaIdx (Só um slide): idem — não faz sentido renderizar
         //   os 9 min do áudio se só queremos 1 slide marcado no minuto 5.
+        // - onlyStanzaIndices (lista de "Slides específicos"): MESMO caso.
+        //   Faltava aqui: sem isto, exportar 1 slide gerava o louvor inteiro,
+        //   com o slide esticado do começo ao fim (e o áudio fora de lugar).
+        const temSelecaoDeSlides = Array.isArray(this.options.onlyStanzaIndices)
+          && this.options.onlyStanzaIndices.length > 0;
         const deveCortarTrecho = this.options.cortarNoTrecho
-          || (typeof this.options.onlyStanzaIdx === 'number');
+          || (typeof this.options.onlyStanzaIdx === 'number')
+          || temSelecaoDeSlides;
         if (deveCortarTrecho) {
           // Duração do último slide: usa a animação (entrada+espera+saída) ou
           // um padrão. Estimamos pelo stanzaDuration do slide.
@@ -26077,10 +26116,15 @@ function initEditor() {
     // Carrega URLs em paralelo
     for (const b of bgs) {
       try {
-        const url = await window.WM_CUSTOM_BACKGROUNDS.getUrl(b.id);
         const el = grid.querySelector(`[data-asset-id="${b.id}"]`);
-        if (!el || !url) continue;
+        if (!el) continue;
         const isVideo = b.meta && b.meta.mediaKind === 'video';
+        // Miniatura de VÍDEO precisa de data: URL (blob: sai preto no iPhone).
+        // Imagem e reprodução seguem em blob:.
+        const url = isVideo
+          ? await window.WM_CUSTOM_BACKGROUNDS.getThumbUrl(b.id)
+          : await window.WM_CUSTOM_BACKGROUNDS.getUrl(b.id);
+        if (!url) continue;
 
         if (isVideo) {
           // Pra vídeo, extrai o primeiro frame como thumbnail
