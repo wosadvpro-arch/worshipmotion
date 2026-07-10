@@ -7580,7 +7580,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'fundo-video-reaproveitado-01jul';
+window.__WM_BUILD = 'slide-aparece-sem-audio-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -18703,6 +18703,12 @@ class RenderEngineV2 {
     // (em vez do stagger fixo). Permite sync exato com áudio.
     const audioEl = this._getAudioElement();
     const audioTime = audioEl ? audioEl.currentTime : 0;
+    // O tStart é um tempo ABSOLUTO da música (ex: 120s). Só faz sentido usá-lo
+    // como atraso quando a música está TOCANDO — aí o delay é "quanto falta".
+    // Navegando entre slides com o áudio parado, `tStart - 0` agendava a
+    // palavra pra daqui a 2 minutos: o slide "demorava pra aparecer" (ou
+    // nunca aparecia). Nesse caso usamos o stagger normal.
+    const _audioRodando = !!(audioEl && !audioEl.paused && audioEl.duration > 0);
 
     targets.forEach((el, i) => {
       // Palavra já animada pelo motor isolado por-palavra: não aplica
@@ -18741,7 +18747,7 @@ class RenderEngineV2 {
         }
       }
 
-      if (tStart !== null) {
+      if (tStart !== null && _audioRodando) {
         // Delay relativo ao tempo atual do áudio. Se já passou, dispara imediato.
         baseDelay = Math.max(0, tStart - audioTime);
       }
