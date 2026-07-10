@@ -7581,7 +7581,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'streamtarget-disco-10jul';
+window.__WM_BUILD = 'export-mais-rapido-10jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -16978,14 +16978,16 @@ class VideoExporter {
    */
   async _pickH264Config() {
     const candidates = [
-      // High profile (melhor qualidade, maior compatibilidade)
-      { codec: 'avc1.640028', label: 'H.264 High@4.0' },
-      { codec: 'avc1.640033', label: 'H.264 High@5.1' },
-      // Main profile
+      // Main e Baseline PRIMEIRO: são os que as GPUs (NVENC/QuickSync/AMD) mais
+      // aceitam codificar em HARDWARE. High às vezes cai em software no PC, que é
+      // MUITO mais lento. Qualidade visual praticamente igual no nosso bitrate.
       { codec: 'avc1.4d0028', label: 'H.264 Main@4.0' },
-      // Baseline (sempre funciona)
+      { codec: 'avc1.4d0033', label: 'H.264 Main@5.1' },
       { codec: 'avc1.42E01E', label: 'H.264 Baseline@3.0' },
       { codec: 'avc1.42001f', label: 'H.264 Baseline@3.1' },
+      // High por último (fallback de compatibilidade)
+      { codec: 'avc1.640028', label: 'H.264 High@4.0' },
+      { codec: 'avc1.640033', label: 'H.264 High@5.1' },
     ];
 
     for (const candidate of candidates) {
@@ -17005,12 +17007,16 @@ class VideoExporter {
             bitrate: this.options.videoBitsPerSecond,
             framerate: this.fps,
             bitrateMode: 'variable',
+            // 'realtime' pede ao encoder pra priorizar VELOCIDADE (menos passes de
+            // análise). No nosso bitrate a diferença visual é imperceptível, mas
+            // acelera bastante — principalmente no software encoder do PC.
+            latencyMode: 'realtime',
             ...extra,
           };
           const support = await VideoEncoder.isConfigSupported(config);
           if (support.supported) {
             if (typeof window.WM_EXPORT_LOG === 'function') {
-              const hw = extra.hardwareAcceleration ? ' (hardware)' : '';
+              const hw = extra.hardwareAcceleration ? ' (hardware)' : ' (software)';
               window.WM_EXPORT_LOG(`✓ Codec: ${candidate.label}${hw}`, 'info');
             }
             return config;
@@ -17544,10 +17550,13 @@ class VideoExporter {
           await _yieldRapido();
         }
 
-        // Se encoder está com muita pressão, espera dar conta
-        // (encodeQueueSize cresce se o encoder está sobrecarregado)
-        if (this.encoder.encodeQueueSize > 30) {
-          await new Promise(r => setTimeout(r, 10));
+        // Deixa a fila do encoder mais FUNDA (120) antes de ceder. Uma fila
+        // curta fazia o encoder ficar ocioso esperando o próximo frame (sub-uso,
+        // render mais lento). Mais fundo mantém o encoder sempre com trabalho.
+        // No iPhone (encoder rápido) a fila raramente enche; no PC ela dá mais
+        // trabalho pendente pro encoder mastigar em paralelo.
+        if (this.encoder.encodeQueueSize > 120) {
+          await new Promise(r => setTimeout(r, 6));
         }
       }
 
