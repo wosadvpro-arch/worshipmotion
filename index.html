@@ -7580,7 +7580,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'audio-copia-antes-close-01jul';
+window.__WM_BUILD = 'audio-contexto-aberto-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -16810,22 +16810,15 @@ class VideoExporter {
     const AudioCtx = window.AudioContext || window.webkitAudioContext;
     if (!AudioCtx) throw new Error('AudioContext não disponível');
     const ctx = new AudioCtx();
-    try {
-      this.audioBuffer = await ctx.decodeAudioData(arrayBuffer.slice(0));
-      // COPIA as amostras AGORA, com o contexto ainda ABERTO.
-      // No WebKit (iPhone), fechar o AudioContext esvazia o AudioBuffer:
-      // getChannelData() passa a devolver ZEROS. O encoder recebia silêncio e
-      // gerava quadros AAC de 6 bytes — o MP4 saía mudo, sem nenhum erro.
-      // O Chrome do PC mantém o buffer válido, por isso lá funcionava.
-      this.audioChannels = [];
-      for (let ch = 0; ch < this.audioBuffer.numberOfChannels; ch++) {
-        const copia = new Float32Array(this.audioBuffer.length);
-        this.audioBuffer.copyFromChannel(copia, ch);
-        this.audioChannels.push(copia);
-      }
-    } finally {
-      ctx.close();
-    }
+    // NÃO fecha o contexto aqui. No WebKit (iPhone), fechar o AudioContext
+    // ESVAZIA o AudioBuffer: getChannelData() passa a devolver ZEROS, o encoder
+    // recebe silêncio e gera quadros AAC de 6 bytes (MP4 mudo, sem erro nenhum).
+    // O Chrome do PC mantém o buffer válido — por isso lá sempre funcionou.
+    // Copiar as amostras também resolveria, mas duplicaria a música inteira na
+    // memória (~274MB numa música de 12min) e estouraria no celular.
+    // O contexto é fechado em _cleanup(), quando o export termina.
+    this._audioCtx = ctx;
+    this.audioBuffer = await ctx.decodeAudioData(arrayBuffer.slice(0));
     if (!this.audioBuffer) throw new Error('Falha ao decodificar áudio');
     return {
       sampleRate: this.audioBuffer.sampleRate,
@@ -16859,15 +16852,11 @@ class VideoExporter {
     const FRAME_SAMPLES = 1024;
 
     // Pega dados raw de cada canal (Float32Array).
-    // Usa a CÓPIA feita em _decodeAudio (com o contexto ainda aberto). No
-    // WebKit, ler getChannelData() depois de ctx.close() devolve ZEROS.
+    // O AudioContext continua ABERTO (fechado só em _cleanup) — no WebKit,
+    // lê-los depois do close devolveria zeros.
     const channelsData = [];
-    if (Array.isArray(this.audioChannels) && this.audioChannels.length === numChannels) {
-      for (let ch = 0; ch < numChannels; ch++) channelsData.push(this.audioChannels[ch]);
-    } else {
-      for (let ch = 0; ch < numChannels; ch++) {
-        channelsData.push(audioBuf.getChannelData(ch));
-      }
+    for (let ch = 0; ch < numChannels; ch++) {
+      channelsData.push(audioBuf.getChannelData(ch));
     }
 
     // Confere se as amostras NÃO são só silêncio (o sintoma do buffer zerado).
@@ -17527,6 +17516,12 @@ class VideoExporter {
     this.audioEncoder = null;
     this.muxer = null;
     this.audioBuffer = null;
+    // Fecha o AudioContext só AGORA (o export acabou). Fechá-lo antes zerava
+    // o AudioBuffer no WebKit e o áudio saía silencioso.
+    if (this._audioCtx) {
+      try { this._audioCtx.close(); } catch (e) {}
+      this._audioCtx = null;
+    }
   }
 }
 
