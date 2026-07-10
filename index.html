@@ -7580,7 +7580,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'slide-aparece-sem-audio-01jul';
+window.__WM_BUILD = 'aviso-ios-versao-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -31182,6 +31182,30 @@ function initEditor() {
 
   async function startExport() {
     const aspect = window.__currentAspect || '16:9';
+
+    // ===== AVISO: APARELHO NÃO CONSEGUE GRAVAR O SOM =====
+    // O export usa WebCodecs. No iPhone/Safari o VideoEncoder existe (o vídeo
+    // sai) mas o AudioEncoder NÃO — o código lançava erro, o catch engolia e o
+    // MP4 saía MUDO, com o aviso escondido no log. Agora avisamos ANTES, e
+    // antes de cobrar crédito.
+    try {
+      const _temMusica = !!window.__currentAudioId;
+      const _semEncoderDeAudio = (typeof AudioEncoder === 'undefined');
+      if (_temMusica && _semEncoderDeAudio) {
+        const seguir = await wmConfirm(
+          'Este aparelho não consegue gravar o som no vídeo.\n\n'
+          + 'O vídeo vai sair SEM MÚSICA.\n\n'
+          + 'Isso depende da VERSÃO do iOS (não do navegador — no iPhone, Chrome e Safari usam o mesmo motor).\n'
+          + 'Atualize o iPhone em Ajustes > Geral > Atualização de Software, ou exporte pelo computador.',
+          {
+            title: 'O vídeo sairá sem som',
+            confirmText: 'Exportar mesmo assim',
+            cancelText: 'Cancelar',
+          }
+        );
+        if (!seguir) return;
+      }
+    } catch (e) {}
 
     // ===== GATE DE CRÉDITOS =====
     // Cobra créditos pela produção (1 slide = 1 crédito). Reexport de
