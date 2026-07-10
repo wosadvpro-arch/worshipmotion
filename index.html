@@ -7580,7 +7580,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'aac-ficha-corrigida-01jul';
+window.__WM_BUILD = 'slides-especificos-emendados-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -16513,6 +16513,10 @@ class VideoExporter {
     this.engine.parsed.stanzas.forEach((stanza, idx) => {
       if (onlyIdx !== null && idx !== onlyIdx) return; // pula os outros
       if (onlyList !== null && onlyList.indexOf(idx) === -1) return; // fora da seleção
+      // Guarda o índice ORIGINAL: no export de "slides específicos" precisamos
+      // saber onde cada slide começa/termina na música, mesmo com buracos na
+      // seleção (ex: escolher só o 1 e o 4).
+      const _idxOriginal = idx;
       // Pega config efetiva: scene override + global como fallback
       const sceneConfig = (typeof this.engine.getSceneConfig === 'function')
         ? this.engine.getSceneConfig(stanza.id)
@@ -16543,6 +16547,7 @@ class VideoExporter {
 
       slides.push({
         stanzaIdx: idx,
+        idxOriginal: _idxOriginal,
         // Resolução de fundo (ordem):
         // 1) sceneConfig.background — vem do getSceneConfig() do engine,
         //    que já considera (a) stanza.background, (b) override, (c) __globalBg.
@@ -16875,11 +16880,25 @@ class VideoExporter {
       window.__wmPicoAudio = pico;
     } catch (e) {}
 
-    let offset = startSample;
-    while (offset < totalSamples) {
-      if (this.aborted) break;
+    // Quais trechos da música codificar. Com "slides específicos" (seleção que
+    // pode ter buracos, ex: 1 e 4) cada slide traz o áudio do momento dele, e
+    // os trechos são EMENDADOS. Nos outros modos é um trecho contínuo só.
+    const segmentos = (Array.isArray(this._segmentos) && this._segmentos.length)
+      ? this._segmentos.map(s => ({
+          ini: Math.round((s.inicioMs / 1000) * sampleRate),
+          fim: Math.min(audioBuf.length, Math.round(((s.inicioMs + s.duracaoMs) / 1000) * sampleRate)),
+        }))
+      : [{ ini: startSample, fim: totalSamples }];
 
-      const samplesThisFrame = Math.min(FRAME_SAMPLES, totalSamples - offset);
+    // Timestamp do MP4 avança continuamente, mesmo pulando na música.
+    let amostrasEscritas = 0;
+
+    for (const seg of segmentos) {
+      let offset = seg.ini;
+      while (offset < seg.fim) {
+        if (this.aborted) break;
+
+        const samplesThisFrame = Math.min(FRAME_SAMPLES, seg.fim - offset);
 
       // Monta buffer INTERCALADO (canal0[0], canal1[0], canal0[1], canal1[1], ...).
       // Antes usávamos 'f32-planar' (canais em sequência) "pra evitar interleave
@@ -16894,10 +16913,10 @@ class VideoExporter {
         }
       }
 
-      // Timestamp relativo ao início do trecho (offset - startSample), pra
-      // que o áudio do vídeo cortado comece em 0 e fique sincronizado com
-      // os slides (que também começam em 0 no modo corte).
-      const timestamp = Math.round(((offset - startSample) / sampleRate) * 1_000_000); // µs
+      // Timestamp CONTÍNUO no vídeo, mesmo quando pulamos trechos da música.
+      // (Com "slides específicos" o slide 4 vem logo após o 1: na música eles
+      // estão longe, mas no MP4 são colados.)
+      const timestamp = Math.round((amostrasEscritas / sampleRate) * 1_000_000); // µs
       const audioData = new AudioData({
         format: 'f32',
         sampleRate: sampleRate,
@@ -16913,16 +16932,19 @@ class VideoExporter {
         console.warn('Erro encoding audio frame:', e);
         if (!this._logouErroEncode && typeof window.WM_EXPORT_LOG === 'function') {
           this._logouErroEncode = true;
-          window.WM_EXPORT_LOG('✗ encode de áudio falhou (frame ' + Math.round(offset / FRAME_SAMPLES) + '): ' + e.message, 'error');
+          window.WM_EXPORT_LOG('✗ encode de áudio falhou: ' + e.message, 'error');
         }
       }
       audioData.close();
       offset += samplesThisFrame;
+      amostrasEscritas += samplesThisFrame;
 
       // Cede CPU periodicamente pra não travar UI
-      if ((offset / FRAME_SAMPLES) % 50 === 0) {
+      if ((amostrasEscritas / FRAME_SAMPLES) % 50 === 0) {
         await new Promise(r => setTimeout(r, 0));
       }
+      }
+      if (this.aborted) break;
     }
 
     // Flush ao final
@@ -17223,9 +17245,64 @@ class VideoExporter {
         //   com o slide esticado do começo ao fim (e o áudio fora de lugar).
         const temSelecaoDeSlides = Array.isArray(this.options.onlyStanzaIndices)
           && this.options.onlyStanzaIndices.length > 0;
+
+        // ===== SELEÇÃO COM BURACOS (ex: slides 1 e 4) =====
+        // Cada slide escolhido vira um SEGMENTO com a duração dele na música
+        // (do tStart dele até o tStart do slide SEGUINTE no projeto original).
+        // Os segmentos são EMENDADOS um após o outro, no vídeo e no áudio.
+        // Antes, a linha do tempo ia do 1º ao último tStart, e o slide 1 ficava
+        // congelado na tela durante o tempo do 2 e do 3.
+        if (temSelecaoDeSlides) {
+          // tStart de TODAS as estrofes do projeto (não só as escolhidas)
+          const startsDeTodas = this.engine.parsed.stanzas.map((stanza) => {
+            for (const line of stanza.lines) {
+              for (const word of line.words) {
+                const t = (this.engine.wordTStarts && this.engine.wordTStarts[word.id]);
+                const tw = (typeof word.tStart === 'number') ? word.tStart : t;
+                if (typeof tw === 'number') return tw * 1000;
+              }
+            }
+            return null;
+          });
+          // preenche as não marcadas: 5s após a anterior
+          for (let i = 0; i < startsDeTodas.length; i++) {
+            if (startsDeTodas[i] === null) {
+              startsDeTodas[i] = i > 0 ? startsDeTodas[i - 1] + 5000 : 0;
+            }
+          }
+
+          const durPadrao = (this.options.stanzaDuration || 5) * 1000;
+          this._segmentos = this.slides.map((slide, i) => {
+            const oi = (typeof slide.idxOriginal === 'number') ? slide.idxOriginal : i;
+            const ini = startsDeTodas[oi];
+            const proxima = startsDeTodas[oi + 1];
+            let dur = (typeof proxima === 'number') ? (proxima - ini) : durPadrao;
+            if (!(dur > 0)) dur = durPadrao;
+            // não passa do fim da música
+            if (audioDurationMs > 0 && ini + dur > audioDurationMs) {
+              dur = Math.max(500, audioDurationMs - ini);
+            }
+            return { inicioMs: ini, duracaoMs: dur };
+          });
+
+          // Linha do tempo do VÍDEO: segmentos colados, começando em zero.
+          slideStarts = [0];
+          this._segmentos.forEach((seg) => {
+            slideStarts.push(slideStarts[slideStarts.length - 1] + seg.duracaoMs);
+          });
+          totalDurMs = slideStarts[slideStarts.length - 1];
+          this._trechoInicioMs = 0; // o áudio é montado por segmento
+
+          if (typeof window.WM_EXPORT_LOG === 'function') {
+            window.WM_EXPORT_LOG('Slides específicos: ' + this._segmentos.length
+              + ' trecho(s) emendado(s) — '
+              + this._segmentos.map(s => (s.inicioMs / 1000).toFixed(1) + 's+' + (s.duracaoMs / 1000).toFixed(1) + 's').join(', '), 'info');
+            window.WM_EXPORT_LOG(`Duração do vídeo: ${(totalDurMs / 1000).toFixed(1)}s (música tem ${(audioDurationMs / 1000).toFixed(1)}s)`, 'info');
+          }
+        } else {
+
         const deveCortarTrecho = this.options.cortarNoTrecho
-          || (typeof this.options.onlyStanzaIdx === 'number')
-          || temSelecaoDeSlides;
+          || (typeof this.options.onlyStanzaIdx === 'number');
         if (deveCortarTrecho) {
           // Duração do último slide: usa a animação (entrada+espera+saída) ou
           // um padrão. Estimamos pelo stanzaDuration do slide.
@@ -17255,6 +17332,8 @@ class VideoExporter {
           window.WM_EXPORT_LOG(`Início de cada estrofe: ${slideStarts.slice(0, -1).map(t => (t/1000).toFixed(1)+'s').join(', ')}`, 'info');
           window.WM_EXPORT_LOG(`Duração do vídeo: ${(totalDurMs/1000).toFixed(1)}s (música tem ${(audioDurationMs/1000).toFixed(1)}s)`, 'info');
         }
+        } // fim do else (seleção sem buracos)
+        slideDurations = slideStarts.slice(1).map((end, i) => end - slideStarts[i]);
       } else {
         // === MODO ANTIGO: stanzaDuration fixo ===
         slideDurations = this.slides.map(s =>
