@@ -7580,7 +7580,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'folga-grande-espaco-por-glifo-01jul';
+window.__WM_BUILD = 'fundo-video-reaproveitado-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -25869,6 +25869,17 @@ function initEditor() {
   async function applyBg(key) {
     const canvasBg = $('#canvas-bg');
     if (!canvasBg) return;
+
+    // MESMO FUNDO DE VÍDEO JÁ ATIVO: não refaz nada. Antes, cada troca de slide
+    // descartava o <video>, relia o arquivo do IndexedDB, criava um <video>
+    // novo e esperava ele decodificar — com o fundo PRETO nesse meio-tempo.
+    // Era o que fazia os slides "demorarem pra aparecer".
+    const videoAtivo = canvasBg.querySelector('.canvas-bg-video');
+    if (videoAtivo && key && key === window.__currentBg && videoAtivo.readyState >= 2) {
+      window.__currentBgVideoEl = videoAtivo;
+      if (videoAtivo.paused) { try { videoAtivo.play().catch(() => {}); } catch (e) {} }
+      return;
+    }
 
     const oldVideo = canvasBg.querySelector('.canvas-bg-video');
     if (oldVideo) {
