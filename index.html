@@ -7581,7 +7581,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'botao-download-sempre-01jul';
+window.__WM_BUILD = 'sem-autodownload-celular-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -31829,12 +31829,18 @@ function initEditor() {
 
       $('#export-done-subtitle').textContent = `${lastExportFilename} (${sizeMB} MB) — toque para baixar`;
 
-      // Tenta o download automático (funciona no PC). Se falhar, o botão acima
-      // continua lá — e o export NÃO é marcado como erro.
-      try {
-        WM_EXPORT.downloadBlob(blob, lastExportFilename);
-      } catch (e) {
-        console.warn('Download automático falhou (use o botão):', e);
+      // Download automático SÓ no desktop. No iOS um download não iniciado por
+      // clique NAVEGA a página pro arquivo em vez de baixar: a tela de conclusão
+      // era destruída e o app "voltava pro editor" sem mostrar botão nenhum.
+      // No celular fica só o botão acima — clique do usuário sempre é aceito.
+      const _ehToque = (window.matchMedia && window.matchMedia('(pointer: coarse)').matches)
+        || /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      if (!_ehToque) {
+        try {
+          WM_EXPORT.downloadBlob(blob, lastExportFilename);
+        } catch (e) {
+          console.warn('Download automático falhou (use o botão):', e);
+        }
       }
 
     } catch (err) {
