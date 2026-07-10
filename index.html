@@ -7580,7 +7580,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'audio-contexto-aberto-01jul';
+window.__WM_BUILD = 'aac-ficha-corrigida-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -17111,9 +17111,16 @@ class VideoExporter {
             output: (chunk, meta) => {
               if (this.muxer && !this.aborted) {
                 try {
-                  // DIAGNÓSTICO: o muxer precisa da "ficha técnica" (decoderConfig
-                  // com a description AAC). Se o encoder não mandar, a faixa de
-                  // áudio fica sem instruções e TODO player toca silêncio.
+                  // O muxer grava meta.decoderConfig.description como o
+                  // AudioSpecificConfig (ASC) do AAC — 2 bytes.
+                  // O Chrome entrega exatamente isso. O SAFARI entrega o
+                  // "magic cookie" da Apple (~39 bytes), que o muxer escreve
+                  // literalmente no esds → faixa de áudio com instruções
+                  // inválidas → TODO player toca silêncio (o vídeo saía mudo
+                  // até no PC). Quando a description vier grande demais,
+                  // montamos o ASC correto a partir do sampleRate/canais.
+                  meta = this._corrigirDescricaoAac(meta);
+
                   if (!this._logouMeta) {
                     this._logouMeta = true;
                     const dc = meta && meta.decoderConfig;
@@ -17491,6 +17498,51 @@ class VideoExporter {
       if (this._silentOsc) { this._silentOsc.stop(); this._silentOsc = null; }
       if (this._silentAudioCtx) { this._silentAudioCtx.close(); this._silentAudioCtx = null; }
     } catch (e) {}
+  }
+
+  /**
+   * Corrige a "ficha técnica" (decoderConfig.description) do AAC.
+   *
+   * O mp4-muxer grava esses bytes no esds do MP4 esperando o
+   * AudioSpecificConfig (ASC) cru — 2 bytes pro AAC-LC.
+   * O Chrome entrega exatamente isso. O SAFARI/WebKit entrega o "magic cookie"
+   * da Apple (~39 bytes), que gravado no esds deixa a faixa de áudio com
+   * instruções inválidas: o arquivo tem som codificado, mas TODO player toca
+   * silêncio. Aqui montamos o ASC correto a partir do sampleRate e dos canais.
+   */
+  _corrigirDescricaoAac(meta) {
+    try {
+      const dc = meta && meta.decoderConfig;
+      if (!dc) return meta;
+      const desc = dc.description;
+      const tam = desc ? (desc.byteLength != null ? desc.byteLength : desc.length) : 0;
+      // ASC de AAC-LC tem 2 bytes (5 com SBR/PS). Acima disso não é ASC.
+      if (tam > 0 && tam <= 5) return meta;
+
+      const IDX = { 96000: 0, 88200: 1, 64000: 2, 48000: 3, 44100: 4, 32000: 5,
+                    24000: 6, 22050: 7, 16000: 8, 12000: 9, 11025: 10, 8000: 11, 7350: 12 };
+      const f = IDX[dc.sampleRate];
+      const canais = dc.numberOfChannels;
+      if (f == null || !canais) return meta;
+
+      const OBJ_AAC_LC = 2;
+      const asc = new Uint8Array(2);
+      asc[0] = (OBJ_AAC_LC << 3) | (f >> 1);
+      asc[1] = ((f & 1) << 7) | (canais << 3);
+
+      if (!this._logouAscCorrigido) {
+        this._logouAscCorrigido = true;
+        if (typeof window.WM_EXPORT_LOG === 'function') {
+          window.WM_EXPORT_LOG('ficha técnica do áudio corrigida: ' + tam + ' bytes (magic cookie) → 2 bytes (ASC 0x'
+            + asc[0].toString(16) + ' 0x' + asc[1].toString(16) + ')', 'info');
+        }
+      }
+      return Object.assign({}, meta, {
+        decoderConfig: Object.assign({}, dc, { description: asc }),
+      });
+    } catch (e) {
+      return meta;
+    }
   }
 
   _cleanup() {
