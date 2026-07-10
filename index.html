@@ -7573,7 +7573,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'export-slide-especifico-fix-01jul';
+window.__WM_BUILD = 'largura-sem-folga-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -20520,6 +20520,23 @@ function initEditor() {
   // pra nunca ficar MAIOR que a caixa de layout (seguro). Cai pro rect cru se
   // não der pra medir.
   let _inkMeasureCtx = null;
+  /**
+   * Largura REAL da palavra, sem a folga lateral que .lyric-word tem pra
+   * impedir o WebKit de cortar letras cursivas (padding: 0 0.16em).
+   * Sem descontar isso, o cálculo de espaçamento acha a palavra mais larga do
+   * que ela é e afasta as palavras demais.
+   */
+  function _larguraSemFolga(el, rect) {
+    const r = rect || el.getBoundingClientRect();
+    let padL = 0, padR = 0;
+    try {
+      const cs = getComputedStyle(el);
+      padL = parseFloat(cs.paddingLeft) || 0;
+      padR = parseFloat(cs.paddingRight) || 0;
+    } catch (e) {}
+    return Math.max(0, r.width - padL - padR);
+  }
+
   function _wordInkBounds(wordEl, rect) {
     try {
       const text = (wordEl.textContent || '').trim();
@@ -20672,7 +20689,7 @@ function initEditor() {
       palavras.push({
         id: wid,
         x: w.position.x,
-        wFrac: rect.width / stanzaRect.width, // largura relativa
+        wFrac: _larguraSemFolga(el, rect) / stanzaRect.width, // largura relativa (sem a folga anti-corte)
       });
     });
 
@@ -20817,7 +20834,7 @@ function initEditor() {
         if (!w || !w.position) return;
         if (Math.abs(w.position.y - yRef) > TOL) return;
         const rect = el.getBoundingClientRect();
-        palavras.push({ id: wid, el, x: w.position.x, wFrac: rect.width / stanzaRect.width });
+        palavras.push({ id: wid, el, x: w.position.x, wFrac: _larguraSemFolga(el, rect) / stanzaRect.width });
       });
       if (palavras.length < 2) return;
       palavras.sort((a, b) => a.x - b.x);
@@ -20887,7 +20904,7 @@ function initEditor() {
         const wid = el.dataset.wordId;
         if (!wid) return;
         const wr = el.getBoundingClientRect();
-        if (wr.width > 0 && cr2.width > 0) mapa[wid] = wr.width / cr2.width;
+        if (wr.width > 0 && cr2.width > 0) mapa[wid] = _larguraSemFolga(el, wr) / cr2.width;
       });
     });
     // Restaura a estrofe que estava ativa.
