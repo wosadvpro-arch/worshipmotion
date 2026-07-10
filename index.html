@@ -7581,7 +7581,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'diag-export-celular-10jul';
+window.__WM_BUILD = 'sync-frames-nao-cair-10jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -17449,25 +17449,64 @@ class VideoExporter {
 
         // Cria VideoFrame com timestamp exato
         const timestamp = frameIdx * microsecondsPerFrame;
-        let videoFrame;
+
+        // ANTES de encodar: se o encoder está sobrecarregado, ESPERA ele
+        // aliviar. No celular (mais lento) a fila enchia e o encode falhava —
+        // aí o frame era DESCARTADO mas o áudio seguia inteiro, então o vídeo
+        // ficava mais curto que a trilha e o som saía FORA DE SINCRONIA.
+        // Drenar a fila aqui garante que todo frame seja encodado (vídeo e
+        // áudio permanecem com a mesma duração). No PC isso quase nunca dispara.
+        let _esperasFila = 0;
+        while (this.encoder.encodeQueueSize > 30 && !this.aborted && _esperasFila < 1000) {
+          await new Promise(r => setTimeout(r, 8));
+          _esperasFila++;
+        }
+        if (this.aborted) throw new Error('Exportação cancelada pelo usuário');
+
+        let videoFrame = null;
         try {
           videoFrame = new VideoFrame(this.canvas, {
             timestamp: timestamp,
             duration: microsecondsPerFrame,
           });
         } catch (e) {
-          console.error('Erro criando VideoFrame:', e);
-          droppedFrames++;
-          continue;
+          // Falha ao CRIAR o frame: espera um tico e tenta o MESMO frame de
+          // novo (não avança frameIdx). Só desiste após várias tentativas.
+          let _tent = 0;
+          while (_tent < 12 && !videoFrame && !this.aborted) {
+            await new Promise(r => setTimeout(r, 12));
+            try {
+              videoFrame = new VideoFrame(this.canvas, { timestamp: timestamp, duration: microsecondsPerFrame });
+            } catch (e2) { _tent++; }
+          }
+          if (!videoFrame) {
+            console.error('Erro criando VideoFrame (após tentativas):', e);
+            droppedFrames++;
+            continue;
+          }
         }
 
         // Encode: keyframe a cada 2 segundos (fps*2 frames)
         const keyFrame = frameIdx % (this.fps * 2) === 0;
+        let _encodado = false;
         try {
           this.encoder.encode(videoFrame, { keyFrame });
+          _encodado = true;
         } catch (e) {
-          console.error('Erro encodando frame:', e);
-          droppedFrames++;
+          // encode falhou (normalmente PRESSÃO do encoder): espera a fila
+          // baixar e tenta encodar o MESMO frame de novo, pra não perdê-lo.
+          let _tent = 0;
+          while (_tent < 20 && !_encodado && !this.aborted) {
+            await new Promise(r => setTimeout(r, 15));
+            try {
+              this.encoder.encode(videoFrame, { keyFrame });
+              _encodado = true;
+            } catch (e2) { _tent++; }
+          }
+          if (!_encodado) {
+            console.error('Erro encodando frame (após tentativas):', e);
+            droppedFrames++;
+          }
         } finally {
           videoFrame.close();
         }
@@ -31807,6 +31846,7 @@ function initEditor() {
         $('#export-done-state').classList.add('active');
         $('#export-done-subtitle').textContent =
           `${_arquivos.length} arquivos prontos — toque em cada um para baixar`;
+        try { if (window.WM_DIAG) window.WM_DIAG.marca('UI_PRONTA'); } catch (e) {}
         return;
       }
 
@@ -31889,6 +31929,7 @@ function initEditor() {
       }
 
       $('#export-done-subtitle').textContent = `${lastExportFilename} (${sizeMB} MB) — toque para baixar`;
+      try { if (window.WM_DIAG) window.WM_DIAG.marca('UI_PRONTA'); } catch (e) {}
 
       // Download automático SÓ no desktop. No iOS um download não iniciado por
       // clique NAVEGA a página pro arquivo em vez de baixar: a tela de conclusão
