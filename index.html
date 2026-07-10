@@ -2015,7 +2015,12 @@ body.marking-open.marking-collapsed .editor-canvas {
      (ex: o "p" de "perdoado") não ser cortado pela camada de composição do
      WebKit no iPhone. O padding é simétrico, então em palavra POSICIONADA
      (free, centralizada por translate) o centro visual não muda. */
-  padding: 0 0.16em;
+  /* Folga lateral pra letras cursivas/itálicas cujo desenho "vaza" da caixa
+     (ex: o "p" de "perdoado") não ser cortado pela camada de composição do
+     WebKit no iPhone. VALOR MEDIDO: 0.16em de cada lado dava ~14px de espaço
+     visual entre palavras, acima do alvo de espaçamento do app (~11px) — as
+     palavras ficavam afastadas demais. 0.06em protege a letra e cabe no alvo. */
+  padding: 0 0.06em;
   /* NÃO incluir 'filter' aqui: no WebKit o will-change:filter também criava
      camada que cortava a letra. */
   will-change: transform, opacity;
@@ -2025,7 +2030,7 @@ body.marking-open.marking-collapsed .editor-canvas {
    negativa DESLOCAVA a posição ~0.16em — então a palavra não centralizava na
    linha guia. Excluímos as free daqui. */
 .lyric-word:not(.is-free-positioned) {
-  margin: 0 -0.16em;
+  margin: 0 -0.06em;
 }
 /* Palavra em edição inline (duplo-clique): contorno claro + cursor de
    texto, pra ficar óbvio que está editável ali mesmo. */
@@ -7573,7 +7578,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'largura-sem-folga-01jul';
+window.__WM_BUILD = 'folga-menor-espaco-certo-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -19701,20 +19706,28 @@ function initEditor() {
   // Corrige palavras salvas SOBREPOSTAS em todos os slides. Garante o canvas
   // em 16:9 primeiro (senão a medida sai errada) e re-espaça as sobrepostas.
   // Chame window.__wmFixSpacing() no console.
-  window.__wmFixSpacing = function () {
+  window.__wmFixSpacing = function (forcarTodas) {
     // Força o canvas em 16:9 e ESPERA assentar antes de medir/corrigir — assim
     // não importa o estado da barra de áudio quando você roda; a medida sempre
     // sai no canvas certo (se medir num canvas distorcido, corrige errado).
+    // forcarTodas=true: recalcula TODAS as linhas (conserta espaço largo demais,
+    // não só palavras grudadas).
     try { if (typeof applyAspect === 'function') applyAspect(window.__currentAspect || '16:9'); } catch (e) {}
     console.log('Ajustando canvas para 16:9 e corrigindo espaçamento… aguarde.');
     return new Promise(function (resolve) {
       setTimeout(function () {
         let n = 0;
-        try { if (typeof rearrumarSlidesSobrepostos === 'function') n = rearrumarSlidesSobrepostos(); } catch (e) {}
-        console.log('✓ Espaçamento corrigido em ' + n + ' linha(s) sobreposta(s). Agora SALVE o projeto.');
+        try { if (typeof rearrumarSlidesSobrepostos === 'function') n = rearrumarSlidesSobrepostos(!!forcarTodas); } catch (e) {}
+        const oque = forcarTodas ? 'linha(s) re-espaçada(s)' : 'linha(s) sobreposta(s)';
+        console.log('✓ Espaçamento corrigido em ' + n + ' ' + oque + '. Agora SALVE o projeto.');
         resolve(n);
       }, 300);
     });
+  };
+
+  /** Re-espaça TODAS as linhas de TODOS os slides com a medição correta. */
+  window.__wmReespacarTudo = function () {
+    return window.__wmFixSpacing(true);
   };
 
   setTimeout(() => {
@@ -20520,23 +20533,6 @@ function initEditor() {
   // pra nunca ficar MAIOR que a caixa de layout (seguro). Cai pro rect cru se
   // não der pra medir.
   let _inkMeasureCtx = null;
-  /**
-   * Largura REAL da palavra, sem a folga lateral que .lyric-word tem pra
-   * impedir o WebKit de cortar letras cursivas (padding: 0 0.16em).
-   * Sem descontar isso, o cálculo de espaçamento acha a palavra mais larga do
-   * que ela é e afasta as palavras demais.
-   */
-  function _larguraSemFolga(el, rect) {
-    const r = rect || el.getBoundingClientRect();
-    let padL = 0, padR = 0;
-    try {
-      const cs = getComputedStyle(el);
-      padL = parseFloat(cs.paddingLeft) || 0;
-      padR = parseFloat(cs.paddingRight) || 0;
-    } catch (e) {}
-    return Math.max(0, r.width - padL - padR);
-  }
-
   function _wordInkBounds(wordEl, rect) {
     try {
       const text = (wordEl.textContent || '').trim();
@@ -20688,8 +20684,9 @@ function initEditor() {
       const rect = el.getBoundingClientRect();
       palavras.push({
         id: wid,
+        el,
         x: w.position.x,
-        wFrac: _larguraSemFolga(el, rect) / stanzaRect.width, // largura relativa (sem a folga anti-corte)
+        wFrac: rect.width / stanzaRect.width, // largura relativa
       });
     });
 
@@ -20707,7 +20704,26 @@ function initEditor() {
       const _sc = (_wo && _wo.style && _wo.style.fontSizeScale) || 1;
       if (_sc > _escalaMax) _escalaMax = _sc;
     });
-    const GAP = 0.015 * _escalaMax;
+    // Espaço ALVO entre duas palavras (fração da largura do stanza).
+    const ESPACO_ALVO = 0.015 * _escalaMax;
+
+    // .lyric-word tem folga lateral (padding: 0 0.16em) que impede o WebKit de
+    // cortar letras cursivas. Como as larguras vêm da CAIXA, essa folga JÁ
+    // aparece como espaço entre duas palavras vizinhas (0.16em de cada uma).
+    // Medida real: a folga (~15px) costuma ser MAIOR que o alvo (~12px) — por
+    // isso, somar um GAP por cima deixava as palavras afastadas demais.
+    // Então: o GAP é só o que falta pro alvo (nunca negativo). Encostar as
+    // caixas já entrega o respiro visual.
+    let _folgaFrac = 0;
+    try {
+      const _el0 = palavras[0] && palavras[0].el;
+      if (_el0 && stanzaRect.width > 0) {
+        const _cs = getComputedStyle(_el0);
+        const _padTotalPx = (parseFloat(_cs.paddingLeft) || 0) + (parseFloat(_cs.paddingRight) || 0);
+        _folgaFrac = _padTotalPx / stanzaRect.width;
+      }
+    } catch (e) {}
+    const GAP = Math.max(0, ESPACO_ALVO - _folgaFrac);
 
     // Largura total do bloco (somatório das larguras + gaps)
     let larguraTotal = 0;
@@ -20834,7 +20850,7 @@ function initEditor() {
         if (!w || !w.position) return;
         if (Math.abs(w.position.y - yRef) > TOL) return;
         const rect = el.getBoundingClientRect();
-        palavras.push({ id: wid, el, x: w.position.x, wFrac: _larguraSemFolga(el, rect) / stanzaRect.width });
+        palavras.push({ id: wid, el, x: w.position.x, wFrac: rect.width / stanzaRect.width });
       });
       if (palavras.length < 2) return;
       palavras.sort((a, b) => a.x - b.x);
@@ -20904,7 +20920,7 @@ function initEditor() {
         const wid = el.dataset.wordId;
         if (!wid) return;
         const wr = el.getBoundingClientRect();
-        if (wr.width > 0 && cr2.width > 0) mapa[wid] = _larguraSemFolga(el, wr) / cr2.width;
+        if (wr.width > 0 && cr2.width > 0) mapa[wid] = wr.width / cr2.width;
       });
     });
     // Restaura a estrofe que estava ativa.
@@ -20985,7 +21001,7 @@ function initEditor() {
     return consertados;
   }
 
-  function rearrumarSlidesSobrepostos() {
+  function rearrumarSlidesSobrepostos(forcarTodas) {
     if (!engine.parsed || !engine.parsed.stanzas) return 0;
     const idxAtual = engine.currentStanzaIndex;
     let linhasCorrigidas = 0;
@@ -21025,7 +21041,10 @@ function initEditor() {
           const b = palavras[i + 1].el.getBoundingClientRect();
           if ((b.left - a.right) < gapMinPx) { sobrepoe = true; break; }
         }
-        if (sobrepoe && typeof _reflowLinhaDaPalavra === 'function') {
+        // Modo FORÇADO: recalcula TODAS as linhas, não só as grudadas. Serve
+        // pra consertar slides cujas posições foram salvas com espaço ERRADO
+        // (ex: afastadas demais), que a detecção de sobreposição nunca pega.
+        if ((forcarTodas || sobrepoe) && typeof _reflowLinhaDaPalavra === 'function') {
           _reflowLinhaDaPalavra(palavras[0].id);
           linhasCorrigidas++;
         }
