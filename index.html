@@ -7580,7 +7580,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'blocos-arquivos-separados-01jul';
+window.__WM_BUILD = 'blocos-fix-cancelado-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -31658,7 +31658,7 @@ function initEditor() {
         let _ultimoBlob = null, _ultimoNome = '';
 
         for (let bi = 0; bi < _blocos.length; bi++) {
-          if (_exportCancelado) break;
+          if (currentExporter && currentExporter.aborted) break;
           const bloco = _blocos[bi];
           window.WM_EXPORT_LOG(`Arquivo ${bi + 1}/${_blocos.length}: slide(s) ${bloco.map(i => i + 1).join(', ')}`, 'info');
 
