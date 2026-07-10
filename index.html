@@ -7580,7 +7580,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'diag-meta-audio-01jul';
+window.__WM_BUILD = 'audio-copia-antes-close-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -16812,6 +16812,17 @@ class VideoExporter {
     const ctx = new AudioCtx();
     try {
       this.audioBuffer = await ctx.decodeAudioData(arrayBuffer.slice(0));
+      // COPIA as amostras AGORA, com o contexto ainda ABERTO.
+      // No WebKit (iPhone), fechar o AudioContext esvazia o AudioBuffer:
+      // getChannelData() passa a devolver ZEROS. O encoder recebia silêncio e
+      // gerava quadros AAC de 6 bytes — o MP4 saía mudo, sem nenhum erro.
+      // O Chrome do PC mantém o buffer válido, por isso lá funcionava.
+      this.audioChannels = [];
+      for (let ch = 0; ch < this.audioBuffer.numberOfChannels; ch++) {
+        const copia = new Float32Array(this.audioBuffer.length);
+        this.audioBuffer.copyFromChannel(copia, ch);
+        this.audioChannels.push(copia);
+      }
     } finally {
       ctx.close();
     }
@@ -16847,11 +16858,33 @@ class VideoExporter {
     // AAC espera frames de 1024 samples
     const FRAME_SAMPLES = 1024;
 
-    // Pega dados raw de cada canal (Float32Array)
+    // Pega dados raw de cada canal (Float32Array).
+    // Usa a CÓPIA feita em _decodeAudio (com o contexto ainda aberto). No
+    // WebKit, ler getChannelData() depois de ctx.close() devolve ZEROS.
     const channelsData = [];
-    for (let ch = 0; ch < numChannels; ch++) {
-      channelsData.push(audioBuf.getChannelData(ch));
+    if (Array.isArray(this.audioChannels) && this.audioChannels.length === numChannels) {
+      for (let ch = 0; ch < numChannels; ch++) channelsData.push(this.audioChannels[ch]);
+    } else {
+      for (let ch = 0; ch < numChannels; ch++) {
+        channelsData.push(audioBuf.getChannelData(ch));
+      }
     }
+
+    // Confere se as amostras NÃO são só silêncio (o sintoma do buffer zerado).
+    try {
+      let pico = 0;
+      const amostra = Math.min(channelsData[0].length, startSample + 48000);
+      for (let i = startSample; i < amostra; i += 97) {
+        const v = Math.abs(channelsData[0][i] || 0);
+        if (v > pico) pico = v;
+      }
+      if (typeof window.WM_EXPORT_LOG === 'function') {
+        window.WM_EXPORT_LOG('pico do áudio no trecho: ' + pico.toFixed(4)
+          + (pico < 0.0001 ? '  ← SILÊNCIO (buffer zerado)' : '  (ok, tem som)'),
+          pico < 0.0001 ? 'error' : 'info');
+      }
+      window.__wmPicoAudio = pico;
+    } catch (e) {}
 
     let offset = startSample;
     while (offset < totalSamples) {
