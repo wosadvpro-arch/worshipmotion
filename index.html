@@ -7581,7 +7581,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'memoria-liberada-01jul';
+window.__WM_BUILD = 'botao-download-sempre-01jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -31801,14 +31801,41 @@ function initEditor() {
         : '';
       lastExportFilename = `${safeName}${slideSuffix}.${ext}`;
 
-      // Auto-download
-      WM_EXPORT.downloadBlob(blob, lastExportFilename);
-
-      // Mostra done state
+      // Mostra a tela de conclusão ANTES de tentar baixar. No iOS um clique
+      // programático em link de download pode ser ignorado ou lançar — e o
+      // erro caía no catch: a tela de conclusão nunca aparecia e o usuário
+      // ficava sem botão nenhum.
       $('#export-progress-state').classList.remove('active');
       $('#export-done-state').classList.add('active');
       const sizeMB = (blob.size / (1024 * 1024)).toFixed(1);
-      $('#export-done-subtitle').textContent = `${lastExportFilename} (${sizeMB} MB) — download iniciado`;
+
+      // Botão explícito de download (um clique do usuário SEMPRE é aceito).
+      const listaUnica = $('#export-files-list');
+      if (listaUnica) {
+        listaUnica.innerHTML = '';
+        const btn = document.createElement('button');
+        btn.className = 'btn btn-primary';
+        btn.style.cssText = 'width:100%; justify-content:center;';
+        btn.textContent = `⬇ ${lastExportFilename}  (${sizeMB} MB)`;
+        btn.addEventListener('click', () => {
+          WM_EXPORT.downloadBlob(blob, lastExportFilename);
+          btn.textContent = `✓ ${lastExportFilename} — baixado`;
+          btn.classList.remove('btn-primary');
+          btn.classList.add('btn-ghost');
+        });
+        listaUnica.appendChild(btn);
+        listaUnica.style.display = 'flex';
+      }
+
+      $('#export-done-subtitle').textContent = `${lastExportFilename} (${sizeMB} MB) — toque para baixar`;
+
+      // Tenta o download automático (funciona no PC). Se falhar, o botão acima
+      // continua lá — e o export NÃO é marcado como erro.
+      try {
+        WM_EXPORT.downloadBlob(blob, lastExportFilename);
+      } catch (e) {
+        console.warn('Download automático falhou (use o botão):', e);
+      }
 
     } catch (err) {
       console.error('Erro na exportação:', err);
