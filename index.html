@@ -3589,7 +3589,20 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
   position: relative;
   background-size: cover;
   background-position: center;
+  overflow: hidden;
 }
+.color-swatch.is-custom .bg-swatch-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+}
+.color-swatch.is-custom .bg-video-badge,
+.color-swatch.is-custom .bg-delete-btn { z-index: 1; }
 .color-swatch.is-custom .bg-delete-btn {
   position: absolute;
   top: 2px;
@@ -7656,7 +7669,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'thumb-video-no-upload-10jul';
+window.__WM_BUILD = 'preview-video-ao-vivo-10jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -26933,39 +26946,31 @@ function initEditor() {
         const el = grid.querySelector(`[data-asset-id="${b.id}"]`);
         if (!el) continue;
         const isVideo = b.meta && b.meta.mediaKind === 'video';
+        const url = await window.WM_CUSTOM_BACKGROUNDS.getUrl(b.id);
+        if (!url) continue;
 
         if (isVideo) {
-          // Miniatura de vídeo: usa o thumb já SALVO no asset (capturado no
-          // upload). É o caminho confiável no iPhone. Se for um vídeo antigo
-          // (subido antes deste recurso) que não tem thumb, captura UMA vez
-          // agora e salva, pra não recapturar toda vez que a grade abrir.
-          let thumb = b.meta && b.meta.thumb;
-          if (!thumb) {
-            try {
-              const blobUrl = await window.WM_CUSTOM_BACKGROUNDS.getUrl(b.id);
-              if (blobUrl) thumb = await _capturarFrameVideo(blobUrl);
-              if (thumb && window.WM_ASSETS) {
-                const asset = await window.WM_ASSETS.get(b.id);
-                if (asset) {
-                  asset.meta = asset.meta || {};
-                  asset.meta.thumb = thumb;
-                  await window.WM_ASSETS.save(asset);
-                }
-              }
-            } catch (e) { /* sem thumb: fica o badge ▶ */ }
-          }
-          if (thumb) {
-            el.style.backgroundImage = `url(${thumb})`;
-            el.style.backgroundSize = 'cover';
-            el.style.backgroundPosition = 'center';
-          }
+          // NÃO capturamos mais um quadro (o WebKit do iPhone pinta preto fora
+          // de tela). Em vez disso, mostramos o PRÓPRIO vídeo tocando (mudo, em
+          // loop) como preview — vídeo em reprodução renderiza normal no iOS.
+          const v = document.createElement('video');
+          v.className = 'bg-swatch-video';
+          v.src = url;
+          v.muted = true; v.defaultMuted = true;
+          v.loop = true; v.playsInline = true;
+          v.setAttribute('muted', ''); v.setAttribute('playsinline', '');
+          v.setAttribute('autoplay', ''); v.setAttribute('loop', '');
+          v.setAttribute('preload', 'metadata');
+          v.setAttribute('aria-hidden', 'true');
+          // insere ANTES do badge/lixeira pra ficar no fundo
+          el.insertBefore(v, el.firstChild);
+          const tocar = () => { const p = v.play(); if (p && p.catch) p.catch(() => {}); };
+          v.addEventListener('loadeddata', tocar);
+          tocar();
         } else {
-          const url = await window.WM_CUSTOM_BACKGROUNDS.getUrl(b.id);
-          if (url) {
-            el.style.backgroundImage = `url(${url})`;
-            el.style.backgroundSize = 'cover';
-            el.style.backgroundPosition = 'center';
-          }
+          el.style.backgroundImage = `url(${url})`;
+          el.style.backgroundSize = 'cover';
+          el.style.backgroundPosition = 'center';
         }
       } catch (e) {}
     }
