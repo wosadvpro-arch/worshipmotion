@@ -4341,8 +4341,81 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
   position: relative;
 }
 .stanza-item-body {
-  /* Wrapper do conteúdo, deixa espaço pra lixeira não cobrir texto */
-  padding-right: 28px;
+  /* Wrapper do conteúdo, deixa espaço pra lixeira + duplicar não cobrir texto */
+  padding-right: 56px;
+}
+/* Setas de reordenar (mover pra cima/baixo) — canto inferior esquerdo */
+.stanza-move {
+  position: absolute;
+  left: 8px;
+  bottom: 8px;
+  display: flex;
+  gap: 4px;
+}
+.stanza-move button {
+  width: 26px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0;
+  transition: 0.12s;
+}
+.stanza-move button:hover:not(:disabled) {
+  background: rgba(139, 92, 246, 0.15);
+  color: var(--accent);
+  border-color: rgba(139, 92, 246, 0.4);
+}
+.stanza-move button:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+.stanza-item-preview {
+  /* deixa respiro pras setas no rodapé não colarem no texto */
+}
+.stanza-item.has-move .stanza-item-body { padding-bottom: 26px; }
+/* Feedback de arrastar (só faz sentido no PC) */
+.stanza-item.wm-dragging {
+  opacity: 0.45;
+}
+.stanza-item.wm-drop-before {
+  box-shadow: 0 -3px 0 -1px var(--accent, #8b5cf6);
+}
+.stanza-item.wm-drop-after {
+  box-shadow: 0 3px 0 -1px var(--accent, #8b5cf6);
+}
+.stanza-item-dup {
+  position: absolute;
+  right: 34px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  opacity: 0;
+  transition: 0.12s;
+  padding: 0;
+}
+.stanza-item:hover .stanza-item-dup { opacity: 1; }
+.stanza-item-dup:hover {
+  background: rgba(139, 92, 246, 0.15);
+  color: var(--accent);
+  border-color: rgba(139, 92, 246, 0.4);
+}
+@media (pointer: coarse) {
+  .stanza-item-dup, .stanza-item-delete { opacity: 1; }
 }
 .stanza-item-delete {
   position: absolute;
@@ -7581,7 +7654,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'compartilhar-ios-nao-morrer-10jul';
+window.__WM_BUILD = 'reordenar-estrofes-10jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -19531,6 +19604,9 @@ function initEditor() {
    */
   // ============ Parse e Render ============
   function parseAndRender() {
+    // Quando duplicamos uma estrofe, reescrevemos o textarea programaticamente;
+    // esse guard evita que o re-parse do input desfaça o clone recém-montado.
+    if (_suppressReparse) return;
     const text = $('#lyrics-input').value;
     if (!text.trim()) {
       // Letra vazia = projeto do ZERO: limpa TUDO (antes só limpava a lista e
@@ -19641,8 +19717,10 @@ function initEditor() {
       const syncBadge = nMarcadas > 0
         ? `<span class="stanza-sync-badge ${nMarcadas === nTotal ? 'is-full' : ''}" title="${nMarcadas} de ${nTotal} palavras marcadas">${nMarcadas === nTotal ? '✓ marcado' : nMarcadas + '/' + nTotal}</span>`
         : '';
+      const ehPrimeira = (i === 0);
+      const ehUltima = (i === parsed.stanzas.length - 1);
       return `
-        <div class="stanza-item" data-index="${i}">
+        <div class="stanza-item" data-index="${i}" draggable="true">
           <div class="stanza-slide-tag">
             <span class="stanza-slide-num">SLIDE ${i + 1}</span>
             <span class="stanza-slide-of">de ${parsed.stanzas.length}</span>
@@ -19652,6 +19730,20 @@ function initEditor() {
             <div class="stanza-item-label">${escapeHtml(s.label)}</div>
             <div class="stanza-item-preview">${escapeHtml(preview)}</div>
           </div>
+          <div class="stanza-move">
+            <button class="stanza-move-up" data-move-up="${i}" title="Mover para cima" aria-label="Mover para cima"${ehPrimeira ? ' disabled' : ''}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+            </button>
+            <button class="stanza-move-down" data-move-down="${i}" title="Mover para baixo" aria-label="Mover para baixo"${ehUltima ? ' disabled' : ''}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+          </div>
+          <button class="stanza-item-dup" data-dup-stanza="${i}" title="Duplicar estrofe (com marcações)" aria-label="Duplicar estrofe">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+            </svg>
+          </button>
           <button class="stanza-item-delete" data-delete-stanza="${i}" title="Excluir estrofe" aria-label="Excluir estrofe">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="3 6 5 6 21 6"/>
@@ -19666,13 +19758,83 @@ function initEditor() {
 
     $$('.stanza-item').forEach(el => {
       el.addEventListener('click', (ev) => {
-        // Não navega se clicou na lixeira
+        // Não navega se clicou na lixeira, no duplicar ou nas setas de mover
         if (ev.target.closest('[data-delete-stanza]')) return;
+        if (ev.target.closest('[data-dup-stanza]')) return;
+        if (ev.target.closest('[data-move-up]')) return;
+        if (ev.target.closest('[data-move-down]')) return;
         const idx = parseInt(el.dataset.index, 10);
         engine.currentStanzaIndex = idx;
         engine.playFull();
         updateActiveStanzaInList(idx);
         updateActiveTimelineClip(idx);
+      });
+    });
+
+    $$('[data-dup-stanza]').forEach(btn => {
+      btn.addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        const idx = parseInt(btn.dataset.dupStanza, 10);
+        duplicateStanza(idx);
+      });
+    });
+
+    // Setas ↑ ↓ — funcionam em qualquer aparelho (PC e celular)
+    $$('[data-move-up]').forEach(btn => {
+      btn.addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        const idx = parseInt(btn.dataset.moveUp, 10);
+        moveStanza(idx, idx - 1);
+      });
+    });
+    $$('[data-move-down]').forEach(btn => {
+      btn.addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        const idx = parseInt(btn.dataset.moveDown, 10);
+        moveStanza(idx, idx + 1);
+      });
+    });
+
+    // Arrastar e soltar (PC) — HTML5 drag. No celular quase não dispara, mas as
+    // setas cobrem o toque. Guarda a origem no dragstart, mostra indicador de
+    // onde vai cair no dragover, e reordena no drop.
+    let _dragFrom = null;
+    $$('.stanza-item').forEach(el => {
+      el.addEventListener('dragstart', (ev) => {
+        _dragFrom = parseInt(el.dataset.index, 10);
+        el.classList.add('wm-dragging');
+        try { ev.dataTransfer.effectAllowed = 'move'; ev.dataTransfer.setData('text/plain', String(_dragFrom)); } catch (e) {}
+      });
+      el.addEventListener('dragend', () => {
+        el.classList.remove('wm-dragging');
+        $$('.stanza-item').forEach(x => x.classList.remove('wm-drop-before', 'wm-drop-after'));
+        _dragFrom = null;
+      });
+      el.addEventListener('dragover', (ev) => {
+        ev.preventDefault();
+        try { ev.dataTransfer.dropEffect = 'move'; } catch (e) {}
+        const rect = el.getBoundingClientRect();
+        const depois = (ev.clientY - rect.top) > rect.height / 2;
+        el.classList.toggle('wm-drop-after', depois);
+        el.classList.toggle('wm-drop-before', !depois);
+      });
+      el.addEventListener('dragleave', () => {
+        el.classList.remove('wm-drop-before', 'wm-drop-after');
+      });
+      el.addEventListener('drop', (ev) => {
+        ev.preventDefault();
+        const alvo = parseInt(el.dataset.index, 10);
+        const rect = el.getBoundingClientRect();
+        const depois = (ev.clientY - rect.top) > rect.height / 2;
+        let from = _dragFrom;
+        if (from == null) { try { from = parseInt(ev.dataTransfer.getData('text/plain'), 10); } catch (e) {} }
+        el.classList.remove('wm-drop-before', 'wm-drop-after');
+        if (from == null || isNaN(from)) return;
+        // índice de destino considerando soltar antes/depois do alvo
+        let to = depois ? alvo + 1 : alvo;
+        // se estamos tirando um item ANTES do destino, o destino desce 1
+        if (from < to) to -= 1;
+        moveStanza(from, to);
       });
     });
 
@@ -19710,6 +19872,158 @@ function initEditor() {
     });
     if (!ok) return;
     deleteStanza(idx);
+  }
+
+  // Duplica uma estrofe como CÓPIA INDEPENDENTE, logo abaixo da original.
+  // Clona texto + marcações de ritmo (word.tStart) + animações por palavra +
+  // estilo por palavra (overrides) + estilo da estrofe (sceneOverride), tudo
+  // com IDs NOVOS pra a cópia poder ser editada sem afetar a original. Também
+  // insere o texto da estrofe no textarea de letra, pra um futuro re-parse não
+  // apagar a cópia.
+  function duplicateStanza(idx) {
+    const parsed = engine.parsed;
+    if (!parsed || !parsed.stanzas[idx]) return;
+    const orig = parsed.stanzas[idx];
+
+    // clone profundo do objeto da estrofe, trocando TODOS os ids por novos e
+    // preservando qualquer campo extra da palavra (tStart, anim, emphasized...).
+    const novaStanza = {
+      id: generateId('stz'),
+      label: orig.label,
+      lines: (orig.lines || []).map(ln => ({
+        id: generateId('ln'),
+        words: (ln.words || []).map(w => {
+          const nova = Object.assign({}, w); // copia tStart, anim, emphasized, etc
+          nova.id = generateId('w');
+          nova.chars = (w.chars || []).map(ch => ({ id: generateId('ch'), text: ch.text }));
+          return nova;
+        }),
+      })),
+    };
+    // copia qualquer outro campo de topo da estrofe (ex: animation/stanzaDuration)
+    Object.keys(orig).forEach(k => {
+      if (k !== 'id' && k !== 'label' && k !== 'lines' && !(k in novaStanza)) {
+        try { novaStanza[k] = JSON.parse(JSON.stringify(orig[k])); } catch (e) { novaStanza[k] = orig[k]; }
+      }
+    });
+
+    // insere logo depois da original
+    parsed.stanzas.splice(idx + 1, 0, novaStanza);
+
+    // ANIMAÇÃO POR PALAVRA (engine.wordOverrides) e ESTILO POR PALAVRA:
+    // copia as entradas dos wordIds originais pros novos wordIds.
+    try {
+      if (engine.wordOverrides) {
+        const origWords = [];
+        orig.lines.forEach(l => l.words.forEach(w => origWords.push(w)));
+        const novaWords = [];
+        novaStanza.lines.forEach(l => l.words.forEach(w => novaWords.push(w)));
+        origWords.forEach((ow, i) => {
+          const ov = engine.wordOverrides[ow.id];
+          const nw = novaWords[i];
+          if (ov && nw) {
+            try { engine.wordOverrides[nw.id] = JSON.parse(JSON.stringify(ov)); }
+            catch (e) { engine.wordOverrides[nw.id] = ov; }
+          }
+        });
+      }
+    } catch (e) { console.warn('duplicar: overrides de palavra', e); }
+
+    // ESTILO DA ESTROFE (sceneOverrides) — copia o do id original pro novo id.
+    try {
+      if (engine.sceneOverrides && engine.sceneOverrides[orig.id]) {
+        engine.sceneOverrides[novaStanza.id] =
+          JSON.parse(JSON.stringify(engine.sceneOverrides[orig.id]));
+      }
+    } catch (e) { console.warn('duplicar: sceneOverride', e); }
+
+    // Mantém o TEXTAREA em sincronia: reescreve a letra inteira a partir das
+    // estrofes (assim a cópia passa a existir também no texto e um re-parse
+    // não a apaga). Marca uma flag pra o handler de input não re-parsear e
+    // desfazer o clone que acabamos de montar.
+    try {
+      const ta = $('#lyrics-input');
+      if (ta) {
+        _suppressReparse = true;
+        ta.value = _stanzasParaTexto(parsed.stanzas);
+        setTimeout(() => { _suppressReparse = false; }, 0);
+      }
+    } catch (e) { console.warn('duplicar: sync textarea', e); }
+
+    // Aponta o slide ativo pra cópia recém-criada.
+    engine.currentStanzaIndex = idx + 1;
+
+    markDirty();
+    engine.setParsed(parsed);       // re-renderiza engine com a nova estrofe
+    renderStanzaList(parsed);
+    renderTimeline(parsed);
+    if (typeof renderScenesList === 'function') { try { renderScenesList(); } catch (e) {} }
+    engine.playFull();
+    updateActiveStanzaInList(engine.currentStanzaIndex);
+    updateActiveTimelineClip(engine.currentStanzaIndex);
+    if (typeof showToast === 'function') showToast('Estrofe duplicada (com marcações)');
+  }
+
+  // Reconstrói o texto da letra a partir das estrofes, pra manter o textarea
+  // em sincronia após duplicar. Reproduz o formato que o parser entende:
+  // label entre colchetes (se houver e não for o padrão), uma linha por line,
+  // e linha em branco separando estrofes.
+  function _stanzasParaTexto(stanzas) {
+    return (stanzas || []).map(st => {
+      const linhas = (st.lines || []).map(ln =>
+        (ln.words || []).map(w => w.text).join(' ')
+      );
+      const temLabelReal = st.label && !/^(Estrofe|Verso|Refrão)\s*\d*$/i.test(st.label);
+      const cabecalho = temLabelReal ? `[${st.label}]\n` : '';
+      return cabecalho + linhas.join('\n');
+    }).join('\n\n');
+  }
+
+  // Move uma estrofe da posição `from` pra `to` (reordenar). Usado pelas setas
+  // ↑↓ e pelo arrastar. Mantém o textarea em sincronia e o slide ativo seguindo
+  // a estrofe que se moveu (se ela era a ativa).
+  function moveStanza(from, to) {
+    const parsed = engine.parsed;
+    if (!parsed || !parsed.stanzas) return;
+    const n = parsed.stanzas.length;
+    if (from < 0 || from >= n) return;
+    if (to < 0) to = 0;
+    if (to >= n) to = n - 1;
+    if (from === to) return;
+
+    const ativa = engine.currentStanzaIndex;
+    const [movida] = parsed.stanzas.splice(from, 1);
+    parsed.stanzas.splice(to, 0, movida);
+
+    // recalcula qual índice o slide ATIVO ocupa agora
+    let novaAtiva = ativa;
+    if (ativa === from) {
+      novaAtiva = to;
+    } else if (from < ativa && to >= ativa) {
+      novaAtiva = ativa - 1;
+    } else if (from > ativa && to <= ativa) {
+      novaAtiva = ativa + 1;
+    }
+    engine.currentStanzaIndex = Math.max(0, Math.min(n - 1, novaAtiva));
+
+    // Mantém o textarea em sincronia (sem re-parsear e desfazer a ordem).
+    try {
+      const ta = $('#lyrics-input');
+      if (ta) {
+        _suppressReparse = true;
+        ta.value = _stanzasParaTexto(parsed.stanzas);
+        setTimeout(() => { _suppressReparse = false; }, 0);
+      }
+    } catch (e) { console.warn('mover: sync textarea', e); }
+
+    markDirty();
+    engine.setParsed(parsed);
+    renderStanzaList(parsed);
+    renderTimeline(parsed);
+    if (typeof renderScenesList === 'function') { try { renderScenesList(); } catch (e) {} }
+    engine.playFull();
+    updateActiveStanzaInList(engine.currentStanzaIndex);
+    updateActiveTimelineClip(engine.currentStanzaIndex);
   }
 
   function deleteStanza(idx) {
