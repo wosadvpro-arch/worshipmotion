@@ -7656,7 +7656,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'setas-visiveis-10jul';
+window.__WM_BUILD = 'thumb-video-no-upload-10jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -11946,8 +11946,83 @@ async function uploadBackground(file) {
       mediaKind: isVideo ? 'video' : 'image', // novo campo
     },
   };
+
+  // MINIATURA DO VÍDEO: captura UM frame AGORA, no upload (arquivo fresco), e
+  // guarda como data: URL no próprio asset. É MUITO mais confiável do que
+  // recapturar dezenas de vídeos fora de tela toda vez que a grade abre (no
+  // iPhone essa recaptura sai preta / dá timeout). A grade passa a só exibir
+  // esse thumb salvo. Usa blob: temporário só pra esta captura única.
+  if (isVideo) {
+    let tmpUrl = null;
+    try {
+      tmpUrl = URL.createObjectURL(file);
+      const thumb = await _capturarFrameVideo(tmpUrl);
+      if (thumb) asset.meta.thumb = thumb;
+    } catch (e) {
+      // sem thumb: a grade mostra o badge ▶ (não trava o upload)
+    } finally {
+      if (tmpUrl) { try { URL.revokeObjectURL(tmpUrl); } catch (e) {} }
+    }
+  }
+
   await window.WM_ASSETS.save(asset);
   return asset;
+}
+
+// Captura um frame do vídeo como data: URL (JPEG). Tenta seek e, se o WebKit
+// não pintar o frame (fica preto), tenta um play/pause curto pra forçar a
+// decodificação. Retorna null se não conseguir.
+function _capturarFrameVideo(videoUrl) {
+  return new Promise((resolve) => {
+    const video = document.createElement('video');
+    video.muted = true; video.defaultMuted = true;
+    video.setAttribute('playsinline', ''); video.setAttribute('muted', '');
+    video.playsInline = true; video.preload = 'auto';
+    video.src = videoUrl;
+    let done = false;
+    const finish = (val) => {
+      if (done) return; done = true;
+      try { video.pause(); } catch (e) {}
+      try { video.removeAttribute('src'); video.load(); video.remove(); } catch (e) {}
+      resolve(val);
+    };
+    const desenhar = () => {
+      try {
+        if (!video.videoWidth) return false;
+        const c = document.createElement('canvas');
+        c.width = 160; c.height = 90;
+        const ctx = c.getContext('2d');
+        ctx.drawImage(video, 0, 0, c.width, c.height);
+        const data = c.toDataURL('image/jpeg', 0.7);
+        // se o frame veio "quase todo preto", considera falho e deixa tentar o play
+        return data && data.length > 800 ? data : false;
+      } catch (e) { return false; }
+    };
+    video.addEventListener('loadeddata', () => {
+      try { video.currentTime = Math.min(0.4, (video.duration || 1) * 0.1); } catch (e) {}
+    });
+    video.addEventListener('seeked', () => {
+      const d = desenhar();
+      if (d) return finish(d);
+      // WebKit não pintou no seek: força um play curtinho e tenta de novo
+      const tentarComPlay = () => {
+        setTimeout(() => {
+          const d2 = desenhar();
+          try { video.pause(); } catch (e) {}
+          finish(d2 || null);
+        }, 220);
+      };
+      let p = null;
+      try { p = video.play(); } catch (e) { p = null; }
+      if (p && typeof p.then === 'function') {
+        p.then(tentarComPlay).catch(() => finish(null));
+      } else {
+        tentarComPlay();
+      }
+    });
+    video.addEventListener('error', () => finish(null));
+    setTimeout(() => finish(null), 6000);
+  });
 }
 
 /**
@@ -26858,29 +26933,39 @@ function initEditor() {
         const el = grid.querySelector(`[data-asset-id="${b.id}"]`);
         if (!el) continue;
         const isVideo = b.meta && b.meta.mediaKind === 'video';
-        // Miniatura de VÍDEO precisa de data: URL (blob: sai preto no iPhone).
-        // Imagem e reprodução seguem em blob:.
-        const url = isVideo
-          ? await window.WM_CUSTOM_BACKGROUNDS.getThumbUrl(b.id)
-          : await window.WM_CUSTOM_BACKGROUNDS.getUrl(b.id);
-        if (!url) continue;
 
         if (isVideo) {
-          // Pra vídeo, extrai o primeiro frame como thumbnail
-          try {
-            const thumb = await getVideoThumbnail(url);
-            if (thumb) {
-              el.style.backgroundImage = `url(${thumb})`;
-              el.style.backgroundSize = 'cover';
-              el.style.backgroundPosition = 'center';
-            }
-          } catch (e) {
-            // Sem thumb: deixa o fundo padrão e o badge ▶
+          // Miniatura de vídeo: usa o thumb já SALVO no asset (capturado no
+          // upload). É o caminho confiável no iPhone. Se for um vídeo antigo
+          // (subido antes deste recurso) que não tem thumb, captura UMA vez
+          // agora e salva, pra não recapturar toda vez que a grade abrir.
+          let thumb = b.meta && b.meta.thumb;
+          if (!thumb) {
+            try {
+              const blobUrl = await window.WM_CUSTOM_BACKGROUNDS.getUrl(b.id);
+              if (blobUrl) thumb = await _capturarFrameVideo(blobUrl);
+              if (thumb && window.WM_ASSETS) {
+                const asset = await window.WM_ASSETS.get(b.id);
+                if (asset) {
+                  asset.meta = asset.meta || {};
+                  asset.meta.thumb = thumb;
+                  await window.WM_ASSETS.save(asset);
+                }
+              }
+            } catch (e) { /* sem thumb: fica o badge ▶ */ }
+          }
+          if (thumb) {
+            el.style.backgroundImage = `url(${thumb})`;
+            el.style.backgroundSize = 'cover';
+            el.style.backgroundPosition = 'center';
           }
         } else {
-          el.style.backgroundImage = `url(${url})`;
-          el.style.backgroundSize = 'cover';
-          el.style.backgroundPosition = 'center';
+          const url = await window.WM_CUSTOM_BACKGROUNDS.getUrl(b.id);
+          if (url) {
+            el.style.backgroundImage = `url(${url})`;
+            el.style.backgroundSize = 'cover';
+            el.style.backgroundPosition = 'center';
+          }
         }
       } catch (e) {}
     }
