@@ -4341,8 +4341,10 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
   position: relative;
 }
 .stanza-item-body {
-  /* Wrapper do conteúdo, deixa espaço pra lixeira + duplicar não cobrir texto */
+  /* Wrapper do conteúdo, deixa espaço pra lixeira + duplicar (direita) e pras
+     setas de mover (rodapé) não cobrirem o texto */
   padding-right: 56px;
+  padding-bottom: 32px;
 }
 /* Setas de reordenar (mover pra cima/baixo) — canto inferior esquerdo */
 .stanza-move {
@@ -4350,35 +4352,35 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
   left: 8px;
   bottom: 8px;
   display: flex;
-  gap: 4px;
+  gap: 5px;
+  z-index: 2;
 }
 .stanza-move button {
-  width: 26px;
-  height: 22px;
+  width: 30px;
+  height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid var(--border-subtle);
+  background: rgba(139, 92, 246, 0.18);
+  border: 1px solid rgba(139, 92, 246, 0.45);
   border-radius: 6px;
-  color: var(--text-secondary);
+  color: #c4b5fd;
   cursor: pointer;
   padding: 0;
   transition: 0.12s;
 }
 .stanza-move button:hover:not(:disabled) {
-  background: rgba(139, 92, 246, 0.15);
-  color: var(--accent);
-  border-color: rgba(139, 92, 246, 0.4);
+  background: rgba(139, 92, 246, 0.32);
+  color: #fff;
+  border-color: var(--accent);
 }
 .stanza-move button:disabled {
-  opacity: 0.3;
+  opacity: 0.28;
   cursor: default;
 }
 .stanza-item-preview {
   /* deixa respiro pras setas no rodapé não colarem no texto */
 }
-.stanza-item.has-move .stanza-item-body { padding-bottom: 26px; }
 /* Feedback de arrastar (só faz sentido no PC) */
 .stanza-item.wm-dragging {
   opacity: 0.45;
@@ -7654,7 +7656,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'reordenar-estrofes-10jul';
+window.__WM_BUILD = 'setas-visiveis-10jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
