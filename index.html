@@ -7782,7 +7782,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'layout-marcacao-harmonico-10jul';
+window.__WM_BUILD = 'marcacao-atualiza-estrofes-novas-10jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -19884,6 +19884,12 @@ function initEditor() {
     renderTimeline(parsed);
     if (typeof renderScenesList === 'function') {
       try { renderScenesList(); } catch (e) {}
+    }
+    // Se o painel "Marcar no ritmo" está aberto, re-renderiza ele também —
+    // senão as estrofes recém-adicionadas aparecem na lista de slides mas
+    // NÃO no painel de marcação (ficava mostrando só as antigas).
+    if (_markingPanelOpen && typeof renderMarkingPanel === 'function') {
+      try { renderMarkingPanel(); } catch (e) {}
     }
 
     if (parsed.stanzas.length > 0) {
