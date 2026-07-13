@@ -7782,7 +7782,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'marcacao-atualiza-estrofes-novas-10jul';
+window.__WM_BUILD = 'renumerar-estrofes-10jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -20259,6 +20259,18 @@ function initEditor() {
       acc + l.words.filter(w => typeof w.tStart === 'number').length, 0);
   }
 
+  // Renumera os rótulos AUTOMÁTICOS "Estrofe N" pra bater com a posição, igual o
+  // parser faz (Estrofe = índice+1). Assim, ao duplicar/reordenar/excluir, não
+  // fica "Estrofe 1" e "Estrofe 1" repetido. NÃO mexe em rótulos personalizados
+  // (Refrão, Ponte, Verso digitado pelo usuário, etc) — só nos "Estrofe N".
+  function _renumerarEstrofesAuto(stanzas) {
+    (stanzas || []).forEach((st, i) => {
+      if (st && typeof st.label === 'string' && /^Estrofe\s+\d+$/i.test(st.label.trim())) {
+        st.label = 'Estrofe ' + (i + 1);
+      }
+    });
+  }
+
   // LIMPA a marcação de ritmo de UMA estrofe (remove tStart das palavras dela),
   // sem tocar nas outras estrofes nem nas animações/estilos.
   function clearStanzaMarks(idx) {
@@ -20293,6 +20305,7 @@ function initEditor() {
     const insertAt = ordenados[ordenados.length - 1] + 1; // depois da última
     const clones = ordenados.map(i => _clonarStanza(parsed.stanzas[i]));
     parsed.stanzas.splice(insertAt, 0, ...clones);
+    _renumerarEstrofesAuto(parsed.stanzas);
 
     try {
       const ta = $('#lyrics-input');
@@ -20308,6 +20321,7 @@ function initEditor() {
     engine.playFull();
     updateActiveStanzaInList(insertAt);
     updateActiveTimelineClip(insertAt);
+    if (_markingPanelOpen && typeof renderMarkingPanel === 'function') { try { renderMarkingPanel(); } catch (e) {} }
     if (typeof showToast === 'function') showToast(`${clones.length} estrofe(s) duplicada(s) em bloco`);
   }
 
@@ -20353,6 +20367,7 @@ function initEditor() {
     const ativa = engine.currentStanzaIndex;
     const [movida] = parsed.stanzas.splice(from, 1);
     parsed.stanzas.splice(to, 0, movida);
+    _renumerarEstrofesAuto(parsed.stanzas);
 
     // recalcula qual índice o slide ATIVO ocupa agora
     let novaAtiva = ativa;
@@ -20399,6 +20414,7 @@ function initEditor() {
 
     // Remove a estrofe
     parsed.stanzas.splice(idx, 1);
+    _renumerarEstrofesAuto(parsed.stanzas);
 
     // Limpa overrides órfãos
     wordIdsToClean.forEach(wid => {
