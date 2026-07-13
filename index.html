@@ -4496,6 +4496,12 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
 }
 .stanza-select-count { font-size: 12px; color: #c4b5fd; font-weight: 600; }
 .stanza-select-actions { display: flex; gap: 6px; }
+#btn-del-selected {
+  background: rgba(239, 68, 68, 0.9);
+  color: #fff;
+  border: 1px solid rgba(239, 68, 68, 0.9);
+}
+#btn-del-selected:hover { background: rgba(220, 38, 38, 1); }
 body.wm-select-mode .stanza-item { cursor: pointer; }
 .stanza-item.is-selected {
   outline: 2px solid var(--accent);
@@ -6679,7 +6685,8 @@ Digno de toda honra"></textarea>
           <div class="stanza-select-bar" id="stanza-select-bar" style="display:none;">
             <span class="stanza-select-count" id="stanza-select-count">0 selecionadas</span>
             <div class="stanza-select-actions">
-              <button class="btn btn-sm btn-primary" id="btn-dup-selected">Duplicar selecionadas</button>
+              <button class="btn btn-sm btn-primary" id="btn-dup-selected">Duplicar</button>
+              <button class="btn btn-sm" id="btn-del-selected">Excluir</button>
               <button class="btn btn-sm btn-ghost" id="btn-cancel-select">Cancelar</button>
             </div>
           </div>
@@ -7782,7 +7789,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'renumerar-estrofes-10jul';
+window.__WM_BUILD = 'excluir-selecionadas-10jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -20186,6 +20193,16 @@ function initEditor() {
         _exitSelMode();
       });
     }
+    const del = $('#btn-del-selected');
+    if (del && !del._wired) {
+      del._wired = true;
+      del.addEventListener('click', async () => {
+        const indices = Array.from(_wmSelSet);
+        if (!indices.length) return;
+        const excluiu = await deleteSelectedStanzas(indices);
+        if (excluiu) _exitSelMode();
+      });
+    }
   }
 
   // Deleta uma estrofe (com confirmação)
@@ -20323,6 +20340,50 @@ function initEditor() {
     updateActiveTimelineClip(insertAt);
     if (_markingPanelOpen && typeof renderMarkingPanel === 'function') { try { renderMarkingPanel(); } catch (e) {} }
     if (typeof showToast === 'function') showToast(`${clones.length} estrofe(s) duplicada(s) em bloco`);
+  }
+
+  // EXCLUI VÁRIAS estrofes selecionadas de uma vez (ex: um refrão que saiu
+  // errado). Confirma antes, não deixa apagar TODAS, limpa overrides órfãos,
+  // renumera e sincroniza o textarea (pra não reaparecerem no próximo parse).
+  // Retorna true se excluiu.
+  async function deleteSelectedStanzas(indices) {
+    const parsed = engine.parsed;
+    if (!parsed || !parsed.stanzas || !indices || !indices.length) return false;
+    const ordenados = indices.slice().filter(i => parsed.stanzas[i]).sort((a, b) => a - b);
+    if (!ordenados.length) return false;
+    if (ordenados.length >= parsed.stanzas.length) {
+      if (typeof wmAlert === 'function') await wmAlert('Não dá pra excluir todas as estrofes. Deixe pelo menos uma.', { title: 'Não é possível excluir' });
+      return false;
+    }
+    if (typeof wmConfirm === 'function') {
+      const ok = await wmConfirm(`Excluir ${ordenados.length} estrofe(s) selecionada(s)?\n\nIsso não pode ser desfeito.`, {
+        title: 'Excluir estrofes selecionadas', confirmText: 'Excluir', danger: true
+      });
+      if (!ok) return false;
+    }
+    // coleta wordIds pra limpar overrides órfãos
+    const wordIdsToClean = [];
+    ordenados.forEach(i => parsed.stanzas[i].lines.forEach(l => l.words.forEach(w => { if (w.id) wordIdsToClean.push(w.id); })));
+    // remove de TRÁS pra frente (não bagunça os índices)
+    for (let k = ordenados.length - 1; k >= 0; k--) parsed.stanzas.splice(ordenados[k], 1);
+    _renumerarEstrofesAuto(parsed.stanzas);
+    wordIdsToClean.forEach(wid => { if (engine.wordOverrides && engine.wordOverrides[wid]) delete engine.wordOverrides[wid]; });
+    try {
+      const ta = $('#lyrics-input');
+      if (ta) { window._suppressReparse = true; ta.value = _stanzasParaTexto(parsed.stanzas); }
+    } catch (e) {}
+    if (engine.currentStanzaIndex >= parsed.stanzas.length) engine.currentStanzaIndex = Math.max(0, parsed.stanzas.length - 1);
+    markDirty();
+    engine.setParsed(parsed);
+    renderStanzaList(parsed);
+    renderTimeline(parsed);
+    if (typeof renderScenesList === 'function') { try { renderScenesList(); } catch (e) {} }
+    engine.playFull();
+    updateActiveStanzaInList(engine.currentStanzaIndex);
+    updateActiveTimelineClip(engine.currentStanzaIndex);
+    if (_markingPanelOpen && typeof renderMarkingPanel === 'function') { try { renderMarkingPanel(); } catch (e) {} }
+    if (typeof showToast === 'function') showToast(`${ordenados.length} estrofe(s) excluída(s)`);
+    return true;
   }
 
   // Duplica uma estrofe como CÓPIA INDEPENDENTE, logo abaixo da original.
