@@ -4430,8 +4430,94 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
   border-color: rgba(139, 92, 246, 0.4);
 }
 @media (pointer: coarse) {
-  .stanza-item-dup, .stanza-item-delete { opacity: 1; }
+  .stanza-item-dup, .stanza-item-delete, .stanza-item-clearmarks { opacity: 1; }
 }
+/* Botão limpar-ritmo por estrofe (só aparece quando a estrofe tem marcação) */
+.stanza-item-clearmarks {
+  position: absolute;
+  right: 60px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  opacity: 0;
+  transition: 0.12s;
+  padding: 0;
+}
+.stanza-item:hover .stanza-item-clearmarks { opacity: 1; }
+.stanza-item-clearmarks:hover {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+  border-color: rgba(245, 158, 11, 0.4);
+}
+/* Com o botão limpar-ritmo presente, reserva mais espaço à direita */
+.stanza-item.has-marks .stanza-item-body { padding-right: 84px; }
+/* ===== Modo seleção (duplicar refrão em bloco) ===== */
+.stanza-select-toggle {
+  margin-left: auto;
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 6px;
+  background: rgba(139, 92, 246, 0.12);
+  border: 1px solid rgba(139, 92, 246, 0.4);
+  color: #c4b5fd;
+  cursor: pointer;
+  transition: 0.12s;
+}
+.stanza-select-toggle:hover { background: rgba(139, 92, 246, 0.22); color: #fff; }
+.stanza-select-toggle.is-active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.stanza-select-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  margin: 6px 0;
+  background: rgba(139, 92, 246, 0.10);
+  border: 1px solid rgba(139, 92, 246, 0.35);
+  border-radius: 8px;
+  flex-wrap: wrap;
+}
+.stanza-select-count { font-size: 12px; color: #c4b5fd; font-weight: 600; }
+.stanza-select-actions { display: flex; gap: 6px; }
+body.wm-select-mode .stanza-item { cursor: pointer; }
+.stanza-item.is-selected {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+  background: rgba(139, 92, 246, 0.14);
+}
+.stanza-item.is-selected::after {
+  content: '✓';
+  position: absolute;
+  left: 8px; top: 6px;
+  width: 18px; height: 18px;
+  background: var(--accent); color: #fff;
+  border-radius: 50%;
+  font-size: 11px;
+  display: flex; align-items: center; justify-content: center;
+  z-index: 3;
+}
+/* Limpar ritmo dentro do painel de marcação */
+.mark-stanza-clear {
+  font-size: 10px;
+  padding: 2px 8px;
+  margin-left: 6px;
+  border-radius: 5px;
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  color: #fbbf24;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.mark-stanza-clear:hover { background: rgba(245, 158, 11, 0.28); color: #fff; }
 .stanza-item-delete {
   position: absolute;
   right: 8px;
@@ -6569,6 +6655,14 @@ Digno de toda honra"></textarea>
           <div class="panel-section-title">
             <span>Estrofes</span>
             <span class="badge" id="stanza-count">0</span>
+            <button class="stanza-select-toggle" id="btn-select-stanzas" title="Selecionar várias estrofes pra copiar em bloco (ex: o refrão)">Selecionar</button>
+          </div>
+          <div class="stanza-select-bar" id="stanza-select-bar" style="display:none;">
+            <span class="stanza-select-count" id="stanza-select-count">0 selecionadas</span>
+            <div class="stanza-select-actions">
+              <button class="btn btn-sm btn-primary" id="btn-dup-selected">Duplicar selecionadas</button>
+              <button class="btn btn-sm btn-ghost" id="btn-cancel-select">Cancelar</button>
+            </div>
           </div>
           <div class="stanza-list" id="stanza-list">
             <div style="font-size: var(--text-xs); color: var(--text-tertiary); text-align: center; padding: var(--space-6) 0;">
@@ -7669,7 +7763,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'corrige-adicionar-estrofes-10jul';
+window.__WM_BUILD = 'selecionar-refrao-limpar-ritmo-10jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -19812,7 +19906,7 @@ function initEditor() {
       const ehPrimeira = (i === 0);
       const ehUltima = (i === parsed.stanzas.length - 1);
       return `
-        <div class="stanza-item" data-index="${i}" draggable="true">
+        <div class="stanza-item ${nMarcadas > 0 ? 'has-marks' : ''}" data-index="${i}" draggable="true">
           <div class="stanza-slide-tag">
             <span class="stanza-slide-num">SLIDE ${i + 1}</span>
             <span class="stanza-slide-of">de ${parsed.stanzas.length}</span>
@@ -19836,6 +19930,12 @@ function initEditor() {
               <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
             </svg>
           </button>
+          ${nMarcadas > 0 ? `<button class="stanza-item-clearmarks" data-clearmarks="${i}" title="Limpar marcação de ritmo desta estrofe" aria-label="Limpar ritmo">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>
+              <line x1="3" y1="3" x2="21" y2="21"/>
+            </svg>
+          </button>` : ''}
           <button class="stanza-item-delete" data-delete-stanza="${i}" title="Excluir estrofe" aria-label="Excluir estrofe">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="3 6 5 6 21 6"/>
@@ -19850,12 +19950,18 @@ function initEditor() {
 
     $$('.stanza-item').forEach(el => {
       el.addEventListener('click', (ev) => {
-        // Não navega se clicou na lixeira, no duplicar ou nas setas de mover
+        // Não navega se clicou num dos botões de ação da estrofe
         if (ev.target.closest('[data-delete-stanza]')) return;
         if (ev.target.closest('[data-dup-stanza]')) return;
+        if (ev.target.closest('[data-clearmarks]')) return;
         if (ev.target.closest('[data-move-up]')) return;
         if (ev.target.closest('[data-move-down]')) return;
         const idx = parseInt(el.dataset.index, 10);
+        // MODO SELEÇÃO: em vez de navegar, alterna a seleção da estrofe.
+        if (window._wmSelMode) {
+          _toggleStanzaSelecionada(idx);
+          return;
+        }
         engine.currentStanzaIndex = idx;
         engine.playFull();
         updateActiveStanzaInList(idx);
@@ -19868,6 +19974,15 @@ function initEditor() {
         ev.stopPropagation();
         const idx = parseInt(btn.dataset.dupStanza, 10);
         duplicateStanza(idx);
+      });
+    });
+
+    // Limpar marcação de ritmo desta estrofe (só aparece se ela tem marcações)
+    $$('[data-clearmarks]').forEach(btn => {
+      btn.addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        const idx = parseInt(btn.dataset.clearmarks, 10);
+        clearStanzaMarks(idx);
       });
     });
 
@@ -19946,6 +20061,73 @@ function initEditor() {
         ? engine.currentStanzaIndex : 0;
       updateActiveStanzaInList(idxAtual);
     }
+    // Se estamos em MODO SELEÇÃO, re-aplica o destaque das estrofes marcadas
+    // (a lista foi recriada, então as classes se perderam).
+    if (window._wmSelMode) _reaplicarSelecaoVisual();
+  }
+
+  // ===== MODO SELEÇÃO (duplicar várias estrofes em bloco, ex: o refrão) =====
+  window._wmSelMode = false;
+  const _wmSelSet = new Set();
+
+  function _reaplicarSelecaoVisual() {
+    $$('.stanza-item').forEach(el => {
+      const i = parseInt(el.dataset.index, 10);
+      el.classList.toggle('is-selected', _wmSelSet.has(i));
+    });
+  }
+  function _atualizarBarraSelecao() {
+    const n = _wmSelSet.size;
+    const cnt = $('#stanza-select-count');
+    if (cnt) cnt.textContent = n === 1 ? '1 selecionada' : `${n} selecionadas`;
+    const dup = $('#btn-dup-selected');
+    if (dup) dup.disabled = (n === 0);
+  }
+  function _toggleStanzaSelecionada(idx) {
+    if (_wmSelSet.has(idx)) _wmSelSet.delete(idx); else _wmSelSet.add(idx);
+    _reaplicarSelecaoVisual();
+    _atualizarBarraSelecao();
+  }
+  function _enterSelMode() {
+    window._wmSelMode = true;
+    _wmSelSet.clear();
+    document.body.classList.add('wm-select-mode');
+    const bar = $('#stanza-select-bar'); if (bar) bar.style.display = '';
+    const tog = $('#btn-select-stanzas'); if (tog) tog.classList.add('is-active');
+    _atualizarBarraSelecao();
+    _reaplicarSelecaoVisual();
+  }
+  function _exitSelMode() {
+    window._wmSelMode = false;
+    _wmSelSet.clear();
+    document.body.classList.remove('wm-select-mode');
+    const bar = $('#stanza-select-bar'); if (bar) bar.style.display = 'none';
+    const tog = $('#btn-select-stanzas'); if (tog) tog.classList.remove('is-active');
+    $$('.stanza-item').forEach(el => el.classList.remove('is-selected'));
+  }
+  function _wmWireSelecao() {
+    const tog = $('#btn-select-stanzas');
+    if (tog && !tog._wired) {
+      tog._wired = true;
+      tog.addEventListener('click', () => {
+        if (window._wmSelMode) _exitSelMode(); else _enterSelMode();
+      });
+    }
+    const cancel = $('#btn-cancel-select');
+    if (cancel && !cancel._wired) {
+      cancel._wired = true;
+      cancel.addEventListener('click', () => _exitSelMode());
+    }
+    const dup = $('#btn-dup-selected');
+    if (dup && !dup._wired) {
+      dup._wired = true;
+      dup.addEventListener('click', () => {
+        const indices = Array.from(_wmSelSet);
+        if (!indices.length) return;
+        duplicateSelectedStanzas(indices);
+        _exitSelMode();
+      });
+    }
   }
 
   // Deleta uma estrofe (com confirmação)
@@ -19966,6 +20148,111 @@ function initEditor() {
     deleteStanza(idx);
   }
 
+  // Clona UMA estrofe (objeto) com IDs NOVOS, preservando marcações (tStart),
+  // animações e emphasized. Também copia os overrides de palavra/estrofe pros
+  // novos IDs (recebe/atualiza os mapas). Usado pelo duplicar (1) e pelo
+  // duplicar seleção (várias).
+  function _clonarStanza(orig) {
+    const novaStanza = {
+      id: generateId('stz'),
+      label: orig.label,
+      lines: (orig.lines || []).map(ln => ({
+        id: generateId('ln'),
+        words: (ln.words || []).map(w => {
+          const nova = Object.assign({}, w);
+          nova.id = generateId('w');
+          nova.chars = (w.chars || []).map(ch => ({ id: generateId('ch'), text: ch.text }));
+          return nova;
+        }),
+      })),
+    };
+    Object.keys(orig).forEach(k => {
+      if (k !== 'id' && k !== 'label' && k !== 'lines' && !(k in novaStanza)) {
+        try { novaStanza[k] = JSON.parse(JSON.stringify(orig[k])); } catch (e) { novaStanza[k] = orig[k]; }
+      }
+    });
+    // overrides de palavra
+    try {
+      if (engine.wordOverrides) {
+        const ow = []; orig.lines.forEach(l => l.words.forEach(w => ow.push(w)));
+        const nw = []; novaStanza.lines.forEach(l => l.words.forEach(w => nw.push(w)));
+        ow.forEach((o, i) => {
+          const ov = engine.wordOverrides[o.id];
+          if (ov && nw[i]) {
+            try { engine.wordOverrides[nw[i].id] = JSON.parse(JSON.stringify(ov)); }
+            catch (e) { engine.wordOverrides[nw[i].id] = ov; }
+          }
+        });
+      }
+    } catch (e) {}
+    // estilo da estrofe
+    try {
+      if (engine.sceneOverrides && engine.sceneOverrides[orig.id]) {
+        engine.sceneOverrides[novaStanza.id] = JSON.parse(JSON.stringify(engine.sceneOverrides[orig.id]));
+      }
+    } catch (e) {}
+    return novaStanza;
+  }
+
+  // Quantas palavras marcadas (tStart) a estrofe tem.
+  function _stanzaNumMarcas(stanza) {
+    if (!stanza || !stanza.lines) return 0;
+    return stanza.lines.reduce((acc, l) =>
+      acc + l.words.filter(w => typeof w.tStart === 'number').length, 0);
+  }
+
+  // LIMPA a marcação de ritmo de UMA estrofe (remove tStart das palavras dela),
+  // sem tocar nas outras estrofes nem nas animações/estilos.
+  function clearStanzaMarks(idx) {
+    const parsed = engine.parsed;
+    if (!parsed || !parsed.stanzas[idx]) return;
+    const st = parsed.stanzas[idx];
+    let removidas = 0;
+    st.lines.forEach(l => l.words.forEach(w => {
+      if (typeof w.tStart === 'number') { delete w.tStart; removidas++; }
+      if (w._marked) delete w._marked;
+    }));
+    if (!removidas) return;
+    markDirty();
+    engine.setParsed(parsed);
+    renderStanzaList(parsed);
+    renderTimeline(parsed);
+    engine.currentStanzaIndex = idx;
+    engine.playFull();
+    updateActiveStanzaInList(idx);
+    updateActiveTimelineClip(idx);
+    if (typeof showToast === 'function') showToast(`Ritmo da estrofe limpo (${removidas} marcações)`);
+  }
+
+  // DUPLICA VÁRIAS estrofes de uma vez (um BLOCO — ex: o refrão inteiro), como
+  // cópia independente, inserida logo depois da última estrofe selecionada,
+  // preservando a ORDEM e as marcações. Recebe uma lista de índices.
+  function duplicateSelectedStanzas(indices) {
+    const parsed = engine.parsed;
+    if (!parsed || !parsed.stanzas || !indices || !indices.length) return;
+    const ordenados = indices.slice().filter(i => parsed.stanzas[i]).sort((a, b) => a - b);
+    if (!ordenados.length) return;
+    const insertAt = ordenados[ordenados.length - 1] + 1; // depois da última
+    const clones = ordenados.map(i => _clonarStanza(parsed.stanzas[i]));
+    parsed.stanzas.splice(insertAt, 0, ...clones);
+
+    try {
+      const ta = $('#lyrics-input');
+      if (ta) { window._suppressReparse = true; ta.value = _stanzasParaTexto(parsed.stanzas); }
+    } catch (e) {}
+
+    engine.currentStanzaIndex = insertAt;
+    markDirty();
+    engine.setParsed(parsed);
+    renderStanzaList(parsed);
+    renderTimeline(parsed);
+    if (typeof renderScenesList === 'function') { try { renderScenesList(); } catch (e) {} }
+    engine.playFull();
+    updateActiveStanzaInList(insertAt);
+    updateActiveTimelineClip(insertAt);
+    if (typeof showToast === 'function') showToast(`${clones.length} estrofe(s) duplicada(s) em bloco`);
+  }
+
   // Duplica uma estrofe como CÓPIA INDEPENDENTE, logo abaixo da original.
   // Clona texto + marcações de ritmo (word.tStart) + animações por palavra +
   // estilo por palavra (overrides) + estilo da estrofe (sceneOverride), tudo
@@ -19975,84 +20262,7 @@ function initEditor() {
   function duplicateStanza(idx) {
     const parsed = engine.parsed;
     if (!parsed || !parsed.stanzas[idx]) return;
-    const orig = parsed.stanzas[idx];
-
-    // clone profundo do objeto da estrofe, trocando TODOS os ids por novos e
-    // preservando qualquer campo extra da palavra (tStart, anim, emphasized...).
-    const novaStanza = {
-      id: generateId('stz'),
-      label: orig.label,
-      lines: (orig.lines || []).map(ln => ({
-        id: generateId('ln'),
-        words: (ln.words || []).map(w => {
-          const nova = Object.assign({}, w); // copia tStart, anim, emphasized, etc
-          nova.id = generateId('w');
-          nova.chars = (w.chars || []).map(ch => ({ id: generateId('ch'), text: ch.text }));
-          return nova;
-        }),
-      })),
-    };
-    // copia qualquer outro campo de topo da estrofe (ex: animation/stanzaDuration)
-    Object.keys(orig).forEach(k => {
-      if (k !== 'id' && k !== 'label' && k !== 'lines' && !(k in novaStanza)) {
-        try { novaStanza[k] = JSON.parse(JSON.stringify(orig[k])); } catch (e) { novaStanza[k] = orig[k]; }
-      }
-    });
-
-    // insere logo depois da original
-    parsed.stanzas.splice(idx + 1, 0, novaStanza);
-
-    // ANIMAÇÃO POR PALAVRA (engine.wordOverrides) e ESTILO POR PALAVRA:
-    // copia as entradas dos wordIds originais pros novos wordIds.
-    try {
-      if (engine.wordOverrides) {
-        const origWords = [];
-        orig.lines.forEach(l => l.words.forEach(w => origWords.push(w)));
-        const novaWords = [];
-        novaStanza.lines.forEach(l => l.words.forEach(w => novaWords.push(w)));
-        origWords.forEach((ow, i) => {
-          const ov = engine.wordOverrides[ow.id];
-          const nw = novaWords[i];
-          if (ov && nw) {
-            try { engine.wordOverrides[nw.id] = JSON.parse(JSON.stringify(ov)); }
-            catch (e) { engine.wordOverrides[nw.id] = ov; }
-          }
-        });
-      }
-    } catch (e) { console.warn('duplicar: overrides de palavra', e); }
-
-    // ESTILO DA ESTROFE (sceneOverrides) — copia o do id original pro novo id.
-    try {
-      if (engine.sceneOverrides && engine.sceneOverrides[orig.id]) {
-        engine.sceneOverrides[novaStanza.id] =
-          JSON.parse(JSON.stringify(engine.sceneOverrides[orig.id]));
-      }
-    } catch (e) { console.warn('duplicar: sceneOverride', e); }
-
-    // Mantém o TEXTAREA em sincronia: reescreve a letra inteira a partir das
-    // estrofes (assim a cópia passa a existir também no texto e um re-parse
-    // não a apaga). Marca uma flag pra o handler de input não re-parsear e
-    // desfazer o clone que acabamos de montar.
-    try {
-      const ta = $('#lyrics-input');
-      if (ta) {
-        window._suppressReparse = true;
-        ta.value = _stanzasParaTexto(parsed.stanzas);
-      }
-    } catch (e) { console.warn('duplicar: sync textarea', e); }
-
-    // Aponta o slide ativo pra cópia recém-criada.
-    engine.currentStanzaIndex = idx + 1;
-
-    markDirty();
-    engine.setParsed(parsed);       // re-renderiza engine com a nova estrofe
-    renderStanzaList(parsed);
-    renderTimeline(parsed);
-    if (typeof renderScenesList === 'function') { try { renderScenesList(); } catch (e) {} }
-    engine.playFull();
-    updateActiveStanzaInList(engine.currentStanzaIndex);
-    updateActiveTimelineClip(engine.currentStanzaIndex);
-    if (typeof showToast === 'function') showToast('Estrofe duplicada (com marcações)');
+    duplicateSelectedStanzas([idx]);
   }
 
   // Reconstrói o texto da letra a partir das estrofes, pra manter o textarea
@@ -28643,6 +28853,7 @@ function initEditor() {
                 <button class="mark-mode-btn ${getStanzaMarkMode(si) === 'line' ? 'active' : ''}" data-mode="line" data-si="${si}">Linha</button>
               </div>
               <span class="mark-stanza-count" title="${totalLinhas} linha(s) nesta estrofe">${markedCount}/${stanzaWords.length} · ${totalLinhas} linha${totalLinhas !== 1 ? 's' : ''}</span>
+              ${markedCount > 0 ? `<button class="mark-stanza-clear" data-clear-si="${si}" title="Limpar marcações desta estrofe">Limpar ritmo</button>` : ''}
             </div>
             <div class="mark-stanza-lines">${linesHtml || '<span style="font-size:11px;color:rgba(255,255,255,0.4);">(estrofe vazia)</span>'}</div>
           </div>
@@ -28658,6 +28869,27 @@ function initEditor() {
     }
 
     content.innerHTML = html;
+
+    // Limpar marcações de UMA estrofe direto do painel de marcação
+    $$('.mark-stanza-clear', content).forEach(btn => {
+      btn.addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        const si = parseInt(btn.dataset.clearSi, 10);
+        const parsed2 = engine?.parsed;
+        if (!parsed2 || !parsed2.stanzas[si]) return;
+        let removidas = 0;
+        parsed2.stanzas[si].lines.forEach(l => l.words.forEach(w => {
+          if (typeof w.tStart === 'number') { delete w.tStart; removidas++; }
+        }));
+        if (!removidas) return;
+        _markHistory = _markHistory.filter(h => h.si !== si); // tira do histórico
+        markDirty();
+        renderTimelineMarkers();
+        if (typeof renderStanzaList === 'function' && engine.parsed) renderStanzaList(engine.parsed);
+        renderMarkingPanel();
+        if (typeof showToast === 'function') showToast(`Ritmo da estrofe limpo (${removidas})`);
+      });
+    });
 
     // Click numa palavra = marca/remarca no tempo atual
     $$('.mark-word', content).forEach(btn => {
@@ -29333,6 +29565,7 @@ function initEditor() {
   // letra-a-letra. parseAndRender JÁ preserva as marcações de tempo
   // (casa por texto+ordem), então editar a letra não perde o sync.
   let _liveLyricsTimer = null;
+  _wmWireSelecao();
   const _liveLyricsInput = $('#lyrics-input');
   if (_liveLyricsInput) {
     _liveLyricsInput.addEventListener('input', () => {
