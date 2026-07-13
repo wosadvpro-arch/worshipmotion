@@ -7771,7 +7771,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'toque-longo-selecionar-10jul';
+window.__WM_BUILD = 'adiantar-audio-marcacao-10jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -28311,11 +28311,12 @@ function initEditor() {
         _tapElapsedBase = 0;
         _tapRunning = true;
         _tapStartMs = performance.now();
-        // COM MÚSICA: toca o MP3 do início — você marca ouvindo a música e as
-        // marcações ficam atreladas ao tempo dela.
+        // COM MÚSICA: toca o MP3 a partir da POSIÇÃO ATUAL (não força voltar pro
+        // início). Assim, se você adiantou a música pra onde estão as estrofes
+        // novas, a marcação começa de lá. O relógio da marcação já usa o tempo
+        // real do áudio (_markClock), então as marcas batem no tempo certo.
         if (_temAudioCarregado()) {
           try {
-            audioElement.currentTime = 0;
             audioElement.play().catch(e => console.warn('Audio play falhou:', e));
           } catch (e) {}
         }
@@ -28386,9 +28387,12 @@ function initEditor() {
   function _enterTapMode() {
     _tapMode = true;
     const bar = document.getElementById('marking-tap-bar'); if (bar) bar.style.display = 'flex';
-    const wave = document.getElementById('marking-wave-wrap'); if (wave) wave.style.display = 'none';
+    // MOSTRA os controles de navegação do áudio no modo bater — assim dá pra
+    // ADIANTAR a música até onde estão as estrofes novas (ex: refrão que se
+    // repete no meio/fim) e marcar de lá, sem tocar tudo do começo.
+    const wave = document.getElementById('marking-wave-wrap'); if (wave) wave.style.display = '';
     const instr = document.querySelector('.marking-panel-instructions'); if (instr) instr.style.display = 'none';
-    ['mini-back5-btn','mini-fwd5-btn','mini-play-btn','mini-timer'].forEach(id => { const e = document.getElementById(id); if (e) e.style.display = 'none'; });
+    ['mini-back5-btn','mini-fwd5-btn','mini-play-btn','mini-timer'].forEach(id => { const e = document.getElementById(id); if (e) e.style.display = ''; });
     _tapFinish(false);
   }
   // Modo "onda" (marcar clicando na forma de onda) foi removido: o app usa
