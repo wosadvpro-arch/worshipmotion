@@ -824,6 +824,9 @@ h1, h2, h3, h4, h5, h6 {
   cursor: pointer;
   transition: all var(--duration-fast) var(--ease-out-quart);
   position: relative;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
 }
 .stanza-item:hover {
   border-color: var(--border-strong);
@@ -4481,10 +4484,15 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
   gap: 8px;
   padding: 8px 10px;
   margin: 6px 0;
-  background: rgba(139, 92, 246, 0.10);
-  border: 1px solid rgba(139, 92, 246, 0.35);
+  background: rgba(30, 27, 46, 0.96);
+  border: 1px solid rgba(139, 92, 246, 0.5);
   border-radius: 8px;
   flex-wrap: wrap;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
 .stanza-select-count { font-size: 12px; color: #c4b5fd; font-weight: 600; }
 .stanza-select-actions { display: flex; gap: 6px; }
@@ -6655,7 +6663,7 @@ Digno de toda honra"></textarea>
           <div class="panel-section-title">
             <span>Estrofes</span>
             <span class="badge" id="stanza-count">0</span>
-            <button class="stanza-select-toggle" id="btn-select-stanzas" title="Selecionar várias estrofes pra copiar em bloco (ex: o refrão)">Selecionar</button>
+            <button class="stanza-select-toggle" id="btn-select-stanzas" title="Selecionar várias estrofes pra copiar em bloco (ex: o refrão). Dica: segure o dedo numa estrofe pra já começar a selecionar.">Selecionar</button>
           </div>
           <div class="stanza-select-bar" id="stanza-select-bar" style="display:none;">
             <span class="stanza-select-count" id="stanza-select-count">0 selecionadas</span>
@@ -7763,7 +7771,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'selecionar-refrao-limpar-ritmo-10jul';
+window.__WM_BUILD = 'toque-longo-selecionar-10jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -19956,6 +19964,9 @@ function initEditor() {
         if (ev.target.closest('[data-clearmarks]')) return;
         if (ev.target.closest('[data-move-up]')) return;
         if (ev.target.closest('[data-move-down]')) return;
+        // Se um toque longo acabou de disparar, ignora o 'click' que vem em
+        // seguida (senão ele desmarcaria a estrofe recém-selecionada).
+        if (window._lpJustFired) { window._lpJustFired = false; return; }
         const idx = parseInt(el.dataset.index, 10);
         // MODO SELEÇÃO: em vez de navegar, alterna a seleção da estrofe.
         if (window._wmSelMode) {
@@ -19975,6 +19986,36 @@ function initEditor() {
         const idx = parseInt(btn.dataset.dupStanza, 10);
         duplicateStanza(idx);
       });
+    });
+
+    // TOQUE LONGO numa estrofe (~450ms segurando, sem arrastar) = entra no modo
+    // seleção JÁ marcando aquela estrofe — assim não precisa rolar até o botão
+    // "Selecionar" lá em cima. Funciona no toque e no mouse.
+    $$('.stanza-item').forEach(el => {
+      let _lpTimer = null, _lpX = 0, _lpY = 0;
+      const cancelar = () => { if (_lpTimer) { clearTimeout(_lpTimer); _lpTimer = null; } };
+      el.addEventListener('pointerdown', (ev) => {
+        // ignora se começou num dos botões de ação
+        if (ev.target.closest('[data-dup-stanza],[data-delete-stanza],[data-clearmarks],[data-move-up],[data-move-down]')) return;
+        _lpX = ev.clientX; _lpY = ev.clientY;
+        cancelar();
+        _lpTimer = setTimeout(() => {
+          _lpTimer = null;
+          window._lpJustFired = true; // faz o 'click' seguinte NÃO desmarcar
+          const idx = parseInt(el.dataset.index, 10);
+          if (!window._wmSelMode) _enterSelMode();
+          _wmSelSet.add(idx);
+          _reaplicarSelecaoVisual();
+          _atualizarBarraSelecao();
+          if (navigator.vibrate) { try { navigator.vibrate(25); } catch (e) {} }
+        }, 450);
+      });
+      el.addEventListener('pointermove', (ev) => {
+        if (_lpTimer && (Math.abs(ev.clientX - _lpX) > 8 || Math.abs(ev.clientY - _lpY) > 8)) cancelar();
+      });
+      el.addEventListener('pointerup', cancelar);
+      el.addEventListener('pointercancel', cancelar);
+      el.addEventListener('pointerleave', cancelar);
     });
 
     // Limpar marcação de ritmo desta estrofe (só aparece se ela tem marcações)
