@@ -7669,7 +7669,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'preview-video-ao-vivo-10jul';
+window.__WM_BUILD = 'corrige-adicionar-estrofes-10jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -19694,9 +19694,11 @@ function initEditor() {
    */
   // ============ Parse e Render ============
   function parseAndRender() {
-    // Quando duplicamos uma estrofe, reescrevemos o textarea programaticamente;
-    // esse guard evita que o re-parse do input desfaça o clone recém-montado.
-    if (_suppressReparse) return;
+    // Quando duplicamos/reordenamos, reescrevemos o textarea programaticamente;
+    // esse guard consome UMA re-execução (a que o input debounced dispararia) e
+    // se auto-desliga na mesma hora, pra nunca ficar preso e travar edições
+    // futuras da letra.
+    if (window._suppressReparse) { window._suppressReparse = false; return; }
     const text = $('#lyrics-input').value;
     if (!text.trim()) {
       // Letra vazia = projeto do ZERO: limpa TUDO (antes só limpava a lista e
@@ -20034,9 +20036,8 @@ function initEditor() {
     try {
       const ta = $('#lyrics-input');
       if (ta) {
-        _suppressReparse = true;
+        window._suppressReparse = true;
         ta.value = _stanzasParaTexto(parsed.stanzas);
-        setTimeout(() => { _suppressReparse = false; }, 0);
       }
     } catch (e) { console.warn('duplicar: sync textarea', e); }
 
@@ -20100,9 +20101,8 @@ function initEditor() {
     try {
       const ta = $('#lyrics-input');
       if (ta) {
-        _suppressReparse = true;
+        window._suppressReparse = true;
         ta.value = _stanzasParaTexto(parsed.stanzas);
-        setTimeout(() => { _suppressReparse = false; }, 0);
       }
     } catch (e) { console.warn('mover: sync textarea', e); }
 
