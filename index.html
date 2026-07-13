@@ -5032,7 +5032,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 22px;
+  padding: 11px 22px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   background: rgba(0, 0, 0, 0.18);
   flex-shrink: 0;
@@ -5197,6 +5197,17 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
 .tap-big-btn.is-counting { background: linear-gradient(135deg,#f59e0b,#b45309); }
 .tap-big-btn.is-paused { background: linear-gradient(135deg,#8b5cf6,#6d28d9); }
 .tap-actions { display: flex; gap: 8px; align-items: center; }
+/* Desktop: tap-bar numa ÚNICA linha — preenche o espaço horizontal vazio e
+   libera altura pra lista de palavras (que estava espremida). Usa .marking-tap-bar
+   no seletor pra vencer as regras-base (que vêm depois no CSS). */
+@media (min-width: 601px) {
+  .marking-tap-bar { padding: 8px 18px; gap: 16px; }
+  .marking-tap-bar .tap-info { flex-direction: row; align-items: center; gap: 18px; }
+  .marking-tap-bar .tap-info-row { flex: 0 0 auto; gap: 10px; }
+  .marking-tap-bar .tap-next { flex: 1 1 auto; text-align: left; }
+  .marking-tap-bar .tap-actions { margin-left: auto; flex: 0 0 auto; }
+  .marking-wave-wrap { height: 44px; margin: 4px 18px 8px; }
+}
 .tap-big-btn:disabled { cursor: default; }
 .tap-big-btn .tap-big-label { font-size: 16px; font-weight: 800; letter-spacing: .02em; line-height: 1.05; }
 .tap-big-btn .tap-big-sub { display: none; }
@@ -7771,7 +7782,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'adiantar-audio-marcacao-10jul';
+window.__WM_BUILD = 'layout-marcacao-harmonico-10jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
