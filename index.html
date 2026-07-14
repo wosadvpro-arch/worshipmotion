@@ -2011,6 +2011,11 @@ body.marking-open.marking-collapsed .editor-canvas {
   display: block;
   margin: 0.1em 0;
 }
+/* Instrumental: a letra some (fade) e a tela fica limpa até a próxima palavra */
+.editor-canvas.wm-lyrics-blank .lyric-word {
+  opacity: 0 !important;
+  transition: opacity 0.45s ease;
+}
 .lyric-word {
   display: inline-block;
   position: relative;
@@ -7842,7 +7847,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'marcacoes-compactas-10jul';
+window.__WM_BUILD = 'letra-some-instrumental-preview-10jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -27903,6 +27908,66 @@ function initEditor() {
   // Pra evitar trocar estrofe toda hora, guarda a última auto-mudada
   let _lastAutoStanzaIdx = -1;
 
+  // ===== SUMIR A LETRA NO INSTRUMENTAL =====
+  // Quando o intervalo entre a última palavra de uma estrofe e o começo da
+  // próxima é grande (instrumental), a letra some e a tela fica limpa até a
+  // próxima palavra. Automático por padrão; o usuário também pode marcar um
+  // ponto manual (stanza.clearAt) que tem prioridade.
+  const WM_INSTR_GAP = 5;    // s — intervalo a partir do qual conta como instrumental
+  const WM_INSTR_HOLD = 2.5; // s — segura a letra esse tanto após a última palavra, aí limpa
+
+  // Retorna o tStart da PRIMEIRA palavra marcada de uma estrofe (ou null)
+  function _primeiraMarcaEstrofe(stanza) {
+    if (!stanza) return null;
+    for (const l of stanza.lines) for (const w of l.words) {
+      if (typeof w.tStart === 'number') return w.tStart;
+    }
+    return null;
+  }
+  // Retorna o tStart da ÚLTIMA palavra marcada de uma estrofe (ou null)
+  function _ultimaMarcaEstrofe(stanza) {
+    if (!stanza) return null;
+    let last = null;
+    stanza.lines.forEach(l => l.words.forEach(w => {
+      if (typeof w.tStart === 'number') last = (last === null ? w.tStart : Math.max(last, w.tStart));
+    }));
+    return last;
+  }
+  // Diz se, no tempo t, estamos num intervalo instrumental (letra deve sumir).
+  function _estaEmIntervaloInstrumental(t) {
+    const parsed = engine?.parsed;
+    if (!parsed || !parsed.stanzas.length) return false;
+    const idx = getStanzaForAudioTime(t);
+    if (idx < 0) return false;
+    const stanza = parsed.stanzas[idx];
+    const lastT = _ultimaMarcaEstrofe(stanza);
+    if (lastT === null) return false;
+    // começo da próxima estrofe que tem marcação
+    let nextStart = null;
+    for (let i = idx + 1; i < parsed.stanzas.length; i++) {
+      const s = _primeiraMarcaEstrofe(parsed.stanzas[i]);
+      if (s !== null) { nextStart = s; break; }
+    }
+    if (nextStart === null) nextStart = (audioElement && audioElement.duration) || (lastT + 1e9);
+    // ponto manual tem prioridade
+    let clearAt;
+    if (typeof stanza.clearAt === 'number' && stanza.clearAt >= lastT && stanza.clearAt < nextStart) {
+      clearAt = stanza.clearAt;
+    } else {
+      clearAt = (nextStart - lastT > WM_INSTR_GAP) ? (lastT + WM_INSTR_HOLD) : nextStart;
+    }
+    return t >= clearAt && t < nextStart;
+  }
+  // Aplica/remove o estado "letra some" no canvas (só durante a reprodução).
+  function applyBlankState() {
+    const canvas = document.querySelector('.editor-canvas');
+    if (!canvas) return;
+    const audio = audioElement;
+    const blank = !!(audio && !audio.paused && audio.duration && _estaEmIntervaloInstrumental(audio.currentTime));
+    canvas.classList.toggle('wm-lyrics-blank', blank);
+  }
+
+
   /**
    * Verifica se precisa avançar estrofe baseado no tempo atual.
    * Chamada do loop do playhead.
@@ -27937,6 +28002,7 @@ function initEditor() {
     const loop = () => {
       updatePlayhead();
       checkAutoAdvanceStanza();
+      applyBlankState();
       _playheadRafId = requestAnimationFrame(loop);
     };
     loop();
@@ -27948,6 +28014,9 @@ function initEditor() {
       _playheadRafId = null;
     }
     updatePlayhead(); // posição final
+    // ao pausar, mostra a letra de novo (não deixa "presa" apagada)
+    const _cv = document.querySelector('.editor-canvas');
+    if (_cv) _cv.classList.remove('wm-lyrics-blank');
   }
 
   /**
