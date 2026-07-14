@@ -7829,7 +7829,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'timeline-marcacoes-por-estrofe-10jul';
+window.__WM_BUILD = 'marcacoes-espacamento-uniforme-10jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -28165,10 +28165,9 @@ function initEditor() {
 
   // ------ Timeline temporal (faixa logo abaixo do waveform) ------
   // Renderiza só palavras JÁ marcadas, posicionadas no tempo.
-  // Mapa tempo<->pixel do timeline de marcações. É definido no render (com
-  // "zoom" na estrofe atual) e reusado pelo arrastar, pra tudo bater.
-  let _tlPxPerSec = 1;
-  let _tlPxDe = null; // função (t) => px
+  // Sensibilidade do arrastar no timeline de marcações: atravessar a largura
+  // toda = a duração da estrofe. Definido no render.
+  let _tlSensSPerPx = 0.02;
 
   function _irEstrofeMarcacao(delta) {
     const parsed = engine?.parsed;
@@ -28251,21 +28250,25 @@ function initEditor() {
       return;
     }
 
-    // Janela de tempo da estrofe → espalha as palavras dela pela largura.
+    // Espaçamento UNIFORME: distribui as palavras da estrofe de forma parelha,
+    // na ordem do tempo — sem os buracos que a distância REAL criava (ex: a
+    // pausa entre uma linha e outra do slide deixava um vazio enorme no meio).
     const MARGIN = 46;
+    const n = daEstrofe.length;
+    const usable = Math.max(1, trackWidth - MARGIN * 2);
+    const pxDeIndice = (i) => n <= 1 ? (MARGIN + usable / 2) : (MARGIN + (i / (n - 1)) * usable);
+    // Sensibilidade do arrastar: cruzar a largura toda ≈ duração da estrofe.
     const tMin = daEstrofe[0].word.tStart;
-    const tMax = daEstrofe[daEstrofe.length - 1].word.tStart;
-    const span = Math.max(0.001, tMax - tMin);
-    _tlPxPerSec = (trackWidth - MARGIN * 2) / span;
-    _tlPxDe = (t) => MARGIN + (t - tMin) * _tlPxPerSec;
+    const tMax = daEstrofe[n - 1].word.tStart;
+    _tlSensSPerPx = Math.max(0.5, tMax - tMin) / usable;
 
-    // Resolução de colisões verticais (poucas palavras por estrofe)
+    // Resolução de colisões verticais (caso a estrofe tenha muitas palavras)
     const MARKER_W = 70;
     const MARKER_GAP = 4;
     const ROW_H = 28;
     const placed = [];
-    daEstrofe.forEach(entry => {
-      const px = _tlPxDe(entry.word.tStart);
+    daEstrofe.forEach((entry, i) => {
+      const px = pxDeIndice(i);
       let row = 0;
       while (true) {
         const overlap = placed.some(p =>
@@ -28350,6 +28353,7 @@ function initEditor() {
 
       dragData = {
         startX: ev.clientX,
+        startLeft: parseFloat(el.style.left) || 0,
         word,
         tStartOriginal: word.tStart,
         trackWidth,
@@ -28370,15 +28374,14 @@ function initEditor() {
       dragData.moved = true;
       el.classList.add('is-dragging');
 
-      // Pixels arrastados → segundos (usando o mesmo zoom do render da estrofe)
-      const escala = _tlPxPerSec || ((dragData.trackWidth && dragData.duration) ? dragData.trackWidth / dragData.duration : 1);
-      const dt = dx / escala;
+      // Arrastar ajusta o TEMPO da palavra (a posição é uniforme, então o chip
+      // acompanha o dedo; ao soltar, ele volta pro lugar parelho já reordenado).
+      const dt = dx * (_tlSensSPerPx || 0.02);
       const newT = Math.max(0, Math.min(dragData.duration, dragData.tStartOriginal + dt));
       dragData.word.tStart = newT;
 
-      // Atualiza posição visual em tempo real (mesmo mapa do render)
-      const newLeft = _tlPxDe ? _tlPxDe(newT) : (newT / dragData.duration) * dragData.trackWidth;
-      el.style.left = newLeft + 'px';
+      // Segue o dedo visualmente durante o arraste
+      el.style.left = (dragData.startLeft + dx) + 'px';
       el.setAttribute('title', `${dragData.word.text} • ${formatTime(newT)}`);
       // Atualiza tooltip de tempo via texto que aparece no drag
       const tip = el.querySelector('.timeline-marker-drag-tip') || (() => {
