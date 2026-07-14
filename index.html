@@ -7847,7 +7847,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'creditos-ciclo-por-usuario-10jul';
+window.__WM_BUILD = 'instrumental-no-export-10jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -11068,6 +11068,12 @@ async function wmDeleteProjectFromCloud(id) {
    Supabase), zera no virar do mês, e cobra créditos quando uma
    produção nova é gerada. Reexport (projeto já cobrado) é livre.
    ============================================================ */
+// Config do "sumiço da letra no instrumental" — fonte única, usada tanto pelo
+// PREVIEW quanto pelo EXPORT (MP4), pra não dar divergência de tempo entre eles.
+// gapS = intervalo (s) a partir do qual conta como instrumental.
+// holdS = quanto tempo (s) segura a letra após a última palavra antes de limpar.
+window.WM_INSTR = window.WM_INSTR || { gapS: 5, holdS: 3.5 };
+
 const WM_PLANOS = {
   gratis:   { nome: 'Grátis',   creditos: 30,  marca: true  },
   pro:      { nome: 'Pro',      creditos: 300, marca: false },
@@ -14996,9 +15002,13 @@ const CanvasRenderer = {
    * @param {number} W - largura do canvas
    * @param {number} H - altura do canvas
    */
-  drawSlide(ctx, slide, elapsedMs, W, H) {
+  drawSlide(ctx, slide, elapsedMs, W, H, blank) {
     // 1. Limpa e desenha background (do cache se possível)
     this._drawBackgroundCached(ctx, slide.background || 'brand', W, H);
+
+    // INSTRUMENTAL: se 'blank', mostra só o fundo (letra sumiu no intervalo sem
+    // canto). Mesmo comportamento do preview, agora também no export/MP4.
+    if (blank) return;
 
     // 2. Configura tipografia e pega layout (cacheado por slide)
     this._setFont(ctx, slide.style, H, W);
@@ -17820,6 +17830,35 @@ class VideoExporter {
         // cada estrofe tem duração diferente baseada em quando a próxima começa)
         slide._effectiveStanzaDurMs = slideDurations[slideIdx];
 
+        // INSTRUMENTAL: decide se a letra some neste frame (mostra só o fundo),
+        // igual ao preview. Só vale no modo sync (precisa de palavras marcadas).
+        // gap = distância entre a última palavra marcada deste slide e o começo
+        // do próximo; se passar do limite, some a letra 'holdS'segundos após a
+        // última palavra, até o próximo slide começar. Lê a MESMA config do
+        // preview (window.WM_INSTR), então os tempos batem exatamente.
+        let blank = false;
+        {
+          const gapMs  = (window.WM_INSTR && window.WM_INSTR.gapS  ? window.WM_INSTR.gapS  : 5)   * 1000;
+          const holdMs = (window.WM_INSTR && window.WM_INSTR.holdS ? window.WM_INSTR.holdS : 3.5) * 1000;
+          const slideEndMs = slideStarts[slideIdx + 1];
+          if (typeof slideEndMs === 'number' && slide.stanza && slide.stanza.lines) {
+            let lastWordMs = null;
+            for (const line of slide.stanza.lines) {
+              for (const w of line.words) {
+                const ts = slide.wordTStarts ? slide.wordTStarts[w.id] : undefined;
+                if (typeof ts === 'number') {
+                  const vm = ts * 1000 - (this._trechoInicioMs || 0); // tStart(s)->ms no timeline do vídeo
+                  lastWordMs = (lastWordMs === null) ? vm : Math.max(lastWordMs, vm);
+                }
+              }
+            }
+            if (lastWordMs !== null && (slideEndMs - lastWordMs) > gapMs) {
+              const clearAtMs = lastWordMs + holdMs;
+              if (virtualMs >= clearAtMs && virtualMs < slideEndMs) blank = true;
+            }
+          }
+        }
+
         // OTIMIZAÇÃO: skip de redesenho em frames estaticamente idênticos.
         // Quando a animação de entrada do slide já terminou e não há loop,
         // os frames seguintes são pixel-a-pixel iguais. Nesses casos, o
@@ -17831,10 +17870,13 @@ class VideoExporter {
           ? renderer.isSlideStatic(slide, elapsedInSlide)
           : false;
         const mesmoSlide = (slideIdx === this._lastDrawnSlideIdx);
-        const podePularRedesenho = estaticoAgora && mesmoSlide && this._lastFrameWasStatic;
+        // Se o estado 'blank' mudou (letra sumiu ou voltou), NÃO pode pular o
+        // redesenho — senão o frame de transição fica com o conteúdo errado.
+        const blankMudou = (blank !== (this._lastFrameBlank || false));
+        const podePularRedesenho = estaticoAgora && mesmoSlide && this._lastFrameWasStatic && !blankMudou;
 
         if (!podePularRedesenho) {
-          renderer.drawSlide(this.ctx, slide, elapsedInSlide, this.W, this.H);
+          renderer.drawSlide(this.ctx, slide, elapsedInSlide, this.W, this.H, blank);
           // MARCA D'ÁGUA: desenha por cima do slide se o plano exigir (grátis).
           // Só quando o slide é redesenhado — frames pulados reusam o frame
           // anterior que já tem a marca.
@@ -17848,6 +17890,7 @@ class VideoExporter {
         }
         this._lastDrawnSlideIdx = slideIdx;
         this._lastFrameWasStatic = estaticoAgora;
+        this._lastFrameBlank = blank;
 
         // Cria VideoFrame com timestamp exato
         const timestamp = frameIdx * microsecondsPerFrame;
@@ -27954,8 +27997,8 @@ function initEditor() {
   // próxima é grande (instrumental), a letra some e a tela fica limpa até a
   // próxima palavra. Automático por padrão; o usuário também pode marcar um
   // ponto manual (stanza.clearAt) que tem prioridade.
-  const WM_INSTR_GAP = 5;    // s — intervalo a partir do qual conta como instrumental
-  const WM_INSTR_HOLD = 3.5; // s — segura a letra esse tanto após a última palavra, aí limpa
+  const WM_INSTR_GAP = (window.WM_INSTR && window.WM_INSTR.gapS) || 5;    // s — intervalo a partir do qual conta como instrumental
+  const WM_INSTR_HOLD = (window.WM_INSTR && window.WM_INSTR.holdS) || 3.5; // s — segura a letra esse tanto após a última palavra, aí limpa
 
   // Retorna o tStart da PRIMEIRA palavra marcada de uma estrofe (ou null)
   function _primeiraMarcaEstrofe(stanza) {
