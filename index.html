@@ -7847,7 +7847,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'instrumental-espera-3s5-10jul';
+window.__WM_BUILD = 'limpar-ritmo-mantem-posicao-10jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -29192,9 +29192,21 @@ function initEditor() {
         if (!removidas) return;
         _markHistory = _markHistory.filter(h => h.si !== si); // tira do histórico
         markDirty();
+        // Âncora na ESTROFE que você limpou pra a vista não pular pro primeiro
+        // slide sem marcação (você limpa 35→44 sem ter que rolar de novo).
+        const stanzaEl = btn.closest('.mark-stanza');
+        const beforeTop = stanzaEl ? stanzaEl.getBoundingClientRect().top : null;
+        _suppressMarkAutoScroll = true;
         renderTimelineMarkers();
         if (typeof renderStanzaList === 'function' && engine.parsed) renderStanzaList(engine.parsed);
         renderMarkingPanel();
+        _suppressMarkAutoScroll = false;
+        const newContent = $('#marking-panel-content');
+        const newStanza = newContent ? newContent.querySelector(`.mark-stanza[data-si="${si}"]`) : null;
+        if (newContent && newStanza && beforeTop !== null) {
+          const afterTop = newStanza.getBoundingClientRect().top;
+          newContent.scrollTop += (afterTop - beforeTop);
+        }
         if (typeof showToast === 'function') showToast(`Ritmo da estrofe limpo (${removidas})`);
       });
     });
