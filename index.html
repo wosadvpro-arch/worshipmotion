@@ -7847,7 +7847,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'instrumental-no-export-10jul';
+window.__WM_BUILD = 'export-sync-sem-congelar-10jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -15308,7 +15308,28 @@ const CanvasRenderer = {
     }
     const maxStaggerDelay = (target === 'word') ? stagger * Math.max(0, numWords - 1) : 0;
     const colorTransitionMs = 600;
-    const entradaTerminaMs = maxStaggerDelay + entDur + colorTransitionMs;
+    // Em modo SYNC as palavras aparecem nos seus tStart (espalhados pelo slide),
+    // não pelo stagger. Se usássemos só o stagger, o export achava que o slide
+    // já estava estático ANTES da última palavra aparecer e congelava o frame
+    // no meio das palavras (só destravava na troca de slide). Então, quando há
+    // marcações, o atraso da entrada vai até a ÚLTIMA palavra marcada.
+    let atrasoEntradaMs = maxStaggerDelay;
+    if (slide.hasAnyTStart && slide.stanza && slide.stanza.lines) {
+      const wts = slide.wordTStarts || {};
+      let firstMs = null, lastMs = null;
+      slide.stanza.lines.forEach(ln => (ln.words || []).forEach(w => {
+        const ts = wts[w.id];
+        if (typeof ts === 'number') {
+          const ms = ts * 1000;
+          if (firstMs === null || ms < firstMs) firstMs = ms;
+          if (lastMs === null || ms > lastMs) lastMs = ms;
+        }
+      }));
+      if (firstMs !== null && lastMs !== null) {
+        atrasoEntradaMs = Math.max(maxStaggerDelay, lastMs - firstMs);
+      }
+    }
+    const entradaTerminaMs = atrasoEntradaMs + entDur + colorTransitionMs;
 
     // Tempo em que a SAÍDA começa
     const exitDur = exit ? exit.duration * 1000 : 0;
