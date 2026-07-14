@@ -7847,7 +7847,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'letra-some-instrumental-preview-10jul';
+window.__WM_BUILD = 'instrumental-espera-3s5-10jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -19956,6 +19956,8 @@ function initEditor() {
     if (_markingPanelOpen && typeof renderMarkingPanel === 'function') {
       try { renderMarkingPanel(); } catch (e) {}
     }
+    // Atualiza o "Estrofe X de Y" do cabeçalho (o total muda ao adicionar/remover)
+    if (typeof updateTimerDisplay === 'function') { try { updateTimerDisplay(); } catch (e) {} }
 
     if (parsed.stanzas.length > 0) {
       engine.currentStanzaIndex = 0;
@@ -25450,6 +25452,9 @@ function initEditor() {
     if (_tk && _tk.classList.contains('is-marker-mode')) {
       try { renderTimelineMarkers(); } catch (e) {}
     }
+    // Atualiza o "Estrofe X de Y" do cabeçalho (ficava congelado quando o áudio
+    // estava pausado — só era atualizado no timeupdate do áudio).
+    if (typeof updateTimerDisplay === 'function') { try { updateTimerDisplay(); } catch (e) {} }
   }
 
   // ============ Animation Grid ============
@@ -27914,7 +27919,7 @@ function initEditor() {
   // próxima palavra. Automático por padrão; o usuário também pode marcar um
   // ponto manual (stanza.clearAt) que tem prioridade.
   const WM_INSTR_GAP = 5;    // s — intervalo a partir do qual conta como instrumental
-  const WM_INSTR_HOLD = 2.5; // s — segura a letra esse tanto após a última palavra, aí limpa
+  const WM_INSTR_HOLD = 3.5; // s — segura a letra esse tanto após a última palavra, aí limpa
 
   // Retorna o tStart da PRIMEIRA palavra marcada de uma estrofe (ou null)
   function _primeiraMarcaEstrofe(stanza) {
