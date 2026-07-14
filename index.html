@@ -4961,6 +4961,19 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
   font-size: 12px; color: var(--text-tertiary);
   padding: 0 16px;
 }
+/* Fileira COMPACTA de marcações (chips juntos, quebrando linha se precisar) */
+.tl-mark-flow {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 6px;
+  padding: 38px 14px 10px;
+}
+.tl-mark-flow .timeline-marker {
+  position: relative;
+  left: auto;
+  top: auto;
+}
 
 .timeline-empty-state {
   display: flex;
@@ -7829,7 +7842,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'marcacoes-espacamento-uniforme-10jul';
+window.__WM_BUILD = 'marcacoes-compactas-10jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -28250,46 +28263,15 @@ function initEditor() {
       return;
     }
 
-    // Espaçamento UNIFORME: distribui as palavras da estrofe de forma parelha,
-    // na ordem do tempo — sem os buracos que a distância REAL criava (ex: a
-    // pausa entre uma linha e outra do slide deixava um vazio enorme no meio).
-    const MARGIN = 46;
-    const n = daEstrofe.length;
-    const usable = Math.max(1, trackWidth - MARGIN * 2);
-    const pxDeIndice = (i) => n <= 1 ? (MARGIN + usable / 2) : (MARGIN + (i / (n - 1)) * usable);
-    // Sensibilidade do arrastar: cruzar a largura toda ≈ duração da estrofe.
-    const tMin = daEstrofe[0].word.tStart;
-    const tMax = daEstrofe[n - 1].word.tStart;
-    _tlSensSPerPx = Math.max(0.5, tMax - tMin) / usable;
-
-    // Resolução de colisões verticais (caso a estrofe tenha muitas palavras)
-    const MARKER_W = 70;
-    const MARKER_GAP = 4;
-    const ROW_H = 28;
-    const placed = [];
-    daEstrofe.forEach((entry, i) => {
-      const px = pxDeIndice(i);
-      let row = 0;
-      while (true) {
-        const overlap = placed.some(p =>
-          p.row === row &&
-          (px < p.px + MARKER_W + MARKER_GAP) &&
-          (px > p.px - MARKER_W - MARKER_GAP)
-        );
-        if (!overlap) break;
-        row++;
-        if (row > 6) break;
-      }
-      placed.push({ ...entry, px, row });
-    });
-
-    const html = placed.map(p => {
+    // Layout COMPACTO: os chips fluem juntos, um do lado do outro (quebrando
+    // linha quando precisa), como uma fileira de etiquetas. Nada de espalhar
+    // pela largura — as marcações ficam agrupadas e fáceis de ler.
+    const html = daEstrofe.map(p => {
       const bg = stanzaColor(p.si);
-      const label = p.word.text.length > 12 ? p.word.text.slice(0, 12) + '…' : p.word.text;
+      const label = p.word.text.length > 14 ? p.word.text.slice(0, 14) + '…' : p.word.text;
       return `
-        <div class="timeline-marker"
-             data-si="${p.si}" data-li="${p.li}" data-wi="${p.wi}"
-             style="left: ${p.px}px; top: ${TOP_PADDING + p.row * ROW_H}px; background: ${bg};"
+        <div class="timeline-marker" data-si="${p.si}" data-li="${p.li}" data-wi="${p.wi}"
+             style="background: ${bg};"
              title="${escapeHtml(p.word.text)} • ${formatTime(p.word.tStart)} • ${escapeHtml(labelEstrofe)}">
           <span>${escapeHtml(label)}</span>
           <button class="timeline-marker-remove" data-si="${p.si}" data-li="${p.li}" data-wi="${p.wi}" title="Remover marcação">×</button>
@@ -28297,13 +28279,10 @@ function initEditor() {
       `;
     }).join('');
 
-    const maxRow = placed.reduce((m, p) => Math.max(m, p.row), 0);
-    const minH = TOP_PADDING + (maxRow + 1) * ROW_H + 8;
-
     track.innerHTML = `
-      <div class="timeline-markers-area" style="min-height: ${minH}px;">
+      <div class="timeline-markers-area" style="min-height: 70px;">
         ${header}
-        ${html}
+        <div class="tl-mark-flow">${html}</div>
       </div>
     `;
     _wireMarkNav();
@@ -28322,10 +28301,19 @@ function initEditor() {
       });
     });
 
-    // Click (sem arrastar) = pula áudio pra esse tempo
-    // Arrastar = ajusta o tStart da palavra
+    // Click num marcador = pula o áudio pra aquele tempo (pra conferir)
     $$('.timeline-marker').forEach(el => {
-      setupMarkerDrag(el, parsed);
+      el.addEventListener('click', (ev) => {
+        if (ev.target.closest('.timeline-marker-remove')) return;
+        const si = parseInt(el.dataset.si, 10);
+        const li = parseInt(el.dataset.li, 10);
+        const wi = parseInt(el.dataset.wi, 10);
+        const w = parsed.stanzas[si]?.lines[li]?.words[wi];
+        if (w && typeof w.tStart === 'number' && audioElement) {
+          audioElement.currentTime = w.tStart;
+          if (typeof updatePlayhead === 'function') updatePlayhead();
+        }
+      });
     });
   }
 
