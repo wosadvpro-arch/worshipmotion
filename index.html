@@ -7847,7 +7847,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'limpar-ritmo-mantem-posicao-10jul';
+window.__WM_BUILD = 'creditos-ciclo-por-usuario-10jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -11082,6 +11082,19 @@ function _mesAtual() {
   return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
 }
 
+// Soma 1 mês a uma data (ms), tratando fim de mês (ex: 31/jan -> 28/fev).
+// Usado no ciclo de créditos por usuário: a renovação cai no "aniversário"
+// mensal da assinatura (todo dia X), não no dia 1º do calendário.
+function _addUmMes(ms) {
+  const d = new Date(ms);
+  const dia = d.getDate();
+  d.setDate(1);
+  d.setMonth(d.getMonth() + 1);
+  const ultimoDia = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+  d.setDate(Math.min(dia, ultimoDia));
+  return d.getTime();
+}
+
 // Carrega (ou cria) o perfil do usuário logado. Zera créditos no mês novo.
 async function wmCarregarPerfil() {
   const sb = window.wmSupabase;
@@ -11093,18 +11106,41 @@ async function wmCarregarPerfil() {
 
     let { data: perfil } = await sb.from('profiles').select('*').eq('id', userId).maybeSingle();
 
-    // Usuário antigo sem perfil ainda: cria como grátis.
+    // Usuário antigo sem perfil ainda: cria como grátis. O ciclo começa agora.
     if (!perfil) {
-      const novo = { id: userId, plano: 'gratis', creditos_gastos: 0, ciclo_mes: _mesAtual() };
+      const novo = { id: userId, plano: 'gratis', creditos_gastos: 0, ciclo_inicio: new Date().toISOString() };
       await sb.from('profiles').upsert(novo);
       perfil = novo;
     }
 
-    // Virou o mês? Zera os créditos gastos.
-    if (perfil.ciclo_mes !== _mesAtual()) {
-      perfil.creditos_gastos = 0;
-      perfil.ciclo_mes = _mesAtual();
-      await sb.from('profiles').update({ creditos_gastos: 0, ciclo_mes: perfil.ciclo_mes }).eq('id', userId);
+    // CICLO DE CRÉDITOS POR USUÁRIO (renova no aniversário mensal da assinatura,
+    // tipo "todo dia 25", não no dia 1º do calendário). O anchor é ciclo_inicio.
+    // O ideal é o webhook do Hotmart gravar ciclo_inicio = data do pagamento;
+    // aqui a gente só avança o ciclo e zera os gastos quando passa o aniversário.
+    {
+      let inicioMs = perfil.ciclo_inicio ? new Date(perfil.ciclo_inicio).getTime() : NaN;
+      if (!inicioMs || isNaN(inicioMs)) {
+        // Migração de quem ainda usava o ciclo antigo (só tinha ciclo_mes):
+        // ancora no 1º dia do mês atual, pra não tirar créditos de ninguém de
+        // repente — a renovação continua caindo no começo do mês até o webhook
+        // (ou você) preencher ciclo_inicio com a data real da assinatura.
+        const hoje = new Date();
+        inicioMs = new Date(hoje.getFullYear(), hoje.getMonth(), 1).getTime();
+        perfil.ciclo_inicio = new Date(inicioMs).toISOString();
+        await sb.from('profiles').update({ ciclo_inicio: perfil.ciclo_inicio }).eq('id', userId);
+      }
+      // Passou de um ou mais aniversários? Avança o ciclo e zera os gastos.
+      let zerou = false;
+      let guard = 0;
+      while (Date.now() >= _addUmMes(inicioMs) && guard++ < 240) {
+        inicioMs = _addUmMes(inicioMs);
+        zerou = true;
+      }
+      if (zerou) {
+        perfil.creditos_gastos = 0;
+        perfil.ciclo_inicio = new Date(inicioMs).toISOString();
+        await sb.from('profiles').update({ creditos_gastos: 0, ciclo_inicio: perfil.ciclo_inicio }).eq('id', userId);
+      }
     }
 
     window.__wmPerfil = perfil;
@@ -11172,7 +11208,7 @@ async function wmCobrarCreditos(quantidade, projeto) {
   try {
     const novoGasto = (window.__wmPerfil.creditos_gastos || 0) + quantidade;
     const { data: sess } = await sb.auth.getSession();
-    await sb.from('profiles').update({ creditos_gastos: novoGasto, ciclo_mes: _mesAtual() }).eq('id', sess.session.user.id);
+    await sb.from('profiles').update({ creditos_gastos: novoGasto }).eq('id', sess.session.user.id);
     window.__wmPerfil.creditos_gastos = novoGasto;
 
     // Marca o projeto como cobrado (pra reexport não cobrar de novo).
