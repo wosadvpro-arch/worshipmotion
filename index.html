@@ -4921,6 +4921,46 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
   width: 100%;
   min-height: 100%;
 }
+/* Cabeçalho de navegação do timeline de marcações (estrofe atual + setas) */
+.tl-mark-head {
+  position: absolute;
+  top: 6px;
+  left: 10px;
+  right: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 3;
+  pointer-events: none;
+}
+.tl-mark-head > * { pointer-events: auto; }
+.tl-mark-nav {
+  width: 24px; height: 24px;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(139, 92, 246, 0.18);
+  border: 1px solid rgba(139, 92, 246, 0.45);
+  border-radius: 6px;
+  color: #c4b5fd;
+  font-size: 16px; line-height: 1;
+  cursor: pointer; padding: 0;
+}
+.tl-mark-nav:hover:not(:disabled) { background: rgba(139, 92, 246, 0.32); color: #fff; }
+.tl-mark-nav:disabled { opacity: 0.3; cursor: default; }
+.tl-mark-title {
+  font-size: 12px; font-weight: 700; color: var(--text-primary);
+  white-space: nowrap;
+}
+.tl-mark-count {
+  font-size: 11px; color: var(--text-tertiary);
+  margin-left: auto; white-space: nowrap;
+}
+.tl-mark-none {
+  position: absolute;
+  top: 40px; left: 0; right: 0;
+  text-align: center;
+  font-size: 12px; color: var(--text-tertiary);
+  padding: 0 16px;
+}
 
 .timeline-empty-state {
   display: flex;
@@ -7789,7 +7829,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'excluir-selecionadas-10jul';
+window.__WM_BUILD = 'timeline-marcacoes-por-estrofe-10jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -25385,6 +25425,13 @@ function initEditor() {
     $$('.scene-card').forEach(el => {
       el.classList.toggle('is-active', parseInt(el.dataset.index, 10) === idx);
     });
+    // Se o timeline está no modo marcações (mostra só a estrofe atual), re-renderiza
+    // pra acompanhar a estrofe que virou a ativa. Guardado pra não re-renderizar
+    // à toa quando não está nesse modo.
+    const _tk = $('#timeline-track');
+    if (_tk && _tk.classList.contains('is-marker-mode')) {
+      try { renderTimelineMarkers(); } catch (e) {}
+    }
   }
 
   // ============ Animation Grid ============
@@ -28118,6 +28165,28 @@ function initEditor() {
 
   // ------ Timeline temporal (faixa logo abaixo do waveform) ------
   // Renderiza só palavras JÁ marcadas, posicionadas no tempo.
+  // Mapa tempo<->pixel do timeline de marcações. É definido no render (com
+  // "zoom" na estrofe atual) e reusado pelo arrastar, pra tudo bater.
+  let _tlPxPerSec = 1;
+  let _tlPxDe = null; // função (t) => px
+
+  function _irEstrofeMarcacao(delta) {
+    const parsed = engine?.parsed;
+    if (!parsed || !parsed.stanzas.length) return;
+    let i = (engine.currentStanzaIndex || 0) + delta;
+    i = Math.max(0, Math.min(parsed.stanzas.length - 1, i));
+    engine.currentStanzaIndex = i;
+    engine.playFull();
+    updateActiveStanzaInList(i);
+    updateActiveTimelineClip(i); // já re-renderiza os marcadores da nova estrofe
+  }
+  function _wireMarkNav() {
+    const prev = $('#tl-mark-prev');
+    if (prev) prev.addEventListener('click', (e) => { e.stopPropagation(); _irEstrofeMarcacao(-1); });
+    const next = $('#tl-mark-next');
+    if (next) next.addEventListener('click', (e) => { e.stopPropagation(); _irEstrofeMarcacao(1); });
+  }
+
   function renderTimelineMarkers() {
     const track = $('#timeline-track');
     if (!track) return;
@@ -28157,14 +28226,46 @@ function initEditor() {
       return;
     }
 
-    // Resolução de colisões verticais
+    // Mostra só as marcações da ESTROFE ATUAL, com "zoom" no trecho dela. Numa
+    // música longa, jogar as 300+ palavras por tempo absoluto vira um amontoado
+    // ilegível; por estrofe, elas cabem e dá pra ver o ritmo, arrastar e remover.
+    const siAtual = Math.max(0, Math.min(parsed.stanzas.length - 1, engine.currentStanzaIndex || 0));
+    const daEstrofe = marked.filter(e => e.si === siAtual);
+    const nTotal = parsed.stanzas.length;
+    const labelEstrofe = parsed.stanzas[siAtual]?.label || `Estrofe ${siAtual + 1}`;
+    const header = `
+      <div class="tl-mark-head">
+        <button class="tl-mark-nav" id="tl-mark-prev" ${siAtual === 0 ? 'disabled' : ''} title="Estrofe anterior">‹</button>
+        <span class="tl-mark-title">${escapeHtml(labelEstrofe)}</span>
+        <button class="tl-mark-nav" id="tl-mark-next" ${siAtual === nTotal - 1 ? 'disabled' : ''} title="Próxima estrofe">›</button>
+        <span class="tl-mark-count">${daEstrofe.length} marcaç${daEstrofe.length === 1 ? 'ão' : 'ões'} · estrofe ${siAtual + 1}/${nTotal}</span>
+      </div>`;
+
+    const TOP_PADDING = 36; // espaço pro cabeçalho de navegação
+
+    if (daEstrofe.length === 0) {
+      track.innerHTML = `<div class="timeline-markers-area" style="min-height: 70px;">${header}
+        <div class="tl-mark-none">Esta estrofe ainda não tem marcações. Use ‹ › pra ver outra estrofe.</div>
+      </div>`;
+      _wireMarkNav();
+      return;
+    }
+
+    // Janela de tempo da estrofe → espalha as palavras dela pela largura.
+    const MARGIN = 46;
+    const tMin = daEstrofe[0].word.tStart;
+    const tMax = daEstrofe[daEstrofe.length - 1].word.tStart;
+    const span = Math.max(0.001, tMax - tMin);
+    _tlPxPerSec = (trackWidth - MARGIN * 2) / span;
+    _tlPxDe = (t) => MARGIN + (t - tMin) * _tlPxPerSec;
+
+    // Resolução de colisões verticais (poucas palavras por estrofe)
     const MARKER_W = 70;
     const MARKER_GAP = 4;
     const ROW_H = 28;
-    const TOP_PADDING = 8;
     const placed = [];
-    marked.forEach(entry => {
-      const px = (entry.word.tStart / duration) * trackWidth;
+    daEstrofe.forEach(entry => {
+      const px = _tlPxDe(entry.word.tStart);
       let row = 0;
       while (true) {
         const overlap = placed.some(p =>
@@ -28181,12 +28282,12 @@ function initEditor() {
 
     const html = placed.map(p => {
       const bg = stanzaColor(p.si);
-      const label = p.word.text.length > 10 ? p.word.text.slice(0, 10) + '…' : p.word.text;
+      const label = p.word.text.length > 12 ? p.word.text.slice(0, 12) + '…' : p.word.text;
       return `
         <div class="timeline-marker"
              data-si="${p.si}" data-li="${p.li}" data-wi="${p.wi}"
              style="left: ${p.px}px; top: ${TOP_PADDING + p.row * ROW_H}px; background: ${bg};"
-             title="${escapeHtml(p.word.text)} • ${formatTime(p.word.tStart)} • Estrofe ${p.si + 1}">
+             title="${escapeHtml(p.word.text)} • ${formatTime(p.word.tStart)} • ${escapeHtml(labelEstrofe)}">
           <span>${escapeHtml(label)}</span>
           <button class="timeline-marker-remove" data-si="${p.si}" data-li="${p.li}" data-wi="${p.wi}" title="Remover marcação">×</button>
         </div>
@@ -28198,9 +28299,11 @@ function initEditor() {
 
     track.innerHTML = `
       <div class="timeline-markers-area" style="min-height: ${minH}px;">
+        ${header}
         ${html}
       </div>
     `;
+    _wireMarkNav();
 
     // Click no × remove marcação
     $$('.timeline-marker-remove').forEach(btn => {
@@ -28267,13 +28370,14 @@ function initEditor() {
       dragData.moved = true;
       el.classList.add('is-dragging');
 
-      // Pixels arrastados → segundos no áudio
-      const dt = (dx / dragData.trackWidth) * dragData.duration;
+      // Pixels arrastados → segundos (usando o mesmo zoom do render da estrofe)
+      const escala = _tlPxPerSec || ((dragData.trackWidth && dragData.duration) ? dragData.trackWidth / dragData.duration : 1);
+      const dt = dx / escala;
       const newT = Math.max(0, Math.min(dragData.duration, dragData.tStartOriginal + dt));
       dragData.word.tStart = newT;
 
-      // Atualiza posição visual em tempo real
-      const newLeft = (newT / dragData.duration) * dragData.trackWidth;
+      // Atualiza posição visual em tempo real (mesmo mapa do render)
+      const newLeft = _tlPxDe ? _tlPxDe(newT) : (newT / dragData.duration) * dragData.trackWidth;
       el.style.left = newLeft + 'px';
       el.setAttribute('title', `${dragData.word.text} • ${formatTime(newT)}`);
       // Atualiza tooltip de tempo via texto que aparece no drag
