@@ -7847,7 +7847,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'export-sync-sem-congelar-10jul';
+window.__WM_BUILD = 'instrumental-export-slides-escolhidos-10jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -17853,29 +17853,39 @@ class VideoExporter {
 
         // INSTRUMENTAL: decide se a letra some neste frame (mostra só o fundo),
         // igual ao preview. Só vale no modo sync (precisa de palavras marcadas).
-        // gap = distância entre a última palavra marcada deste slide e o começo
-        // do próximo; se passar do limite, some a letra 'holdS'segundos após a
-        // última palavra, até o próximo slide começar. Lê a MESMA config do
-        // preview (window.WM_INSTR), então os tempos batem exatamente.
+        //
+        // A conta é feita em TEMPO LOCAL DO SLIDE (elapsedInSlide), porque o
+        // export tem dois caminhos com bases de tempo diferentes:
+        //  - trecho contínuo: slideStarts deslocados por _trechoInicioMs
+        //  - slides escolhidos (ex: 34 e 35): segmentos emendados, vídeo começa
+        //    em 0 e _trechoInicioMs = 0, mas os tStart continuam absolutos
+        // Em tempo local os dois viram a mesma coisa: quanto tempo a última
+        // palavra marcada cai DENTRO do slide, e quanto o slide dura até a
+        // próxima estrofe. Lê a MESMA config do preview (window.WM_INSTR).
         let blank = false;
-        {
+        if (slide.hasAnyTStart && slide.stanza && slide.stanza.lines) {
           const gapMs  = (window.WM_INSTR && window.WM_INSTR.gapS  ? window.WM_INSTR.gapS  : 5)   * 1000;
           const holdMs = (window.WM_INSTR && window.WM_INSTR.holdS ? window.WM_INSTR.holdS : 3.5) * 1000;
-          const slideEndMs = slideStarts[slideIdx + 1];
-          if (typeof slideEndMs === 'number' && slide.stanza && slide.stanza.lines) {
-            let lastWordMs = null;
-            for (const line of slide.stanza.lines) {
-              for (const w of line.words) {
-                const ts = slide.wordTStarts ? slide.wordTStarts[w.id] : undefined;
-                if (typeof ts === 'number') {
-                  const vm = ts * 1000 - (this._trechoInicioMs || 0); // tStart(s)->ms no timeline do vídeo
-                  lastWordMs = (lastWordMs === null) ? vm : Math.max(lastWordMs, vm);
-                }
+          // Início deste slide em tempo ABSOLUTO da música (= 1ª palavra marcada)
+          const slideStartAbs = (this._segmentos && this._segmentos[slideIdx])
+            ? this._segmentos[slideIdx].inicioMs
+            : (slideStarts[slideIdx] + (this._trechoInicioMs || 0));
+          const durLocal = slideDurations[slideIdx]; // até a próxima estrofe
+          let lastAbs = null;
+          for (const line of slide.stanza.lines) {
+            for (const w of (line.words || [])) {
+              const ts = slide.wordTStarts ? slide.wordTStarts[w.id] : undefined;
+              if (typeof ts === 'number') {
+                const ms = ts * 1000;
+                if (lastAbs === null || ms > lastAbs) lastAbs = ms;
               }
             }
-            if (lastWordMs !== null && (slideEndMs - lastWordMs) > gapMs) {
-              const clearAtMs = lastWordMs + holdMs;
-              if (virtualMs >= clearAtMs && virtualMs < slideEndMs) blank = true;
+          }
+          if (lastAbs !== null && typeof durLocal === 'number') {
+            const lastLocal = lastAbs - slideStartAbs;       // última palavra dentro do slide
+            if ((durLocal - lastLocal) > gapMs) {            // vão grande = instrumental
+              const clearAtLocal = lastLocal + holdMs;
+              if (elapsedInSlide >= clearAtLocal && elapsedInSlide < durLocal) blank = true;
             }
           }
         }
