@@ -7841,7 +7841,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'sem-painel-diagnostico-10jul';
+window.__WM_BUILD = 'preview-respeita-formato-10jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -18670,19 +18670,32 @@ class RenderEngineV2 {
     let effectiveFontSize;
     if (refHeight > 0) {
       // A fonte escala por (altura/600), MAS a altura precisa ser a do
-      // retângulo 16:9 REALMENTE exibido. Em telas estreitas (responsivo),
-      // o canvas 16:9 é limitado pela LARGURA, então sua altura física
-      // fica menor que o esperado — e a fonte saía pequena no editor,
-      // levando o usuário a aumentar demais o tamanho das palavras. No
-      // export (16:9 cheio) esse tamanho exagerado estourava e sobrepunha.
-      // Correção: usamos a altura do 16:9 que cabe na largura disponível
-      // (a dimensão que de fato governa o slide exibido). Assim editor e
-      // export mostram o MESMO tamanho relativo, em qualquer tela.
+      // retângulo REALMENTE exibido. Em telas estreitas (responsivo), o canvas
+      // é limitado pela LARGURA, então sua altura física fica menor que o
+      // esperado — e a fonte saía pequena no editor, levando o usuário a
+      // aumentar demais o tamanho das palavras. No export (slide cheio) esse
+      // tamanho exagerado estourava e sobrepunha.
+      // Correção: usamos a altura do slide que cabe na largura disponível.
+      //
+      // ATENÇÃO: a proporção aqui é a ATUAL (9:16, 1:1, 4:3, custom...), NÃO
+      // 16:9 fixo como era antes. Com 9/16 chumbado, ao trocar pra 9:16 o
+      // preview mostrava a letra ~3,2x MENOR do que o export ia gerar: o
+      // usuário aumentava a fonte pra ficar bonito na tela e o MP4 saía com
+      // tudo embolado/sobreposto (e os ajustes ainda estragavam o 16:9, que é
+      // o mesmo conjunto de posições). Em 16:9 a conta dá exatamente o mesmo
+      // resultado de antes — nenhuma regressão.
+      let _arW = 16, _arH = 9;
+      try {
+        if (typeof window.getCurrentResolution === 'function') {
+          const _r = window.getCurrentResolution();
+          if (_r && _r.w > 0 && _r.h > 0) { _arW = _r.w; _arH = _r.h; }
+        }
+      } catch (e) {}
       let refAltura16x9 = refHeight;
       if (refWidth > 0) {
-        const alturaPelaLargura = refWidth * (9 / 16);
-        // A altura real do slide 16:9 é a menor entre a física e a derivada
-        // da largura (a que está limitando).
+        const alturaPelaLargura = refWidth * (_arH / _arW);
+        // A altura real do slide é a menor entre a física e a derivada da
+        // largura (a que está limitando).
         refAltura16x9 = Math.min(refHeight, alturaPelaLargura);
       }
       effectiveFontSize = s.fontSize * (refAltura16x9 / 600);
@@ -31410,7 +31423,16 @@ function initEditor() {
   function _autoEspacarPalavras(stanzaIdxList) {
     try {
       if (!engine || !engine.parsed || !engine.wordOverrides) return;
-      const W = 1280, H = 720;
+      // Usa a resolução do formato ATUAL. Estava chumbado em 1280x720 (16:9):
+      // no 9:16 o reespaçamento era calculado com a geometria errada (fonte e
+      // largura de outro formato) e as palavras saíam sobrepostas.
+      let W = 1280, H = 720;
+      try {
+        if (typeof window.getCurrentResolution === 'function') {
+          const _r = window.getCurrentResolution();
+          if (_r && _r.w > 0 && _r.h > 0) { W = _r.w; H = _r.h; }
+        }
+      } catch (e) {}
       const baseFS = (engine.style.fontSize || 64) * (H / 600);
       const lsEm = engine.style.letterSpacing || 0;
       const GAP = 0.32 * baseFS; // folga confortável entre palavras (px)
