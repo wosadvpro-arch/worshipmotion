@@ -2853,18 +2853,12 @@ body.timeline-collapsed .timeline-collapse-btn {
   cursor: default;
   outline: none !important;
 }
-.lyric-word.has-anim-override::after {
-  content: '';
-  position: absolute;
-  top: -4px;
-  right: -6px;
-  width: 8px;
-  height: 8px;
-  background: var(--accent);
-  border-radius: 50%;
-  pointer-events: none;
-  box-shadow: 0 0 6px rgba(139, 92, 246, 0.7);
-}
+/* Indicador de "palavra tem animação própria": era um pontinho roxo no canto
+   de cada palavra (.lyric-word.has-anim-override::after). REMOVIDO — poluía
+   visualmente o canvas na hora de editar. A classe has-anim-override continua
+   sendo aplicada pelo JS (custa nada e serve pra outros usos/restaurar depois),
+   só não desenha mais nada. Quem tem animação própria você vê clicando na
+   palavra e olhando o painel de Efeitos. */
 .lyric-word.is-word-selected {
   outline: 2px solid var(--accent);
   outline-offset: 3px;
@@ -7847,7 +7841,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'instrumental-export-slides-escolhidos-10jul';
+window.__WM_BUILD = 'sem-painel-diagnostico-10jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -11232,10 +11226,29 @@ async function wmCobrarCreditos(quantidade, projeto) {
   }
 }
 
+// Só CONFERE se dá pra exportar — NÃO debita nada. Usado ANTES do export
+// começar (pra bloquear quem não tem crédito). A cobrança de verdade só
+// acontece quando o vídeo FICA PRONTO (ver _cobrarPeloQueSaiu no export):
+// antes, cancelar a renderização no meio gastava crédito do mesmo jeito.
+function wmVerificarCreditos(quantidade, projeto) {
+  const sb = window.wmSupabase;
+  if (!sb || !window.__wmPerfil) return { ok: true };
+  // Projeto já cobrado antes (reexport) → livre.
+  if (projeto && projeto.creditos_cobrados && projeto.creditos_cobrados > 0) {
+    return { ok: true, reexport: true };
+  }
+  const info = wmCreditosInfo();
+  if (quantidade > info.restante) {
+    return { ok: false, motivo: 'sem_creditos', restante: info.restante, precisa: quantidade };
+  }
+  return { ok: true };
+}
+
 // Exposto pra uso no app.
 window.WM_CREDITS = {
   carregar: wmCarregarPerfil,
   info: wmCreditosInfo,
+  verificar: wmVerificarCreditos,
   cobrar: wmCobrarCreditos,
   atualizarBadge: wmAtualizarBadgeCreditos,
 };
@@ -19816,9 +19829,10 @@ function initEditor() {
   // Se a última exportação ficou salva localmente (ex: o iOS descartou a aba no
   // fim do render e a página recarregou), oferece o download ao abrir o editor.
   try { if (window.__wmVerificarExportsPendentes) window.__wmVerificarExportsPendentes(); } catch (e) {}
-  // Diagnóstico: se a última exportação NÃO chegou ao fim, mostra a trilha do
-  // que aconteceu (até onde a aba sobreviveu) com botão de copiar.
-  try { if (window.__wmMostrarDiag) setTimeout(window.__wmMostrarDiag, 400); } catch (e) {}
+  // Diagnóstico da última exportação: NÃO abre mais sozinho (era técnico demais
+  // e assustava o cliente — aparecia até depois de um simples cancelamento).
+  // As migalhas seguem gravadas em silêncio; pra ver o relatório num aparelho,
+  // chame no console: window.__wmMostrarDiag(true)
 
   let currentAnimCategory = 'entrance';
 
@@ -32673,9 +32687,12 @@ function initEditor() {
     } catch (e) {}
 
     // ===== GATE DE CRÉDITOS =====
-    // Cobra créditos pela produção (1 slide = 1 crédito). Reexport de
-    // projeto já cobrado é livre. Sem créditos: bloqueia.
-    // REGRA: slides específicos cobram 1 crédito por slide marcado.
+    // CONFERE se dá pra exportar (1 slide = 1 crédito). Reexport de projeto já
+    // cobrado é livre. Sem créditos: bloqueia.
+    // A COBRANÇA NÃO ACONTECE AQUI: fica pendente e só é debitada quando o
+    // vídeo fica pronto (_cobrarPeloQueSaiu). Antes era cobrado aqui na
+    // entrada — quem cancelava a renderização no meio perdia os créditos.
+    let _creditosPendentes = null;
     try {
       if (window.WM_CREDITS && window.__wmPerfil) {
         const temSelecao = Array.isArray(exportSelectedSlides) && exportSelectedSlides.length > 0;
@@ -32686,7 +32703,10 @@ function initEditor() {
         // (senão o projeto inteiro ficaria liberado por causa de alguns slides).
         const projetoAtual = (!temSelecao && window.__currentProjectId)
           ? (typeof getProject === 'function' ? getProject(window.__currentProjectId) : null) : null;
-        const r = await window.WM_CREDITS.cobrar(numSlides, projetoAtual);
+        const r = window.WM_CREDITS.verificar(numSlides, projetoAtual);
+        if (r.ok && !r.reexport) {
+          _creditosPendentes = { quantidade: numSlides, projeto: projetoAtual };
+        }
         if (!r.ok && r.motivo === 'sem_creditos') {
           const info = window.WM_CREDITS.info();
           if (info.plano === 'pro') {
@@ -32725,6 +32745,22 @@ function initEditor() {
       }
     } catch (e) { console.warn('[WM] gate de créditos:', e); }
     // ===== FIM DO GATE =====
+
+    // Cobra os créditos SÓ quando o vídeo fica pronto — uma vez só. Cancelar
+    // ou dar erro no meio da renderização não gasta nada. Em export de vários
+    // arquivos, cobra só pelos slides que realmente saíram.
+    let _jaCobrou = false;
+    const _cobrarPeloQueSaiu = async (qtdFeita) => {
+      if (_jaCobrou || !_creditosPendentes) return;
+      const q = (typeof qtdFeita === 'number' && qtdFeita > 0)
+        ? Math.min(qtdFeita, _creditosPendentes.quantidade)
+        : _creditosPendentes.quantidade;
+      if (!q) return;
+      _jaCobrou = true;
+      try {
+        await window.WM_CREDITS.cobrar(q, _creditosPendentes.projeto);
+      } catch (e) { console.warn('[WM] cobrança pós-export:', e); }
+    };
 
     // Segurança: garante que o plano grátis exporte no máximo em 720p,
     // mesmo que a interface tenha sido burlada.
@@ -32890,6 +32926,7 @@ function initEditor() {
         window.WM_EXPORT_LOG(`Seleção não sequencial: ${_blocos.length} arquivos separados`, 'info');
         const _opcoesBase = currentExporter ? currentExporter.options : null;
         const _arquivos = [];
+        let _slidesFeitos = 0; // pra cobrar só o que realmente saiu, se cancelar no meio
 
         for (let bi = 0; bi < _blocos.length; bi++) {
           if (currentExporter && currentExporter.aborted) break;
@@ -32920,9 +32957,11 @@ function initEditor() {
           const nomeB = _nomeDoBloco(bloco, extB);
           window.WM_EXPORT_LOG(`✓ ${nomeB}: ${(b.size / 1024 / 1024).toFixed(2)} MB`, 'success');
           _arquivos.push({ blob: b, nome: nomeB });
+          _slidesFeitos += bloco.length;
         }
 
-        if (!_arquivos.length) return;
+        if (!_arquivos.length) return; // cancelou antes de sair qualquer arquivo → não cobra
+        await _cobrarPeloQueSaiu(_slidesFeitos);
 
         // NÃO dispara downloads automáticos em sequência: o navegador bloqueia
         // o segundo (o Safari simplesmente ignora, o Chrome pede permissão).
@@ -33005,6 +33044,8 @@ function initEditor() {
       try { if (window.WM_DIAG) window.WM_DIAG.marca('RECORD_RETORNOU', { mb: (blob.size / 1048576).toFixed(1) }); } catch (e) {}
       window.WM_EXPORT_LOG(`✓ Vídeo gerado: ${(blob.size/1024/1024).toFixed(2)} MB`, 'success');
       lastExportBlob = blob;
+      // Vídeo pronto de verdade → agora sim cobra os créditos.
+      await _cobrarPeloQueSaiu();
 
       const ext = WM_EXPORT.detectFileExtension(blob.type);
       const slideSuffix = (Array.isArray(exportSelectedSlides) && exportSelectedSlides.length > 0)
@@ -33912,7 +33953,16 @@ window.WM_DIAG = (function () {
   return { marca, novaSessao, ler, limpar };
 })();
 
-window.__wmMostrarDiag = function () {
+window.__wmMostrarDiag = function (forcar) {
+  // O painel de diagnóstico NÃO aparece mais sozinho — para ninguém.
+  // Motivo: é linguagem técnica (SESSAO_NOVA, ANTES_RECORD...) que não diz nada
+  // pro cliente, aparecia sozinho ao abrir o app e passava a impressão de
+  // "programa quebrado" — inclusive quando NADA deu errado (bastava o usuário
+  // cancelar uma exportação pra ele achar que foi falha).
+  // As migalhas continuam sendo gravadas EM SILÊNCIO (WM_DIAG.marca), então o
+  // poder de diagnóstico não se perde. Pra ver o relatório num aparelho,
+  // chame no console:  window.__wmMostrarDiag(true)
+  if (!forcar) return;
   const trilha = window.WM_DIAG.ler();
   if (!trilha || !trilha.length) return;
   // Só mostra se a última sessão NÃO chegou até o fim (UI pronta / baixado).
