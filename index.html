@@ -1990,7 +1990,13 @@ body.marking-open.marking-collapsed .editor-canvas {
      mantém o blend contido (não vaza pra UI em volta). */
   width: 100%;
   height: 100%;
-  /* SEM flex. SEM padding. */
+  /* MODO CANVA: o tamanho real vem do JS (__wmAjustarCaixaDesign), que encaixa
+     uma CAIXA 16:9 dentro do canvas do formato de saída. Estes 100% são só o
+     ponto de partida (e o caso 16:9, onde a caixa é o canvas inteiro).
+     flex:0 0 auto impede o flex do .editor-canvas de esticar a caixa de volta;
+     o align-items/justify-content do pai já centralizam ela. */
+  flex: 0 0 auto;
+  /* SEM flex interno. SEM padding. */
 }
 
 /* Mobile: a CANVAS inteira do editor segura o gesto de toque — assim, ao
@@ -7841,7 +7847,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'preview-respeita-formato-10jul';
+window.__WM_BUILD = 'modo-canva-caixa-design-10jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -11062,6 +11068,42 @@ async function wmDeleteProjectFromCloud(id) {
    Supabase), zera no virar do mês, e cobra créditos quando uma
    produção nova é gerada. Reexport (projeto já cobrado) é livre.
    ============================================================ */
+// CAIXA DE DESIGN (modo Canva) — fonte única pro PREVIEW e pro EXPORT.
+// O design é composto numa referência 16:9. Ao trocar a proporção de saída
+// (9:16, 1:1, 4:3, custom...), a caixa INTEIRA é encaixada e centralizada no
+// novo formato: fonte, posições e espaçamentos escalam JUNTOS, na mesma medida.
+// Resultado: o arranjo fica idêntico em qualquer proporção (as palavras nunca
+// colidem), com o fundo preenchendo o resto. Em 16:9 a caixa é o canvas
+// inteiro (x=0, y=0) — ou seja, nada muda nos projetos 16:9 existentes.
+window.WM_CAIXA_DESIGN = function (W, H) {
+  const R = 16 / 9;               // proporção de referência do design
+  let w = W, h = W / R;           // tenta encaixar pela largura
+  if (h > H) { h = H; w = H * R; } // não coube na altura: encaixa pela altura
+  return { w: w, h: h, x: (W - w) / 2, y: (H - h) / 2 };
+};
+
+// PREVIEW: dimensiona o .canvas-content como a CAIXA DE DESIGN dentro do
+// .editor-canvas (que tem a proporção do formato de saída). O .canvas-bg é
+// irmão e continua ocupando o canvas inteiro, então o fundo preenche o vídeo
+// todo enquanto o texto vive na caixa. Como as posições das palavras são
+// guardadas em FRAÇÃO do elemento (left/top em %), ao encolher a caixa elas
+// passam a ser relativas a ela — e o arranjo fica idêntico em toda proporção.
+// Em 16:9 a caixa é o canvas inteiro (nada muda).
+window.__wmAjustarCaixaDesign = function (canvasEl) {
+  try {
+    const cv = canvasEl || document.getElementById('editor-canvas');
+    if (!cv) return null;
+    const ct = cv.querySelector('.canvas-content');
+    if (!ct) return null;
+    const r = cv.getBoundingClientRect();
+    if (!r.width || !r.height) return null;
+    const b = window.WM_CAIXA_DESIGN(r.width, r.height);
+    ct.style.width = b.w + 'px';
+    ct.style.height = b.h + 'px';
+    return b;
+  } catch (e) { return null; }
+};
+
 // Config do "sumiço da letra no instrumental" — fonte única, usada tanto pelo
 // PREVIEW quanto pelo EXPORT (MP4), pra não dar divergência de tempo entre eles.
 // gapS = intervalo (s) a partir do qual conta como instrumental.
@@ -15016,13 +15058,36 @@ const CanvasRenderer = {
    * @param {number} H - altura do canvas
    */
   drawSlide(ctx, slide, elapsedMs, W, H, blank) {
-    // 1. Limpa e desenha background (do cache se possível)
+    // 1. Limpa e desenha background (do cache se possível). O fundo SEMPRE
+    //    ocupa o canvas inteiro, em qualquer proporção.
     this._drawBackgroundCached(ctx, slide.background || 'brand', W, H);
 
     // INSTRUMENTAL: se 'blank', mostra só o fundo (letra sumiu no intervalo sem
     // canto). Mesmo comportamento do preview, agora também no export/MP4.
     if (blank) return;
 
+    // MODO CANVA: o TEXTO não usa o canvas inteiro — ele vive numa CAIXA DE
+    // DESIGN 16:9 encaixada e centralizada. Passando as dimensões da CAIXA no
+    // lugar das do canvas, todo o resto da conta (fonte = base*(H/600) e
+    // posições = fração de W/H) já sai na escala certa, sem tocar na lógica de
+    // desenho. Em 16:9 a caixa == canvas (x=0,y=0), então nada muda.
+    const _cx = window.WM_CAIXA_DESIGN(W, H);
+    ctx.save();
+    try {
+      ctx.translate(_cx.x, _cx.y);
+      this._drawSlideTexto(ctx, slide, elapsedMs, _cx.w, _cx.h);
+    } finally {
+      ctx.restore();
+    }
+  },
+
+  /**
+   * Desenha SÓ o texto do slide, tratando (W,H) como a CAIXA DE DESIGN — não
+   * como o canvas. Extraído do drawSlide (o corpo é o mesmo de sempre) porque
+   * aqui existem returns antecipados dos motores isolados: com save/restore
+   * no chamador, qualquer caminho de saída restaura o contexto.
+   */
+  _drawSlideTexto(ctx, slide, elapsedMs, W, H) {
     // 2. Configura tipografia e pega layout (cacheado por slide)
     this._setFont(ctx, slide.style, H, W);
     const layoutKey = this._makeLayoutKey(slide, W, H);
@@ -18669,34 +18734,23 @@ class RenderEngineV2 {
     }
     let effectiveFontSize;
     if (refHeight > 0) {
-      // A fonte escala por (altura/600), MAS a altura precisa ser a do
-      // retângulo REALMENTE exibido. Em telas estreitas (responsivo), o canvas
-      // é limitado pela LARGURA, então sua altura física fica menor que o
-      // esperado — e a fonte saía pequena no editor, levando o usuário a
-      // aumentar demais o tamanho das palavras. No export (slide cheio) esse
-      // tamanho exagerado estourava e sobrepunha.
-      // Correção: usamos a altura do slide que cabe na largura disponível.
-      //
-      // ATENÇÃO: a proporção aqui é a ATUAL (9:16, 1:1, 4:3, custom...), NÃO
-      // 16:9 fixo como era antes. Com 9/16 chumbado, ao trocar pra 9:16 o
-      // preview mostrava a letra ~3,2x MENOR do que o export ia gerar: o
-      // usuário aumentava a fonte pra ficar bonito na tela e o MP4 saía com
-      // tudo embolado/sobreposto (e os ajustes ainda estragavam o 16:9, que é
-      // o mesmo conjunto de posições). Em 16:9 a conta dá exatamente o mesmo
-      // resultado de antes — nenhuma regressão.
-      let _arW = 16, _arH = 9;
+      // MODO CANVA: a fonte escala pela altura da CAIXA DE DESIGN 16:9
+      // encaixada no formato atual — não pela altura do canvas. É o que mantém
+      // o arranjo idêntico em toda proporção (tudo escala junto).
+      // Em 16:9 a caixa é o canvas inteiro → conta idêntica à de sempre.
+      // (Antes eu havia trocado isso pela proporção atual, o que igualava o
+      // preview ao export ANTIGO, que esticava. Agora quem se alinha à caixa
+      // é o export — ver WM_CAIXA_DESIGN e _drawSlideTexto.)
+      // Dimensiona também o .canvas-content como a caixa, pra as POSIÇÕES das
+      // palavras (guardadas em fração) ficarem relativas a ela.
       try {
-        if (typeof window.getCurrentResolution === 'function') {
-          const _r = window.getCurrentResolution();
-          if (_r && _r.w > 0 && _r.h > 0) { _arW = _r.w; _arH = _r.h; }
+        if (cont && typeof window.__wmAjustarCaixaDesign === 'function') {
+          window.__wmAjustarCaixaDesign(cont);
         }
       } catch (e) {}
       let refAltura16x9 = refHeight;
-      if (refWidth > 0) {
-        const alturaPelaLargura = refWidth * (_arH / _arW);
-        // A altura real do slide é a menor entre a física e a derivada da
-        // largura (a que está limitando).
-        refAltura16x9 = Math.min(refHeight, alturaPelaLargura);
+      if (refWidth > 0 && typeof window.WM_CAIXA_DESIGN === 'function') {
+        refAltura16x9 = window.WM_CAIXA_DESIGN(refWidth, refHeight).h;
       }
       effectiveFontSize = s.fontSize * (refAltura16x9 / 600);
       stanzaEl.style.fontSize = `${effectiveFontSize}px`;
@@ -19846,6 +19900,31 @@ function initEditor() {
   // e assustava o cliente — aparecia até depois de um simples cancelamento).
   // As migalhas seguem gravadas em silêncio; pra ver o relatório num aparelho,
   // chame no console: window.__wmMostrarDiag(true)
+
+  // MODO CANVA: mantém a CAIXA DE DESIGN encaixada sempre que o canvas muda de
+  // tamanho — troca de proporção, redimensionar a janela, abrir/fechar painéis.
+  // Reaplica o estilo em seguida pra a fonte acompanhar a caixa. Observa o
+  // .editor-canvas (não o .canvas-content, que é quem a gente redimensiona),
+  // então não há laço de re-disparo.
+  try {
+    const _cvEl = document.getElementById('editor-canvas');
+    if (_cvEl && window.ResizeObserver) {
+      let _rzPend = false;
+      new ResizeObserver(() => {
+        if (_rzPend) return;
+        _rzPend = true;
+        requestAnimationFrame(() => {
+          _rzPend = false;
+          try { window.__wmAjustarCaixaDesign(_cvEl); } catch (e) {}
+          try {
+            if (engine && typeof engine.applyStyleToExisting === 'function') {
+              engine.applyStyleToExisting();
+            }
+          } catch (e) {}
+        });
+      }).observe(_cvEl);
+    }
+  } catch (e) {}
 
   let currentAnimCategory = 'entrance';
 
