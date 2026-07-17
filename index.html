@@ -2512,10 +2512,12 @@ body.timeline-collapsed .timeline-collapse-btn {
   .editor-topbar .topbar-section.right { gap: 4px !important; }
 
   .editor-canvas-wrap { order: 1; flex: 1 1 auto; min-height: 0; padding: 4px; }
-  /* no mobile o canvas se ajusta pela LARGURA e mantém SEMPRE o 16:9.
-     max-height:none + flex-shrink:0 impedem que o painel, ao encolher a
-     área, esmague o canvas verticalmente (o que quebrava a proporção e
-     amontoava as letras). Se faltar espaço, recorta topo/base — nunca distorce. */
+  /* No celular quem dimensiona o canvas é o applyAspect, com a altura MEDIDA
+     no .editor-canvas-wrap (não mais uma conta em 100vh). Estas regras são só
+     a base — os inline do applyAspect mandam. flex-shrink:0 continua aqui de
+     propósito: se por algum motivo faltar espaço, é melhor recortar do que
+     esmagar o canvas verticalmente e quebrar a proporção (o que amontoava as
+     letras). Com a altura medida, isso não deve mais acontecer. */
   .editor-canvas { width: 100%; height: auto; max-width: 100%; max-height: none; flex-shrink: 0; }
   /* quando um painel sobe, levanta o canvas pra ele ficar VISÍVEL acima do
      painel (senão a animação aplicada fica escondida atrás dele) */
@@ -7883,7 +7885,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'mobile-compacto-10jul';
+window.__WM_BUILD = 'canvas-altura-medida-17jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -21108,16 +21110,9 @@ function initEditor() {
   // Quando o canvas muda de tamanho (resize de janela, troca de aspect),
   // re-aplica o estilo no stanza pra recalcular o fontSize escalado.
   // Isso garante que palavra ocupa mesma % do canvas em qualquer tamanho.
-  // O dimensionamento oficial do canvas é o applyAspect (agora correto e
-  // reativo via CSS). Esta função só o re-aplica no aspecto atual — usada em
-  // pontos onde o layout muda (resize, toggle da barra).
-  function _fitCanvas16x9() {
-    if (document.body.classList.contains('marking-open')) return;
-    if (typeof applyAspect === 'function') {
-      try { applyAspect(window.__currentAspect || '16:9'); } catch (e) {}
-    }
-  }
-  window._wmFitCanvas = _fitCanvas16x9;
+  // (o dimensionamento do canvas em si vive no applyAspect; quem o re-aplica
+  //  quando o espaço muda é o _wmObservarEspacoDoCanvas, lá embaixo. O antigo
+  //  _fitCanvas16x9 daqui foi removido: nunca foi chamado por ninguém.)
   // Corrige palavras salvas SOBREPOSTAS em todos os slides. Garante o canvas
   // em 16:9 primeiro (senão a medida sai errada) e re-espaça as sobrepostas.
   // Chame window.__wmFixSpacing() no console.
@@ -30922,7 +30917,63 @@ function initEditor() {
     return applyBg(key);
   }
 
-  function applyAspect(a) {
+  /**
+   * Altura REAL disponível pro canvas, MEDIDA no DOM (px).
+   *
+   * Substitui a conta antiga `100vh - topbar - timeline - space-16 - 64px`,
+   * que errava por três motivos ao mesmo tempo no celular:
+   *   (a) `100vh` — o iOS/Chrome reporta a TELA TODA, ignorando as barras do
+   *       navegador. E desde que o Chrome do iPhone ganhou a barra fixa embaixo
+   *       (Lens / Nova guia / Todas as guias), a mentira ficou maior. Como esse
+   *       valor vira INLINE STYLE, ele ganhava do `dvh` que o CSS já usava.
+   *   (b) `--timeline-height` = 260px — no celular a barra de música é
+   *       `height:auto` (~95px). Descontava 260px que não existem.
+   *   (c) `- 64px` chutados pra barra contextual, que no celular quebra em 2
+   *       linhas e passa disso.
+   *
+   * Medir o .editor-canvas-wrap mata os três: ele JÁ é o espaço que sobrou
+   * (flex:1 1 auto dentro do shell em dvh), então sua caixa de conteúdo é a
+   * verdade — inclusive quando a barra do Chrome aparece ou some.
+   *
+   * Retorna 0 se não der pra medir (layout ainda não assentou) — quem chama
+   * cai de volta na fórmula antiga.
+   */
+  function _wmAlturaDisponivelCanvas() {
+    const wrap = document.querySelector('.editor-canvas-wrap');
+    const canvas = document.getElementById('editor-canvas');
+    if (!wrap || !canvas) return 0;
+    const cs = getComputedStyle(wrap);
+    // clientHeight inclui o padding; a caixa de conteúdo é o que interessa.
+    // (o padding-bottom cresce quando um bottom-sheet sobe — descontar mantém
+    //  o canvas visível ACIMA do painel, que é o comportamento já desejado)
+    let h = wrap.clientHeight
+          - (parseFloat(cs.paddingTop) || 0)
+          - (parseFloat(cs.paddingBottom) || 0);
+    const gap = parseFloat(cs.rowGap || cs.gap) || 0;
+
+    // Todo IRMÃO em fluxo divide a coluna com o canvas: a barra de formatação
+    // (#ctx-toolbar, que no celular quebra em 2 linhas) e a .canvas-toolbar
+    // ("SLIDE 1 de 1" + setas). Varremos os filhos em vez de listar nomes —
+    // assim nada novo escapa da conta depois.
+    let vizinhos = 0;
+    for (const el of wrap.children) {
+      if (el === canvas) continue;
+      const ecs = getComputedStyle(el);
+      if (ecs.display === 'none') continue;
+      if (ecs.position === 'fixed' || ecs.position === 'absolute') continue; // não ocupam a coluna
+      if (el.offsetHeight <= 0) continue;
+      h -= el.offsetHeight
+         + (parseFloat(ecs.marginTop) || 0)
+         + (parseFloat(ecs.marginBottom) || 0);
+      vizinhos++;
+    }
+    h -= gap * vizinhos;   // um gap por vizinho em fluxo
+
+    return h > 0 ? h : 0;
+  }
+  window.__wmAlturaDisponivelCanvas = _wmAlturaDisponivelCanvas;
+
+  function applyAspect(a, _silencioso) {
     // No modo marcação o canvas é dimensionado pelo CSS (que tem a proteção de
     // 16:9 pro painel aberto). Não setamos inline aqui pra não sobrepor — só
     // limpamos qualquer inline residual e deixamos o CSS mandar.
@@ -30970,9 +31021,16 @@ function initEditor() {
     // Paisagem (ratio > 1): limita largura, height auto pelo ratio
     // Retrato  (ratio < 1): limita altura,  width auto pelo ratio
     // Quadrado (ratio = 1): limita ambos pela menor dimensão disponível
-    // Altura disponível pro canvas = viewport menos topbar, timeline,
-    // paddings E a barra contextual (~52px) que fica no topo do canvas.
-    const containerH = `calc(100vh - var(--topbar-height) - var(--timeline-height) - var(--space-16) - 64px)`;
+    // Altura disponível pro canvas.
+    // CELULAR (<=1080px): MEDIDA no DOM — ver _wmAlturaDisponivelCanvas().
+    // A fórmula antiga (100vh - topbar - timeline - space-16 - 64px) errava a
+    // conta e, por ser inline, ganhava do dvh do CSS: o slide 9:16 saía mais
+    // alto que a tela e a barra de formatação era cortada ao meio.
+    // PC: fórmula original mantida (funciona e é conferida) — zero regressão.
+    const _hMedida = _wmEhCelular() ? _wmAlturaDisponivelCanvas() : 0;
+    const containerH = (_hMedida > 40)
+      ? `${_hMedida}px`
+      : `calc(100vh - var(--topbar-height) - var(--timeline-height) - var(--space-16) - 64px)`;
 
     canvas.style.aspectRatio = cfg.ratio;
 
@@ -31008,8 +31066,71 @@ function initEditor() {
       b.classList.toggle('active', b.dataset.aspect === aKey);
     });
 
-    markDirty();
+    // Re-ajuste automático de layout (barra do Chrome apareceu/sumiu, rotação,
+    // barra de formatação mudou de altura) NÃO é alteração do projeto — senão
+    // o autosave dispararia sozinho a cada rolagem no celular.
+    if (!_silencioso) markDirty();
   }
+
+  /** Celular/tablet em pé: o mesmo corte usado nos @media do editor. */
+  function _wmEhCelular() {
+    try { return window.matchMedia('(max-width: 1080px)').matches; }
+    catch (e) { return false; }
+  }
+
+  // === RE-MEDIR QUANDO O ESPAÇO MUDA (celular) ===
+  // A altura do canvas agora é MEDIDA, então precisa ser refeita sempre que o
+  // espaço muda: a barra do Chrome do iPhone aparece/some ao rolar, o teclado
+  // sobe, a barra de formatação ganha/perde uma linha, o aparelho gira.
+  // Antes NADA disso recalculava — window._wmFitCanvas existia mas nunca era
+  // chamado por ninguém.
+  // Sem laço: applyAspect mexe no #editor-canvas, e nem o wrap (flex:1 do
+  // shell) nem a barra dependem do tamanho dele.
+  (function _wmObservarEspacoDoCanvas() {
+    let agendado = false;
+    let ultima = null;
+    function reajustar() {
+      agendado = false;
+      if (!_wmEhCelular()) return;
+      if (document.body.classList.contains('marking-open')) return;
+      const h = _wmAlturaDisponivelCanvas();
+      if (h <= 40 || h === ultima) return;   // sem mudança real → não mexe
+      ultima = h;
+      try { applyAspect(window.__currentAspect || '16:9', true); } catch (e) {}
+    }
+    function agendar() {
+      if (agendado) return;
+      agendado = true;
+      requestAnimationFrame(reajustar);
+    }
+    window._wmFitCanvas = agendar;   // agora tem quem chame (era código morto)
+
+    function ligar() {
+      const wrap = document.querySelector('.editor-canvas-wrap');
+      if (!wrap) { setTimeout(ligar, 300); return; }
+      if (typeof ResizeObserver !== 'undefined') {
+        const ro = new ResizeObserver(agendar);
+        ro.observe(wrap);
+        // os vizinhos do canvas mudam de altura sozinhos (a barra de
+        // formatação quebra em 2 linhas, some e volta) — observar cada um
+        wrap.querySelectorAll(':scope > *').forEach(el => {
+          if (el.id !== 'editor-canvas') ro.observe(el);
+        });
+      }
+      window.addEventListener('resize', agendar);
+      window.addEventListener('orientationchange', () => setTimeout(agendar, 250));
+      // visualViewport é quem enxerga as barras do navegador no iOS de verdade
+      if (window.visualViewport) {
+        window.visualViewport.addEventListener('resize', agendar);
+      }
+      agendar();
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', ligar);
+    } else {
+      ligar();
+    }
+  })();
 
   // Helper: pega resolução em pixels do aspect atual (pra export)
   function getCurrentResolution() {
