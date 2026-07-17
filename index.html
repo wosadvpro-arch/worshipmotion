@@ -2003,7 +2003,8 @@ body.marking-open.marking-collapsed .editor-canvas {
    arrastar uma palavra, o navegador não "rouba" o gesto pra rolar (o que
    cortava o arraste no meio, travando). A rolagem da página continua pelas
    áreas fora da canvas. Escopado ao editor pra não afetar a landing/preview. */
-#canvas-content {
+#canvas-content,
+#editor-canvas {
   touch-action: none;
 }
 
@@ -3524,14 +3525,20 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
 .smart-guide.guide-v {
   /* linha vertical (centro X) */
   width: 1px;
-  top: 0;
-  bottom: 0;
+  /* A guia é filha da estrofe, que vive na CAIXA DE DESIGN — e a caixa é menor
+     que o canvas em toda proporção que não seja 16:9 exato. Ancorada em top:0/
+     bottom:0, a linha parava nas bordas da caixa e ficava curtinha (o usuário
+     notou em TODAS as proporções). Estendendo bem além, o overflow:hidden do
+     .editor-canvas corta na borda do vídeo: a guia volta a atravessar de ponta
+     a ponta, sem deixar de marcar o centro do design. */
+  top: -100vh;
+  bottom: -100vh;
 }
 .smart-guide.guide-h {
-  /* linha horizontal (centro Y) */
+  /* linha horizontal (centro Y) — mesma ideia da guide-v */
   height: 1px;
-  left: 0;
-  right: 0;
+  left: -100vw;
+  right: -100vw;
 }
 /* Quando AMBAS guias estão visíveis (alinhamento perfeito), ficam mais brilhantes */
 .smart-guide.is-perfect {
@@ -7847,7 +7854,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'modo-canva-caixa-design-10jul';
+window.__WM_BUILD = 'guias-e-selecao-canvas-inteiro-10jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -21020,7 +21027,15 @@ function initEditor() {
   const DRAG_THRESHOLD_PX = 4;
 
   function bindWordInteractionHandlers() {
-    const canvas = document.getElementById('canvas-content');
+    // A captura do arraste fica no CANVAS INTEIRO (.editor-canvas), NÃO no
+    // .canvas-content — que virou a CAIXA DE DESIGN e é menor que o vídeo no
+    // 9:16 e nos formatos custom. Com o listener preso à caixa, arrastar na
+    // faixa de fundo (acima/abaixo) não selecionava nada e dava a sensação de
+    // "o mousepad perdeu sensibilidade". As coordenadas do marquee são
+    // convertidas a partir do rect da estrofe, então trocar o elemento que
+    // ESCUTA não altera a matemática da seleção.
+    const canvas = document.getElementById('editor-canvas')
+      || document.getElementById('canvas-content');
     if (!canvas) return;
     canvas.addEventListener('mousedown', onCanvasMouseDown);
     // Mobile: mesmo handler via toque. passive:false porque o handler dá
