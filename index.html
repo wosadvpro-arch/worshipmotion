@@ -2496,7 +2496,22 @@ body.timeline-collapsed .timeline-collapse-btn {
      status "SALVO" ficam fora no mobile; todas as AÇÕES de fato continuam. */
   #btn-save-template, #btn-templates, .save-indicator { display: none !important; }
 
-  .editor-canvas-wrap { order: 1; flex: 1 1 auto; min-height: 0; padding: 10px; }
+  /* ===== PASSE DE COMPACTAÇÃO (Chrome do iPhone com barra fixa embaixo) =====
+     A barra fixa que o Chrome do iPhone passou a mostrar (Lens/Nova guia/Todas
+     as guias) comeu a folga vertical do editor. O dvh já corrigiu a CONTA da
+     altura, mas o CONTEÚDO não cabe mais: cabeçalho (que quebra em 2 linhas) +
+     barra de formatação + slide + barra da música + régua de ícones. O excesso
+     vira rolagem e a barra de formatação aparece cortada no topo (o wrap
+     centraliza e esconde o que passa).
+     Aqui devolvemos altura pro SLIDE apertando o que é cromo: cabeçalho mais
+     baixo, menos respiro nas bordas. É um alívio, não a solução estrutural —
+     essa é reorganizar o cabeçalho pra 1 linha e tirar a barra de formatação
+     da disputa por altura fixa. */
+  .page-editor.editor-shell.active { --topbar-height: 44px; }
+  .editor-topbar { gap: 6px !important; padding: 3px 8px !important; }
+  .editor-topbar .topbar-section.right { gap: 4px !important; }
+
+  .editor-canvas-wrap { order: 1; flex: 1 1 auto; min-height: 0; padding: 4px; }
   /* no mobile o canvas se ajusta pela LARGURA e mantém SEMPRE o 16:9.
      max-height:none + flex-shrink:0 impedem que o painel, ao encolher a
      área, esmague o canvas verticalmente (o que quebrava a proporção e
@@ -7868,7 +7883,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'altura-real-chrome-iphone-10jul';
+window.__WM_BUILD = 'mobile-compacto-10jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
