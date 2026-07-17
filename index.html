@@ -7854,7 +7854,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'guias-e-selecao-canvas-inteiro-10jul';
+window.__WM_BUILD = 'desselecionar-area-toda-10jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -21045,10 +21045,18 @@ function initEditor() {
     // Nota: clicks em área vazia são tratados pelo onMarqueeMouseUp
     // (que desseleciona se não houve drag).
 
-    // Clicar no PALCO em volta do texto (margens do canvas, fundo) também
-    // desseleciona a palavra — mas NÃO dentro do texto (lógica própria),
-    // nem nas alças de seleção, nem nas barras de edição da palavra.
-    const stage = document.getElementById('editor-canvas');
+    // Clicar em volta do texto desseleciona a palavra. O alvo é a ÁREA TODA em
+    // volta do preview (.editor-canvas-wrap = o fundo escuro ao redor), não só
+    // as margens de dentro do slide — antes era preciso mirar dentro do quadro
+    // pra desselecionar. Como o canvas vive dentro do wrap, um listener só no
+    // wrap cobre os dois (o evento borbulha).
+    // NÃO desseleciona dentro do texto (lógica própria), nas alças de seleção,
+    // nem nas barras de edição da palavra. As barras de cima e o painel da
+    // direita ficam FORA do wrap e por isso não desselecionam — importante,
+    // porque eles agem SOBRE a palavra selecionada (fonte, tamanho, cor,
+    // animação por palavra): desselecionar ao clicar neles quebraria o fluxo.
+    const stage = document.querySelector('.editor-canvas-wrap')
+      || document.getElementById('editor-canvas');
     if (stage && !stage.dataset.wmDeselectWired) {
       stage.dataset.wmDeselectWired = '1';
       const stageDeselect = (ev) => {
