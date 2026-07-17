@@ -643,6 +643,10 @@ h1, h2, h3, h4, h5, h6 {
   grid-template-columns: 64px 320px 1fr 320px;
   grid-template-rows: var(--topbar-height) 1fr;
   height: 100vh;
+  /* dvh = altura realmente visível (desconta as barras do navegador, incluindo
+     a barra fixa que o Chrome do iPhone passou a mostrar embaixo). A linha em
+     vh acima fica como reserva pra quem não conhecer dvh. */
+  height: 100dvh;
   background: var(--bg-base);
   overflow: hidden;
 }
@@ -1869,11 +1873,18 @@ body.wm-recording-mode::after {
    Reservamos a altura do painel como padding inferior e o canvas
    recalcula sua altura máxima descontando isso. */
 body.marking-open .editor-canvas-wrap {
+  /* dvh = altura REALMENTE visível. Com vh, o iOS/Chrome reporta a tela toda
+     ignorando as barras do navegador — e desde que o Chrome do iPhone ganhou
+     a barra fixa embaixo (Lens/Nova guia/Todas as guias), a conta sobrava e o
+     slide ficava CORTADO. A linha em vh fica como reserva pra navegador velho
+     que não conheça dvh. */
   padding-bottom: calc(60vh + var(--space-8));
+  padding-bottom: calc(60dvh + var(--space-8));
   transition: padding-bottom 0.3s cubic-bezier(0.22, 1, 0.36, 1);
 }
 body.marking-open .editor-canvas {
   max-height: calc(38vh - var(--topbar-height) - var(--space-8));
+  max-height: calc(38dvh - var(--topbar-height) - var(--space-8));
   /* CAUSA RAIZ do bug "palavras separadas no preview": quando esse
      max-height é restritivo (painel marcar aberto), o aspect-ratio
      16/9 era violado: altura batia no limite mas a largura ainda
@@ -1885,6 +1896,7 @@ body.marking-open .editor-canvas {
      16/9 = 1.7778, então max-width = max-height × 1.7778 mantém o
      aspect mesmo quando a altura é restrita. */
   max-width: calc((38vh - var(--topbar-height) - var(--space-8)) * 16 / 9);
+  max-width: calc((38dvh - var(--topbar-height) - var(--space-8)) * 16 / 9);
   transition: max-height 0.3s cubic-bezier(0.22, 1, 0.36, 1), max-width 0.3s cubic-bezier(0.22, 1, 0.36, 1);
 }
 /* No modo marcação o canvas fica menor — o indicador de proporção
@@ -1912,10 +1924,12 @@ body.marking-open.marking-collapsed .editor-canvas-wrap {
 }
 body.marking-open.marking-collapsed .editor-canvas {
   max-height: calc(100vh - var(--topbar-height) - 150px - var(--space-16));
+  max-height: calc(100dvh - var(--topbar-height) - 150px - var(--space-16));
   /* Mesma proteção de aspect-ratio do estado expandido (ver acima):
      se max-height limitar, limita a width proporcionalmente pra
      manter 16:9 e preservar consistência do preview com o export. */
   max-width: calc((100vh - var(--topbar-height) - 150px - var(--space-16)) * 16 / 9);
+  max-width: calc((100dvh - var(--topbar-height) - 150px - var(--space-16)) * 16 / 9);
 }
 
 /* fundo grid sutil */
@@ -7854,7 +7868,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'desselecionar-area-toda-10jul';
+window.__WM_BUILD = 'altura-real-chrome-iphone-10jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
