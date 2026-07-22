@@ -7912,7 +7912,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'anim-nenhuma-21jul';
+window.__WM_BUILD = 'autoajuste-slide-21jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -20284,6 +20284,17 @@ function initEditor() {
         setTimeout(() => captureSnapshot('estado inicial'), 100);
       }
     }
+
+    // AUTO-AJUSTE AO SLIDE após COLAR (paste): encolhe as estrofes que não
+    // cabem, igual Canva. Só no paste (não a cada tecla) pra não pesar nem
+    // ficar mexendo na fonte enquanto o usuário digita. Espera 2 frames pra
+    // fonte/layout assentarem antes de medir.
+    if (window._wmFitAposParse) {
+      window._wmFitAposParse = false;
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        try { _wmAjustarTodasEstrofesAoSlide(); } catch (e) {}
+      }));
+    }
   }
 
   function renderStanzaList(parsed) {
@@ -24434,6 +24445,127 @@ function initEditor() {
   function _ctxTemSelecao() {
     return (typeof selectedWordIds !== 'undefined' && selectedWordIds && selectedWordIds.size > 0);
   }
+  /**
+   * A seleção cobre TODAS as palavras da estrofe atual?
+   * Quando sim, "diminuir/aumentar tamanho" deve escalar o BLOCO INTEIRO
+   * de forma uniforme (igual Canva) — não encolher palavra por palavra no
+   * lugar (o que deixava tudo espaçado). O caminho por-palavra
+   * (fontSizeScale) fica só pra seleção PARCIAL (destacar uma palavra).
+   */
+  function _ctxSelecaoEhEstrofeInteira() {
+    if (!_ctxTemSelecao()) return false;
+    const st = engine.parsed && engine.parsed.stanzas[engine.currentStanzaIndex];
+    if (!st) return false;
+    let total = 0;
+    for (const ln of st.lines) total += ln.words.length;
+    // >=: se por algum motivo houver ids a mais na seleção, ainda conta.
+    return total > 0 && selectedWordIds.size >= total;
+  }
+
+  // ===================== AUTO-AJUSTE AO SLIDE (igual Canva) =====================
+  // Encolhe a fonte da estrofe até o bloco de texto CABER na caixa de design
+  // (.canvas-content, que no modo Canva já é a caixa 16:9 encaixada). Grava o
+  // resultado como sceneOverride.style.fontSize NORMAL — o EXPORT já respeita
+  // esse fontSize, então NÃO há matemática nova nem risco de divergência
+  // preview/export (a armadilha clássica do "embolado").
+  // Regras: só ENCOLHE (nunca passa do tamanho base); respeita tamanho definido
+  // MANUALMENTE (sceneOverride._sizeManual); mede sempre a partir do base.
+  let _wmAutoFitBusy = false;
+
+  function _wmFontBaseEstrofe() {
+    return (engine.style && typeof engine.style.fontSize === 'number') ? engine.style.fontSize : 64;
+  }
+
+  function _wmMedirBlocoEstrofe(stzEl) {
+    const words = [...stzEl.querySelectorAll('.lyric-word')];
+    let minL = Infinity, minT = Infinity, maxR = -Infinity, maxB = -Infinity, n = 0;
+    words.forEach(w => {
+      const r = w.getBoundingClientRect();
+      if (r.width || r.height) {
+        minL = Math.min(minL, r.left); minT = Math.min(minT, r.top);
+        maxR = Math.max(maxR, r.right); maxB = Math.max(maxB, r.bottom); n++;
+      }
+    });
+    if (!n) return null;
+    return { w: maxR - minL, h: maxB - minT };
+  }
+
+  function _wmAjustarEstrofeAoSlide(idx) {
+    const st = engine.parsed && engine.parsed.stanzas && engine.parsed.stanzas[idx];
+    if (!st) return;
+    const sc = engine.sceneOverrides[st.id];
+    if (sc && sc._sizeManual) return;   // tamanho manual do usuário: não mexe
+
+    const box = document.querySelector('#editor-canvas .canvas-content')
+             || document.getElementById('editor-canvas');
+    if (!box) return;
+
+    const baseFs = _wmFontBaseEstrofe();
+
+    // grava o fontSize da estrofe (auto). px>=base → remove o override (fica no
+    // default), preservando outras chaves de style e do sceneOverride.
+    const setFs = (px) => {
+      const cur = (engine.sceneOverrides[st.id] && engine.sceneOverrides[st.id].style) || {};
+      const novo = { ...cur };
+      if (px >= baseFs) delete novo.fontSize; else novo.fontSize = px;
+      if (Object.keys(novo).length) engine.setSceneOverride(st.id, { style: novo });
+      else if (engine.sceneOverrides[st.id]) delete engine.sceneOverrides[st.id].style;
+    };
+    const renderEstatico = () => {
+      engine.renderStanza(idx);
+      try { engine.killAllAnimations(); } catch (e) {}
+      const el = getStanzaEl();
+      if (el) el.querySelectorAll('.lyric-word').forEach(w => { w.style.opacity = '1'; w.style.animation = 'none'; });
+      return el;
+    };
+
+    engine.currentStanzaIndex = idx;
+    let fs = baseFs;
+    setFs(fs);
+    renderEstatico();
+
+    const margem = 0.94;   // respiro nas bordas, igual Canva
+    for (let it = 0; it < 6; it++) {
+      const stzEl = getStanzaEl();
+      if (!stzEl) break;
+      const bloco = _wmMedirBlocoEstrofe(stzEl);
+      if (!bloco || bloco.w <= 0 || bloco.h <= 0) break;
+      const boxR = box.getBoundingClientRect();
+      const availW = boxR.width * margem, availH = boxR.height * margem;
+      if (bloco.w <= availW && bloco.h <= availH) break;   // coube
+      const escala = Math.min(availW / bloco.w, availH / bloco.h);
+      const novoFs = Math.max(8, Math.floor(fs * escala));
+      if (novoFs >= fs) break;   // não dá pra encolher mais
+      fs = novoFs;
+      setFs(fs);
+      renderEstatico();
+    }
+  }
+
+  // Ajusta TODAS as estrofes de uma vez (paste, troca de formato, carregar
+  // projeto). Guard re-entrante + restaura a estrofe visível no fim.
+  function _wmAjustarTodasEstrofesAoSlide() {
+    if (_wmAutoFitBusy) return;
+    if (!engine.parsed || !engine.parsed.stanzas || !engine.parsed.stanzas.length) return;
+    _wmAutoFitBusy = true;
+    const prevIdx = engine.currentStanzaIndex;
+    let mexeu = false;
+    try {
+      for (let i = 0; i < engine.parsed.stanzas.length; i++) {
+        const st = engine.parsed.stanzas[i];
+        const antes = (engine.sceneOverrides[st.id] && engine.sceneOverrides[st.id].style && engine.sceneOverrides[st.id].style.fontSize);
+        _wmAjustarEstrofeAoSlide(i);
+        const depois = (engine.sceneOverrides[st.id] && engine.sceneOverrides[st.id].style && engine.sceneOverrides[st.id].style.fontSize);
+        if (antes !== depois) mexeu = true;
+      }
+    } finally {
+      engine.currentStanzaIndex = Math.min(prevIdx, engine.parsed.stanzas.length - 1);
+      try { engine.renderStanza(engine.currentStanzaIndex); engine.playFull(); } catch (e) {}
+      _wmAutoFitBusy = false;
+    }
+    if (mexeu && typeof markDirty === 'function') markDirty();
+  }
+  window._wmAjustarTodasEstrofesAoSlide = _wmAjustarTodasEstrofesAoSlide;
   function _ctxEstiloEfetivo() {
     // Estilo "efetivo" do contexto: se há palavra(s) selecionada(s), usa o
     // override da PRIMEIRA (representativo) mesclado ao global; senão usa
@@ -24640,16 +24772,18 @@ function initEditor() {
     };
 
     const aplicarTamanho = (delta) => {
-      if (_ctxTemSelecao()) {
+      if (_ctxTemSelecao() && !_ctxSelecaoEhEstrofeInteira()) {
         const escalaAtual = (_ctxValorSelecao('fontSizeScale', 1) || 1);
         const nova = Math.max(0.2, Math.round((escalaAtual + delta * 0.1) * 100) / 100);
         if (typeof aplicarEstiloSensivel === 'function')
           aplicarEstiloSensivel('fontSizeScale', nova === 1 ? null : nova, { afetaLargura: true });
       } else {
-        // Sem seleção: aplica o tamanho DIRETO no sceneOverride da estrofe
-        // (não simula o arraste do slider — isso bugava as posições free,
-        // que o handler de arraste escala de forma acumulada). Escala as
-        // posições free proporcionalmente, de uma vez, igual ao commit.
+        // Sem seleção OU estrofe INTEIRA selecionada: escala o BLOCO todo
+        // de forma uniforme (igual Canva) — muda o fontSize da estrofe e
+        // aproxima/afasta as posições free proporcionalmente ao redor do
+        // centro. NÃO encolhe palavra por palavra no lugar (que deixava
+        // tudo espaçado). Palavras em flow refluem naturalmente mais
+        // juntas; palavras free escalam pelo ratio ao redor de 0.5.
         const st = engine.parsed && engine.parsed.stanzas[engine.currentStanzaIndex];
         if (!st) return;
         const cur = (engine.sceneOverrides[st.id] && engine.sceneOverrides[st.id].style) || {};
@@ -24673,9 +24807,19 @@ function initEditor() {
           if (!engine.sceneOverrides[st.id]) engine.sceneOverrides[st.id] = {};
           engine.sceneOverrides[st.id].style = { ...cur, fontSize: novo };
         }
+        // Tamanho definido MANUALMENTE → o auto-ajuste ao slide não mexe mais.
+        if (engine.sceneOverrides[st.id]) engine.sceneOverrides[st.id]._sizeManual = true;
         engine.renderStanza(engine.currentStanzaIndex);
         if (typeof engine.killAllAnimations === 'function') { try { engine.killAllAnimations(); } catch (e) {} }
         if (stzEl) stzEl.querySelectorAll('.lyric-word').forEach(el => { el.style.opacity = '1'; el.style.animation = 'none'; });
+        // Se a estrofe inteira estava selecionada, re-marca o highlight
+        // (o renderStanza recria os elementos e perde a classe).
+        if (_ctxTemSelecao()) {
+          const stz2 = (typeof getStanzaEl === 'function') ? getStanzaEl() : null;
+          if (stz2) stz2.querySelectorAll('.lyric-word').forEach(el => {
+            el.classList.toggle('is-word-selected', selectedWordIds.has(el.dataset.wordId));
+          });
+        }
         // Sincroniza o slider antigo (visual).
         const slider = document.getElementById('font-size');
         if (slider) { slider.value = novo; const v2 = document.getElementById('font-size-val'); if (v2) v2.textContent = novo; }
@@ -24697,7 +24841,7 @@ function initEditor() {
       let px = parseInt(valorPx, 10);
       if (!isFinite(px)) return;
       px = Math.max(8, Math.min(800, px)); // limites sãos (até 800px)
-      if (_ctxTemSelecao()) {
+      if (_ctxTemSelecao() && !_ctxSelecaoEhEstrofeInteira()) {
         const globalFs = ((_ctxEstiloEfetivo().fontSize) || 64);
         const novaEscala = Math.max(0.1, Math.round((px / globalFs) * 100) / 100);
         if (typeof aplicarEstiloSensivel === 'function')
@@ -24724,6 +24868,7 @@ function initEditor() {
           if (!engine.sceneOverrides[st.id]) engine.sceneOverrides[st.id] = {};
           engine.sceneOverrides[st.id].style = { ...cur, fontSize: px };
         }
+        if (engine.sceneOverrides[st.id]) engine.sceneOverrides[st.id]._sizeManual = true;
         engine.renderStanza(engine.currentStanzaIndex);
         if (typeof engine.killAllAnimations === 'function') { try { engine.killAllAnimations(); } catch (e) {} }
         if (stzEl) stzEl.querySelectorAll('.lyric-word').forEach(el => { el.style.opacity = '1'; el.style.animation = 'none'; });
@@ -30290,6 +30435,9 @@ function initEditor() {
     _liveLyricsInput.addEventListener('keyup', (e) => {
       if (e.key && e.key.indexOf('Arrow') === 0) _pularProSlideDoCaret();
     });
+
+    // COLAR letra → marca pra auto-ajustar ao slide quando o parse rodar.
+    _liveLyricsInput.addEventListener('paste', () => { window._wmFitAposParse = true; });
   }
 
   $('#btn-clear-lyrics').addEventListener('click', () => {
@@ -31030,6 +31178,16 @@ function initEditor() {
     }
 
     markSaved();
+
+    // AUTO-AJUSTE AO SLIDE ao abrir: conserta projetos antigos cujas estrofes
+    // vazavam a caixa. Só encolhe as que não cabem e não estão em tamanho
+    // manual; se nada muda, não marca dirty. Espera 2 frames pro layout/caixa
+    // assentarem (o applyAspect/__wmAjustarCaixaDesign roda antes).
+    if (project.parsed && project.parsed.stanzas && project.parsed.stanzas.length) {
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        try { _wmAjustarTodasEstrofesAoSlide(); } catch (e) {}
+      }));
+    }
   }
 
   /**
