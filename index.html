@@ -6966,7 +6966,7 @@ Digno de toda honra"></textarea>
     <div class="editor-canvas" id="editor-canvas">
       <div class="canvas-bg" id="canvas-bg"></div>
       <div class="canvas-content" id="canvas-content">
-        <div class="lyric-empty">Cole uma letra à esquerda e clique em "Gerar Lyric"</div>
+        
       </div>
 
 
@@ -7901,7 +7901,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'novo-projeto-17jul';
+window.__WM_BUILD = 'slide-vazio-limpo-21jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -18895,7 +18895,7 @@ class RenderEngineV2 {
 
   renderStanza(index = this.currentStanzaIndex) {
     if (!this.parsed || !this.parsed.stanzas[index]) {
-      this.canvas.innerHTML = '<div class="lyric-empty">Cole uma letra para começar</div>';
+      this.canvas.innerHTML = '';
       return null;
     }
 
@@ -20166,7 +20166,7 @@ function initEditor() {
       $('#stanza-count').textContent = '0';
       $('#stanza-list').innerHTML = '<div style="font-size: var(--text-xs); color: var(--text-tertiary); text-align: center; padding: var(--space-6) 0;">Digite uma letra primeiro</div>';
       const _tl = $('#timeline-track'); if (_tl) _tl.innerHTML = '<div class="timeline-empty">Gere uma lyric para ver a timeline</div>';
-      if (typeof canvas !== 'undefined' && canvas) canvas.innerHTML = '<div class="lyric-empty">Cole uma letra à esquerda e clique em "Gerar Lyric"</div>';
+      if (typeof canvas !== 'undefined' && canvas) canvas.innerHTML = '';
       if (typeof markDirty === 'function') markDirty();
       return;
     }
@@ -30205,7 +30205,7 @@ function initEditor() {
     $('#stanza-count').textContent = '0';
     $('#stanza-list').innerHTML = '<div style="font-size: var(--text-xs); color: var(--text-tertiary); text-align: center; padding: var(--space-6) 0;">Digite uma letra primeiro</div>';
     $('#timeline-track').innerHTML = '<div class="timeline-empty">Gere uma lyric para ver a timeline</div>';
-    canvas.innerHTML = '<div class="lyric-empty">Cole uma letra à esquerda e clique em "Gerar Lyric"</div>';
+    canvas.innerHTML = '';
   });
 
   // ============ Rail navigation (mostra a aba correspondente) ============
