@@ -1675,6 +1675,17 @@ body.wm-recording-mode::after {
   background: var(--bg-overlay);
   transform: translateY(-1px);
 }
+/* Card "Nenhuma" (sem animação): visual mais sóbrio, sem estrela de favorito */
+.anim-card.is-none {
+  border-style: dashed;
+}
+.anim-card.is-none .fav-star { display: none; }
+.anim-card.is-none .anim-card-preview {
+  opacity: 0.55;
+}
+.anim-card.is-none .anim-card-style::after {
+  content: '';
+}
 .anim-card.selected {
   border-color: var(--accent);
   background: var(--accent-soft);
@@ -7901,7 +7912,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'clique-letra-pula-slide-21jul';
+window.__WM_BUILD = 'anim-nenhuma-21jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -7993,6 +8004,23 @@ if (window.wmSupabase) {
    ============================================================ */
 
 const ANIMATIONS_V2 = [
+  // ============================================================
+  // SEM ANIMAÇÃO — a letra aparece na hora, estática (pedido do user:
+  // "se eu não quiser aplicar nenhuma"). NÃO pode ser id vazio: o
+  // playEntrance faz `return` se não acha o preset e as palavras nunca
+  // aparecem. Este preset tem opacity 1 do 0% ao 100% (fill both), então
+  // revela o texto instantaneamente, sem movimento. duration mínima.
+  // ============================================================
+  {
+    id: 'sem-animacao',
+    name: 'Nenhuma',
+    category: 'entrance', style: 'soft',
+    duration: 0.01, easing: 'linear',
+    keyframes: [
+      { at: 0, opacity: 1 },
+      { at: 1, opacity: 1 },
+    ],
+  },
   // ============================================================
   // ENTRANCES — SOFT (4)
   // ============================================================
@@ -25960,6 +25988,17 @@ function initEditor() {
 
     // Reordena: favoritos primeiro
     anims = reorderAnimsByFavorites(anims);
+
+    // "Nenhuma" (sem-animacao) sempre PRIMEIRA na categoria de entrada,
+    // acima até dos favoritos — é o jeito de o user tirar a animação.
+    if (category === 'entrance' && !termoBusca) {
+      const iNenhuma = anims.findIndex(a => a.id === 'sem-animacao');
+      if (iNenhuma > 0) {
+        const [nen] = anims.splice(iNenhuma, 1);
+        anims.unshift(nen);
+      }
+    }
+
     const hasAnyFav = anims.some(a => _favAnims.has(a.id));
     const firstNonFavIdx = anims.findIndex(a => !_favAnims.has(a.id));
 
@@ -25969,7 +26008,7 @@ function initEditor() {
       const isSeparator = hasAnyFav && firstNonFavIdx > 0 && i === firstNonFavIdx;
       return `
         ${isSeparator ? '<div class="anim-grid-divider"></div>' : ''}
-        <div class="anim-card ${a.id === currentSelected ? 'selected' : ''} ${fav ? 'is-fav' : ''}" data-id="${a.id}">
+        <div class="anim-card ${a.id === currentSelected ? 'selected' : ''} ${fav ? 'is-fav' : ''} ${a.id === 'sem-animacao' ? 'is-none' : ''}" data-id="${a.id}">
           <button class="fav-star" data-fav-type="anim" data-fav-id="${a.id}" title="${fav ? 'Remover dos favoritos' : 'Marcar como favorito'}">${favStarSVG(fav)}</button>
           <div class="anim-card-preview" data-preview-id="${a.id}">Aa</div>
           <div class="anim-card-name">${escapeHtml(a.name)}</div>
