@@ -7901,7 +7901,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'slide-vazio-limpo-21jul';
+window.__WM_BUILD = 'clique-letra-pula-slide-21jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -30196,6 +30196,60 @@ function initEditor() {
           }
         }
       }, 400);
+    });
+
+    // ====== CLICOU NA LETRA → PULA PRO SLIDE DAQUELA PALAVRA ======
+    // Pedido do user: num louvor de 90+ slides, achar o refrão pela palavra
+    // na caixa de texto e o preview já ir pro slide certo, sem adivinhar o nº.
+    //
+    // O parser (parseLyrics) NÃO guarda nº de linha, então reconstruímos a
+    // MESMA contagem a partir da posição do cursor: linha em branco fecha a
+    // estrofe, linha de rótulo (Refrão/Verso…) rotula a PRÓXIMA, linha com
+    // texto entra na estrofe atual. Reusamos detectLabel pra não divergir do
+    // parser. Retorna o índice da estrofe (= slide) sob o cursor, ou -1.
+    function _stanzaIdxAtCaret(text, caret) {
+      const norm = (text || '').replace(/\r\n/g, '\n');
+      const lines = norm.split('\n');
+      let stanzaIdx = -1;   // última estrofe criada
+      let open = false;     // há estrofe aberta?
+      let pos = 0;          // offset do início da linha atual
+      let alvo = null;      // índice resolvido, ou 'next' (rótulo aguardando), ou null
+      for (let i = 0; i < lines.length; i++) {
+        const raw = lines[i];
+        const ini = pos, fim = pos + raw.length;
+        pos = fim + 1;      // +1 do \n
+        const aqui = caret >= ini && caret <= fim;
+        const line = raw.trim();
+        if (!line) {                       // linha em branco → fecha estrofe
+          open = false;
+          if (aqui) alvo = (stanzaIdx >= 0 ? stanzaIdx : null);  // cai na estrofe anterior
+          continue;
+        }
+        if (typeof detectLabel === 'function' && detectLabel(line)) {
+          open = false;                    // rótulo → a próxima linha de texto abre a estrofe
+          if (aqui) alvo = 'next';         // clicar no rótulo leva à seção dele
+          continue;
+        }
+        if (!open) { stanzaIdx++; open = true; if (alvo === 'next') alvo = stanzaIdx; }
+        if (aqui) alvo = stanzaIdx;
+      }
+      if (alvo === 'next') alvo = (stanzaIdx >= 0 ? stanzaIdx : null);
+      return (typeof alvo === 'number') ? alvo : -1;
+    }
+
+    function _pularProSlideDoCaret() {
+      if (!engine || !engine.parsed || !engine.parsed.stanzas.length) return;
+      const idx = _stanzaIdxAtCaret(_liveLyricsInput.value, _liveLyricsInput.selectionStart);
+      if (idx < 0 || idx >= engine.parsed.stanzas.length) return;
+      if (idx === engine.currentStanzaIndex) return;   // já está nele
+      try { engine.playStanza(idx); } catch (e) {}
+      if (typeof updateActiveStanzaInList === 'function') updateActiveStanzaInList(idx);
+    }
+
+    // Clique/toque posiciona o cursor → salta. Também nas setas do teclado.
+    _liveLyricsInput.addEventListener('click', _pularProSlideDoCaret);
+    _liveLyricsInput.addEventListener('keyup', (e) => {
+      if (e.key && e.key.indexOf('Arrow') === 0) _pularProSlideDoCaret();
     });
   }
 
