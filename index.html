@@ -1266,6 +1266,13 @@ html.wm-modal-open, body.wm-modal-open {
   gap: var(--space-3);
   margin-bottom: var(--space-3);
 }
+.project-toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-shrink: 0;
+}
+#btn-new-project-list svg { margin-right: 4px; }
 .project-search {
   display: flex;
   align-items: center;
@@ -2439,9 +2446,11 @@ body.timeline-collapsed .timeline-collapse-btn {
 /* Comparar fontes fica SEMPRE cheio (é vitrine de upgrade). Pra compensar,
    a navegação (Templates/Meus projetos/Videoaulas) vira ícone já em telas médias. */
 @media (min-width: 1081px) and (max-width: 1600px) {
+  .editor-topbar #btn-new-project,
   .editor-topbar #btn-templates,
   .editor-topbar #btn-my-projects,
   .editor-topbar #btn-videoaulas { font-size: 0; gap: 0; min-width: 34px; justify-content: center; }
+  .editor-topbar #btn-new-project svg,
   .editor-topbar #btn-templates svg,
   .editor-topbar #btn-my-projects svg,
   .editor-topbar #btn-videoaulas svg { margin: 0; }
@@ -2650,6 +2659,7 @@ body.timeline-collapsed .timeline-collapse-btn {
   .editor-topbar #aspect-switcher #btn-aspect-custom { font-size: 0 !important; padding: 3px 6px !important; }
 
   /* ---- LINHA 2 ---- */
+  .editor-topbar #btn-new-project { order: 21; }
   .editor-topbar #btn-my-projects { order: 21; }
   .editor-topbar #btn-undo { order: 22; }
   .editor-topbar #btn-redo { order: 23; }
@@ -2697,8 +2707,10 @@ body.timeline-collapsed .timeline-collapse-btn {
 @media (orientation: landscape) and (pointer: coarse) and (min-width: 1081px) and (max-width: 1366px) {
   /* (1) Barra de cima cabe inteira — Exportar nunca cortado. */
   .editor-topbar #btn-save-template { display: none !important; } /* avançado/raro */
+  .editor-topbar #btn-new-project,
   .editor-topbar #btn-templates,
   .editor-topbar #btn-my-projects { font-size: 0 !important; }     /* só ícone */
+  .editor-topbar #btn-new-project svg,
   .editor-topbar #btn-templates svg,
   .editor-topbar #btn-my-projects svg { margin: 0 !important; }
   .editor-topbar { gap: 10px; }
@@ -6664,6 +6676,10 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
 
     <div class="topbar-section right">
       <div class="topbar-scroll">
+      <button class="btn btn-ghost btn-sm" id="btn-new-project" data-tooltip="Novo projeto em branco">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        Novo projeto
+      </button>
       <button class="btn btn-ghost btn-sm" id="btn-templates" data-tooltip="Templates">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
         Templates
@@ -7885,7 +7901,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'canvas-altura-medida-17jul';
+window.__WM_BUILD = 'novo-projeto-17jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -19931,6 +19947,17 @@ function initEditor() {
   const engine = new RenderEngine(canvas);
   window.__wm = { engine }; // debug
 
+  // Guarda uma cópia PROFUNDA dos padrões de fábrica no instante em que o engine
+  // nasce — antes de qualquer projeto sujar o estado. É a fonte da verdade do
+  // "Novo projeto em branco": em vez de duplicar valores à mão (que envelhecem
+  // quando os defaults do constructor mudam), lemos do próprio engine recém-criado.
+  window.__WM_DEFAULTS = {
+    style: JSON.parse(JSON.stringify(engine.style)),
+    animConfig: JSON.parse(JSON.stringify(engine.animConfig)),
+    bg: 'brand',        // o swatch marcado como .selected no HTML
+    aspect: '16:9',
+  };
+
   // Se a última exportação ficou salva localmente (ex: o iOS descartou a aba no
   // fim do render e a página recarregou), oferece o download ao abrir o editor.
   try { if (window.__wmVerificarExportsPendentes) window.__wmVerificarExportsPendentes(); } catch (e) {}
@@ -30912,6 +30939,74 @@ function initEditor() {
     markSaved();
   }
 
+  /**
+   * NOVO PROJETO EM BRANCO.
+   *
+   * Monta um objeto de projeto zerado (defaults de fábrica + letra vazia) e o
+   * passa pelo MESMO applyProjectToEditor que carrega um projeto salvo — assim
+   * todo o reset (estilo, animação, fundo, proporção, overrides, áudio, undo)
+   * acontece pelo caminho já testado, sem reinventar o "limpar".
+   *
+   * SEGURANÇA: se o projeto aberto tem alterações NÃO salvas e ainda não virou
+   * um projeto de verdade (sem id → o autosave não roda nele), avisa antes de
+   * jogar fora. Projeto já salvo tem autosave, então trocar é seguro sem alarde.
+   */
+  async function startNewProject() {
+    const semId = !window.__currentProjectId;
+    const temConteudo = ($('#lyrics-input')?.value || '').trim().length > 0;
+    if (semId && isDirty && temConteudo) {
+      const ok = await wmConfirm(
+        'Você tem um projeto aberto que ainda não foi salvo. Começar um novo vai descartá-lo. Deseja continuar?',
+        { confirmText: 'Começar novo', cancelText: 'Voltar', danger: true }
+      );
+      if (!ok) return false;
+    }
+
+    const D = window.__WM_DEFAULTS || {};
+    const projetoEmBranco = {
+      id: null,                       // sem id → nasce como "NÃO SALVO"
+      name: 'Projeto sem título',
+      lyrics: '',
+      parsed: { stanzas: [] },        // sem estrofe nenhuma
+      style: JSON.parse(JSON.stringify(D.style || {})),
+      animConfig: JSON.parse(JSON.stringify(D.animConfig || {})),
+      bg: D.bg || 'brand',
+      aspect: D.aspect || '16:9',
+      sceneOverrides: {},
+      wordOverrides: {},
+      // áudio zerado — applyProjectToEditor lê estes campos
+      audioId: null, audioPath: null, audioName: null, audioDuration: null,
+      autoEmphasis: false,
+    };
+
+    applyProjectToEditor(projetoEmBranco);
+    // applyProjectToEditor termina com markSaved(); mas o applyAspect que ele
+    // chama no meio dispara markDirty, que agenda autosave (800ms) e snapshot
+    // (250ms). Um projeto novo em branco não é "salvo" nem "alterado" — é vazio.
+    // Cancelamos esses timers e deixamos o indicador neutro.
+    window.__currentProjectId = null;
+    if (typeof WM_STORAGE?.setCurrent === 'function') WM_STORAGE.setCurrent(null);
+    isDirty = false;
+    clearTimeout(saveTimer);
+    clearTimeout(_captureSnapshotTimer);
+    const neutralizar = () => {
+      isDirty = false;
+      const ind = $('#save-indicator');
+      if (ind) { ind.className = 'save-indicator'; ind.textContent = ''; }
+    };
+    neutralizar();
+    // reafirma depois do tick pra vencer qualquer markDirty tardio do load
+    setTimeout(neutralizar, 300);
+
+    // foca a letra pra o usuário já começar a escrever
+    const ta = $('#lyrics-input');
+    if (ta) { try { ta.focus(); } catch (_) {} }
+
+    if (typeof showToast === 'function') showToast('Projeto novo em branco');
+    return true;
+  }
+  window.startNewProject = startNewProject;
+
   async function applyBackground(key) {
     // Delega pra applyBg (que já suporta vídeo e imagem)
     return applyBg(key);
@@ -32227,9 +32322,18 @@ function initEditor() {
         <div class="project-empty">
           <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
           <div class="project-empty-title">Nenhum projeto salvo ainda</div>
-          <div class="project-empty-desc">Comece criando um lyric novo ou escolha um template. Seus projetos ficam salvos no navegador deste computador.</div>
+          <div class="project-empty-desc">Comece um lyric novo em branco ou escolha um template. Seus projetos ficam salvos no navegador deste computador.</div>
+          <button class="btn btn-primary" id="btn-new-project-empty" style="margin-top:14px;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            Novo projeto em branco
+          </button>
         </div>
       `;
+      const bNovo = $('#btn-new-project-empty');
+      if (bNovo) bNovo.addEventListener('click', async () => {
+        closeModal();
+        await startNewProject();
+      });
       return;
     }
 
@@ -32253,7 +32357,13 @@ function initEditor() {
             <input id="project-search-input" type="text" placeholder="Buscar projeto..." value="${escapeHtml(__projFiltro)}" autocomplete="off">
           </div>
         ` : '<div></div>'}
-        <div class="project-count">${contadorTxt}</div>
+        <div class="project-toolbar-right">
+          <div class="project-count">${contadorTxt}</div>
+          <button class="btn btn-primary btn-sm" id="btn-new-project-list">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            Novo projeto
+          </button>
+        </div>
       </div>
     `;
 
@@ -32341,6 +32451,17 @@ function initEditor() {
 
   // Liga o campo de busca (re-renderiza preservando o foco/cursor)
   function wireProjectSearch() {
+    // Botão "Novo projeto" da barra de topo (existe tanto na lista cheia quanto
+    // no resultado-vazio da busca — os dois chamam wireProjectSearch).
+    const bNovo = $('#btn-new-project-list');
+    if (bNovo && !bNovo.__wired) {
+      bNovo.__wired = true;
+      bNovo.addEventListener('click', async () => {
+        closeModal();
+        await startNewProject();
+      });
+    }
+
     const input = $('#project-search-input');
     if (!input) return;
     input.addEventListener('input', (e) => {
@@ -32354,6 +32475,7 @@ function initEditor() {
   }
 
   // ============ Wire dos botões ============
+  $('#btn-new-project').addEventListener('click', () => startNewProject());
   $('#btn-templates').addEventListener('click', () => openModal('templates'));
   $('#btn-my-projects').addEventListener('click', () => openModal('projects'));
   $('#modal-close').addEventListener('click', closeModal);
