@@ -7880,6 +7880,47 @@ Digno de toda honra"></textarea>
   </div>
 </section>
 
+<!-- ===================== DEFINIR NOVA SENHA =====================
+     Tela que faltava: o link do e-mail de "esqueci minha senha" chegava
+     aqui e não havia onde digitar a senha nova — o usuário caía no login
+     e nada acontecia. Reaproveita a mesma cena/estilo do login. -->
+<section id="page-nova-senha" class="page page-auth auth-shell page-login">
+  <div class="wm-login-scene" aria-hidden="true">
+    <div class="wm-login-aurora"></div>
+    <div class="wm-login-veil"></div>
+    <div class="wm-login-rays"></div>
+  </div>
+
+  <div class="wm-login-content">
+    <div class="wm-login-card">
+      <h2 class="auth-title">Criar nova senha</h2>
+      <p class="auth-subtitle">Escolha uma senha nova para sua conta. Ela precisa ter pelo menos 6 caracteres.</p>
+
+      <form id="nova-senha-form" style="display:flex; flex-direction:column; gap:var(--space-4);">
+        <div class="input-group">
+          <label class="label" for="nova-senha">Nova senha</label>
+          <input class="input" type="password" id="nova-senha" placeholder="••••••••" autocomplete="new-password" required>
+        </div>
+
+        <div class="input-group">
+          <label class="label" for="nova-senha-confirma">Repita a nova senha</label>
+          <input class="input" type="password" id="nova-senha-confirma" placeholder="••••••••" autocomplete="new-password" required>
+        </div>
+
+        <div id="nova-senha-msg" style="display:none; font-size:13px; padding:10px 12px; border-radius:8px; line-height:1.4;"></div>
+
+        <button class="btn btn-primary btn-lg" type="submit" id="nova-senha-btn" style="margin-top:var(--space-2);">
+          Salvar nova senha
+        </button>
+      </form>
+
+      <div class="auth-footer">
+        <a href="#login" id="nova-senha-voltar">Voltar para o login</a>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- GSAP CDN (usado pelas animações de landing e login) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <!-- mp4-muxer (usado pelo export WebCodecs) -->
@@ -7912,7 +7953,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'autoajuste-slide-21jul';
+window.__WM_BUILD = 'reset-senha-23jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -34412,8 +34453,76 @@ function initLoginAnim() {
       if (error) mostrarMsg('Erro: ' + error.message, 'erro');
       else mostrarMsg('Enviamos um link de redefinição para seu e-mail.', 'ok');
     });
+
+    // Se o usuário chegou aqui vindo de um link de e-mail expirado/inválido,
+    // o roteador deixou o recado em window.__wmAuthErro. Mostra e limpa.
+    if (window.__wmAuthErro) {
+      mostrarMsg(window.__wmAuthErro, 'erro');
+      window.__wmAuthErro = null;
+    }
   }
 }
+
+// ===== FORMULÁRIO DE NOVA SENHA (redefinição) =====
+// Fica FORA do initLoginAnim de propósito: quem vem do link do e-mail cai
+// direto em #nova-senha e nunca passa pelo #login, então o wiring precisa
+// rodar sozinho. Só funciona com a sessão criada a partir do link de
+// recovery — é o setSession do tratarRetornoAuth que torna isso possível.
+function wmInitNovaSenha() {
+  const formNova = document.getElementById('nova-senha-form');
+  if (!formNova || formNova.__bound) return;
+  formNova.__bound = true;
+
+  const msgNova = document.getElementById('nova-senha-msg');
+  const btnNova = document.getElementById('nova-senha-btn');
+
+  const dizer = (texto, tipo) => {
+    if (!msgNova) return;
+    msgNova.style.display = 'block';
+    msgNova.textContent = texto;
+    msgNova.style.background = tipo === 'ok' ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.12)';
+    msgNova.style.color = tipo === 'ok' ? '#4ade80' : '#f87171';
+  };
+
+  formNova.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    // Validações locais PRIMEIRO: são instantâneas e não dependem de rede.
+    // (Se checássemos o serviço antes, um problema de conexão esconderia
+    //  o aviso simples de "senhas não conferem".)
+    const s1 = document.getElementById('nova-senha').value;
+    const s2 = document.getElementById('nova-senha-confirma').value;
+    if (s1.length < 6) { dizer('A senha precisa ter pelo menos 6 caracteres.', 'erro'); return; }
+    if (s1 !== s2) { dizer('As duas senhas não são iguais. Confira e tente de novo.', 'erro'); return; }
+
+    const sb2 = window.wmSupabase;
+    if (!sb2) { dizer('Serviço indisponível no momento. Recarregue a página.', 'erro'); return; }
+
+    const textoOriginal = btnNova ? btnNova.textContent : '';
+    if (btnNova) { btnNova.disabled = true; btnNova.textContent = 'Salvando...'; }
+    const destravar = () => { if (btnNova) { btnNova.disabled = false; btnNova.textContent = textoOriginal; } };
+
+    try {
+      // Precisa de sessão ativa (veio do link de recovery).
+      const { data: sess } = await sb2.auth.getSession();
+      if (!sess || !sess.session) {
+        dizer('Sua sessão de redefinição expirou. Peça um link novo em "Esqueci minha senha".', 'erro');
+        destravar(); return;
+      }
+      const { error } = await sb2.auth.updateUser({ password: s1 });
+      if (error) {
+        dizer('Não foi possível trocar a senha: ' + error.message, 'erro');
+        destravar(); return;
+      }
+      dizer('Senha alterada! Levando você para o editor...', 'ok');
+      setTimeout(() => { window.location.hash = '#editor'; }, 1200);
+    } catch (err) {
+      dizer('Erro inesperado: ' + (err && err.message ? err.message : err), 'erro');
+      destravar();
+    }
+  });
+}
+window.wmInitNovaSenha = wmInitNovaSenha;
 
 
 /* === Router === */
@@ -34428,9 +34537,29 @@ function initLoginAnim() {
     if (window.__wmLog) window.__wmLog('retorno: hash tem access_token? ' + (h.includes('access_token')?'SIM':'não'));
     // Mostra os primeiros 60 caracteres do hash pra ver o formato real.
     if (window.__wmLog) window.__wmLog('retorno: inicio do hash = ' + h.slice(0, 60));
+
+    // ===== LINK INVÁLIDO OU EXPIRADO =====
+    // O Supabase devolve #error=access_denied&error_code=otp_expired&...
+    // Antes isso não era tratado: a pessoa caía na landing com uma URL feia
+    // cheia de código e nenhuma explicação. Agora vira uma mensagem clara.
+    if (h.includes('error=') || h.includes('error_code=')) {
+      let codigo = '', descricao = '';
+      try {
+        const p = new URLSearchParams(h.replace(/^#+/, ''));
+        codigo = p.get('error_code') || p.get('error') || '';
+        descricao = p.get('error_description') || '';
+      } catch (e) {}
+      const expirou = /expired|otp_expired/i.test(codigo + ' ' + descricao);
+      window.__wmAuthErro = expirou
+        ? 'Esse link de e-mail expirou ou já foi usado. Digite seu e-mail abaixo e clique em "Esqueci minha senha" para receber um link novo.'
+        : ('Não foi possível validar o link do e-mail. ' + (descricao || 'Tente pedir um link novo.'));
+      history.replaceState(null, '', window.location.pathname + '#login');
+      return;
+    }
+
     if (h.includes('access_token=') || h.includes('type=signup') || h.includes('type=recovery')) {
       const ehRecovery = h.includes('type=recovery');
-      if (window.wmSupabase && !ehRecovery) {
+      if (window.wmSupabase) {
         // Lê os tokens do hash IMEDIATAMENTE (antes que algo limpe a URL).
         let access_token = null, refresh_token = null;
         try {
@@ -34454,6 +34583,9 @@ function initLoginAnim() {
         }
         let achou = false;
         // 1) Cria a sessão manualmente com os tokens lidos.
+        //    No RECOVERY isso é obrigatório: sem sessão o updateUser() não
+        //    consegue trocar a senha. (Antes o recovery era pulado aqui, e
+        //    por isso a redefinição nunca funcionava.)
         if (access_token && refresh_token) {
           try {
             const { data, error } = await window.wmSupabase.auth.setSession({ access_token, refresh_token });
@@ -34480,8 +34612,16 @@ function initLoginAnim() {
           }
         }
         if (!achou && window.__wmLog) window.__wmLog('retorno: sessão NÃO criada de jeito nenhum');
+        // Recovery SEM sessão = link já consumido/expirado. Avisa direito.
+        if (!achou && ehRecovery) {
+          window.__wmAuthErro = 'Esse link de redefinição expirou ou já foi usado. Peça um link novo em "Esqueci minha senha".';
+          history.replaceState(null, '', window.location.pathname + '#login');
+          return;
+        }
       }
-      const destino = ehRecovery ? '#login' : '#editor';
+      // Recovery vai pra tela de definir a senha nova (antes ia pro #login,
+      // onde não havia nada pra fazer).
+      const destino = ehRecovery ? '#nova-senha' : '#editor';
       history.replaceState(null, '', window.location.pathname + destino);
     }
   }
@@ -34543,6 +34683,11 @@ function initLoginAnim() {
     if (pageId === 'page-login' && !window.__loginReady) {
       window.__loginReady = true;
       if (typeof initLoginAnim === 'function') initLoginAnim();
+    }
+    // Tela de nova senha: liga o formulário. Quem vem do link do e-mail
+    // cai aqui direto, sem passar pelo #login.
+    if (pageId === 'page-nova-senha') {
+      if (typeof wmInitNovaSenha === 'function') wmInitNovaSenha();
     }
     if (pageId === 'page-landing' && !window.__landingReady) {
       window.__landingReady = true;
