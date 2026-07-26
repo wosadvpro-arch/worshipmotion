@@ -7968,7 +7968,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'diag-toque-slide-24jul';
+window.__WM_BUILD = 'play-touchend-24jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -30406,48 +30406,51 @@ function initEditor() {
   $('#btn-play-canvas').addEventListener('click', () => playWithAudio());
   $('#btn-timeline-play').addEventListener('click', () => playWithAudio());
 
-  // === DIAGNÓSTICO DE TOQUE (temporário) ===
-  // O play/setas da barra do slide não respondem no iPhone e o navegador de
-  // teste não reproduz. Este bloco escuta o toque NA ÁREA da barra e mostra,
-  // numa caixinha no próprio aparelho, QUEM recebeu o toque e se o clique do
-  // botão chegou a disparar. Assim o diagnóstico vem do iPhone real.
-  (function _wmDiagToqueBarra() {
-    const barra = document.querySelector('.canvas-toolbar');
-    if (!barra) return;
-    let caixa = null;
-    const mostrar = (txt) => {
-      if (!caixa) {
-        caixa = document.createElement('div');
-        caixa.style.cssText = 'position:fixed;left:8px;right:8px;bottom:8px;z-index:999999;'
-          + 'background:#1a1030;color:#fff;font:12px/1.4 monospace;padding:10px 12px;'
-          + 'border:1px solid #6C4DF6;border-radius:8px;white-space:pre-wrap;';
-        document.body.appendChild(caixa);
-      }
-      caixa.textContent = txt;
-    };
-    // marca quando um clique REALMENTE dispara em cada botão
-    ['btn-play-canvas','btn-prev-stanza','btn-next-stanza'].forEach(id => {
-      const b = document.getElementById(id);
-      if (b) b.addEventListener('click', () => { window.__wmUltimoClick = id + ' @ ' + new Date().toLocaleTimeString(); });
-    });
-    // no toque na região da barra, reporta o que interceptou
-    barra.addEventListener('touchstart', (ev) => {
-      const t = ev.touches && ev.touches[0];
-      if (!t) return;
-      const alvo = document.elementFromPoint(t.clientX, t.clientY);
-      const pilha = (document.elementsFromPoint(t.clientX, t.clientY) || []).slice(0,3)
-        .map(e => (e.id || (typeof e.className==='string'?e.className.split(' ')[0]:e.tagName))).join(' > ');
-      const dentroBtn = alvo ? (alvo.closest && alvo.closest('.icon-btn')) : null;
-      mostrar(
-        'build: ' + (window.__WM_BUILD || '?') + '\n'
-        + 'toque em: ' + Math.round(t.clientX) + ',' + Math.round(t.clientY) + '\n'
-        + 'topo: ' + (alvo ? (alvo.id || alvo.tagName) : 'nada') + '\n'
-        + 'pilha: ' + pilha + '\n'
-        + 'caiu num botão? ' + (dentroBtn ? ('SIM (' + dentroBtn.id + ')') : 'NÃO') + '\n'
-        + 'último click real: ' + (window.__wmUltimoClick || 'nenhum ainda')
-      );
+  // === TOQUE DIRETO NOS BOTÕES DA BARRA DO SLIDE (iPhone) ===
+  // Diagnóstico no aparelho provou: o toque ACERTA o botão (elementFromPoint =
+  // #btn-play-canvas), mas o evento `click` NUNCA dispara no WebKit. Algum
+  // handler global de toque (arrastar palavra/canvas em touchstart passive:false
+  // com preventDefault, ~linha 21196) engole o gesto e o click nunca nasce.
+  // Solução: não depender do click — chamar a AÇÃO direto no `touchend` do
+  // próprio botão. A ação é a MESMA função que o click chamaria (não um
+  // dispatch de click, que se auto-bloquearia).
+  function _wmToqueDireto(btnId, acao) {
+    const b = document.getElementById(btnId);
+    if (!b) return;
+    let x0 = 0, y0 = 0, movido = false, tocando = false;
+    b.addEventListener('touchstart', (ev) => {
+      const t = ev.touches && ev.touches[0]; if (!t) return;
+      x0 = t.clientX; y0 = t.clientY; movido = false; tocando = true;
     }, { passive: true });
-  })();
+    b.addEventListener('touchmove', (ev) => {
+      const t = ev.touches && ev.touches[0]; if (!t) return;
+      if (Math.abs(t.clientX - x0) > 12 || Math.abs(t.clientY - y0) > 12) movido = true;
+    }, { passive: true });
+    b.addEventListener('touchend', (ev) => {
+      if (!tocando) return;
+      tocando = false;
+      if (movido) return;                     // foi arrasto, não toque
+      if (ev.cancelable) ev.preventDefault();  // evita o click-fantasma duplo
+      b.__wmToqueAgora = true;                 // sinaliza pro click não repetir
+      setTimeout(() => { b.__wmToqueAgora = false; }, 600);
+      try { acao(); } catch (e) {}
+    }, { passive: false });
+  }
+  // A ação é sempre a MESMA lógica do click. Se o click chegar a disparar
+  // (desktop/mouse), ele roda normal; no iPhone o touchend cobre.
+  const _acaoPrev = () => { if (engine && engine.parsed) { engine.prevStanza(); if (typeof updateActiveStanzaInList==='function') updateActiveStanzaInList(engine.currentStanzaIndex); } };
+  const _acaoNext = () => { if (engine && engine.parsed) { engine.nextStanza(); if (typeof updateActiveStanzaInList==='function') updateActiveStanzaInList(engine.currentStanzaIndex); } };
+  _wmToqueDireto('btn-play-canvas', () => playWithAudio());
+  _wmToqueDireto('btn-prev-stanza', _acaoPrev);
+  _wmToqueDireto('btn-next-stanza', _acaoNext);
+  // Guarda anti-duplo: se o click NATIVO disparar logo após o toque já ter
+  // agido, ignora (senão pularia 2 estrofes no desktop com touch+click).
+  ['btn-play-canvas','btn-prev-stanza','btn-next-stanza'].forEach(id => {
+    const b = document.getElementById(id);
+    if (b) b.addEventListener('click', (ev) => {
+      if (b.__wmToqueAgora) { ev.stopImmediatePropagation(); ev.preventDefault(); }
+    }, true);
+  });
 
   // ============ Main actions ============
   $('#btn-parse-lyrics').addEventListener('click', parseAndRender);
