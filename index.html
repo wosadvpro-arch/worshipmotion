@@ -2543,11 +2543,17 @@ body.timeline-collapsed .timeline-collapse-btn {
   .editor-canvas-wrap { order: 1; flex: 1 1 auto; min-height: 0; padding: 4px; }
   /* No celular quem dimensiona o canvas é o applyAspect, com a altura MEDIDA
      no .editor-canvas-wrap (não mais uma conta em 100vh). Estas regras são só
-     a base — os inline do applyAspect mandam. flex-shrink:0 continua aqui de
-     propósito: se por algum motivo faltar espaço, é melhor recortar do que
-     esmagar o canvas verticalmente e quebrar a proporção (o que amontoava as
-     letras). Com a altura medida, isso não deve mais acontecer. */
-  .editor-canvas { width: 100%; height: auto; max-width: 100%; max-height: none; flex-shrink: 0; }
+     a base — os inline do applyAspect mandam.
+     ANTES tinha flex-shrink:0 aqui — e era um TIRO NO PÉ: quando o espaço
+     apertava, o canvas NÃO encolhia e TRANSBORDAVA pra baixo, cobrindo a
+     .canvas-toolbar ("SLIDE N de M" + ▶ + setas) que vem logo depois na
+     coluna. A barra aparecia embaixo mas o toque caía no canvas invisível por
+     cima → play e setas "mortos" no celular. Agora min-height:0 deixa o canvas
+     ceder o espaço da barra; a proporção é mantida pela altura medida. */
+  .editor-canvas { width: 100%; height: auto; max-width: 100%; max-height: 100%; min-height: 0; flex-shrink: 1; }
+  /* A barra do slide precisa ficar SEMPRE clicável, acima de qualquer sobra
+     do canvas. z-index alto + position relative garante o toque nela. */
+  .canvas-toolbar { position: relative; z-index: 60; flex: 0 0 auto; }
   /* quando um painel sobe, levanta o canvas pra ele ficar VISÍVEL acima do
      painel (senão a animação aplicada fica escondida atrás dele) */
   .editor-canvas-wrap { transition: padding-bottom .28s ease; }
@@ -7962,7 +7968,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'play-slide-toque-24jul';
+window.__WM_BUILD = 'diag-toque-slide-24jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
@@ -30399,6 +30405,49 @@ function initEditor() {
 
   $('#btn-play-canvas').addEventListener('click', () => playWithAudio());
   $('#btn-timeline-play').addEventListener('click', () => playWithAudio());
+
+  // === DIAGNÓSTICO DE TOQUE (temporário) ===
+  // O play/setas da barra do slide não respondem no iPhone e o navegador de
+  // teste não reproduz. Este bloco escuta o toque NA ÁREA da barra e mostra,
+  // numa caixinha no próprio aparelho, QUEM recebeu o toque e se o clique do
+  // botão chegou a disparar. Assim o diagnóstico vem do iPhone real.
+  (function _wmDiagToqueBarra() {
+    const barra = document.querySelector('.canvas-toolbar');
+    if (!barra) return;
+    let caixa = null;
+    const mostrar = (txt) => {
+      if (!caixa) {
+        caixa = document.createElement('div');
+        caixa.style.cssText = 'position:fixed;left:8px;right:8px;bottom:8px;z-index:999999;'
+          + 'background:#1a1030;color:#fff;font:12px/1.4 monospace;padding:10px 12px;'
+          + 'border:1px solid #6C4DF6;border-radius:8px;white-space:pre-wrap;';
+        document.body.appendChild(caixa);
+      }
+      caixa.textContent = txt;
+    };
+    // marca quando um clique REALMENTE dispara em cada botão
+    ['btn-play-canvas','btn-prev-stanza','btn-next-stanza'].forEach(id => {
+      const b = document.getElementById(id);
+      if (b) b.addEventListener('click', () => { window.__wmUltimoClick = id + ' @ ' + new Date().toLocaleTimeString(); });
+    });
+    // no toque na região da barra, reporta o que interceptou
+    barra.addEventListener('touchstart', (ev) => {
+      const t = ev.touches && ev.touches[0];
+      if (!t) return;
+      const alvo = document.elementFromPoint(t.clientX, t.clientY);
+      const pilha = (document.elementsFromPoint(t.clientX, t.clientY) || []).slice(0,3)
+        .map(e => (e.id || (typeof e.className==='string'?e.className.split(' ')[0]:e.tagName))).join(' > ');
+      const dentroBtn = alvo ? (alvo.closest && alvo.closest('.icon-btn')) : null;
+      mostrar(
+        'build: ' + (window.__WM_BUILD || '?') + '\n'
+        + 'toque em: ' + Math.round(t.clientX) + ',' + Math.round(t.clientY) + '\n'
+        + 'topo: ' + (alvo ? (alvo.id || alvo.tagName) : 'nada') + '\n'
+        + 'pilha: ' + pilha + '\n'
+        + 'caiu num botão? ' + (dentroBtn ? ('SIM (' + dentroBtn.id + ')') : 'NÃO') + '\n'
+        + 'último click real: ' + (window.__wmUltimoClick || 'nenhum ainda')
+      );
+    }, { passive: true });
+  })();
 
   // ============ Main actions ============
   $('#btn-parse-lyrics').addEventListener('click', parseAndRender);
