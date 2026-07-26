@@ -2132,6 +2132,15 @@ body.marking-open.marking-collapsed .editor-canvas {
   backdrop-filter: blur(20px);
   z-index: 50;
 }
+/* No celular o toque costuma cair no SVG (ou no <polygon> dentro dele) em vez
+   do <button>, e aí o click não dispara — era por isso que o ▶ e as setas da
+   barra "SLIDE N de M" não respondiam ao toque. Neutralizar o ponteiro nos
+   filhos faz o toque acertar sempre o botão. Alvo maior de toque também. */
+.canvas-toolbar .icon-btn { min-width: 40px; min-height: 40px; }
+.canvas-toolbar .icon-btn * { pointer-events: none; }
+/* touch-action:manipulation remove o atraso de 300ms e o zoom-por-toque-duplo
+   no WebKit, deixando o toque responder na hora. */
+.canvas-toolbar .icon-btn { touch-action: manipulation; }
 /* Indicador discreto de qual slide está no preview — "SLIDE 2 de 18".
    Fica na toolbar (fora do canvas-content), então NUNCA vai pro vídeo
    exportado. Texto pequeno e sóbrio pra não competir com a letra. */
@@ -7953,7 +7962,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'reset-senha-23jul';
+window.__WM_BUILD = 'play-slide-toque-24jul';
 
 // Links de checkout do Hotmart — fonte única usada pelo gate pré-conta (botões
 // "Assinar" da landing) e pelo resume automático após o login.
