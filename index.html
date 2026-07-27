@@ -6290,6 +6290,19 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
 .wm-lang-opt:hover { background: rgba(255,255,255,0.07); color: #fff; }
 .wm-lang-opt.is-sel { color: #fff; background: rgba(108,77,246,0.18); }
 .wm-lang-opt small { color: var(--text-tertiary, #9a90b0); font-size: 11px; }
+
+/* Seletor de idioma na barra lateral do editor (rail) — botão só-bandeira,
+   menu abre pro LADO (a rail é estreita e fica na borda esquerda). */
+.wm-lang-rail { position: relative; display: flex; justify-content: center; }
+.wm-lang-rail .wm-lang-btn { padding: 0; }
+.wm-lang-rail .wm-lang-flag { display: inline-flex; }
+.wm-lang-menu-rail {
+  top: 50%; right: auto; left: calc(100% + 8px);
+  transform: translateY(-50%) translateX(-4px);
+}
+.wm-lang-rail.is-open .wm-lang-menu-rail {
+  transform: translateY(-50%) translateX(0);
+}
 .page-login .wm-login-card .auth-subtitle { font-size: var(--text-sm); color: var(--text-secondary); margin-bottom: 24px; }
 .page-login .wm-login-tagline { position: relative; z-index: 2; max-width: 430px; text-align: center; font-size: 13px; line-height: 1.5; color: rgba(246,246,249,0.62); }
 
@@ -6807,6 +6820,16 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 16l5-5 4 4 5-5 4 4"/></svg>
     </button>
     <div style="flex:1"></div>
+    <div class="wm-lang wm-lang-rail" id="wm-lang-rail">
+      <button type="button" class="rail-btn wm-lang-btn" id="wm-lang-rail-btn" data-tooltip="Idioma / Language / Idioma" aria-haspopup="listbox" aria-expanded="false">
+        <span class="wm-lang-flag" data-flag></span>
+      </button>
+      <ul class="wm-lang-menu wm-lang-menu-rail" role="listbox">
+        <li class="wm-lang-opt" role="option" data-lang="pt"><span class="wm-lang-flag"></span><span>Português</span></li>
+        <li class="wm-lang-opt" role="option" data-lang="en"><span class="wm-lang-flag"></span><span>English</span></li>
+        <li class="wm-lang-opt" role="option" data-lang="es"><span class="wm-lang-flag"></span><span>Español <small>· Latinoamérica</small></span></li>
+      </ul>
+    </div>
     <button class="rail-btn" id="btn-conta" data-tooltip="Conta">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg>
     </button>
@@ -8017,7 +8040,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'i18n-editor-topbar-24jul';
+window.__WM_BUILD = 'i18n-seletor-editor-24jul';
 
 /* ============================================================
    MOTOR DE IDIOMAS (i18n) — Parte 1: a fiação
