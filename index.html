@@ -513,6 +513,20 @@ h1, h2, h3, h4, h5, h6 {
 .editor-topbar [data-tooltip]:hover::after {
   transform: translateX(-50%) translateY(0);
 }
+
+/* NO CELULAR (toque), tooltips de hover atrapalham: ficam "grudados" após o
+   toque e, na barra inferior, saem cortados pela borda da tela (o caso do
+   seletor de idioma, cujo texto "Idioma / Language / Idioma" é largo).
+   Como no toque o usuário aciona o botão direto, desligamos os tooltips. */
+@media (max-width: 1080px) {
+  [data-tooltip]::after,
+  [data-tooltip]:hover::after,
+  .editor-rail [data-tooltip]::after,
+  .editor-rail [data-tooltip]:hover::after {
+    display: none !important;
+    content: none !important;
+  }
+}
 /* Exportar fica na ponta direita → seu tooltip abre pra ESQUERDA (ancorado à
    direita), pra nunca vazar pra fora da tela. */
 .editor-topbar #btn-export[data-tooltip]::after {
@@ -8070,7 +8084,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'i18n-msgs-editor-24jul';
+window.__WM_BUILD = 'mobile-tooltip-fix-24jul';
 
 /* ============================================================
    MOTOR DE IDIOMAS (i18n) — Parte 1: a fiação
