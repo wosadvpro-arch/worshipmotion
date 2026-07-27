@@ -8091,7 +8091,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'i18n-packs-24jul';
+window.__WM_BUILD = 'i18n-templates-desc-24jul';
 
 /* ============================================================
    MOTOR DE IDIOMAS (i18n) — Parte 1: a fiação
@@ -25078,6 +25078,11 @@ function initEditor() {
         if (typeof updateTimerDisplay === 'function') updateTimerDisplay();
         if (typeof renderWordPanel === 'function') renderWordPanel();
       }
+      // re-renderiza o grid de templates se estiver aberto (descrições traduzidas)
+      const gridTpl = document.getElementById('template-grid') || document.querySelector('.template-grid');
+      if (gridTpl && gridTpl.offsetParent !== null && typeof renderTemplateGrid === 'function') {
+        renderTemplateGrid();
+      }
     } catch (e) {}
   });
 
@@ -32670,6 +32675,37 @@ function initEditor() {
    * Reaproveita parsed.stanzas[0].lines + wordOverrides do template.
    * Pra palavras sem wordOverride, usa o estilo global (config.style).
    */
+  // Descrições dos templates em EN/ES (o PT já vem no objeto TEMPLATES).
+  window.WM_TEMPLATE_DESC_I18N = {
+    'tpl-user-1-linha-borrar': { en: 'One large centered word with a soft Blur animation.', es: 'Una palabra centrada y grande con animación de Desenfoque suave.' },
+    'tpl-user-1-linha-delicado': { en: 'One large centered word in a cursive font, with a soft Blur animation.', es: 'Una palabra centrada y grande en fuente cursiva, con animación de Desenfoque suave.' },
+    'tpl-user-1-linha-brush': { en: 'One large centered word in a brush font, with a soft Blur animation.', es: 'Una palabra centrada y grande en fuente brush, con animación de Desenfoque suave.' },
+    'tpl-user-1-linha-caligrafia': { en: 'One centered word in a calligraphic font, with a soft Blur animation.', es: 'Una palabra centrada en fuente caligráfica, con animación de Desenfoque suave.' },
+    'tpl-user-1-linha-carton': { en: 'One centered word in Carton Six (display) font, with a soft Blur animation.', es: 'Una palabra centrada en fuente Carton Six (display), con animación de Desenfoque suave.' },
+    'tpl-user-3-linhas-brush': { en: 'Cinematic layout: strong word large in the center, contextual fragments above/below in distinct harmonizing fonts.', es: 'Diseño cinematográfico: palabra de fuerza grande en el centro, fragmentos contextuales arriba/abajo en fuentes armónicas distintas.' },
+    'tpl-user-3-linhas-script': { en: 'More compact 3-level layout: supporting line on top, strong word in the center, cursive phrase below.', es: 'Diseño en 3 niveles más compacto: línea de apoyo arriba, palabra de fuerza en el centro, frase cursiva abajo.' },
+    'tpl-user-3-linhas-cinematografico': { en: 'Epic cinema style: top and bottom lines LARGE in Timber Slice, smaller italic sans in the middle. Strength at the edges.', es: 'Estilo épico de cine: líneas superior e inferior GRANDES en Timber Slice, línea del medio menor en sans itálica. Fuerza en los extremos.' },
+    'tpl-user-5-linhas-vertical': { en: 'Vertical composition in 5 levels with alternating weights. Lines 2 and 4 bold in Montserrat Black Italic; lines 1, 3 and 5 thin. Cinematic/poetic style.', es: 'Composición vertical en 5 niveles con alternancia de pesos. Líneas 2 y 4 gruesas en Montserrat Black Italic; líneas 1, 3 y 5 finas. Estilo cinematográfico/poético.' },
+    'tpl-user-4-linhas-blackiron': { en: 'Editorial composition in 4 levels with bold serif Blackiron font. L1 smaller (intro), L2-L4 large. All lowercase, manifesto/poetic style.', es: 'Composición editorial en 4 niveles con fuente Blackiron serif gruesa. L1 menor (introducción), L2-L4 grandes. Todo en minúsculas, estilo manifiesto/poético.' },
+    'tpl-user-2-linhas-mont-blackiron': { en: 'Editorial composition in 2 levels: small supporting line in Montserrat, main line large in Blackiron. Typographic contrast sans+serif.', es: 'Composición editorial en 2 niveles: línea de apoyo pequeña en Montserrat, línea principal grande en Blackiron. Contraste tipográfico sans+serif.' },
+    'tpl-user-2-linhas-blackiron-duplo': { en: 'Typographic block in 2 lines with large uppercase Blackiron. Centered composition, tight spacing, high contrast.', es: 'Bloque tipográfico en 2 líneas con Blackiron grande y mayúsculas. Composición centrada, espaciado compacto, alto contraste.' },
+    'tpl-user-3-linhas-montanhas': { en: 'Vertical composition with ascending hierarchy. L1 bold Montserrat, L2 thin Montserrat (connector), L3 very large Blackiron (highlight). All uppercase.', es: 'Composición vertical con jerarquía ascendente. L1 Montserrat gruesa, L2 Montserrat fina (conector), L3 Blackiron muy grande (destaque). Todo en mayúsculas.' },
+    'tpl-user-1-linha-maravilhoso': { en: 'Single line with cursive Candlescript font as highlight, capitalized. Minimalist composition focused on one main word.', es: 'Línea única con fuente cursiva Candlescript en destaque, capitalizada. Composición minimalista centrada en una palabra principal.' },
+    'tpl-user-4-linhas-fonte-vida': { en: 'Typographic composition in 4 levels alternating Montserrat and Blackiron. L1 support, L2 large highlight, L3 thin connector, L4 lowercase closing.', es: 'Composición tipográfica en 4 niveles alternando Montserrat y Blackiron. L1 apoyo, L2 destaque grande, L3 conector fino, L4 cierre en minúsculas.' },
+    'tpl-user-4-linhas-tronos': { en: 'Composition in 4 levels with central highlight. L1 support, L2 very large Blackiron (highlight), L3 connector, L4 bold Montserrat closing. All uppercase.', es: 'Composición en 4 niveles con destaque central. L1 apoyo, L2 Blackiron muy grande (destaque), L3 conector, L4 cierre Montserrat gruesa. Todo en mayúsculas.' },
+    'tpl-user-1-linha-antaras': { en: 'Single line with Antara Nodes font at maximum highlight (scale 4.5). "Blur" entrance animation with extended duration. Cinematic style with active halo.', es: 'Línea única con fuente Antara Nodes en destaque máximo (scale 4.5). Animación de entrada "desenfoque" con duración aumentada. Estilo cinematográfico con halo activo.' },
+    'tpl-user-2-linhas-tipografia': { en: 'Typographic play: line 1 in modern sans-serif, line 2 in handwritten cursive. Elegant centered composition.', es: 'Juego tipográfico: línea 1 en sans-serif moderna, línea 2 en cursiva manuscrita. Composición elegante centrada.' },
+  };
+  function _wmTemplateDesc(t) {
+    if (!t) return '';
+    const idioma = (window.WM_GET_IDIOMA ? window.WM_GET_IDIOMA() : 'pt');
+    if (idioma !== 'pt' && window.WM_TEMPLATE_DESC_I18N && window.WM_TEMPLATE_DESC_I18N[t.id]) {
+      const tr = window.WM_TEMPLATE_DESC_I18N[t.id][idioma];
+      if (tr) return tr;
+    }
+    return t.description || '';
+  }
+
   function _renderTemplatePreviewContent(t) {
     const cfg = t.config || {};
     const parsed = cfg.parsed;
@@ -32749,7 +32785,7 @@ function initEditor() {
           </div>
           <div class="template-info">
             <div class="template-name">${escapeHtml(t.name)}</div>
-            <div class="template-desc">${escapeHtml(t.description)}</div>
+            <div class="template-desc">${escapeHtml(_wmTemplateDesc(t))}</div>
             <div class="template-tags">${t.tags.map(tag => `<span class="template-tag">${escapeHtml(tag)}</span>`).join('')}</div>
           </div>
         </div>
