@@ -6792,7 +6792,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
       </button>
       </div><!-- /topbar-scroll: daqui pra frente fica FIXO (créditos, Salvar, Exportar) -->
       <div style="width:1px; height:20px; background:var(--border-default); margin: 0 4px;"></div>
-      <div id="wm-credits-badge" title="Créditos disponíveis neste mês" style="display:inline-flex; align-items:center; gap:6px; padding:5px 12px; border-radius:20px; background:rgba(139,92,246,0.12); border:1px solid rgba(139,92,246,0.3); color:#c4b5fd; font-size:13px; font-weight:600; cursor:default;">
+      <div id="wm-credits-badge" data-i18n-attr="title:ed.creditsTip" title="Créditos disponíveis neste mês" style="display:inline-flex; align-items:center; gap:6px; padding:5px 12px; border-radius:20px; background:rgba(139,92,246,0.12); border:1px solid rgba(139,92,246,0.3); color:#c4b5fd; font-size:13px; font-weight:600; cursor:default;">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
         <span id="wm-credits-text">—</span>
       </div>
@@ -8048,7 +8048,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'i18n-editor-revisao-24jul';
+window.__WM_BUILD = 'i18n-creditos-24jul';
 
 /* ============================================================
    MOTOR DE IDIOMAS (i18n) — Parte 1: a fiação
@@ -8321,6 +8321,8 @@ window.__WM_BUILD = 'i18n-editor-revisao-24jul';
     'emp.extraGlow':    { pt: 'Brilho extra', en: 'Extra glow', es: 'Brillo extra' },
     'emp.boldExtra':    { pt: 'Negrito extra', en: 'Extra bold', es: 'Negrita extra' },
     'ctx.fontsTitle':   { pt: 'Fontes', en: 'Fonts', es: 'Fuentes' },
+    'ed.creditsTip':    { pt: 'Créditos disponíveis neste mês', en: 'Credits available this month', es: 'Créditos disponibles este mes' },
+    'ed.creditsLabel':  { pt: 'créditos', en: 'credits', es: 'créditos' },
     // pontos que escaparam (nome do projeto, hint da timeline, rótulo automático de estrofe, "de")
     'ed.untitledProject':{ pt: 'Projeto sem título', en: 'Untitled project', es: 'Proyecto sin título' },
     'ed.untitled':      { pt: 'Sem título', en: 'Untitled', es: 'Sin título' },
@@ -11943,7 +11945,7 @@ function wmAtualizarBadgeCreditos() {
   const el = document.getElementById('wm-credits-text');
   if (!el) return;
   const info = wmCreditosInfo();
-  el.innerHTML = '<span class="cred-num">' + info.restante + '/' + info.total + '</span><span class="cred-label">\u00A0créditos</span>';
+  el.innerHTML = '<span class="cred-num">' + info.restante + '/' + info.total + '</span><span class="cred-label">\u00A0' + (window.WM_T ? window.WM_T('ed.creditsLabel') : 'créditos') + '</span>';
 }
 
 // Cobra créditos por uma produção. Retorna {ok, motivo}.
