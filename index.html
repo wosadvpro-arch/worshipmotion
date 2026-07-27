@@ -6255,21 +6255,40 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
   box-shadow: 0 40px 90px -30px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.08);
 }
 .page-login .wm-login-card .auth-title { font-family: var(--font-display); font-size: var(--text-3xl); font-weight: 700; letter-spacing: -0.02em; margin-bottom: 6px; }
-/* Seletor de idioma, canto superior direito do card */
+/* Seletor de idioma com bandeiras (canto superior direito do card) */
 .wm-lang-wrap { display: flex; justify-content: flex-end; margin-bottom: 6px; }
-.wm-lang-select {
-  appearance: none; -webkit-appearance: none;
+.wm-lang { position: relative; }
+.wm-lang-btn {
+  display: flex; align-items: center; gap: 7px;
   background: rgba(255,255,255,0.06);
   color: var(--text-secondary);
   border: 1px solid var(--border-default);
   border-radius: 8px;
-  padding: 5px 26px 5px 10px;
+  padding: 5px 9px;
   font-size: 12px; font-weight: 500; cursor: pointer;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2'><path d='M6 9l6 6 6-6'/></svg>");
-  background-repeat: no-repeat; background-position: right 8px center;
+  transition: border-color .15s, color .15s;
 }
-.wm-lang-select:hover { border-color: var(--border-strong); color: var(--text-primary); }
-.wm-lang-select option { background: #1a1030; color: #fff; }
+.wm-lang-btn:hover { border-color: var(--border-strong); color: var(--text-primary); }
+.wm-lang-flag { font-size: 15px; line-height: 1; }
+.wm-lang-caret { opacity: .6; transition: transform .18s; }
+.wm-lang.is-open .wm-lang-caret { transform: rotate(180deg); }
+.wm-lang-menu {
+  position: absolute; top: calc(100% + 4px); right: 0; z-index: 100;
+  min-width: 170px; margin: 0; padding: 4px; list-style: none;
+  background: #1a1030; border: 1px solid var(--border-strong); border-radius: 10px;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.45);
+  opacity: 0; visibility: hidden; transform: translateY(-4px);
+  transition: opacity .15s, transform .15s, visibility .15s;
+}
+.wm-lang.is-open .wm-lang-menu { opacity: 1; visibility: visible; transform: translateY(0); }
+.wm-lang-opt {
+  display: flex; align-items: center; gap: 9px;
+  padding: 8px 10px; border-radius: 7px; cursor: pointer;
+  font-size: 13px; color: var(--text-secondary);
+}
+.wm-lang-opt:hover { background: rgba(255,255,255,0.07); color: #fff; }
+.wm-lang-opt.is-sel { color: #fff; background: rgba(108,77,246,0.18); }
+.wm-lang-opt small { color: var(--text-tertiary, #9a90b0); font-size: 11px; }
 .page-login .wm-login-card .auth-subtitle { font-size: var(--text-sm); color: var(--text-secondary); margin-bottom: 24px; }
 .page-login .wm-login-tagline { position: relative; z-index: 2; max-width: 430px; text-align: center; font-size: 13px; line-height: 1.5; color: rgba(246,246,249,0.62); }
 
@@ -7871,11 +7890,18 @@ Digno de toda honra"></textarea>
 
     <div class="wm-login-card">
       <div class="wm-lang-wrap">
-        <select class="wm-lang-select" aria-label="Idioma / Language / Idioma">
-          <option value="pt">Português</option>
-          <option value="en">English</option>
-          <option value="es">Español</option>
-        </select>
+        <div class="wm-lang" id="wm-lang">
+          <button type="button" class="wm-lang-btn" id="wm-lang-btn" aria-haspopup="listbox" aria-expanded="false" aria-label="Idioma / Language / Idioma">
+            <span class="wm-lang-flag" data-flag>🇧🇷</span>
+            <span class="wm-lang-name" data-name>Português</span>
+            <svg class="wm-lang-caret" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <ul class="wm-lang-menu" id="wm-lang-menu" role="listbox">
+            <li class="wm-lang-opt" role="option" data-lang="pt"><span class="wm-lang-flag">🇧🇷</span><span>Português</span></li>
+            <li class="wm-lang-opt" role="option" data-lang="en"><span class="wm-lang-flag">🇺🇸</span><span>English</span></li>
+            <li class="wm-lang-opt" role="option" data-lang="es"><span class="wm-lang-flag">🇪🇸</span><span>Español <small>· Latinoamérica</small></span></li>
+          </ul>
+        </div>
       </div>
       <h2 class="auth-title" id="auth-title" data-i18n="auth.title.login">Entrar</h2>
       <p class="auth-subtitle" id="auth-subtitle" data-i18n="auth.subtitle.login">Bem-vindo de volta. Vamos animar a próxima música?</p>
@@ -7990,7 +8016,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'i18n-fiacao-login-24jul';
+window.__WM_BUILD = 'i18n-bandeiras-24jul';
 
 /* ============================================================
    MOTOR DE IDIOMAS (i18n) — Parte 1: a fiação
@@ -8108,20 +8134,47 @@ window.__WM_BUILD = 'i18n-fiacao-login-24jul';
     idiomaAtual = novo;
     try { localStorage.setItem(CHAVE_SALVA, novo); } catch (e) {}
     aplicar(document);
-    // sincroniza qualquer seletor na tela
-    document.querySelectorAll('.wm-lang-select').forEach(s => { s.value = novo; });
+    // sincroniza qualquer seletor de bandeira na tela
+    _sincronizarSeletores();
   }
   window.WM_SET_IDIOMA = definir;
   window.WM_GET_IDIOMA = () => idiomaAtual;
   window.WM_IDIOMAS = IDIOMAS.slice();
 
-  // liga qualquer <select class="wm-lang-select"> ao motor
+  const FLAGS = { pt: '🇧🇷', en: '🇺🇸', es: '🇪🇸' };
+  const NOMES = { pt: 'Português', en: 'English', es: 'Español' };
+
+  function _sincronizarSeletores() {
+    document.querySelectorAll('.wm-lang').forEach(w => {
+      const flag = w.querySelector('[data-flag]');
+      const nome = w.querySelector('[data-name]');
+      if (flag) flag.textContent = FLAGS[idiomaAtual] || '🌐';
+      if (nome) nome.textContent = NOMES[idiomaAtual] || idiomaAtual;
+      w.querySelectorAll('.wm-lang-opt').forEach(o => {
+        o.classList.toggle('is-sel', o.getAttribute('data-lang') === idiomaAtual);
+      });
+    });
+  }
+
+  // liga qualquer seletor de bandeira .wm-lang ao motor
   function ligarSeletores() {
-    document.querySelectorAll('.wm-lang-select').forEach(sel => {
-      if (sel.__wmLigado) return;
-      sel.__wmLigado = true;
-      sel.value = idiomaAtual;
-      sel.addEventListener('change', () => definir(sel.value));
+    _sincronizarSeletores();
+    document.querySelectorAll('.wm-lang').forEach(w => {
+      if (w.__wmLigado) return;
+      w.__wmLigado = true;
+      const btn = w.querySelector('.wm-lang-btn');
+      const abrir = (v) => { w.classList.toggle('is-open', v); if (btn) btn.setAttribute('aria-expanded', v ? 'true' : 'false'); };
+      if (btn) btn.addEventListener('click', (e) => { e.stopPropagation(); abrir(!w.classList.contains('is-open')); });
+      w.querySelectorAll('.wm-lang-opt').forEach(o => {
+        o.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const lang = o.getAttribute('data-lang');
+          abrir(false);
+          definir(lang);
+        });
+      });
+      // fecha ao clicar fora
+      document.addEventListener('click', () => abrir(false));
     });
   }
   window.WM_LIGAR_SELETORES_IDIOMA = ligarSeletores;
