@@ -8084,7 +8084,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'mobile-tooltip-fix-24jul';
+window.__WM_BUILD = 'seletor-touch-fix-24jul';
 
 /* ============================================================
    MOTOR DE IDIOMAS (i18n) — Parte 1: a fiação
@@ -8631,17 +8631,48 @@ window.__WM_BUILD = 'mobile-tooltip-fix-24jul';
       w.__wmLigado = true;
       const btn = w.querySelector('.wm-lang-btn');
       const abrir = (v) => { w.classList.toggle('is-open', v); if (btn) btn.setAttribute('aria-expanded', v ? 'true' : 'false'); };
-      if (btn) btn.addEventListener('click', (e) => { e.stopPropagation(); abrir(!w.classList.contains('is-open')); });
-      w.querySelectorAll('.wm-lang-opt').forEach(o => {
-        o.addEventListener('click', (e) => {
+      // Marca o instante em que o menu foi aberto/mexido, pra o "fechar ao tocar
+      // fora" não fechar no MESMO gesto que abriu (bug clássico no touch).
+      const marcarGesto = () => { w.__wmUltimoGesto = Date.now(); };
+
+      // Abrir/fechar ao tocar no botão. 'pointerup' cobre mouse E touch num
+      // evento só (sem o duplo disparo touchend+click do iOS).
+      if (btn) {
+        btn.addEventListener('pointerup', (e) => {
           e.stopPropagation();
+          e.preventDefault();
+          marcarGesto();
+          abrir(!w.classList.contains('is-open'));
+        });
+        // fallback pra navegadores sem PointerEvent (raros): usa click
+        if (!window.PointerEvent) {
+          btn.addEventListener('click', (e) => { e.stopPropagation(); marcarGesto(); abrir(!w.classList.contains('is-open')); });
+        }
+      }
+
+      // Escolher um idioma.
+      w.querySelectorAll('.wm-lang-opt').forEach(o => {
+        const escolher = (e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          marcarGesto();
           const lang = o.getAttribute('data-lang');
           abrir(false);
           definir(lang);
-        });
+        };
+        o.addEventListener('pointerup', escolher);
+        if (!window.PointerEvent) o.addEventListener('click', escolher);
       });
-      // fecha ao clicar fora
-      document.addEventListener('click', () => abrir(false));
+
+      // Fechar ao tocar fora — ignora o gesto que acabou de abrir o menu.
+      const fecharFora = (e) => {
+        if (!w.classList.contains('is-open')) return;
+        if (w.contains(e.target)) return;
+        if (Date.now() - (w.__wmUltimoGesto || 0) < 350) return;
+        abrir(false);
+      };
+      document.addEventListener('pointerup', fecharFora);
+      if (!window.PointerEvent) document.addEventListener('click', fecharFora);
     });
   }
   window.WM_LIGAR_SELETORES_IDIOMA = ligarSeletores;
