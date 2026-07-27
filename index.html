@@ -2309,8 +2309,6 @@ body.marking-open.marking-collapsed .editor-canvas {
   user-select: none;
   letter-spacing: 0.02em;
 }
-.timeline-collapse-hint::before { content: 'Toque para minimizar'; }
-body.timeline-collapsed .timeline-collapse-hint::before { content: 'Toque para maximizar'; }
 body.timeline-collapsed .timeline-collapse-hint { color: #3b82f6; }
 .timeline-collapse-btn {
   margin-left: 8px;
@@ -6741,7 +6739,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
       </a>
       <div class="divider" style="width:1px; height:24px; background:var(--border-default); margin: 0 var(--space-2);"></div>
       <div class="project-title" id="project-title-wrap">
-        <input id="project-name-input" type="text" value="Projeto sem título" style="background: transparent; border: none; outline: none; font: inherit; color: inherit; padding: 2px 8px; border-radius: 4px; max-width: 240px; min-width: 120px;" />
+        <input id="project-name-input" type="text" value="" data-i18n-attr="placeholder:ed.untitledProject" placeholder="Projeto sem título" style="background: transparent; border: none; outline: none; font: inherit; color: inherit; padding: 2px 8px; border-radius: 4px; max-width: 240px; min-width: 120px;" />
         <span class="save-indicator saved" id="save-indicator">SALVO</span>
       </div>
     </div>
@@ -7008,8 +7006,8 @@ Digno de toda honra"></textarea>
       </button>
       <span class="ctx-sep"></span>
       <button class="ctx-btn ctx-color" id="ctx-color" title="Cor do texto"><span class="ctx-color-dot" id="ctx-color-dot"></span></button>
-      <button class="ctx-btn" id="ctx-anim" title="Animações" style="display:inline-flex; align-items:center; gap:5px; font-size:12px;">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>Animações
+      <button class="ctx-btn" id="ctx-anim" data-i18n-attr="title:panel.animations" title="Animações" style="display:inline-flex; align-items:center; gap:5px; font-size:12px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg><span data-i18n="panel.animations">Animações</span>
       </button>
       <!-- Popover de cores (abre na própria barra) -->
       <div class="ctx-color-pop" id="ctx-color-pop" style="display:none;">
@@ -8050,7 +8048,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'i18n-editor-completo-24jul';
+window.__WM_BUILD = 'i18n-editor-revisao-24jul';
 
 /* ============================================================
    MOTOR DE IDIOMAS (i18n) — Parte 1: a fiação
@@ -8323,6 +8321,15 @@ window.__WM_BUILD = 'i18n-editor-completo-24jul';
     'emp.extraGlow':    { pt: 'Brilho extra', en: 'Extra glow', es: 'Brillo extra' },
     'emp.boldExtra':    { pt: 'Negrito extra', en: 'Extra bold', es: 'Negrita extra' },
     'ctx.fontsTitle':   { pt: 'Fontes', en: 'Fonts', es: 'Fuentes' },
+    // pontos que escaparam (nome do projeto, hint da timeline, rótulo automático de estrofe, "de")
+    'ed.untitledProject':{ pt: 'Projeto sem título', en: 'Untitled project', es: 'Proyecto sin título' },
+    'ed.untitled':      { pt: 'Sem título', en: 'Untitled', es: 'Sin título' },
+    'ed.minimize':      { pt: 'Toque para minimizar', en: 'Tap to minimize', es: 'Toca para minimizar' },
+    'ed.maximize':      { pt: 'Toque para maximizar', en: 'Tap to maximize', es: 'Toca para maximizar' },
+    'ed.stanzaN':       { pt: 'Estrofe {n}', en: 'Stanza {n}', es: 'Estrofa {n}' },
+    'ed.stanzaXofY':    { pt: 'Estrofe {a} de {b}', en: 'Stanza {a} of {b}', es: 'Estrofa {a} de {b}' },
+    'ed.stanzaLineWord':{ pt: 'Estrofe {s} • Linha {l} • Palavra {w}', en: 'Stanza {s} • Line {l} • Word {w}', es: 'Estrofa {s} • Línea {l} • Palabra {w}' },
+    'ed.slideOf':       { pt: 'de', en: 'of', es: 'de' },
 
     // ================= MODAIS =================
     'md.templatesTitle':{ pt: 'Templates', en: 'Templates', es: 'Plantillas' },
@@ -8511,6 +8518,27 @@ window.__WM_BUILD = 'i18n-editor-completo-24jul';
     });
   }
   window.WM_LIGAR_SELETORES_IDIOMA = ligarSeletores;
+
+  // Atualiza o texto "Toque para minimizar/maximizar" da timeline conforme
+  // o estado (colapsada ou não) e o idioma atual. Antes ficava no CSS content:.
+  window._wmAtualizarHintTimeline = function () {
+    const hint = document.getElementById('timeline-collapse-hint');
+    if (!hint) return;
+    const colapsada = document.body.classList.contains('timeline-collapsed');
+    hint.textContent = T(colapsada ? 'ed.maximize' : 'ed.minimize');
+  };
+  window.addEventListener('wm-idioma', () => { try { window._wmAtualizarHintTimeline(); } catch (e) {} });
+
+  // Rótulo de estrofe para EXIBIÇÃO: se o label for o automático ("Estrofe N",
+  // e variações internas), traduz; se o usuário digitou um rótulo próprio
+  // ([Refrão], [Verso 2], Ponte...), devolve como está (é conteúdo dele).
+  window._wmLabelEstrofe = function (label, indice) {
+    const n = (indice || 0) + 1;
+    if (!label || /^Estrofe\s*\d*$/i.test(String(label).trim())) {
+      return T('ed.stanzaN').replace('{n}', n);
+    }
+    return label;
+  };
 
   // aplica assim que o DOM estiver pronto
   if (document.readyState === 'loading') {
@@ -11610,7 +11638,7 @@ function duplicateProject(id) {
 function buildProjectSnapshot(engine, name) {
   return {
     id: null,
-    name: name || 'Projeto sem título',
+    name: name || (window.WM_T ? window.WM_T('ed.untitledProject') : 'Projeto sem título'),
     lyrics: document.getElementById('lyrics-input')?.value || '',
     // Salva o parsed COM os mesmos wordIds dos wordOverrides. Sem isto,
     // ao reabrir o projeto a letra era reparseada gerando IDs NOVOS
@@ -20928,11 +20956,11 @@ function initEditor() {
         <div class="stanza-item ${nMarcadas > 0 ? 'has-marks' : ''}" data-index="${i}" draggable="true">
           <div class="stanza-slide-tag">
             <span class="stanza-slide-num">SLIDE ${i + 1}</span>
-            <span class="stanza-slide-of">de ${parsed.stanzas.length}</span>
+            <span class="stanza-slide-of">${window.WM_T ? window.WM_T("ed.slideOf") : "de"} ${parsed.stanzas.length}</span>
             ${syncBadge}
           </div>
           <div class="stanza-item-body">
-            <div class="stanza-item-label">${escapeHtml(s.label)}</div>
+            <div class="stanza-item-label">${escapeHtml(window._wmLabelEstrofe ? window._wmLabelEstrofe(s.label, i) : s.label)}</div>
             <div class="stanza-item-preview">${escapeHtml(preview)}</div>
           </div>
           <div class="stanza-move">
@@ -28976,7 +29004,7 @@ function initEditor() {
     const parsed = engine?.parsed;
     if (slideEl && parsed?.stanzas?.length) {
       const cur = (engine.currentStanzaIndex || 0) + 1;
-      slideEl.textContent = `Estrofe ${cur} de ${parsed.stanzas.length}`;
+      slideEl.textContent = (window.WM_T ? window.WM_T('ed.stanzaXofY').replace('{a}', cur).replace('{b}', parsed.stanzas.length) : `Estrofe ${cur} de ${parsed.stanzas.length}`);
     } else if (slideEl) {
       slideEl.textContent = '';
     }
@@ -29414,7 +29442,7 @@ function initEditor() {
     const siAtual = Math.max(0, Math.min(parsed.stanzas.length - 1, engine.currentStanzaIndex || 0));
     const daEstrofe = marked.filter(e => e.si === siAtual);
     const nTotal = parsed.stanzas.length;
-    const labelEstrofe = parsed.stanzas[siAtual]?.label || `Estrofe ${siAtual + 1}`;
+    const labelEstrofe = window._wmLabelEstrofe ? window._wmLabelEstrofe(parsed.stanzas[siAtual]?.label, siAtual) : (parsed.stanzas[siAtual]?.label || `Estrofe ${siAtual + 1}`);
     const header = `
       <div class="tl-mark-head">
         <button class="tl-mark-nav" id="tl-mark-prev" ${siAtual === 0 ? 'disabled' : ''} title="Estrofe anterior">‹</button>
@@ -30211,7 +30239,7 @@ function initEditor() {
         });
         const markedCount = stanzaWords.filter(w => typeof w.word.tStart === 'number').length;
         const isActive = si === engine.currentStanzaIndex;
-        const label = stanza.label || `Estrofe ${si + 1}`;
+        const label = window._wmLabelEstrofe ? window._wmLabelEstrofe(stanza.label, si) : (stanza.label || `Estrofe ${si + 1}`);
         const totalLinhas = stanza.lines.filter(l => l && l.words && l.words.length).length;
 
         // Renderiza AGRUPADO POR LINHA — cada linha numa fileira própria,
@@ -31796,7 +31824,7 @@ function initEditor() {
     }
 
     // nome do projeto
-    $('#project-name-input').value = project.name || 'Projeto sem título';
+    $('#project-name-input').value = project.name || (window.WM_T ? window.WM_T('ed.untitledProject') : 'Projeto sem título');
 
     // Restaura o estado. Se o projeto tem `parsed` salvo (projetos
     // novos), usa ele DIRETO — os wordIds batem com os wordOverrides,
@@ -31884,7 +31912,7 @@ function initEditor() {
     const D = window.__WM_DEFAULTS || {};
     const projetoEmBranco = {
       id: null,                       // sem id → nasce como "NÃO SALVO"
-      name: 'Projeto sem título',
+      name: (window.WM_T ? window.WM_T('ed.untitledProject') : 'Projeto sem título'),
       lyrics: '',
       parsed: { stanzas: [] },        // sem estrofe nenhuma
       style: JSON.parse(JSON.stringify(D.style || {})),
@@ -33304,7 +33332,7 @@ function initEditor() {
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
         </div>
         <div class="project-item-info">
-          <div class="project-item-name">${escapeHtml(p.name || 'Sem título')}</div>
+          <div class="project-item-name">${escapeHtml(p.name || (window.WM_T ? window.WM_T('ed.untitled') : 'Sem título'))}</div>
           <div class="project-item-meta">Modificado ${formatRelativeTime(p.updatedAt)} · ${p.lyrics ? p.lyrics.split('\n').filter(x => x.trim()).length : 0} linhas</div>
         </div>
         <div class="project-item-actions">
@@ -33415,7 +33443,7 @@ function initEditor() {
   });
 
   $('#btn-save-project').addEventListener('click', () => {
-    const name = $('#project-name-input').value.trim() || 'Projeto sem título';
+    const name = $('#project-name-input').value.trim() || (window.WM_T ? window.WM_T('ed.untitledProject') : 'Projeto sem título');
     const snap = WM_STORAGE.snapshot(engine, name);
 
     if (window.__currentProjectId) {
@@ -33639,6 +33667,7 @@ function initEditor() {
       } else {
         document.body.classList.toggle('timeline-collapsed');
       }
+      if (typeof window._wmAtualizarHintTimeline === 'function') window._wmAtualizarHintTimeline();
       // Recalcula o tamanho do slide após a transição de altura (a barra
       // anima em ~0.3s, então ajustamos no fim pra o canvas ficar 16:9 exato).
       const _reajusta = () => {
@@ -35330,6 +35359,7 @@ window.wmInitNovaSenha = wmInitNovaSenha;
       window.WM_APLICAR_I18N(pg || document);
     }
     if (typeof window.WM_LIGAR_SELETORES_IDIOMA === 'function') window.WM_LIGAR_SELETORES_IDIOMA();
+    if (typeof window._wmAtualizarHintTimeline === 'function') window._wmAtualizarHintTimeline();
     window.scrollTo(0, 0);
   }
 
