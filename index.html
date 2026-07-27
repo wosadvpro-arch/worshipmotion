@@ -6964,8 +6964,8 @@ Digno de toda honra"></textarea>
         <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
           <path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>
         </svg>
-        <div class="audio-drop-title">Solte o áudio aqui</div>
-        <div class="audio-drop-sub">MP3, M4A, WAV ou OGG</div>
+        <div class="audio-drop-title" data-i18n="ed.dropAudio">Solte o áudio aqui</div>
+        <div class="audio-drop-sub" data-i18n="ed.audioFormats">MP3, M4A, WAV ou OGG</div>
       </div>
     </div>
     <!-- BARRA CONTEXTUAL (estilo Canva) — Etapa 1. Aparece no topo,
@@ -7332,7 +7332,7 @@ Digno de toda honra"></textarea>
             <span style="flex: 1; font-size: 11px; color: var(--text-primary);">
               Estrofe <strong id="stanza-bg-num">1</strong> tem fundo próprio
             </span>
-            <button class="btn-tiny" id="btn-clear-stanza-bg" title="Voltar a usar o fundo global">↺ Remover</button>
+            <button class="btn-tiny" id="btn-clear-stanza-bg" data-i18n="ed.removeBg" data-i18n-attr="title:ed.useGlobalBg" title="Voltar a usar o fundo global">↺ Remover</button>
           </div>
 
           
@@ -7347,11 +7347,11 @@ Digno de toda honra"></textarea>
             </div>
             <button class="btn btn-primary btn-sm bg-apply-btn" id="btn-apply-bg-all">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-              <span>Todas as estrofes</span>
+              <span data-i18n="ed.applyAllStanzas">Todas as estrofes</span>
             </button>
             <button class="btn btn-ghost btn-sm bg-apply-btn" id="btn-apply-bg-stanza">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-              <span>Apenas esta estrofe</span>
+              <span data-i18n="ed.applyThisStanza">Apenas esta estrofe</span>
             </button>
           </div>
 
@@ -7378,7 +7378,7 @@ Digno de toda honra"></textarea>
       <div class="panel-content" data-rpanel-content="motion" style="display:none;">
 
         <div class="panel-section">
-          <div class="panel-section-title">Granularidade</div>
+          <div class="panel-section-title" data-i18n="ed.granularity">Granularidade</div>
           <div class="granularity-choice" id="granularity">
             <button data-grain="stanza">Estrofe</button>
             <button data-grain="line">Linha</button>
@@ -7513,7 +7513,7 @@ Digno de toda honra"></textarea>
             Cada estrofe pode ter sua própria animação, background e duração. Sem ajuste, usa a configuração global.
           </div>
           <div id="scenes-list" class="scenes-list">
-            <div class="scenes-empty">Gere uma lyric para ver as cenas</div>
+            <div class="scenes-empty" data-i18n="ed.emptyScenes">Gere uma lyric para ver as cenas</div>
           </div>
         </div>
       </div>
@@ -7557,11 +7557,11 @@ Digno de toda honra"></textarea>
             <circle cx="6" cy="18" r="3"/>
             <circle cx="18" cy="16" r="3"/>
           </svg>
-          <span id="audio-btn-label">Adicionar música</span>
+          <span id="audio-btn-label" data-i18n="ed.addMusic">Adicionar música</span>
         </button>
         <button class="audio-btn" id="btn-open-marking-tap" data-tooltip="Marcar no ritmo: com música carregada ela toca ao clicar em Iniciar; sem música, você ouve por fora e vai batendo" style="gap:6px;">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
-          <span>Marcar no ritmo</span>
+          <span data-i18n="ed.markBeat">Marcar no ritmo</span>
         </button>
         <div class="audio-player" id="audio-player" style="display:none">
           <span class="audio-name" id="audio-name"></span>
@@ -7583,7 +7583,7 @@ Digno de toda honra"></textarea>
       </div>
 
       <div style="font-size: var(--text-xs); color: var(--text-tertiary); display: flex; align-items: center;">
-        <span id="timeline-info">Timeline da apresentação</span>
+        <span id="timeline-info" data-i18n="ed.timeline">Timeline da apresentação</span>
         <span id="slide-info" style="margin-left: 12px; color: var(--text-secondary); font-weight: 600;"></span>
       </div>
       <span class="timeline-collapse-hint" id="timeline-collapse-hint"></span>
@@ -7597,7 +7597,7 @@ Digno de toda honra"></textarea>
       <div class="timeline-playhead" id="timeline-playhead"></div>
     </div>
     <div class="timeline-track" id="timeline-track">
-      <div class="timeline-empty">Gere uma lyric para ver a timeline</div>
+      <div class="timeline-empty" data-i18n="ed.emptyTimeline">Gere uma lyric para ver a timeline</div>
     </div>
   </footer>
 
@@ -7608,8 +7608,8 @@ Digno de toda honra"></textarea>
   <div class="modal">
     <div class="modal-header">
       <div>
-        <div class="modal-title" id="modal-title">Templates</div>
-        <div class="modal-subtitle" id="modal-subtitle">Comece com um preset pronto</div>
+        <div class="modal-title" id="modal-title" data-i18n="md.templatesTitle">Templates</div>
+        <div class="modal-subtitle" id="modal-subtitle" data-i18n="md.templatesSub">Comece com um preset pronto</div>
       </div>
       <button class="icon-btn" id="modal-close" data-tooltip="Fechar (Esc)">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -7617,8 +7617,8 @@ Digno de toda honra"></textarea>
     </div>
 
     <div class="modal-tabs">
-      <button class="modal-tab active" data-modal-tab="templates">Templates</button>
-      <button class="modal-tab" data-modal-tab="projects">Meus projetos</button>
+      <button class="modal-tab active" data-modal-tab="templates" data-i18n="md.tabTemplates">Templates</button>
+      <button class="modal-tab" data-modal-tab="projects" data-i18n="md.tabProjects">Meus projetos</button>
     </div>
 
     <div class="modal-body">
@@ -7637,8 +7637,8 @@ Digno de toda honra"></textarea>
   <div class="modal" style="max-width: 480px;">
     <div class="modal-header">
       <div>
-        <div class="modal-title">Resolução personalizada</div>
-        <div class="modal-subtitle">Defina largura e altura exatas (em pixels)</div>
+        <div class="modal-title" data-i18n="md.customResTitle">Resolução personalizada</div>
+        <div class="modal-subtitle" data-i18n="md.customResSub">Defina largura e altura exatas (em pixels)</div>
       </div>
       <button class="icon-btn" id="aspect-modal-close" data-tooltip="Fechar">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -7647,7 +7647,7 @@ Digno de toda honra"></textarea>
 
     <div class="modal-body" style="padding: 24px;">
       <div class="export-row" style="margin-bottom: 16px;">
-        <label class="label">Presets comuns</label>
+        <label class="label" data-i18n="md.commonPresets">Presets comuns</label>
         <div class="segmented" id="aspect-presets" style="flex-wrap: wrap; gap: 4px;">
           <button data-w="1920" data-h="1080" style="flex:1 1 auto">1920×1080 (FHD)</button>
           <button data-w="1280" data-h="720" style="flex:1 1 auto">1280×720 (HD)</button>
@@ -7660,12 +7660,12 @@ Digno de toda honra"></textarea>
 
       <div class="export-row" style="display: flex; gap: 12px;">
         <div style="flex: 1;">
-          <label class="label">Largura (px)</label>
+          <label class="label" data-i18n="md.width">Largura (px)</label>
           <input type="number" id="aspect-custom-w" class="input" min="320" max="7680" value="1920" />
         </div>
         <div style="flex: 0 0 30px; display: flex; align-items: flex-end; padding-bottom: 12px; color: var(--text-tertiary);">×</div>
         <div style="flex: 1;">
-          <label class="label">Altura (px)</label>
+          <label class="label" data-i18n="md.height">Altura (px)</label>
           <input type="number" id="aspect-custom-h" class="input" min="320" max="4320" value="1080" />
         </div>
       </div>
@@ -7675,8 +7675,8 @@ Digno de toda honra"></textarea>
       </div>
 
       <div style="display: flex; gap: 8px; margin-top: 20px; justify-content: flex-end;">
-        <button class="btn btn-ghost" id="aspect-modal-cancel">Cancelar</button>
-        <button class="btn btn-primary" id="aspect-modal-apply">Aplicar</button>
+        <button class="btn btn-ghost" id="aspect-modal-cancel" data-i18n="md.cancel">Cancelar</button>
+        <button class="btn btn-primary" id="aspect-modal-apply" data-i18n="md.apply">Aplicar</button>
       </div>
     </div>
   </div>
@@ -7687,8 +7687,8 @@ Digno de toda honra"></textarea>
   <div class="modal" style="max-width: 760px;">
     <div class="modal-header">
       <div>
-        <div class="modal-title">Videoaulas</div>
-        <div class="modal-subtitle">Aprenda a usar o app, adicionar fontes, backgrounds e loops</div>
+        <div class="modal-title" data-i18n="md.videosTitle">Videoaulas</div>
+        <div class="modal-subtitle" data-i18n="md.videosSub">Aprenda a usar o app, adicionar fontes, backgrounds e loops</div>
       </div>
       <button class="icon-btn" id="videoaulas-close" data-tooltip="Fechar">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -7701,8 +7701,8 @@ Digno de toda honra"></textarea>
       <div id="videoaulas-list" class="videoaulas-list"></div>
       <div id="videoaulas-empty" class="videoaulas-empty" style="display:none;">
         <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:.5;"><rect x="2" y="4" width="20" height="16" rx="2"/><polygon points="10 9 15 12 10 15 10 9"/></svg>
-        <p style="margin:12px 0 4px; font-weight:600; color:var(--text-primary);">Nenhuma videoaula ainda</p>
-        <p style="margin:0; font-size:13px; color:var(--text-secondary);">As aulas vão aparecer aqui assim que forem adicionadas.</p>
+        <p style="margin:12px 0 4px; font-weight:600; color:var(--text-primary);" data-i18n="md.noVideos">Nenhuma videoaula ainda</p>
+        <p style="margin:0; font-size:13px; color:var(--text-secondary);" data-i18n="md.noVideosSub">As aulas vão aparecer aqui assim que forem adicionadas.</p>
       </div>
     </div>
   </div>
@@ -7714,8 +7714,8 @@ Digno de toda honra"></textarea>
   <div class="modal" style="max-width: 1120px; width: 96vw; height: 90vh; max-height: 90vh;">
     <div class="modal-header">
       <div>
-        <div class="modal-title">Comparar fontes</div>
-        <div class="modal-subtitle">Compare e visualize as fontes lado a lado</div>
+        <div class="modal-title" data-i18n="md.compareTitle">Comparar fontes</div>
+        <div class="modal-subtitle" data-i18n="md.compareSub">Compare e visualize as fontes lado a lado</div>
       </div>
       <button class="icon-btn" id="comparafontes-close" data-tooltip="Fechar">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -7734,11 +7734,11 @@ Digno de toda honra"></textarea>
       <div style="width:56px; height:56px; margin:0 auto 16px; border-radius:16px; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg,#34e0ff,#8a7bff); box-shadow:0 8px 24px -8px rgba(52,224,255,0.5);">
         <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#04121a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg>
       </div>
-      <div style="display:inline-block; font-size:10px; font-weight:800; letter-spacing:.06em; color:#8a7bff; background:rgba(138,123,255,0.12); padding:4px 10px; border-radius:8px; margin-bottom:12px;">RECURSO PRO PLUS</div>
-      <h2 style="margin:0 0 8px; font-size:20px; font-weight:700; color:var(--text-primary);">Comparar fontes é do Pro Plus</h2>
-      <p style="margin:0 0 22px; font-size:14px; line-height:1.6; color:var(--text-secondary);">Visualize e compare todas as fontes lado a lado, incluindo as 123 fontes exclusivas do pack. Faça upgrade pro Pro Plus e desbloqueie esse e outros recursos.</p>
-      <button id="comparafontes-upsell-cta" class="btn btn-primary" style="width:100%; padding:13px; font-weight:700; background:linear-gradient(135deg,#8b5cf6,#6d28d9); border:none; color:#fff;">Ver planos</button>
-      <button id="comparafontes-upsell-close" class="btn btn-ghost btn-sm" style="width:100%; margin-top:8px;">Agora não</button>
+      <div style="display:inline-block; font-size:10px; font-weight:800; letter-spacing:.06em; color:#8a7bff; background:rgba(138,123,255,0.12); padding:4px 10px; border-radius:8px; margin-bottom:12px;" data-i18n="md.proPlusBadge">RECURSO PRO PLUS</div>
+      <h2 style="margin:0 0 8px; font-size:20px; font-weight:700; color:var(--text-primary);" data-i18n="md.compareUpTitle">Comparar fontes é do Pro Plus</h2>
+      <p style="margin:0 0 22px; font-size:14px; line-height:1.6; color:var(--text-secondary);" data-i18n="md.compareUpText">Visualize e compare todas as fontes lado a lado, incluindo as 123 fontes exclusivas do pack. Faça upgrade pro Pro Plus e desbloqueie esse e outros recursos.</p>
+      <button id="comparafontes-upsell-cta" class="btn btn-primary" style="width:100%; padding:13px; font-weight:700; background:linear-gradient(135deg,#8b5cf6,#6d28d9); border:none; color:#fff;" data-i18n="md.seePlans">Ver planos</button>
+      <button id="comparafontes-upsell-close" class="btn btn-ghost btn-sm" style="width:100%; margin-top:8px;" data-i18n="md.notNow">Agora não</button>
     </div>
   </div>
 </div>
@@ -8050,7 +8050,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'i18n-editor-paineis-24jul';
+window.__WM_BUILD = 'i18n-editor-modais-24jul';
 
 /* ============================================================
    MOTOR DE IDIOMAS (i18n) — Parte 1: a fiação
@@ -8247,6 +8247,46 @@ window.__WM_BUILD = 'i18n-editor-paineis-24jul';
     'ex.downloadAgain': { pt: 'Baixar novamente', en: 'Download again', es: 'Descargar de nuevo' },
     'ex.exportAnother': { pt: 'Exportar outro', en: 'Export another', es: 'Exportar otro' },
     'ex.startRecording':{ pt: 'Iniciar gravação', en: 'Start recording', es: 'Iniciar grabación' },
+
+    // ================= EDITOR — áudio / timeline / cenas / bg dinâmico =================
+    'ed.dropAudio':     { pt: 'Solte o áudio aqui', en: 'Drop the audio here', es: 'Suelta el audio aquí' },
+    'ed.audioFormats':  { pt: 'MP3, M4A, WAV ou OGG', en: 'MP3, M4A, WAV or OGG', es: 'MP3, M4A, WAV u OGG' },
+    'ed.addMusic':      { pt: 'Adicionar música', en: 'Add music', es: 'Añadir música' },
+    'ed.markBeat':      { pt: 'Marcar no ritmo', en: 'Tap to the beat', es: 'Marcar al ritmo' },
+    'ed.timeline':      { pt: 'Timeline da apresentação', en: 'Presentation timeline', es: 'Línea de tiempo de la presentación' },
+    'ed.emptyTimeline': { pt: 'Gere uma lyric para ver a timeline', en: 'Generate a lyric to see the timeline', es: 'Genera un lyric para ver la línea de tiempo' },
+    'ed.emptyScenes':   { pt: 'Gere uma lyric para ver as cenas', en: 'Generate a lyric to see the scenes', es: 'Genera un lyric para ver las escenas' },
+    'ed.granularity':   { pt: 'Granularidade', en: 'Granularity', es: 'Granularidad' },
+    'ed.applyAllStanzas':{ pt: 'Todas as estrofes', en: 'All stanzas', es: 'Todas las estrofas' },
+    'ed.applyThisStanza':{ pt: 'Apenas esta estrofe', en: 'Only this stanza', es: 'Solo esta estrofa' },
+    'ed.myBackgrounds': { pt: 'Meus backgrounds', en: 'My backgrounds', es: 'Mis fondos' },
+    'ed.addBackground': { pt: 'Adicionar background (imagem ou vídeo)', en: 'Add background (image or video)', es: 'Añadir fondo (imagen o video)' },
+    'ed.removeBg':      { pt: '↺ Remover', en: '↺ Remove', es: '↺ Quitar' },
+    'ed.useGlobalBg':   { pt: 'Voltar a usar o fundo global', en: 'Back to the global background', es: 'Volver a usar el fondo global' },
+
+    // ================= MODAIS =================
+    'md.templatesTitle':{ pt: 'Templates', en: 'Templates', es: 'Plantillas' },
+    'md.templatesSub':  { pt: 'Comece com um preset pronto', en: 'Start with a ready-made preset', es: 'Empieza con un preset listo' },
+    'md.tabTemplates':  { pt: 'Templates', en: 'Templates', es: 'Plantillas' },
+    'md.tabProjects':   { pt: 'Meus projetos', en: 'My projects', es: 'Mis proyectos' },
+    'md.customResTitle':{ pt: 'Resolução personalizada', en: 'Custom resolution', es: 'Resolución personalizada' },
+    'md.customResSub':  { pt: 'Defina largura e altura exatas (em pixels)', en: 'Set exact width and height (in pixels)', es: 'Define ancho y alto exactos (en píxeles)' },
+    'md.commonPresets': { pt: 'Presets comuns', en: 'Common presets', es: 'Presets comunes' },
+    'md.width':         { pt: 'Largura (px)', en: 'Width (px)', es: 'Ancho (px)' },
+    'md.height':        { pt: 'Altura (px)', en: 'Height (px)', es: 'Alto (px)' },
+    'md.videosTitle':   { pt: 'Videoaulas', en: 'Tutorials', es: 'Videotutoriales' },
+    'md.videosSub':     { pt: 'Aprenda a usar o app, adicionar fontes, backgrounds e loops', en: 'Learn to use the app, add fonts, backgrounds and loops', es: 'Aprende a usar la app, añadir fuentes, fondos y loops' },
+    'md.noVideos':      { pt: 'Nenhuma videoaula ainda', en: 'No tutorials yet', es: 'Aún no hay videotutoriales' },
+    'md.noVideosSub':   { pt: 'As aulas vão aparecer aqui assim que forem adicionadas.', en: 'Tutorials will show up here as soon as they are added.', es: 'Los tutoriales aparecerán aquí en cuanto se añadan.' },
+    'md.compareTitle':  { pt: 'Comparar fontes', en: 'Compare fonts', es: 'Comparar fuentes' },
+    'md.compareSub':    { pt: 'Compare e visualize as fontes lado a lado', en: 'Compare and preview fonts side by side', es: 'Compara y visualiza las fuentes lado a lado' },
+    'md.proPlusBadge':  { pt: 'RECURSO PRO PLUS', en: 'PRO PLUS FEATURE', es: 'FUNCIÓN PRO PLUS' },
+    'md.compareUpTitle':{ pt: 'Comparar fontes é do Pro Plus', en: 'Compare fonts is a Pro Plus feature', es: 'Comparar fuentes es de Pro Plus' },
+    'md.compareUpText': { pt: 'Visualize e compare todas as fontes lado a lado, incluindo as 123 fontes exclusivas do pack. Faça upgrade pro Pro Plus e desbloqueie esse e outros recursos.', en: 'Preview and compare all fonts side by side, including the 123 exclusive fonts in the pack. Upgrade to Pro Plus to unlock this and more.', es: 'Visualiza y compara todas las fuentes lado a lado, incluidas las 123 fuentes exclusivas del pack. Pasa a Pro Plus y desbloquea esta y otras funciones.' },
+    'md.seePlans':      { pt: 'Ver planos', en: 'See plans', es: 'Ver planes' },
+    'md.notNow':        { pt: 'Agora não', en: 'Not now', es: 'Ahora no' },
+    'md.cancel':        { pt: 'Cancelar', en: 'Cancel', es: 'Cancelar' },
+    'md.apply':         { pt: 'Aplicar', en: 'Apply', es: 'Aplicar' },
   };
   window.WM_I18N_DIC = DIC;
 
@@ -20700,7 +20740,7 @@ function initEditor() {
       engine.setParsed({ stanzas: [] });
       $('#stanza-count').textContent = '0';
       $('#stanza-list').innerHTML = '<div style="font-size: var(--text-xs); color: var(--text-tertiary); text-align: center; padding: var(--space-6) 0;">Digite uma letra primeiro</div>';
-      const _tl = $('#timeline-track'); if (_tl) _tl.innerHTML = '<div class="timeline-empty">Gere uma lyric para ver a timeline</div>';
+      const _tl = $('#timeline-track'); if (_tl) _tl.innerHTML = '<div class="timeline-empty" data-i18n="ed.emptyTimeline">' + (window.WM_T?window.WM_T('ed.emptyTimeline'):'Gere uma lyric para ver a timeline') + '</div>';
       if (typeof canvas !== 'undefined' && canvas) canvas.innerHTML = '';
       if (typeof markDirty === 'function') markDirty();
       return;
@@ -21394,7 +21434,7 @@ function initEditor() {
   function renderTimeline(parsed) {
     const track = $('#timeline-track');
     if (parsed.stanzas.length === 0) {
-      track.innerHTML = '<div class="timeline-empty">Gere uma lyric para ver a timeline</div>';
+      track.innerHTML = '<div class="timeline-empty" data-i18n="ed.emptyTimeline">' + (window.WM_T?window.WM_T('ed.emptyTimeline'):'Gere uma lyric para ver a timeline') + '</div>';
       return;
     }
 
@@ -21460,7 +21500,7 @@ function initEditor() {
     if (!container) return;
 
     if (!engine.parsed || !engine.parsed.stanzas.length) {
-      container.innerHTML = '<div class="scenes-empty">Gere uma lyric para ver as cenas</div>';
+      container.innerHTML = '<div class="scenes-empty" data-i18n="ed.emptyScenes">' + (window.WM_T?window.WM_T('ed.emptyScenes'):'Gere uma lyric para ver as cenas') + '</div>';
       return;
     }
 
@@ -31000,7 +31040,7 @@ function initEditor() {
     engine.setParsed({ stanzas: [] });
     $('#stanza-count').textContent = '0';
     $('#stanza-list').innerHTML = '<div style="font-size: var(--text-xs); color: var(--text-tertiary); text-align: center; padding: var(--space-6) 0;">Digite uma letra primeiro</div>';
-    $('#timeline-track').innerHTML = '<div class="timeline-empty">Gere uma lyric para ver a timeline</div>';
+    $('#timeline-track').innerHTML = '<div class="timeline-empty" data-i18n="ed.emptyTimeline">' + (window.WM_T?window.WM_T('ed.emptyTimeline'):'Gere uma lyric para ver a timeline') + '</div>';
     canvas.innerHTML = '';
   });
 
