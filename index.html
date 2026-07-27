@@ -6292,9 +6292,20 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
 .wm-lang-opt small { color: var(--text-tertiary, #9a90b0); font-size: 11px; }
 
 /* Seletor de idioma na barra lateral do editor (rail) — botão só-bandeira,
-   menu abre pro LADO (a rail é estreita e fica na borda esquerda). */
+   menu abre pro LADO (a rail é estreita e fica na borda esquerda).
+   NÃO usa a classe .rail-btn de propósito: os rail-btn são ligados por
+   ÍNDICE (case 0,1,2...), e entrar na fila bagunçaria os cliques. */
+.wm-lang-rail-toggle {
+  width: 40px; height: 40px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: var(--radius-md);
+  cursor: pointer; position: relative;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border-default);
+  transition: all var(--duration-fast) var(--ease-out-quart);
+}
+.wm-lang-rail-toggle:hover { background: var(--bg-overlay); border-color: var(--border-strong); }
 .wm-lang-rail { position: relative; display: flex; justify-content: center; }
-.wm-lang-rail .wm-lang-btn { padding: 0; }
 .wm-lang-rail .wm-lang-flag { display: inline-flex; }
 .wm-lang-menu-rail {
   top: 50%; right: auto; left: calc(100% + 8px);
@@ -6821,7 +6832,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
     </button>
     <div style="flex:1"></div>
     <div class="wm-lang wm-lang-rail" id="wm-lang-rail">
-      <button type="button" class="rail-btn wm-lang-btn" id="wm-lang-rail-btn" data-tooltip="Idioma / Language / Idioma" aria-haspopup="listbox" aria-expanded="false">
+      <button type="button" class="wm-lang-rail-toggle wm-lang-btn" id="wm-lang-rail-btn" data-tooltip="Idioma / Language / Idioma" aria-haspopup="listbox" aria-expanded="false">
         <span class="wm-lang-flag" data-flag></span>
       </button>
       <ul class="wm-lang-menu wm-lang-menu-rail" role="listbox">
@@ -8040,7 +8051,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'i18n-seletor-editor-24jul';
+window.__WM_BUILD = 'i18n-rail-fix-24jul';
 
 /* ============================================================
    MOTOR DE IDIOMAS (i18n) — Parte 1: a fiação
