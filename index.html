@@ -6975,24 +6975,24 @@ Digno de toda honra"></textarea>
     <div class="ctx-toolbar" id="ctx-toolbar">
       <span class="ctx-scope" id="ctx-scope"><i class="ctx-scope-dot"></i><span id="ctx-scope-label">Slide</span></span>
       <span class="ctx-sep"></span>
-      <button class="ctx-font" id="ctx-font-btn" title="Fonte" style="display:inline-flex; align-items:center; justify-content:space-between; gap:6px; cursor:pointer; text-align:left;">
+      <button class="ctx-font" id="ctx-font-btn" data-i18n-attr="title:ctx.font" title="Fonte" style="display:inline-flex; align-items:center; justify-content:space-between; gap:6px; cursor:pointer; text-align:left;">
         <span id="ctx-font-current">Montserrat</span>
         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
       </button>
-      <select class="ctx-weight" id="ctx-weight" title="Espessura da fonte">
+      <select class="ctx-weight" id="ctx-weight" data-i18n-attr="title:ctx.weight" title="Espessura da fonte">
         <option value="400">Regular</option>
         <option value="500">Medium</option>
         <option value="600">Semibold</option>
         <option value="700">Bold</option>
         <option value="800">Heavy</option>
       </select>
-      <button class="ctx-btn" id="ctx-bold" title="Negrito" style="font-weight:700;">B</button>
-      <button class="ctx-btn" id="ctx-italic" title="Itálico" style="font-style:italic;">I</button>
-      <button class="ctx-btn" id="ctx-case" title="Maiúsculas / minúsculas" style="font-size:12px;">Aa</button>
+      <button class="ctx-btn" id="ctx-bold" data-i18n-attr="title:ctx.bold" title="Negrito" style="font-weight:700;">B</button>
+      <button class="ctx-btn" id="ctx-italic" data-i18n-attr="title:ctx.italic" title="Itálico" style="font-style:italic;">I</button>
+      <button class="ctx-btn" id="ctx-case" data-i18n-attr="title:ctx.case" title="Maiúsculas / minúsculas" style="font-size:12px;">Aa</button>
       <span class="ctx-sep"></span>
-      <div class="ctx-stepper" title="Tamanho do texto">
-        <button class="ctx-btn ctx-mini" id="ctx-size-minus" aria-label="Diminuir tamanho">−</button>
-        <span class="ctx-val" id="ctx-size-val" contenteditable="true" inputmode="numeric" title="Clique e digite o tamanho">64</span>
+      <div class="ctx-stepper" data-i18n-attr="title:ctx.size" title="Tamanho do texto">
+        <button class="ctx-btn ctx-mini" id="ctx-size-minus" data-i18n-attr="aria-label:ctx.sizeMinus" aria-label="Diminuir tamanho">−</button>
+        <span class="ctx-val" id="ctx-size-val" contenteditable="true" inputmode="numeric" data-i18n-attr="title:ctx.sizeEdit" title="Clique e digite o tamanho">64</span>
         <button class="ctx-btn ctx-mini" id="ctx-size-plus" aria-label="Aumentar tamanho">+</button>
       </div>
       <button class="ctx-btn ctx-spacing" id="ctx-spacing-btn" title="Espaçamento">
@@ -7015,35 +7015,35 @@ Digno de toda honra"></textarea>
       <div class="ctx-color-pop" id="ctx-color-pop" style="display:none;">
         <div class="ctx-color-grid" id="ctx-color-grid"></div>
         <label class="ctx-color-custom">
-          <span>Personalizada</span>
+          <span data-i18n="ctx.custom">Personalizada</span>
           <input type="color" id="ctx-color-input" value="#ffffff">
         </label>
       </div>
       <!-- Popover de espaçamento (entre letras + entre linhas) -->
       <div class="ctx-spacing-pop" id="ctx-spacing-pop" style="display:none;">
         <div class="ctx-spacing-row">
-          <label>Entre letras</label>
+          <label data-i18n="ctx.letterSpacing">Entre letras</label>
           <input type="range" id="ctx-ls-range" min="-5" max="20" value="-2">
           <span class="ctx-spacing-val" id="ctx-ls-num">-0.02</span>
         </div>
         <div class="ctx-spacing-row">
-          <label>Entre linhas</label>
+          <label data-i18n="ctx.lineSpacing">Entre linhas</label>
           <input type="range" id="ctx-lh-range" min="100" max="200" value="112">
           <span class="ctx-spacing-val" id="ctx-lh-num">1.12</span>
         </div>
       </div>
       <!-- Popover de caixa (maiúsculas / minúsculas / etc) -->
       <div class="ctx-case-pop" id="ctx-case-pop" style="display:none;">
-        <button class="ctx-case-opt" data-case-opt="uppercase">MAIÚSCULAS</button>
-        <button class="ctx-case-opt" data-case-opt="lowercase">minúsculas</button>
-        <button class="ctx-case-opt" data-case-opt="capitalize">Primeira De Cada</button>
-        <button class="ctx-case-opt" data-case-opt="none">Como digitou</button>
+        <button class="ctx-case-opt" data-case-opt="uppercase" data-i18n="ctx.caseUpper">MAIÚSCULAS</button>
+        <button class="ctx-case-opt" data-case-opt="lowercase" data-i18n="ctx.caseLower">minúsculas</button>
+        <button class="ctx-case-opt" data-case-opt="capitalize" data-i18n="ctx.caseTitle">Primeira De Cada</button>
+        <button class="ctx-case-opt" data-case-opt="none" data-i18n="ctx.caseNone">Como digitou</button>
       </div>
     </div>
     <!-- Painel de FONTES (estilo Canva) — abre ao clicar no nome da fonte -->
     <div class="ctx-fonts-panel" id="ctx-fonts-panel" style="display:none;">
       <div class="ctx-fonts-head">
-        <span>Fontes</span>
+        <span data-i18n="ctx.fontsTitle">Fontes</span>
         <button class="ctx-btn ctx-mini" id="ctx-fonts-close" aria-label="Fechar">×</button>
       </div>
       <input type="text" class="ctx-fonts-search" id="ctx-fonts-search" placeholder="Buscar fonte…">
@@ -7329,7 +7329,7 @@ Digno de toda honra"></textarea>
 
           
           <div id="stanza-bg-indicator" style="display:none; margin-top: 10px; padding: 9px 12px; background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(99, 102, 241, 0.08)); border: 1px solid rgba(139, 92, 246, 0.35); border-radius: 7px; align-items: center; gap: 8px;">
-            <span style="flex: 1; font-size: 11px; color: var(--text-primary);">
+            <span style="flex: 1; font-size: 11px; color: var(--text-primary);" id="stanza-bg-text">
               Estrofe <strong id="stanza-bg-num">1</strong> tem fundo próprio
             </span>
             <button class="btn-tiny" id="btn-clear-stanza-bg" data-i18n="ed.removeBg" data-i18n-attr="title:ed.useGlobalBg" title="Voltar a usar o fundo global">↺ Remover</button>
@@ -7380,23 +7380,23 @@ Digno de toda honra"></textarea>
         <div class="panel-section">
           <div class="panel-section-title" data-i18n="ed.granularity">Granularidade</div>
           <div class="granularity-choice" id="granularity">
-            <button data-grain="stanza">Estrofe</button>
-            <button data-grain="line">Linha</button>
-            <button class="active" data-grain="word">Palavra</button>
-            <button data-grain="char">Letra</button>
+            <button data-grain="stanza" data-i18n="gr.stanza">Estrofe</button>
+            <button data-grain="line" data-i18n="gr.line">Linha</button>
+            <button class="active" data-grain="word" data-i18n="gr.word">Palavra</button>
+            <button data-grain="char" data-i18n="gr.letter">Letra</button>
           </div>
           <p style="font-size: 11px; color: var(--text-tertiary); margin-top: var(--space-2); line-height: 1.5;">
-            Define como os elementos são animados — todo de uma vez ou um a um.
+            <span data-i18n="gr.note">Define como os elementos são animados — todo de uma vez ou um a um.</span>
           </p>
         </div>
 
         <div class="panel-section" style="display:none;">
-          <div class="panel-section-title">Visual das destacadas</div>
+          <div class="panel-section-title" data-i18n="sp.highlightVisual">Visual das destacadas</div>
           <p style="font-size: 11px; color: var(--text-tertiary); margin-bottom: var(--space-3); line-height: 1.5;">
-            Estilo aplicado às palavras marcadas como destaque (ícone ⭐).
+            <span data-i18n="sp.highlightVisualNote">Estilo aplicado às palavras marcadas como destaque (ícone ⭐).</span>
           </p>
 
-          <label class="label" style="font-size: 10px; margin-bottom: var(--space-1); display:block;">Cor</label>
+          <label class="label" style="font-size: 10px; margin-bottom: var(--space-1); display:block;" data-i18n="emp.color">Cor</label>
           <div id="emphasis-color-swatches" class="color-swatches" style="margin-bottom: var(--space-3);">
             <button class="color-swatch selected" data-emp-color="#fbbf24" style="background:#fbbf24" title="Dourado"></button>
             <button class="color-swatch" data-emp-color="#ffffff" style="background:#ffffff" title="Branco"></button>
@@ -7410,13 +7410,13 @@ Digno de toda honra"></textarea>
             </label>
           </div>
 
-          <label class="label" style="font-size: 10px; margin-bottom: var(--space-1); display:block;">Tamanho</label>
+          <label class="label" style="font-size: 10px; margin-bottom: var(--space-1); display:block;" data-i18n="emp.size">Tamanho</label>
           <div style="display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-3);">
             <input type="range" class="range" id="emphasis-scale" min="80" max="200" value="100" style="flex:1">
             <span class="value-display" id="emphasis-scale-val">1.0x</span>
           </div>
 
-          <label class="label" style="font-size: 10px; margin-bottom: var(--space-1); display:block;">Brilho extra</label>
+          <label class="label" style="font-size: 10px; margin-bottom: var(--space-1); display:block;" data-i18n="emp.extraGlow">Brilho extra</label>
           <div style="display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-3);">
             <input type="range" class="range" id="emphasis-glow" min="0" max="30" value="0" style="flex:1">
             <span class="value-display" id="emphasis-glow-val">0</span>
@@ -7424,18 +7424,18 @@ Digno de toda honra"></textarea>
 
           <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 12px;">
             <input type="checkbox" id="emphasis-bold">
-            <span>Negrito extra</span>
+            <span data-i18n="emp.boldExtra">Negrito extra</span>
           </label>
         </div>
 
         <div class="panel-section">
-          <div class="panel-section-title">Velocidade</div>
-          <label class="label" style="font-size: 10px; margin-bottom: var(--space-1); display:block;">Duração</label>
+          <div class="panel-section-title" data-i18n="sp.speed">Velocidade</div>
+          <label class="label" style="font-size: 10px; margin-bottom: var(--space-1); display:block;" data-i18n="sp.duration">Duração</label>
           <div style="display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-3);">
             <input type="range" class="range" id="duration" min="3" max="25" value="10" style="flex:1">
             <span class="value-display" id="duration-val">1.0s</span>
           </div>
-          <label class="label" style="font-size: 10px; margin-bottom: var(--space-1); display:block;">Stagger (atraso entre elementos)</label>
+          <label class="label" style="font-size: 10px; margin-bottom: var(--space-1); display:block;" data-i18n="sp.stagger">Stagger (atraso entre elementos)</label>
           <div style="display: flex; align-items: center; gap: var(--space-3);">
             <input type="range" class="range" id="stagger" min="0" max="30" value="6" style="flex:1">
             <span class="value-display" id="stagger-val">0.06s</span>
@@ -7443,18 +7443,18 @@ Digno de toda honra"></textarea>
         </div>
 
         <div class="panel-section">
-          <div class="panel-section-title">Transição entre estrofes</div>
+          <div class="panel-section-title" data-i18n="sp.transition">Transição entre estrofes</div>
           <select id="transition-type" class="input" style="width:100%; font-size:11px; padding:6px 8px;">
-            <option value="cut">Cut (instantâneo)</option>
-            <option value="crossfade">Crossfade (fade)</option>
-            <option value="slide-left">Slide ← (vem da direita)</option>
-            <option value="slide-right">Slide → (vem da esquerda)</option>
-            <option value="slide-up">Slide ↑ (sobe)</option>
-            <option value="slide-down">Slide ↓ (desce)</option>
-            <option value="zoom-in">Zoom In</option>
-            <option value="zoom-out">Zoom Out</option>
+            <option value="cut" data-i18n="sp.trCut">Cut (instantâneo)</option>
+            <option value="crossfade" data-i18n="sp.trCrossfade">Crossfade (fade)</option>
+            <option value="slide-left" data-i18n="sp.trSlideLeft">Slide ← (vem da direita)</option>
+            <option value="slide-right" data-i18n="sp.trSlideRight">Slide → (vem da esquerda)</option>
+            <option value="slide-up" data-i18n="sp.trSlideUp">Slide ↑ (sobe)</option>
+            <option value="slide-down" data-i18n="sp.trSlideDown">Slide ↓ (desce)</option>
+            <option value="zoom-in" data-i18n="sp.trZoomIn">Zoom In</option>
+            <option value="zoom-out" data-i18n="sp.trZoomOut">Zoom Out</option>
           </select>
-          <label class="label" style="font-size: 10px; margin-top: var(--space-2); margin-bottom: var(--space-1); display:block;">Duração</label>
+          <label class="label" style="font-size: 10px; margin-top: var(--space-2); margin-bottom: var(--space-1); display:block;" data-i18n="sp.duration">Duração</label>
           <div style="display: flex; align-items: center; gap: var(--space-3);">
             <input type="range" class="range" id="transition-duration" min="2" max="15" value="5" style="flex:1">
             <span class="value-display" id="transition-duration-val">0.5s</span>
@@ -7463,11 +7463,11 @@ Digno de toda honra"></textarea>
 
         <div class="panel-section">
           <div class="panel-section-title">
-            <span>Animação atual</span>
+            <span data-i18n="sp.currentAnim">Animação atual</span>
           </div>
           <div id="current-anim-display" style="padding: var(--space-3); background: var(--bg-elevated); border:1px solid var(--border-default); border-radius: var(--radius-md);">
             <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-2);">
-              <span class="badge badge-accent">Entrada</span>
+              <span class="badge badge-accent" data-i18n="an.entrance">Entrada</span>
               <span style="font-size: 10px; color: var(--text-tertiary);">cinematic</span>
             </div>
             <div style="font-size: var(--text-sm); font-weight: 500;">Cinematic Reveal</div>
@@ -7476,13 +7476,13 @@ Digno de toda honra"></textarea>
         </div>
 
         <div class="panel-section" style="display:none;">
-          <div class="panel-section-title">Palavras de destaque</div>
+          <div class="panel-section-title" data-i18n="sp.keywords">Palavras de destaque</div>
           <div style="font-size: 11px; color: var(--text-tertiary); line-height: 1.5; margin-bottom: var(--space-3);">
-            Palavras destacadas ganham animação extra de cor. Você pode editar a lista ou marcar individualmente clicando na palavra do canvas.
+            <span data-i18n="sp.keywordsNote">Palavras destacadas ganham animação extra de cor. Você pode editar a lista ou marcar individualmente clicando na palavra do canvas.</span>
           </div>
 
           <div class="keyword-input-wrap">
-            <input type="text" id="keyword-input" placeholder="Adicione uma palavra…" class="keyword-input" />
+            <input type="text" id="keyword-input" data-i18n-attr="placeholder:sp.keywordPh" placeholder="Adicione uma palavra…" class="keyword-input" />
             <button class="btn btn-secondary btn-sm" id="btn-keyword-add">+</button>
           </div>
 
@@ -7493,9 +7493,9 @@ Digno de toda honra"></textarea>
           <div style="display: flex; gap: var(--space-2); margin-top: var(--space-3);">
             <button class="btn btn-primary btn-sm" id="btn-apply-keywords" style="flex: 1;">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 4px;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-              Aplicar agora
+              <span data-i18n="sp.applyNow">Aplicar agora</span>
             </button>
-            <button class="btn btn-ghost btn-sm" id="btn-clear-emphasis" title="Remover todos os destaques">
+            <button class="btn btn-ghost btn-sm" id="btn-clear-emphasis" data-i18n-attr="title:sp.clearHighlights" title="Remover todos os destaques">
               ↺
             </button>
           </div>
@@ -7508,9 +7508,9 @@ Digno de toda honra"></textarea>
       
       <div class="panel-content" data-rpanel-content="scenes" style="display:none;">
         <div class="panel-section">
-          <div class="panel-section-title">Cenas (uma por estrofe)</div>
+          <div class="panel-section-title" data-i18n="sp.scenesTitle">Cenas (uma por estrofe)</div>
           <div style="font-size: 11px; color: var(--text-tertiary); margin-bottom: 12px;">
-            Cada estrofe pode ter sua própria animação, background e duração. Sem ajuste, usa a configuração global.
+            <span data-i18n="sp.scenesNote">Cada estrofe pode ter sua própria animação, background e duração. Sem ajuste, usa a configuração global.</span>
           </div>
           <div id="scenes-list" class="scenes-list">
             <div class="scenes-empty" data-i18n="ed.emptyScenes">Gere uma lyric para ver as cenas</div>
@@ -7521,14 +7521,14 @@ Digno de toda honra"></textarea>
       
       <div class="panel-content" data-rpanel-content="word" style="display:none;">
         <div class="panel-section">
-          <div class="panel-section-title">Animação por palavra</div>
+          <div class="panel-section-title" data-i18n="sp.wordTitle">Animação por palavra</div>
           <div style="font-size: 11px; color: var(--text-tertiary); margin-bottom: 12px;">
-            Clique numa palavra no canvas para selecioná-la e dar uma animação exclusiva.
+            <span data-i18n="sp.wordNote">Clique numa palavra no canvas para selecioná-la e dar uma animação exclusiva.</span>
           </div>
           <div id="word-panel-content">
             <div class="word-panel-empty">
-              <strong>Nenhuma palavra selecionada</strong>
-              Clique em qualquer palavra do canvas
+              <strong data-i18n="sp.noWordSel">Nenhuma palavra selecionada</strong>
+              <span data-i18n="sp.noWordSelSub">Clique em qualquer palavra do canvas</span>
             </div>
           </div>
         </div>
@@ -8050,7 +8050,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'i18n-editor-modais-24jul';
+window.__WM_BUILD = 'i18n-editor-completo-24jul';
 
 /* ============================================================
    MOTOR DE IDIOMAS (i18n) — Parte 1: a fiação
@@ -8263,6 +8263,66 @@ window.__WM_BUILD = 'i18n-editor-modais-24jul';
     'ed.addBackground': { pt: 'Adicionar background (imagem ou vídeo)', en: 'Add background (image or video)', es: 'Añadir fondo (imagen o video)' },
     'ed.removeBg':      { pt: '↺ Remover', en: '↺ Remove', es: '↺ Quitar' },
     'ed.useGlobalBg':   { pt: 'Voltar a usar o fundo global', en: 'Back to the global background', es: 'Volver a usar el fondo global' },
+
+    // ================= EDITOR — velocidade / transição / destaque / cenas / palavra =================
+    'sp.speed':         { pt: 'Velocidade', en: 'Speed', es: 'Velocidad' },
+    'sp.duration':      { pt: 'Duração', en: 'Duration', es: 'Duración' },
+    'sp.stagger':       { pt: 'Stagger (atraso entre elementos)', en: 'Stagger (delay between elements)', es: 'Stagger (retraso entre elementos)' },
+    'sp.transition':    { pt: 'Transição entre estrofes', en: 'Transition between stanzas', es: 'Transición entre estrofas' },
+    'sp.trCut':         { pt: 'Cut (instantâneo)', en: 'Cut (instant)', es: 'Corte (instantáneo)' },
+    'sp.trCrossfade':   { pt: 'Crossfade (fade)', en: 'Crossfade (fade)', es: 'Fundido (crossfade)' },
+    'sp.trSlideLeft':   { pt: 'Slide ← (vem da direita)', en: 'Slide ← (from the right)', es: 'Deslizar ← (desde la derecha)' },
+    'sp.trSlideRight':  { pt: 'Slide → (vem da esquerda)', en: 'Slide → (from the left)', es: 'Deslizar → (desde la izquierda)' },
+    'sp.trSlideUp':     { pt: 'Slide ↑ (sobe)', en: 'Slide ↑ (upward)', es: 'Deslizar ↑ (hacia arriba)' },
+    'sp.trSlideDown':   { pt: 'Slide ↓ (desce)', en: 'Slide ↓ (downward)', es: 'Deslizar ↓ (hacia abajo)' },
+    'sp.trZoomIn':      { pt: 'Zoom In', en: 'Zoom In', es: 'Acercar (Zoom In)' },
+    'sp.trZoomOut':     { pt: 'Zoom Out', en: 'Zoom Out', es: 'Alejar (Zoom Out)' },
+    'sp.currentAnim':   { pt: 'Animação atual', en: 'Current animation', es: 'Animación actual' },
+    'sp.highlightVisual':{ pt: 'Visual das destacadas', en: 'Highlighted words style', es: 'Estilo de las destacadas' },
+    'sp.highlightVisualNote':{ pt: 'Estilo aplicado às palavras marcadas como destaque (ícone ⭐).', en: 'Style applied to words marked as highlights (⭐ icon).', es: 'Estilo aplicado a las palabras marcadas como destacadas (ícono ⭐).' },
+    'sp.keywords':      { pt: 'Palavras de destaque', en: 'Highlight words', es: 'Palabras destacadas' },
+    'sp.keywordsNote':  { pt: 'Palavras destacadas ganham animação extra de cor. Você pode editar a lista ou marcar individualmente clicando na palavra do canvas.', en: 'Highlighted words get an extra color animation. You can edit the list or mark them individually by clicking the word on the canvas.', es: 'Las palabras destacadas reciben una animación extra de color. Puedes editar la lista o marcarlas individualmente haciendo clic en la palabra del lienzo.' },
+    'sp.keywordPh':     { pt: 'Adicione uma palavra…', en: 'Add a word…', es: 'Añade una palabra…' },
+    'sp.applyNow':      { pt: 'Aplicar agora', en: 'Apply now', es: 'Aplicar ahora' },
+    'sp.clearHighlights':{ pt: 'Remover todos os destaques', en: 'Remove all highlights', es: 'Quitar todos los destacados' },
+    'sp.scenesTitle':   { pt: 'Cenas (uma por estrofe)', en: 'Scenes (one per stanza)', es: 'Escenas (una por estrofa)' },
+    'sp.scenesNote':    { pt: 'Cada estrofe pode ter sua própria animação, background e duração. Sem ajuste, usa a configuração global.', en: 'Each stanza can have its own animation, background and duration. Without changes, it uses the global setting.', es: 'Cada estrofa puede tener su propia animación, fondo y duración. Sin ajustes, usa la configuración global.' },
+    'sp.wordTitle':     { pt: 'Animação por palavra', en: 'Per-word animation', es: 'Animación por palabra' },
+    'sp.wordNote':      { pt: 'Clique numa palavra no canvas para selecioná-la e dar uma animação exclusiva.', en: 'Click a word on the canvas to select it and give it its own animation.', es: 'Haz clic en una palabra del lienzo para seleccionarla y darle una animación exclusiva.' },
+    'sp.noWordSel':     { pt: 'Nenhuma palavra selecionada', en: 'No word selected', es: 'Ninguna palabra seleccionada' },
+    'sp.noWordSelSub':  { pt: 'Clique em qualquer palavra do canvas', en: 'Click any word on the canvas', es: 'Haz clic en cualquier palabra del lienzo' },
+    // barra contextual flutuante
+    'ctx.bold':         { pt: 'Negrito', en: 'Bold', es: 'Negrita' },
+    'ctx.italic':       { pt: 'Itálico', en: 'Italic', es: 'Cursiva' },
+    'ctx.case':         { pt: 'Maiúsculas / minúsculas', en: 'Uppercase / lowercase', es: 'Mayúsculas / minúsculas' },
+    'ctx.font':         { pt: 'Fonte', en: 'Font', es: 'Fuente' },
+    'ctx.weight':       { pt: 'Espessura da fonte', en: 'Font weight', es: 'Grosor de la fuente' },
+    'ctx.size':         { pt: 'Tamanho do texto', en: 'Text size', es: 'Tamaño del texto' },
+    'ctx.sizeEdit':     { pt: 'Clique e digite o tamanho', en: 'Click and type the size', es: 'Haz clic y escribe el tamaño' },
+    'ctx.sizeMinus':    { pt: 'Diminuir tamanho', en: 'Decrease size', es: 'Reducir tamaño' },
+    'ctx.scopeSlide':   { pt: 'Slide', en: 'Slide', es: 'Diapositiva' },
+    'ctx.scopeWord':    { pt: 'Palavra', en: 'Word', es: 'Palabra' },
+    'ctx.scopeWordsN':  { pt: '{n} palavras', en: '{n} words', es: '{n} palabras' },
+    'ed.stanzaHasBg':   { pt: 'Estrofe {n} tem fundo próprio', en: 'Stanza {n} has its own background', es: 'La estrofa {n} tiene su propio fondo' },
+
+    // ================= EDITOR — popovers da barra flutuante + granularidade + destaque =================
+    'ctx.custom':       { pt: 'Personalizada', en: 'Custom', es: 'Personalizada' },
+    'ctx.letterSpacing':{ pt: 'Entre letras', en: 'Letter spacing', es: 'Entre letras' },
+    'ctx.lineSpacing':  { pt: 'Entre linhas', en: 'Line spacing', es: 'Entre líneas' },
+    'ctx.caseUpper':    { pt: 'MAIÚSCULAS', en: 'UPPERCASE', es: 'MAYÚSCULAS' },
+    'ctx.caseLower':    { pt: 'minúsculas', en: 'lowercase', es: 'minúsculas' },
+    'ctx.caseTitle':    { pt: 'Primeira De Cada', en: 'Title Case', es: 'Primera De Cada' },
+    'ctx.caseNone':     { pt: 'Como digitou', en: 'As typed', es: 'Como escribiste' },
+    'gr.stanza':        { pt: 'Estrofe', en: 'Stanza', es: 'Estrofa' },
+    'gr.line':          { pt: 'Linha', en: 'Line', es: 'Línea' },
+    'gr.word':          { pt: 'Palavra', en: 'Word', es: 'Palabra' },
+    'gr.letter':        { pt: 'Letra', en: 'Letter', es: 'Letra' },
+    'gr.note':          { pt: 'Define como os elementos são animados — todo de uma vez ou um a um.', en: 'Sets how elements animate — all at once or one by one.', es: 'Define cómo se animan los elementos — todos a la vez o uno a uno.' },
+    'emp.color':        { pt: 'Cor', en: 'Color', es: 'Color' },
+    'emp.size':         { pt: 'Tamanho', en: 'Size', es: 'Tamaño' },
+    'emp.extraGlow':    { pt: 'Brilho extra', en: 'Extra glow', es: 'Brillo extra' },
+    'emp.boldExtra':    { pt: 'Negrito extra', en: 'Extra bold', es: 'Negrita extra' },
+    'ctx.fontsTitle':   { pt: 'Fontes', en: 'Fonts', es: 'Fuentes' },
 
     // ================= MODAIS =================
     'md.templatesTitle':{ pt: 'Templates', en: 'Templates', es: 'Plantillas' },
@@ -25672,7 +25732,12 @@ function initEditor() {
     const temSel = _ctxTemSelecao();
     // Scope
     const lbl = document.getElementById('ctx-scope-label');
-    if (lbl) lbl.textContent = temSel ? (selectedWordIds.size > 1 ? `${selectedWordIds.size} palavras` : 'Palavra') : 'Slide';
+    if (lbl) {
+      const _t = (k) => (window.WM_T ? window.WM_T(k) : k);
+      lbl.textContent = temSel
+        ? (selectedWordIds.size > 1 ? _t('ctx.scopeWordsN').replace('{n}', selectedWordIds.size) : _t('ctx.scopeWord'))
+        : _t('ctx.scopeSlide');
+    }
     // Fonte (nome no botão)
     const fontCur = document.getElementById('ctx-font-current');
     if (fontCur && s.fontFamily) fontCur.textContent = s.fontFamily;
@@ -27148,7 +27213,9 @@ function initEditor() {
   function updateCurrentAnimDisplay(id) {
     const a = WM_ANIMATIONS.get(id);
     if (!a) return;
-    const labelMap = { entrance: 'Entrada', exit: 'Saída', loop: 'Loop', emphasis: 'Destaque' };
+    const labelMap = window.WM_T
+      ? { entrance: WM_T('an.entrance'), exit: WM_T('an.exit'), loop: WM_T('an.loop'), emphasis: WM_T('an.emphasis') }
+      : { entrance: 'Entrada', exit: 'Saída', loop: 'Loop', emphasis: 'Destaque' };
     const el = $('#current-anim-display');
     el.innerHTML = `
       <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-2);">
@@ -28233,6 +28300,12 @@ function initEditor() {
     const indicator = $('#stanza-bg-indicator');
     const numEl = $('#stanza-bg-num');
     if (numEl) numEl.textContent = (engine.currentStanzaIndex || 0) + 1;
+    // Texto "Estrofe N tem fundo próprio" (traduzível — o {n} vira o número)
+    const bgText = $('#stanza-bg-text');
+    if (bgText && window.WM_T) {
+      const num = (engine.currentStanzaIndex || 0) + 1;
+      bgText.innerHTML = window.WM_T('ed.stanzaHasBg').replace('{n}', '<strong id="stanza-bg-num">' + num + '</strong>');
+    }
     if (indicator) {
       indicator.style.display = (stanza && stanza.background) ? 'flex' : 'none';
     }
