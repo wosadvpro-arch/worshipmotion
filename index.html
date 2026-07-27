@@ -8048,7 +8048,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'i18n-creditos-24jul';
+window.__WM_BUILD = 'i18n-rotulos-24jul';
 
 /* ============================================================
    MOTOR DE IDIOMAS (i18n) — Parte 1: a fiação
@@ -8323,6 +8323,15 @@ window.__WM_BUILD = 'i18n-creditos-24jul';
     'ctx.fontsTitle':   { pt: 'Fontes', en: 'Fonts', es: 'Fuentes' },
     'ed.creditsTip':    { pt: 'Créditos disponíveis neste mês', en: 'Credits available this month', es: 'Créditos disponibles este mes' },
     'ed.creditsLabel':  { pt: 'créditos', en: 'credits', es: 'créditos' },
+    // rótulos comuns de louvor (traduzidos mesmo quando o user digita [Coro] etc.)
+    'lbl.chorus':       { pt: 'Refrão', en: 'Chorus', es: 'Coro' },
+    'lbl.verse':        { pt: 'Verso', en: 'Verse', es: 'Verso' },
+    'lbl.bridge':       { pt: 'Ponte', en: 'Bridge', es: 'Puente' },
+    'lbl.preChorus':    { pt: 'Pré-refrão', en: 'Pre-Chorus', es: 'Pre-coro' },
+    'lbl.intro':        { pt: 'Intro', en: 'Intro', es: 'Intro' },
+    'lbl.ending':       { pt: 'Final', en: 'Ending', es: 'Final' },
+    'lbl.interlude':    { pt: 'Interlúdio', en: 'Interlude', es: 'Interludio' },
+    'lbl.vamp':         { pt: 'Vamp', en: 'Vamp', es: 'Vamp' },
     // pontos que escaparam (nome do projeto, hint da timeline, rótulo automático de estrofe, "de")
     'ed.untitledProject':{ pt: 'Projeto sem título', en: 'Untitled project', es: 'Proyecto sin título' },
     'ed.untitled':      { pt: 'Sem título', en: 'Untitled', es: 'Sin título' },
@@ -8531,13 +8540,38 @@ window.__WM_BUILD = 'i18n-creditos-24jul';
   };
   window.addEventListener('wm-idioma', () => { try { window._wmAtualizarHintTimeline(); } catch (e) {} });
 
-  // Rótulo de estrofe para EXIBIÇÃO: se o label for o automático ("Estrofe N",
-  // e variações internas), traduz; se o usuário digitou um rótulo próprio
-  // ([Refrão], [Verso 2], Ponte...), devolve como está (é conteúdo dele).
+  // Mapa de sinônimos de rótulos de louvor → chave. Cobre PT/EN/ES pra
+  // reconhecer o que o usuário digitou em qualquer idioma. Chave sem número.
+  const LABEL_SINONIMOS = {
+    'refrao': 'lbl.chorus', 'refrão': 'lbl.chorus', 'coro': 'lbl.chorus', 'chorus': 'lbl.chorus',
+    'verso': 'lbl.verse', 'verse': 'lbl.verse',
+    'ponte': 'lbl.bridge', 'bridge': 'lbl.bridge', 'puente': 'lbl.bridge',
+    'pre-refrao': 'lbl.preChorus', 'pré-refrão': 'lbl.preChorus', 'prerefrao': 'lbl.preChorus',
+    'pre-chorus': 'lbl.preChorus', 'prechorus': 'lbl.preChorus', 'pre-coro': 'lbl.preChorus', 'precoro': 'lbl.preChorus',
+    'intro': 'lbl.intro', 'introducao': 'lbl.intro', 'introdução': 'lbl.intro', 'introduction': 'lbl.intro', 'introduccion': 'lbl.intro', 'introducción': 'lbl.intro',
+    'final': 'lbl.ending', 'ending': 'lbl.ending', 'outro': 'lbl.ending',
+    'interludio': 'lbl.interlude', 'interlúdio': 'lbl.interlude', 'interlude': 'lbl.interlude',
+    'vamp': 'lbl.vamp',
+  };
+
+  // Rótulo de estrofe para EXIBIÇÃO. Regras:
+  //  1) label vazio ou "Estrofe N" automático → "Estrofe/Stanza/Estrofa N".
+  //  2) rótulo comum de louvor (Coro, Refrão, Verse, Ponte...) → traduz,
+  //     preservando um número no fim (ex: "Verso 2" → "Verse 2").
+  //  3) qualquer outra coisa que o usuário escreveu → devolve INTACTA.
   window._wmLabelEstrofe = function (label, indice) {
     const n = (indice || 0) + 1;
-    if (!label || /^Estrofe\s*\d*$/i.test(String(label).trim())) {
+    const bruto = (label == null ? '' : String(label)).trim();
+    if (!bruto || /^Estrofe\s*\d*$/i.test(bruto)) {
       return T('ed.stanzaN').replace('{n}', n);
+    }
+    const m = bruto.match(/^(.*?)[\s\-–]*(\d+)?$/);
+    const nucleo = (m ? m[1] : bruto).trim();
+    const num = m && m[2] ? m[2] : '';
+    const chave = LABEL_SINONIMOS[nucleo.toLowerCase()];
+    if (chave) {
+      const traduzido = T(chave);
+      return num ? (traduzido + ' ' + num) : traduzido;
     }
     return label;
   };
@@ -24827,6 +24861,20 @@ function initEditor() {
       try { renderStanzaList(engine.parsed); } catch (e) {}
     }
   }
+
+  // Ao trocar de idioma, re-renderiza tudo que exibe rótulos de estrofe
+  // (lista lateral, timeline, cenas, painel de marcação) pra os rótulos
+  // comuns (Coro/Refrão/Verso...) e "Estrofe N" atualizarem na hora.
+  window.addEventListener('wm-idioma', () => {
+    try {
+      if (engine && engine.parsed) {
+        if (typeof renderStanzaList === 'function') renderStanzaList(engine.parsed);
+        if (typeof renderTimeline === 'function') renderTimeline(engine.parsed);
+        if (typeof renderScenesList === 'function') renderScenesList();
+        if (typeof updateTimerDisplay === 'function') updateTimerDisplay();
+      }
+    } catch (e) {}
+  });
 
   // Aplica patch de style em todas as palavras selecionadas
   function setMultiStyleOverride(wordIds, key, value) {
