@@ -6293,7 +6293,9 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
   opacity: 0; visibility: hidden; transform: translateY(-4px);
   transition: opacity .15s, transform .15s, visibility .15s;
 }
-.wm-lang.is-open .wm-lang-menu { opacity: 1; visibility: visible; transform: translateY(0); }
+.wm-lang.is-open .wm-lang-menu { opacity: 1; visibility: visible; transform: translateY(0); pointer-events: auto; }
+.wm-lang-menu { pointer-events: none; }
+.wm-lang.is-open .wm-lang-opt { pointer-events: auto; }
 .wm-lang-opt {
   display: flex; align-items: center; gap: 9px;
   padding: 8px 10px; border-radius: 7px; cursor: pointer;
@@ -8084,7 +8086,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'diag-seletor+config-24jul';
+window.__WM_BUILD = 'seletor-delegation-24jul';
 
 /* ============================================================
    MOTOR DE IDIOMAS (i18n) — Parte 1: a fiação
@@ -8663,48 +8665,52 @@ window.__WM_BUILD = 'diag-seletor+config-24jul';
       if (w.__wmLigado) return;
       w.__wmLigado = true;
       const btn = w.querySelector('.wm-lang-btn');
-      const abrir = (v) => { w.classList.toggle('is-open', v); if (btn) btn.setAttribute('aria-expanded', v ? 'true' : 'false'); probe('  → menu ' + (v?'ABERTO':'fechado')); };
+      const menu = w.querySelector('.wm-lang-menu');
+      const abrir = (v) => { w.classList.toggle('is-open', v); if (btn) btn.setAttribute('aria-expanded', v ? 'true' : 'false'); w.__wmUltimoGesto = Date.now(); probe('  → menu ' + (v?'ABERTO':'fechado')); };
 
+      // Guarda anti-duplo (touchend+click do mesmo toque no iOS).
       let _tBtn = 0;
       const alternar = (e) => {
-        probe('BOTÃO recebeu: ' + e.type + ' (seletor #' + wi + ')');
+        probe('BOTÃO: ' + e.type);
         if (e.type === 'touchend') { _tBtn = Date.now(); }
-        else if (Date.now() - _tBtn < 700) { probe('  (click ignorado, veio após touch)'); return; }
+        else if (Date.now() - _tBtn < 700) { return; }
         e.stopPropagation();
         abrir(!w.classList.contains('is-open'));
-        w.__wmUltimoGesto = Date.now();
       };
       if (btn) {
-        btn.addEventListener('touchstart', () => probe('BOTÃO recebeu: touchstart'));
         btn.addEventListener('touchend', alternar);
         btn.addEventListener('click', alternar);
       }
 
-      w.querySelectorAll('.wm-lang-opt').forEach(o => {
-        const lang0 = o.getAttribute('data-lang');
-        let _tOpt = 0;
-        const escolher = (e) => {
-          probe('OPÇÃO ' + lang0 + ' recebeu: ' + e.type);
-          if (e.type === 'touchend') { _tOpt = Date.now(); }
-          else if (Date.now() - _tOpt < 700) { probe('  (click ignorado)'); return; }
-          e.stopPropagation();
-          const lang = o.getAttribute('data-lang');
-          w.__wmUltimoGesto = Date.now();
-          abrir(false);
-          probe('  → chamando definir(' + lang + ')');
-          definir(lang);
-          probe('  → idioma agora=' + idiomaAtual);
-        };
-        o.addEventListener('touchstart', () => probe('OPÇÃO ' + lang0 + ' recebeu: touchstart'));
-        o.addEventListener('touchend', escolher);
-        o.addEventListener('click', escolher);
-      });
+      // DELEGATION: um listener no MENU inteiro. Qualquer toque numa opção
+      // (mesmo acertando o <span> ou <small> interno) sobe até aqui via closest.
+      let _tMenu = 0;
+      const escolherNoMenu = (e) => {
+        const opt = e.target && e.target.closest ? e.target.closest('.wm-lang-opt') : null;
+        probe('MENU: ' + e.type + (opt ? ' → opt=' + opt.getAttribute('data-lang') : ' (fora de opção)'));
+        if (!opt) return;
+        if (e.type === 'touchend') { _tMenu = Date.now(); }
+        else if (Date.now() - _tMenu < 700) { return; }
+        e.stopPropagation();
+        e.preventDefault();
+        const lang = opt.getAttribute('data-lang');
+        w.__wmUltimoGesto = Date.now();
+        abrir(false);
+        probe('  → definir(' + lang + ')');
+        definir(lang);
+        probe('  → idioma=' + idiomaAtual);
+      };
+      if (menu) {
+        menu.addEventListener('touchend', escolherNoMenu);
+        menu.addEventListener('click', escolherNoMenu);
+      }
 
+      // Fechar ao tocar fora — só se realmente fora, e não no mesmo gesto.
       const fecharFora = (e) => {
         if (!w.classList.contains('is-open')) return;
-        if (w.contains(e.target)) return;
-        if (Date.now() - (w.__wmUltimoGesto || 0) < 400) return;
-        probe('fechar-fora disparou (' + e.type + ')');
+        if (w.contains(e.target)) { probe('fechar-fora: alvo DENTRO, ignora'); return; }
+        if (Date.now() - (w.__wmUltimoGesto || 0) < 500) { probe('fechar-fora: gesto recente, ignora'); return; }
+        probe('fechar-fora: fecha (' + e.type + ')');
         abrir(false);
       };
       document.addEventListener('touchend', fecharFora);
