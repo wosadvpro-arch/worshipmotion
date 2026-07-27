@@ -6312,6 +6312,28 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
 .wm-lang-rail.is-open .wm-lang-menu-rail {
   transform: translateY(-50%) translateX(0);
 }
+/* No celular a rail vira uma barra HORIZONTAL embaixo — o menu não pode abrir
+   pro lado (sai da tela / cobre outros botões). Aqui ele abre PRA CIMA,
+   centralizado sobre a bandeira, alinhado à barra. */
+@media (max-width: 1080px) {
+  .wm-lang-menu-rail {
+    top: auto; bottom: calc(100% + 10px);
+    left: 50%; right: auto;
+    transform: translateX(-50%) translateY(6px);
+    min-width: 180px;
+  }
+  .wm-lang-rail.is-open .wm-lang-menu-rail {
+    transform: translateX(-50%) translateY(0);
+  }
+  /* seta apontando pra baixo, ligando o menu ao botão */
+  .wm-lang-menu-rail::after {
+    content: ''; position: absolute; top: 100%; left: 50%;
+    transform: translateX(-50%);
+    border: 7px solid transparent; border-top-color: #1a1030;
+  }
+  .wm-lang-rail-toggle { width: 44px; height: 44px; }
+  .wm-lang-menu-rail .wm-lang-opt { padding: 11px 12px; font-size: 14px; }
+}
 .page-login .wm-login-card .auth-subtitle { font-size: var(--text-sm); color: var(--text-secondary); margin-bottom: 24px; }
 .page-login .wm-login-tagline { position: relative; z-index: 2; max-width: 430px; text-align: center; font-size: 13px; line-height: 1.5; color: rgba(246,246,249,0.62); }
 
@@ -8048,7 +8070,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'i18n-palavra-camadas-24jul';
+window.__WM_BUILD = 'i18n-msgs-editor-24jul';
 
 /* ============================================================
    MOTOR DE IDIOMAS (i18n) — Parte 1: a fiação
@@ -8374,6 +8396,44 @@ window.__WM_BUILD = 'i18n-palavra-camadas-24jul';
     'dyn.whereApplyAnim':{ pt: 'Onde quer aplicar essa animação?', en: 'Where do you want to apply this animation?', es: '¿Dónde quieres aplicar esta animación?' },
     'dyn.applyAllStanzas':{ pt: 'Aplicar em TODAS as estrofes', en: 'Apply to ALL stanzas', es: 'Aplicar a TODAS las estrofas' },
     'dyn.durationSec':  { pt: 'Duração (segundos)', en: 'Duration (seconds)', es: 'Duración (segundos)' },
+
+    // ================= MENSAGENS do editor (toast / confirm / alert) =================
+    'msg.pasteLyricsFirst': { pt: 'Cole uma letra primeiro', en: 'Paste some lyrics first', es: 'Pega una letra primero' },
+    'msg.pasteToMark':      { pt: 'Cole uma letra primeiro pra marcar palavras', en: 'Paste lyrics first to mark words', es: 'Pega una letra primero para marcar palabras' },
+    'msg.noHighlightClear': { pt: 'Nenhum destaque pra limpar', en: 'No highlights to clear', es: 'Ningún destacado para limpiar' },
+    'msg.mark2Words':       { pt: 'Marque pelo menos 2 palavras antes de distribuir', en: 'Mark at least 2 words before distributing', es: 'Marca al menos 2 palabras antes de distribuir' },
+    'msg.loadAudioFirst':   { pt: 'Carregue um áudio ou use 🎵 Bater no ritmo', en: 'Load audio or use 🎵 Tap the beat', es: 'Carga un audio o usa 🎵 Marcar el ritmo' },
+    'msg.stanzaDeleted':    { pt: 'Estrofe excluída', en: 'Stanza deleted', es: 'Estrofa eliminada' },
+    'msg.codeCopied':       { pt: 'Código copiado!', en: 'Code copied!', es: '¡Código copiado!' },
+    'msg.addLyricsTemplate':{ pt: 'Adicione uma letra antes de aplicar o template', en: 'Add lyrics before applying the template', es: 'Añade una letra antes de aplicar la plantilla' },
+    'msg.errorReadProject': { pt: 'Erro ao ler o projeto atual', en: 'Error reading the current project', es: 'Error al leer el proyecto actual' },
+    'msg.audioLoadFail':    { pt: 'Não consegui carregar esse áudio. Tenta outro.', en: "Couldn't load that audio. Try another one.", es: 'No pude cargar ese audio. Prueba con otro.' },
+    'msg.syncingMusic':     { pt: 'Sincronizando música na nuvem…', en: 'Syncing music to the cloud…', es: 'Sincronizando música en la nube…' },
+    'msg.musicSynced':      { pt: 'Música sincronizada na nuvem ☁️', en: 'Music synced to the cloud ☁️', es: 'Música sincronizada en la nube ☁️' },
+    // confirmações
+    'msg.removeFont':       { pt: 'Remover esta fonte?', en: 'Remove this font?', es: '¿Quitar esta fuente?' },
+    'msg.removeBg':         { pt: 'Remover este background?', en: 'Remove this background?', es: '¿Quitar este fondo?' },
+    'msg.removeMusic':      { pt: 'Remover a música deste projeto?', en: 'Remove the music from this project?', es: '¿Quitar la música de este proyecto?' },
+    'msg.clearAllMarks':    { pt: 'Apagar TODAS as marcações? Não tem desfazer.', en: 'Clear ALL markings? This cannot be undone.', es: '¿Borrar TODAS las marcaciones? No hay deshacer.' },
+    'msg.deleteProject':    { pt: 'Excluir este projeto? Não dá pra desfazer.', en: 'Delete this project? This cannot be undone.', es: '¿Eliminar este proyecto? No se puede deshacer.' },
+    'msg.logout':           { pt: 'Deseja sair da sua conta?', en: 'Do you want to sign out?', es: '¿Quieres cerrar sesión?' },
+    'msg.cancelExport':     { pt: 'Cancelar a exportação em andamento?', en: 'Cancel the export in progress?', es: '¿Cancelar la exportación en curso?' },
+    'msg.deleteStanzaQ':    { pt: 'Excluir?', en: 'Delete?', es: '¿Eliminar?' },
+    'msg.exportFirst':      { pt: 'Cole uma letra e clique em "Gerar Lyric" antes de exportar.', en: 'Paste lyrics and click "Generate Lyric" before exporting.', es: 'Pega una letra y haz clic en "Generar Lyric" antes de exportar.' },
+    'msg.nothingExport':    { pt: 'Nada pra exportar', en: 'Nothing to export', es: 'Nada para exportar' },
+    'msg.cantDeleteOnly':   { pt: 'Não dá pra excluir a única estrofe. Tem que ter pelo menos uma.', en: "You can't delete the only stanza. There must be at least one.", es: 'No puedes eliminar la única estrofa. Debe haber al menos una.' },
+    'msg.cantDeleteAll':    { pt: 'Não dá pra excluir todas as estrofes. Deixe pelo menos uma.', en: "You can't delete all stanzas. Leave at least one.", es: 'No puedes eliminar todas las estrofas. Deja al menos una.' },
+    'msg.cantDelete':       { pt: 'Não é possível excluir', en: "Can't delete", es: 'No se puede eliminar' },
+    // botões de confirmação genéricos
+    'msg.btnRemove':        { pt: 'Remover', en: 'Remove', es: 'Quitar' },
+    'msg.btnDelete':        { pt: 'Excluir', en: 'Delete', es: 'Eliminar' },
+    'msg.btnCancel':        { pt: 'Cancelar', en: 'Cancel', es: 'Cancelar' },
+    'msg.btnContinue':      { pt: 'Continuar', en: 'Continue', es: 'Continuar' },
+    'msg.btnSave':          { pt: 'Salvar', en: 'Save', es: 'Guardar' },
+    'msg.btnLogout':        { pt: 'Sair', en: 'Sign out', es: 'Salir' },
+    'msg.btnStay':          { pt: 'Ficar', en: 'Stay', es: 'Quedarme' },
+    'msg.btnCancelExport':  { pt: 'Cancelar exportação', en: 'Cancel export', es: 'Cancelar exportación' },
+    'msg.btnNotNow':        { pt: 'Agora não', en: 'Not now', es: 'Ahora no' },
     // pontos que escaparam (nome do projeto, hint da timeline, rótulo automático de estrofe, "de")
     'ed.untitledProject':{ pt: 'Projeto sem título', en: 'Untitled project', es: 'Proyecto sin título' },
     'ed.untitled':      { pt: 'Sem título', en: 'Untitled', es: 'Sin título' },
@@ -21305,7 +21365,7 @@ function initEditor() {
     const parsed = engine.parsed;
     if (!parsed || !parsed.stanzas[idx]) return;
     if (parsed.stanzas.length <= 1) {
-      await wmAlert('Não dá pra excluir a única estrofe. Tem que ter pelo menos uma.', { title: 'Não é possível excluir' });
+      await wmAlert((window.WM_T?window.WM_T('msg.cantDeleteOnly'):'Não dá pra excluir a única estrofe. Tem que ter pelo menos uma.'), { title: (window.WM_T?window.WM_T('msg.cantDelete'):'Não é possível excluir') });
       return;
     }
     const stanza = parsed.stanzas[idx];
@@ -21447,7 +21507,7 @@ function initEditor() {
     const ordenados = indices.slice().filter(i => parsed.stanzas[i]).sort((a, b) => a - b);
     if (!ordenados.length) return false;
     if (ordenados.length >= parsed.stanzas.length) {
-      if (typeof wmAlert === 'function') await wmAlert('Não dá pra excluir todas as estrofes. Deixe pelo menos uma.', { title: 'Não é possível excluir' });
+      if (typeof wmAlert === 'function') await wmAlert((window.WM_T?window.WM_T('msg.cantDeleteAll'):'Não dá pra excluir todas as estrofes. Deixe pelo menos uma.'), { title: (window.WM_T?window.WM_T('msg.cantDelete'):'Não é possível excluir') });
       return false;
     }
     if (typeof wmConfirm === 'function') {
@@ -21594,7 +21654,7 @@ function initEditor() {
     engine.playFull();
     updateActiveStanzaInList(engine.currentStanzaIndex);
     updateActiveTimelineClip(engine.currentStanzaIndex);
-    if (typeof showToast === 'function') showToast('Estrofe excluída');
+    if (typeof showToast === 'function') showToast((window.WM_T?window.WM_T('msg.stanzaDeleted'):'Estrofe excluída'));
   }
 
   function renderTimeline(parsed) {
@@ -27728,7 +27788,7 @@ function initEditor() {
     if (!deleteBtn) return;
     ev.stopPropagation();
     const assetId = deleteBtn.dataset.deleteFont;
-    if (!await wmConfirm('Remover esta fonte?', { confirmText: 'Remover', danger: true })) return;
+    if (!await wmConfirm((window.WM_T?window.WM_T('msg.removeFont'):'Remover esta fonte?'), { confirmText: (window.WM_T?window.WM_T('msg.btnRemove'):'Remover'), danger: true })) return;
     if (window.WM_CUSTOM_FONTS) {
       await window.WM_CUSTOM_FONTS.delete(assetId);
     }
@@ -28684,7 +28744,7 @@ function initEditor() {
     if (deleteBtn) {
       ev.stopPropagation();
       const assetId = deleteBtn.dataset.deleteBg;
-      if (!await wmConfirm('Remover este background?', { confirmText: 'Remover', danger: true })) return;
+      if (!await wmConfirm((window.WM_T?window.WM_T('msg.removeBg'):'Remover este background?'), { confirmText: (window.WM_T?window.WM_T('msg.btnRemove'):'Remover'), danger: true })) return;
       if (window.WM_CUSTOM_BACKGROUNDS) {
         await window.WM_CUSTOM_BACKGROUNDS.delete(assetId);
       }
@@ -28879,7 +28939,7 @@ function initEditor() {
   function applyEmphasisFromKeywords() {
     const parsed = engine?.parsed;
     if (!parsed) {
-      if (typeof showToast === 'function') showToast('Cole uma letra primeiro');
+      if (typeof showToast === 'function') showToast((window.WM_T?window.WM_T('msg.pasteLyricsFirst'):'Cole uma letra primeiro'));
       return;
     }
     // Limpa todos antes
@@ -28907,7 +28967,7 @@ function initEditor() {
       if (w.emphasized) { count++; w.emphasized = false; }
     })));
     if (count === 0) {
-      if (typeof showToast === 'function') showToast('Nenhum destaque pra limpar');
+      if (typeof showToast === 'function') showToast((window.WM_T?window.WM_T('msg.noHighlightClear'):'Nenhum destaque pra limpar'));
       return;
     }
     markDirty();
@@ -30019,7 +30079,7 @@ function initEditor() {
         }
       } else {
         if (typeof showToast === 'function') {
-          showToast('Marque pelo menos 2 palavras antes de distribuir');
+          showToast((window.WM_T?window.WM_T('msg.mark2Words'):'Marque pelo menos 2 palavras antes de distribuir'));
         }
       }
     });
@@ -30282,7 +30342,7 @@ function initEditor() {
       return;
     }
     if (!parsed || !parsed.stanzas || parsed.stanzas.length === 0) {
-      content.innerHTML = '<div style="padding:40px; text-align:center; color:rgba(255,255,255,0.5); font-size:13px;">Cole uma letra primeiro pra marcar palavras</div>';
+      content.innerHTML = '<div style="padding:40px; text-align:center; color:rgba(255,255,255,0.5); font-size:13px;">' + (window.WM_T?window.WM_T('msg.pasteToMark'):'Cole uma letra primeiro pra marcar palavras') + '</div>';
       const progEl = $('#marking-progress');
       if (progEl) progEl.textContent = '0/0';
       return;
@@ -30437,7 +30497,7 @@ function initEditor() {
         const audio = audioElement;
         // No modo "bater no ritmo" não precisa de áudio (usa o cronômetro).
         if (!_tapMode && (!audio || !audio.duration)) {
-          if (typeof showToast === 'function') showToast('Carregue um áudio ou use 🎵 Bater no ritmo');
+          if (typeof showToast === 'function') showToast((window.WM_T?window.WM_T('msg.loadAudioFirst'):'Carregue um áudio ou use 🎵 Bater no ritmo'));
           return;
         }
         const _t = _markClock();
@@ -30606,7 +30666,7 @@ function initEditor() {
   }
 
   async function resetAllMarks() {
-    if (!await wmConfirm('Apagar TODAS as marcações? Não tem desfazer.', { confirmText: 'Apagar', danger: true })) return;
+    if (!await wmConfirm((window.WM_T?window.WM_T('msg.clearAllMarks'):'Apagar TODAS as marcações? Não tem desfazer.'), { confirmText: 'Apagar', danger: true })) return;
     const parsed = engine?.parsed;
     if (!parsed) return;
     parsed.stanzas.forEach(s => s.lines.forEach(l => l.words.forEach(w => delete w.tStart)));
@@ -30839,9 +30899,9 @@ function initEditor() {
       // Plano pago: sobe pra nuvem (em segundo plano) pra a música seguir o
       // usuário entre dispositivos. Se falhar, fica só local, sem alarde.
       if (window.WM_AUDIO_CLOUD && window.WM_AUDIO_CLOUD.ehPago()) {
-        if (typeof showToast === 'function') showToast('Sincronizando música na nuvem…');
+        if (typeof showToast === 'function') showToast((window.WM_T?window.WM_T('msg.syncingMusic'):'Sincronizando música na nuvem…'));
         window.WM_AUDIO_CLOUD.upload(audioId, file, { name: file.name, type: file.type }).then((path) => {
-          if (path) { window.__currentAudioPath = path; markDirty(); if (typeof showToast === 'function') showToast('Música sincronizada na nuvem ☁️'); }
+          if (path) { window.__currentAudioPath = path; markDirty(); if (typeof showToast === 'function') showToast((window.WM_T?window.WM_T('msg.musicSynced'):'Música sincronizada na nuvem ☁️')); }
         });
       }
       const audio = getAudioElement();
@@ -30855,7 +30915,7 @@ function initEditor() {
     } catch (e) {
       console.error('Erro ao salvar áudio:', e);
       setAudioLoading(false);
-      showToast('Não consegui carregar esse áudio. Tenta outro.');
+      showToast((window.WM_T?window.WM_T('msg.audioLoadFail'):'Não consegui carregar esse áudio. Tenta outro.'));
     }
   }
 
@@ -30868,7 +30928,7 @@ function initEditor() {
     e.target.value = '';
   });
   $('#btn-audio-remove')?.addEventListener('click', async () => {
-    if (!await wmConfirm('Remover a música deste projeto?', { confirmText: 'Remover', danger: true })) return;
+    if (!await wmConfirm((window.WM_T?window.WM_T('msg.removeMusic'):'Remover a música deste projeto?'), { confirmText: (window.WM_T?window.WM_T('msg.btnRemove'):'Remover'), danger: true })) return;
     if (audioCurrentId && window.WM_AUDIO_STORAGE) {
       try { await window.WM_AUDIO_STORAGE.deleteAudio(audioCurrentId); } catch(e){}
     }
@@ -31310,7 +31370,7 @@ function initEditor() {
     overlay.addEventListener('click', (e) => { if (e.target === overlay) fechar(); });
     const btnLogout = card.querySelector('#wm-acc-logout');
     if (btnLogout) btnLogout.addEventListener('click', async () => {
-      if (!await wmConfirm('Deseja sair da sua conta?', { confirmText: 'Sair', cancelText: 'Ficar' })) return;
+      if (!await wmConfirm((window.WM_T?window.WM_T('msg.logout'):'Deseja sair da sua conta?'), { confirmText: (window.WM_T?window.WM_T('msg.btnLogout'):'Sair'), cancelText: (window.WM_T?window.WM_T('msg.btnStay'):'Ficar') })) return;
       try { if (window.wmSupabase) await window.wmSupabase.auth.signOut(); } catch (e) {}
       window.__wmPerfil = null;
       window.__wmSessaoPronta = false;
@@ -32386,7 +32446,7 @@ function initEditor() {
     try {
       state = JSON.parse(serializeEngineState());
     } catch (e) {
-      if (typeof showToast === 'function') showToast('Erro ao ler o projeto atual');
+      if (typeof showToast === 'function') showToast((window.WM_T?window.WM_T('msg.errorReadProject'):'Erro ao ler o projeto atual'));
       return;
     }
 
@@ -32489,7 +32549,7 @@ function initEditor() {
         } else {
           document.execCommand('copy');
         }
-        if (typeof showToast === 'function') showToast('Código copiado!');
+        if (typeof showToast === 'function') showToast((window.WM_T?window.WM_T('msg.codeCopied'):'Código copiado!'));
       } catch (e) {
         document.execCommand('copy');
       }
@@ -32862,7 +32922,7 @@ function initEditor() {
     const parsed = engine.parsed;
     if (!parsed || !parsed.stanzas || !parsed.stanzas.length) {
       if (typeof showToast === 'function') {
-        showToast('Adicione uma letra antes de aplicar o template');
+        showToast((window.WM_T?window.WM_T('msg.addLyricsTemplate'):'Adicione uma letra antes de aplicar o template'));
       }
       return;
     }
@@ -33462,7 +33522,7 @@ function initEditor() {
         const action = btn.dataset.action;
         const id = btn.dataset.id;
         if (action === 'delete') {
-          if (await wmConfirm('Excluir este projeto? Não dá pra desfazer.', { confirmText: 'Excluir', danger: true })) {
+          if (await wmConfirm((window.WM_T?window.WM_T('msg.deleteProject'):'Excluir este projeto? Não dá pra desfazer.'), { confirmText: (window.WM_T?window.WM_T('msg.btnDelete'):'Excluir'), danger: true })) {
             WM_STORAGE.delete(id);
             renderProjectList();
           }
@@ -33974,7 +34034,7 @@ function initEditor() {
     }
 
     if (!engine.parsed || !engine.parsed.stanzas || engine.parsed.stanzas.length === 0) {
-      await wmAlert('Cole uma letra e clique em "Gerar Lyric" antes de exportar.', { title: 'Nada pra exportar' });
+      await wmAlert((window.WM_T?window.WM_T('msg.exportFirst'):'Cole uma letra e clique em "Gerar Lyric" antes de exportar.'), { title: (window.WM_T?window.WM_T('msg.nothingExport'):'Nada pra exportar') });
       return;
     }
 
@@ -34005,7 +34065,7 @@ function initEditor() {
   async function closeExportModal() {
     // Se está gravando, para primeiro
     if (currentExporter && currentExporter.running) {
-      if (!await wmConfirm('Cancelar a exportação em andamento?', { confirmText: 'Cancelar exportação', cancelText: 'Continuar' })) return;
+      if (!await wmConfirm((window.WM_T?window.WM_T('msg.cancelExport'):'Cancelar a exportação em andamento?'), { confirmText: (window.WM_T?window.WM_T('msg.btnCancelExport'):'Cancelar exportação'), cancelText: (window.WM_T?window.WM_T('msg.btnContinue'):'Continuar') })) return;
       currentExporter.stop();
       currentExporter = null;
     }
