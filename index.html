@@ -6914,27 +6914,27 @@ Digno de toda honra"></textarea>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="9"/></svg>
             </div>
             <div class="anim-context-text">
-              Aplicando em: <strong id="anim-context-word">—</strong>
+              <span data-i18n="an.applyingIn">Aplicando em:</span> <strong id="anim-context-word">—</strong>
             </div>
-            <button class="anim-context-clear" id="anim-context-clear" title="Voltar pra estrofe">
+            <button class="anim-context-clear" id="anim-context-clear" data-i18n-attr="title:an.backToStanza" title="Voltar pra estrofe">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             </button>
           </div>
         </div>
 
         <div class="panel-section">
-          <div class="panel-section-title">Categoria</div>
+          <div class="panel-section-title" data-i18n="an.category">Categoria</div>
           <div class="anim-category-tabs">
-            <button class="anim-cat-tab active" data-cat="entrance">Entrada</button>
-            <button class="anim-cat-tab" data-cat="exit">Saída</button>
-            <button class="anim-cat-tab" data-cat="loop">Loop</button>
-            <button class="anim-cat-tab" data-cat="emphasis" style="display:none;">Destaque</button>
+            <button class="anim-cat-tab active" data-cat="entrance" data-i18n="an.entrance">Entrada</button>
+            <button class="anim-cat-tab" data-cat="exit" data-i18n="an.exit">Saída</button>
+            <button class="anim-cat-tab" data-cat="loop" data-i18n="an.loop">Loop</button>
+            <button class="anim-cat-tab" data-cat="emphasis" style="display:none;" data-i18n="an.emphasis">Destaque</button>
           </div>
         </div>
 
         <div class="panel-section">
           <button class="style-filter-toggle" id="style-filter-toggle" type="button">
-            <span>Filtrar por estilo</span>
+            <span data-i18n="an.filterStyle">Filtrar por estilo</span>
             <span class="badge" id="anim-count">0</span>
             <svg class="sft-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
           </button>
@@ -6944,11 +6944,11 @@ Digno de toda honra"></textarea>
         </div>
 
         <div class="panel-section">
-          <input type="text" class="anim-search-input" id="anim-search-input" placeholder="🔎 Buscar animação pelo nome..." autocomplete="off" />
+          <input type="text" class="anim-search-input" id="anim-search-input" data-i18n-attr="placeholder:an.searchPh" placeholder="🔎 Buscar animação pelo nome..." autocomplete="off" />
           <div class="anim-grid" id="anim-grid"></div>
           <button class="btn btn-secondary btn-sm" id="btn-anim-aplicar-todos" style="width:100%; margin-top:10px; display:none;">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:5px; vertical-align:-2px;"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-            Aplicar esta animação em todos os slides
+            <span data-i18n="an.applyAll">Aplicar esta animação em todos os slides</span>
           </button>
         </div>
       </div>
@@ -7091,18 +7091,18 @@ Digno de toda honra"></textarea>
   
   <aside class="editor-right">
     <div class="panel-tabs">
-      <button class="panel-tab active" data-rpanel="style">Efeitos</button>
-      <button class="panel-tab" data-rpanel="bg">Fundo &amp; Movimento</button>
-      <button class="panel-tab" data-rpanel="motion" style="display:none;">Motion</button>
-      <button class="panel-tab" data-rpanel="scenes" style="display:none;">Cenas</button>
-      <button class="panel-tab" data-rpanel="word" style="display:none;">Palavra</button>
+      <button class="panel-tab active" data-rpanel="style" data-i18n="rp.effects">Efeitos</button>
+      <button class="panel-tab" data-rpanel="bg" data-i18n="rp.bgMotion">Fundo &amp; Movimento</button>
+      <button class="panel-tab" data-rpanel="motion" style="display:none;" data-i18n="rp.motion">Motion</button>
+      <button class="panel-tab" data-rpanel="scenes" style="display:none;" data-i18n="rp.scenes">Cenas</button>
+      <button class="panel-tab" data-rpanel="word" style="display:none;" data-i18n="rp.word">Palavra</button>
     </div>
 
     <div class="panel-body">
       
       <div class="panel-content" data-rpanel-content="style">
         <div class="panel-section" style="display:none;">
-          <div class="panel-section-title">Fonte</div>
+          <div class="panel-section-title" data-i18n="rp.font">Fonte</div>
 
           
           <div class="font-tabs" id="font-tabs">
@@ -7162,29 +7162,29 @@ Digno de toda honra"></textarea>
         </div>
 
         <div class="panel-section" style="display:none;">
-          <div class="panel-section-title">Caixa</div>
+          <div class="panel-section-title" data-i18n="rp.case">Caixa</div>
           <div class="text-case-grid">
             <button class="text-case-btn" data-case="none" title="Como digitou">
               <span class="text-case-sample">Ab</span>
-              <span class="text-case-label">Original</span>
+              <span class="text-case-label" data-i18n="rp.caseOriginal">Original</span>
             </button>
             <button class="text-case-btn active" data-case="uppercase" title="Tudo maiúscula">
               <span class="text-case-sample">AB</span>
-              <span class="text-case-label">MAIÚSCULAS</span>
+              <span class="text-case-label" data-i18n="rp.caseUpper">MAIÚSCULAS</span>
             </button>
             <button class="text-case-btn" data-case="lowercase" title="Tudo minúscula">
               <span class="text-case-sample">ab</span>
-              <span class="text-case-label">minúsculas</span>
+              <span class="text-case-label" data-i18n="rp.caseLower">minúsculas</span>
             </button>
             <button class="text-case-btn" data-case="capitalize" title="Primeira letra de cada palavra">
               <span class="text-case-sample">Ab Cd</span>
-              <span class="text-case-label">Cada Palavra</span>
+              <span class="text-case-label" data-i18n="rp.caseTitle">Cada Palavra</span>
             </button>
           </div>
         </div>
 
         <div class="panel-section" style="display:none;">
-          <div class="panel-section-title">Tamanho</div>
+          <div class="panel-section-title" data-i18n="rp.size">Tamanho</div>
           <div style="display: flex; align-items: center; gap: var(--space-3);">
             <input type="range" class="range" id="font-size" min="20" max="140" value="64" style="flex:1">
             <span class="value-display" id="font-size-val">64</span>
@@ -7192,7 +7192,7 @@ Digno de toda honra"></textarea>
         </div>
 
         <div class="panel-section" style="display:none;">
-          <div class="panel-section-title">Peso</div>
+          <div class="panel-section-title" data-i18n="rp.weight">Peso</div>
           <div class="segmented" style="width:100%; display:flex;">
             <button data-weight="400" style="flex:1; padding:6px 4px;" title="Regular (400)">Reg</button>
             <button data-weight="500" style="flex:1; padding:6px 4px;" title="Medium (500)">Med</button>
@@ -7203,15 +7203,15 @@ Digno de toda honra"></textarea>
         </div>
 
         <div class="panel-section" style="display:none;">
-          <div class="panel-section-title">Estilo</div>
+          <div class="panel-section-title" data-i18n="rp.style">Estilo</div>
           <div class="segmented" style="width:100%; display:flex;">
-            <button class="active" id="style-roman-btn" style="flex:1; padding:6px 4px;" title="Normal">Normal</button>
-            <button id="style-italic-btn" style="flex:1; padding:6px 4px; font-style:italic;" title="Itálico">Itálico</button>
+            <button class="active" id="style-roman-btn" style="flex:1; padding:6px 4px;" title="Normal" data-i18n="rp.styleNormal">Normal</button>
+            <button id="style-italic-btn" style="flex:1; padding:6px 4px; font-style:italic;" title="Itálico" data-i18n="rp.styleItalic">Itálico</button>
           </div>
         </div>
 
         <div class="panel-section" style="display:none;">
-          <div class="panel-section-title">Cor do texto</div>
+          <div class="panel-section-title" data-i18n="rp.textColor">Cor do texto</div>
           <div class="color-swatches" id="color-swatches">
             <div class="color-swatch selected" data-color="#f4f4f7" style="background:#f4f4f7"></div>
             <div class="color-swatch" data-color="#ffffff" style="background:#ffffff"></div>
@@ -7227,7 +7227,7 @@ Digno de toda honra"></textarea>
         </div>
 
         <div class="panel-section">
-          <div class="panel-section-title">Brilho (Glow)</div>
+          <div class="panel-section-title" data-i18n="rp.glow">Brilho (Glow)</div>
           <div style="display: flex; align-items: center; gap: var(--space-3);">
             <input type="range" class="range" id="glow" min="0" max="60" value="12" style="flex:1">
             <span class="value-display" id="glow-val">12</span>
@@ -7235,7 +7235,7 @@ Digno de toda honra"></textarea>
         </div>
 
         <div class="panel-section">
-          <div class="panel-section-title">Cor do brilho</div>
+          <div class="panel-section-title" data-i18n="rp.glowColor">Cor do brilho</div>
           <div class="color-swatches" id="glow-swatches">
             <div class="color-swatch selected" data-glow-color="#8b5cf6" style="background:#8b5cf6"></div>
             <div class="color-swatch" data-glow-color="#d4a857" style="background:#d4a857"></div>
@@ -7249,7 +7249,7 @@ Digno de toda honra"></textarea>
         </div>
 
         <div class="panel-section">
-          <div class="panel-section-title">Contorno (Outline)</div>
+          <div class="panel-section-title" data-i18n="rp.outline">Contorno (Outline)</div>
           <div style="display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-3);">
             <input type="range" class="range" id="outline" min="0" max="8" step="0.5" value="0" style="flex:1">
             <span class="value-display" id="outline-val">0</span>
@@ -7268,7 +7268,7 @@ Digno de toda honra"></textarea>
         </div>
 
         <div class="panel-section">
-          <div class="panel-section-title">Sombra projetada</div>
+          <div class="panel-section-title" data-i18n="rp.dropShadow">Sombra projetada</div>
           <div style="display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-3);">
             <input type="range" class="range" id="shadow" min="0" max="30" value="0" style="flex:1">
             <span class="value-display" id="shadow-val">0</span>
@@ -7301,13 +7301,13 @@ Digno de toda honra"></textarea>
         </div>
 
         <div class="panel-section" style="display:none;">
-          <div class="panel-section-title">Espaçamento</div>
-          <label class="label" style="font-size: 10px; margin-bottom: var(--space-1); display:block;">Entre letras <span style="color:var(--text-tertiary); font-weight:400;">(estrofe toda)</span></label>
+          <div class="panel-section-title" data-i18n="rp.spacing">Espaçamento</div>
+          <label class="label" style="font-size: 10px; margin-bottom: var(--space-1); display:block;"><span data-i18n="rp.letterSpacing">Entre letras</span> <span data-i18n="rp.wholeStanza" style="color:var(--text-tertiary); font-weight:400;">(estrofe toda)</span></label>
           <div style="display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-3);">
             <input type="range" class="range" id="letter-spacing" min="-5" max="20" value="-2" style="flex:1">
             <span class="value-display" id="letter-spacing-val">-0.02em</span>
           </div>
-          <label class="label" style="font-size: 10px; margin-bottom: var(--space-1); display:block;">Entre linhas</label>
+          <label class="label" style="font-size: 10px; margin-bottom: var(--space-1); display:block;" data-i18n="rp.lineSpacing">Entre linhas</label>
           <div style="display: flex; align-items: center; gap: var(--space-3);">
             <input type="range" class="range" id="line-height" min="100" max="200" value="112" style="flex:1">
             <span class="value-display" id="line-height-val">1.12</span>
@@ -7318,7 +7318,7 @@ Digno de toda honra"></textarea>
       
       <div class="panel-content" data-rpanel-content="bg" style="display:none;">
         <div class="panel-section">
-          <div class="panel-section-title">Background</div>
+          <div class="panel-section-title" data-i18n="bg.title">Background</div>
           <div class="color-swatches" id="bg-swatches" style="grid-template-columns: repeat(5, 1fr);">
             <div class="color-swatch selected" data-bg="brand" style="background: linear-gradient(135deg, #8b5cf6, #3b82f6)"></div>
             <div class="color-swatch" data-bg="divine" style="background: linear-gradient(135deg, #d4a857, #8b5cf6)"></div>
@@ -7339,7 +7339,7 @@ Digno de toda honra"></textarea>
           <div id="bg-apply-buttons" style="margin-top: 12px; display: none; flex-direction: column; gap: 6px;">
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px;">
               <p style="font-size: 10.5px; color: var(--text-secondary); margin: 0; font-weight: 500;">
-                Onde aplicar?
+                <span data-i18n="bg.whereApply">Onde aplicar?</span>
               </p>
               <span style="font-size: 10px; color: var(--text-tertiary);">
                 Estrofe <span id="apply-stanza-num">1</span> de <span id="apply-total-stanzas">1</span>
@@ -7748,7 +7748,7 @@ Digno de toda honra"></textarea>
   <div class="modal export-modal">
     <div class="modal-header">
       <div>
-        <div class="modal-title" id="export-modal-title">Exportar vídeo</div>
+        <div class="modal-title" id="export-modal-title" data-i18n="ex.title">Exportar vídeo</div>
         <div class="modal-subtitle" id="export-modal-subtitle">Exportando vídeo em MP4...</div>
       </div>
       <button class="icon-btn" id="export-modal-close" data-tooltip="Fechar">
@@ -7761,72 +7761,71 @@ Digno de toda honra"></textarea>
       <div id="export-form-state">
         <div class="export-form">
           <div class="export-row">
-            <label class="label">O que exportar</label>
+            <label class="label" data-i18n="ex.whatToExport">O que exportar</label>
             <div class="segmented" id="export-scope" style="width: 100%;">
-              <button class="active" data-scope="all" style="flex:1">Projeto inteiro</button>
-              <button data-scope="one" style="flex:1">Slides específicos</button>
-              <button data-scope="trecho" style="flex:1">Só o trecho</button>
+              <button class="active" data-scope="all" style="flex:1" data-i18n="ex.wholeProject">Projeto inteiro</button>
+              <button data-scope="one" style="flex:1" data-i18n="ex.specificSlides">Slides específicos</button>
+              <button data-scope="trecho" style="flex:1" data-i18n="ex.onlyRange">Só o trecho</button>
             </div>
             <div id="export-trecho-info" style="display:none; margin-top: var(--space-3); font-size: 11px; color: var(--text-tertiary);">
-              Exporta só o trecho dos slides marcados (do 1º ao último), com o áudio sincronizado daquele pedaço. Ideal pra correções rápidas sem renderizar o áudio inteiro.
+              <span data-i18n="ex.rangeInfo">Exporta só o trecho dos slides marcados (do 1º ao último), com o áudio sincronizado daquele pedaço. Ideal pra correções rápidas sem renderizar o áudio inteiro.</span>
             </div>
             <div id="export-slide-picker-row" style="display:none; margin-top: var(--space-3);">
-              <label class="label">Quais slides exportar</label>
+              <label class="label" data-i18n="ex.whichSlides">Quais slides exportar</label>
               <div id="export-slide-checklist" style="max-height:180px; overflow-y:auto; border:1px solid var(--border-default); border-radius:8px; padding:6px; display:flex; flex-direction:column; gap:2px;"></div>
               <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px;">
                 <div style="display:flex; gap:10px;">
-                  <button type="button" id="export-slides-all" style="background:none; border:none; color:var(--accent, #8b5cf6); font-size:11px; cursor:pointer; padding:0;">Marcar todos</button>
-                  <button type="button" id="export-slides-none" style="background:none; border:none; color:var(--text-tertiary); font-size:11px; cursor:pointer; padding:0;">Limpar</button>
+                  <button type="button" id="export-slides-all" style="background:none; border:none; color:var(--accent, #8b5cf6); font-size:11px; cursor:pointer; padding:0;" data-i18n="ex.markAll">Marcar todos</button>
+                  <button type="button" id="export-slides-none" style="background:none; border:none; color:var(--text-tertiary); font-size:11px; cursor:pointer; padding:0;" data-i18n="ex.clear">Limpar</button>
                 </div>
                 <span id="export-slides-count" style="font-size:11px; color:var(--text-tertiary);">0 selecionados</span>
               </div>
               <span style="font-size: 11px; color: var(--text-tertiary); margin-top: 4px; display:block;">
-                Cada slide exportado custa 1 crédito. Marque os que quer exportar.
+                <span data-i18n="ex.creditNote">Cada slide exportado custa 1 crédito. Marque os que quer exportar.</span>
               </span>
             </div>
           </div>
 
           <div class="export-row">
-            <label class="label">Tempo por estrofe</label>
+            <label class="label" data-i18n="ex.timePerStanza">Tempo por estrofe</label>
             <div style="display: flex; align-items: center; gap: var(--space-3);">
               <input type="range" class="range" id="export-stanza-dur" min="3" max="12" step="0.5" value="5" style="flex:1">
               <span class="value-display" id="export-stanza-dur-val">5.0s</span>
             </div>
             <span style="font-size: 11px; color: var(--text-tertiary); margin-top: 4px;">
-              Define quanto tempo cada estrofe fica visível antes de trocar.
+              <span data-i18n="ex.timeNote">Define quanto tempo cada estrofe fica visível antes de trocar.</span>
             </span>
           </div>
 
           <div class="export-row">
-            <label class="label">Qualidade</label>
+            <label class="label" data-i18n="ex.quality">Qualidade</label>
             <div class="segmented" id="export-quality" style="width: 100%; flex-wrap: wrap;">
-              <button data-preset="reels" style="flex:1 1 30%">Reels (720p)</button>
-              <button class="active" data-preset="smooth" style="flex:1 1 30%">Suave (1080p)</button>
-              <button data-preset="cinema" style="flex:1 1 30%">Cinema (1080p 30fps)</button>
-              <button data-preset="qhd" style="flex:1 1 45%">Nítido (1440p)</button>
-              <button data-preset="uhd" style="flex:1 1 45%">Máximo (4K)</button>
+              <button data-preset="reels" style="flex:1 1 30%" data-i18n="ex.qReels">Reels (720p)</button>
+              <button class="active" data-preset="smooth" style="flex:1 1 30%" data-i18n="ex.qSmooth">Suave (1080p)</button>
+              <button data-preset="cinema" style="flex:1 1 30%" data-i18n="ex.qCinema">Cinema (1080p 30fps)</button>
+              <button data-preset="qhd" style="flex:1 1 45%" data-i18n="ex.qSharp">Nítido (1440p)</button>
+              <button data-preset="uhd" style="flex:1 1 45%" data-i18n="ex.qMax">Máximo (4K)</button>
             </div>
             <span style="font-size: 11px; color: var(--text-tertiary); margin-top: 4px;">
-              "Suave" é recomendado pro dia a dia. "Nítido" e "Máximo" deixam as letras
-              mais definidas em telas grandes, mas demoram mais pra exportar.
+              <span data-i18n="ex.qualityNote">"Suave" é recomendado pro dia a dia. "Nítido" e "Máximo" deixam as letras mais definidas em telas grandes, mas demoram mais pra exportar.</span>
             </span>
           </div>
 
           <div class="export-summary" id="export-summary">
             <div class="export-summary-row">
-              <span class="label">Resolução</span>
+              <span class="label" data-i18n="ex.resolution">Resolução</span>
               <span class="value" id="export-resolution">1920×1080</span>
             </div>
             <div class="export-summary-row">
-              <span class="label">Duração total</span>
+              <span class="label" data-i18n="ex.totalDuration">Duração total</span>
               <span class="value" id="export-duration">0:00</span>
             </div>
             <div class="export-summary-row">
-              <span class="label">Formato</span>
+              <span class="label" data-i18n="ex.format">Formato</span>
               <span class="value" id="export-format">WebM</span>
             </div>
             <div class="export-summary-row">
-              <span class="label">Tamanho estimado</span>
+              <span class="label" data-i18n="ex.estSize">Tamanho estimado</span>
               <span class="value" id="export-filesize">~0 MB</span>
             </div>
           </div>
@@ -7885,21 +7884,21 @@ Digno de toda honra"></textarea>
         <div class="export-done-icon">
           <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
         </div>
-        <div class="export-done-title">Vídeo pronto!</div>
+        <div class="export-done-title" data-i18n="ex.done">Vídeo pronto!</div>
         <div class="export-done-subtitle" id="export-done-subtitle">O download deve começar automaticamente. Se não, clique abaixo.</div>
         <div id="export-files-list" style="display:none; flex-direction:column; gap:8px; width:100%; max-width:360px; margin:0 auto 14px;"></div>
         <button class="btn btn-primary btn-lg" id="btn-download-again">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          Baixar novamente
+          <span data-i18n="ex.downloadAgain">Baixar novamente</span>
         </button>
-        <button class="btn btn-ghost btn-sm" id="btn-export-new">Exportar outro</button>
+        <button class="btn btn-ghost btn-sm" id="btn-export-new" data-i18n="ex.exportAnother">Exportar outro</button>
       </div>
     </div>
 
     <div class="export-footer" id="export-footer">
       <button class="btn btn-primary btn-lg" id="btn-start-export">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="6"/></svg>
-        Iniciar gravação
+        <span data-i18n="ex.startRecording">Iniciar gravação</span>
       </button>
     </div>
   </div>
@@ -8051,7 +8050,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'i18n-painel-letra-24jul';
+window.__WM_BUILD = 'i18n-editor-paineis-24jul';
 
 /* ============================================================
    MOTOR DE IDIOMAS (i18n) — Parte 1: a fiação
@@ -8171,6 +8170,83 @@ window.__WM_BUILD = 'i18n-painel-letra-24jul';
     // "N selecionada(s)" montado no JS
     'ly.selectedOne':   { pt: '1 selecionada', en: '1 selected', es: '1 seleccionada' },
     'ly.selectedN':     { pt: '{n} selecionadas', en: '{n} selected', es: '{n} seleccionadas' },
+
+    // ================= EDITOR — painel de ANIMAÇÕES =================
+    'an.applyingIn':    { pt: 'Aplicando em:', en: 'Applying to:', es: 'Aplicando en:' },
+    'an.backToStanza':  { pt: 'Voltar pra estrofe', en: 'Back to stanza', es: 'Volver a la estrofa' },
+    'an.category':      { pt: 'Categoria', en: 'Category', es: 'Categoría' },
+    'an.entrance':      { pt: 'Entrada', en: 'Entrance', es: 'Entrada' },
+    'an.exit':          { pt: 'Saída', en: 'Exit', es: 'Salida' },
+    'an.loop':          { pt: 'Loop', en: 'Loop', es: 'Bucle' },
+    'an.emphasis':      { pt: 'Destaque', en: 'Emphasis', es: 'Énfasis' },
+    'an.filterStyle':   { pt: 'Filtrar por estilo', en: 'Filter by style', es: 'Filtrar por estilo' },
+    'an.searchPh':      { pt: '🔎 Buscar animação pelo nome...', en: '🔎 Search animation by name...', es: '🔎 Buscar animación por nombre...' },
+    'an.applyAll':      { pt: 'Aplicar esta animação em todos os slides', en: 'Apply this animation to all slides', es: 'Aplicar esta animación a todas las diapositivas' },
+
+    // ================= EDITOR — painel direito (abas + estilo) =================
+    'rp.effects':       { pt: 'Efeitos', en: 'Effects', es: 'Efectos' },
+    'rp.bgMotion':      { pt: 'Fundo & Movimento', en: 'Background & Motion', es: 'Fondo y Movimiento' },
+    'rp.motion':        { pt: 'Motion', en: 'Motion', es: 'Movimiento' },
+    'rp.scenes':        { pt: 'Cenas', en: 'Scenes', es: 'Escenas' },
+    'rp.word':          { pt: 'Palavra', en: 'Word', es: 'Palabra' },
+    'rp.font':          { pt: 'Fonte', en: 'Font', es: 'Fuente' },
+    'rp.case':          { pt: 'Caixa', en: 'Case', es: 'Mayúsculas' },
+    'rp.caseOriginal':  { pt: 'Original', en: 'Original', es: 'Original' },
+    'rp.caseUpper':     { pt: 'MAIÚSCULAS', en: 'UPPERCASE', es: 'MAYÚSCULAS' },
+    'rp.caseLower':     { pt: 'minúsculas', en: 'lowercase', es: 'minúsculas' },
+    'rp.caseTitle':     { pt: 'Cada Palavra', en: 'Title Case', es: 'Cada Palabra' },
+    'rp.size':          { pt: 'Tamanho', en: 'Size', es: 'Tamaño' },
+    'rp.weight':        { pt: 'Peso', en: 'Weight', es: 'Grosor' },
+    'rp.style':         { pt: 'Estilo', en: 'Style', es: 'Estilo' },
+    'rp.styleNormal':   { pt: 'Normal', en: 'Normal', es: 'Normal' },
+    'rp.styleItalic':   { pt: 'Itálico', en: 'Italic', es: 'Cursiva' },
+    'rp.textColor':     { pt: 'Cor do texto', en: 'Text color', es: 'Color del texto' },
+    'rp.glow':          { pt: 'Brilho (Glow)', en: 'Glow', es: 'Brillo (Glow)' },
+    'rp.glowColor':     { pt: 'Cor do brilho', en: 'Glow color', es: 'Color del brillo' },
+    'rp.outline':       { pt: 'Contorno (Outline)', en: 'Outline', es: 'Contorno (Outline)' },
+    'rp.dropShadow':    { pt: 'Sombra projetada', en: 'Drop shadow', es: 'Sombra proyectada' },
+    'rp.spacing':       { pt: 'Espaçamento', en: 'Spacing', es: 'Espaciado' },
+    'rp.letterSpacing': { pt: 'Entre letras', en: 'Letter spacing', es: 'Entre letras' },
+    'rp.wholeStanza':   { pt: '(estrofe toda)', en: '(whole stanza)', es: '(toda la estrofa)' },
+    'rp.lineSpacing':   { pt: 'Entre linhas', en: 'Line spacing', es: 'Entre líneas' },
+
+    // ================= EDITOR — Background =================
+    'bg.title':         { pt: 'Background', en: 'Background', es: 'Fondo' },
+    'bg.whereApply':    { pt: 'Onde aplicar?', en: 'Where to apply?', es: '¿Dónde aplicar?' },
+    'bg.grainStanza':   { pt: 'Estrofe', en: 'Stanza', es: 'Estrofa' },
+    'bg.grainLine':     { pt: 'Linha', en: 'Line', es: 'Línea' },
+    'bg.grainWord':     { pt: 'Palavra', en: 'Word', es: 'Palabra' },
+    'bg.grainLetter':   { pt: 'Letra', en: 'Letter', es: 'Letra' },
+
+    // ================= EDITOR — modal de EXPORTAÇÃO =================
+    'ex.title':         { pt: 'Exportar vídeo', en: 'Export video', es: 'Exportar video' },
+    'ex.whatToExport':  { pt: 'O que exportar', en: 'What to export', es: 'Qué exportar' },
+    'ex.wholeProject':  { pt: 'Projeto inteiro', en: 'Whole project', es: 'Proyecto entero' },
+    'ex.specificSlides':{ pt: 'Slides específicos', en: 'Specific slides', es: 'Diapositivas específicas' },
+    'ex.onlyRange':     { pt: 'Só o trecho', en: 'Range only', es: 'Solo el tramo' },
+    'ex.rangeInfo':     { pt: 'Exporta só o trecho dos slides marcados (do 1º ao último), com o áudio sincronizado daquele pedaço. Ideal pra correções rápidas sem renderizar o áudio inteiro.', en: 'Exports only the range of selected slides (first to last), with the audio synced to that section. Ideal for quick fixes without rendering the whole audio.', es: 'Exporta solo el tramo de las diapositivas marcadas (de la 1ª a la última), con el audio sincronizado de esa parte. Ideal para correcciones rápidas sin renderizar todo el audio.' },
+    'ex.whichSlides':   { pt: 'Quais slides exportar', en: 'Which slides to export', es: 'Qué diapositivas exportar' },
+    'ex.markAll':       { pt: 'Marcar todos', en: 'Select all', es: 'Marcar todas' },
+    'ex.clear':         { pt: 'Limpar', en: 'Clear', es: 'Limpiar' },
+    'ex.selectedN':     { pt: '0 selecionados', en: '0 selected', es: '0 seleccionadas' },
+    'ex.creditNote':    { pt: 'Cada slide exportado custa 1 crédito. Marque os que quer exportar.', en: 'Each exported slide costs 1 credit. Select the ones you want to export.', es: 'Cada diapositiva exportada cuesta 1 crédito. Marca las que quieras exportar.' },
+    'ex.timePerStanza': { pt: 'Tempo por estrofe', en: 'Time per stanza', es: 'Tiempo por estrofa' },
+    'ex.timeNote':      { pt: 'Define quanto tempo cada estrofe fica visível antes de trocar.', en: 'Sets how long each stanza stays visible before switching.', es: 'Define cuánto tiempo cada estrofa queda visible antes de cambiar.' },
+    'ex.quality':       { pt: 'Qualidade', en: 'Quality', es: 'Calidad' },
+    'ex.qualityNote':   { pt: '"Suave" é recomendado pro dia a dia. "Nítido" e "Máximo" deixam as letras mais definidas em telas grandes, mas demoram mais pra exportar.', en: '"Smooth" is recommended for everyday use. "Sharp" and "Max" make the lyrics crisper on large screens, but take longer to export.', es: '"Suave" es lo recomendado para el día a día. "Nítido" y "Máximo" dejan las letras más definidas en pantallas grandes, pero tardan más en exportar.' },
+    'ex.resolution':    { pt: 'Resolução', en: 'Resolution', es: 'Resolución' },
+    'ex.totalDuration': { pt: 'Duração total', en: 'Total duration', es: 'Duración total' },
+    'ex.format':        { pt: 'Formato', en: 'Format', es: 'Formato' },
+    'ex.estSize':       { pt: 'Tamanho estimado', en: 'Estimated size', es: 'Tamaño estimado' },
+    'ex.qReels':        { pt: 'Reels (720p)', en: 'Reels (720p)', es: 'Reels (720p)' },
+    'ex.qSmooth':       { pt: 'Suave (1080p)', en: 'Smooth (1080p)', es: 'Suave (1080p)' },
+    'ex.qCinema':       { pt: 'Cinema (1080p 30fps)', en: 'Cinema (1080p 30fps)', es: 'Cine (1080p 30fps)' },
+    'ex.qSharp':        { pt: 'Nítido (1440p)', en: 'Sharp (1440p)', es: 'Nítido (1440p)' },
+    'ex.qMax':          { pt: 'Máximo (4K)', en: 'Max (4K)', es: 'Máximo (4K)' },
+    'ex.done':          { pt: 'Vídeo pronto!', en: 'Video ready!', es: '¡Video listo!' },
+    'ex.downloadAgain': { pt: 'Baixar novamente', en: 'Download again', es: 'Descargar de nuevo' },
+    'ex.exportAnother': { pt: 'Exportar outro', en: 'Export another', es: 'Exportar otro' },
+    'ex.startRecording':{ pt: 'Iniciar gravação', en: 'Start recording', es: 'Iniciar grabación' },
   };
   window.WM_I18N_DIC = DIC;
 
