@@ -7087,15 +7087,15 @@ Digno de toda honra"></textarea>
         <span data-i18n="ctx.fontsTitle">Fontes</span>
         <button class="ctx-btn ctx-mini" id="ctx-fonts-close" aria-label="Fechar">×</button>
       </div>
-      <input type="text" class="ctx-fonts-search" id="ctx-fonts-search" placeholder="Buscar fonte…">
+      <input type="text" class="ctx-fonts-search" id="ctx-fonts-search" placeholder="Buscar fonte…" data-i18n-attr="placeholder:fp.searchFont">
       <button class="ctx-fonts-upload" id="ctx-fonts-upload">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-        Carregar fonte do computador
+        <span data-i18n="fp.loadFont">Carregar fonte do computador</span>
       </button>
       <button class="ctx-fonts-buypack" id="ctx-fonts-buypack"
-        onclick="if(window.WM_FONT_PACK_URL){window.open(window.WM_FONT_PACK_URL,'_blank');}else{(window.wmAlert||window.alert)('Link do pack em breve!');}">
+        onclick="if(window.WM_FONT_PACK_URL){window.open(window.WM_FONT_PACK_URL,'_blank');}else{(window.wmAlert||window.alert)((window.WM_T?window.WM_T('fp.packSoon'):'Link do pack em breve!'));}">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-        Adquirir Pack de Fontes
+        <span data-i18n="fp.buyFontPack">Adquirir Pack de Fontes</span>
       </button>
       <div class="ctx-fonts-list" id="ctx-fonts-list"></div>
     </div>
@@ -7405,12 +7405,12 @@ Digno de toda honra"></textarea>
           <input type="file" id="custom-bg-input" accept=".jpg,.jpeg,.png,.webp,.mp4,.webm,.mov,image/*,video/*" style="display:none" multiple />
           <button class="btn btn-ghost btn-sm" id="btn-upload-bg" style="margin-top: 8px; width: 100%;">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Adicionar background (imagem ou vídeo)
+            <span data-i18n="fp.addBg">Adicionar background (imagem ou vídeo)</span>
           </button>
           <button class="ctx-fonts-buypack" id="btn-buy-loops" style="margin-top: 8px;"
-            onclick="if(window.WM_LOOP_PACK_URL){window.open(window.WM_LOOP_PACK_URL,'_blank');}else{(window.wmAlert||window.alert)('Link do pack em breve!');}">
+            onclick="if(window.WM_LOOP_PACK_URL){window.open(window.WM_LOOP_PACK_URL,'_blank');}else{(window.wmAlert||window.alert)((window.WM_T?window.WM_T('fp.packSoon'):'Link do pack em breve!'));}">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-            Adquirir Pack de Loops
+            <span data-i18n="fp.buyLoopPack">Adquirir Pack de Loops</span>
           </button>
         </div>
       </div>
@@ -8091,7 +8091,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'seletor-portal-fix-24jul';
+window.__WM_BUILD = 'i18n-packs-24jul';
 
 /* ============================================================
    MOTOR DE IDIOMAS (i18n) — Parte 1: a fiação
@@ -8490,6 +8490,12 @@ window.__WM_BUILD = 'seletor-portal-fix-24jul';
     'md.height':        { pt: 'Altura (px)', en: 'Height (px)', es: 'Alto (px)' },
     'md.videosTitle':   { pt: 'Videoaulas', en: 'Tutorials', es: 'Videotutoriales' },
     'md.videosSub':     { pt: 'Aprenda a usar o app, adicionar fontes, backgrounds e loops', en: 'Learn to use the app, add fonts, backgrounds and loops', es: 'Aprende a usar la app, añadir fuentes, fondos y loops' },
+    'fp.searchFont':    { pt: 'Buscar fonte…', en: 'Search font…', es: 'Buscar fuente…' },
+    'fp.loadFont':      { pt: 'Carregar fonte do computador', en: 'Load font from computer', es: 'Cargar fuente del ordenador' },
+    'fp.buyFontPack':   { pt: 'Adquirir Pack de Fontes', en: 'Get Font Pack', es: 'Obtener Pack de Fuentes' },
+    'fp.addBg':         { pt: 'Adicionar background (imagem ou vídeo)', en: 'Add background (image or video)', es: 'Añadir fondo (imagen o video)' },
+    'fp.buyLoopPack':   { pt: 'Adquirir Pack de Loops', en: 'Get Loop Pack', es: 'Obtener Pack de Loops' },
+    'fp.packSoon':      { pt: 'Link do pack em breve!', en: 'Pack link coming soon!', es: '¡Enlace del pack muy pronto!' },
     'md.noVideos':      { pt: 'Nenhuma videoaula ainda', en: 'No tutorials yet', es: 'Aún no hay videotutoriales' },
     'md.noVideosSub':   { pt: 'As aulas vão aparecer aqui assim que forem adicionadas.', en: 'Tutorials will show up here as soon as they are added.', es: 'Los tutoriales aparecerán aquí en cuanto se añadan.' },
     'md.compareTitle':  { pt: 'Comparar fontes', en: 'Compare fonts', es: 'Comparar fuentes' },
