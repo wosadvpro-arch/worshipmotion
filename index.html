@@ -8084,7 +8084,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'seletor-touchend-fix-24jul';
+window.__WM_BUILD = 'diag-seletor+config-24jul';
 
 /* ============================================================
    MOTOR DE IDIOMAS (i18n) — Parte 1: a fiação
@@ -8405,6 +8405,19 @@ window.__WM_BUILD = 'seletor-touchend-fix-24jul';
     'dyn.clearBeatTip2':{ pt: 'Limpar marcações desta estrofe', en: 'Clear markings of this stanza', es: 'Limpiar las marcaciones de esta estrofa' },
     'dyn.creditsMonth': { pt: 'Créditos este mês', en: 'Credits this month', es: 'Créditos este mes' },
     'dyn.settings':     { pt: 'Configurações', en: 'Settings', es: 'Configuración' },
+    'set.pcFonts':      { pt: 'Fontes do computador', en: 'Computer fonts', es: 'Fuentes del ordenador' },
+    'set.reloadFonts':  { pt: 'Recarregar fontes do computador', en: 'Reload computer fonts', es: 'Recargar fuentes del ordenador' },
+    'set.shortcuts':    { pt: 'Atalhos de teclado', en: 'Keyboard shortcuts', es: 'Atajos de teclado' },
+    'set.scPlay':       { pt: 'tocar animação', en: 'play animation', es: 'reproducir animación' },
+    'set.scNav':        { pt: 'navegar entre slides', en: 'navigate between slides', es: 'navegar entre diapositivas' },
+    'set.scSave':       { pt: 'salvar projeto', en: 'save project', es: 'guardar proyecto' },
+    'set.scUndo':       { pt: 'desfazer', en: 'undo', es: 'deshacer' },
+    'set.tip':          { pt: 'Dica', en: 'Tip', es: 'Consejo' },
+    'set.tipText':      { pt: 'Se as fontes personalizadas não aparecerem, clique em "Recarregar fontes" acima e permita o acesso quando o navegador pedir.', en: 'If your custom fonts don\'t show up, click "Reload fonts" above and allow access when the browser asks.', es: 'Si tus fuentes personalizadas no aparecen, haz clic en "Recargar fuentes" arriba y permite el acceso cuando el navegador lo pida.' },
+    'set.loading':      { pt: 'Carregando...', en: 'Loading...', es: 'Cargando...' },
+    'set.fontsNotLoaded':{ pt: 'Fontes do computador não carregadas ainda', en: 'Computer fonts not loaded yet', es: 'Fuentes del ordenador aún no cargadas' },
+    'set.spaceKey':     { pt: 'Espaço', en: 'Space', es: 'Espacio' },
+    'set.myAccount':    { pt: 'Minha conta', en: 'My account', es: 'Mi cuenta' },
     'dyn.copyCode':     { pt: 'Copiar código', en: 'Copy code', es: 'Copiar código' },
     'dyn.applyAnyway':  { pt: 'Aplicar mesmo assim', en: 'Apply anyway', es: 'Aplicar de todos modos' },
     'dyn.whereApplyAnim':{ pt: 'Onde quer aplicar essa animação?', en: 'Where do you want to apply this animation?', es: '¿Dónde quieres aplicar esta animación?' },
@@ -8626,48 +8639,72 @@ window.__WM_BUILD = 'seletor-touchend-fix-24jul';
   // liga qualquer seletor de bandeira .wm-lang ao motor
   function ligarSeletores() {
     _sincronizarSeletores();
-    document.querySelectorAll('.wm-lang').forEach(w => {
+
+    // ===== PROBE DE DIAGNÓSTICO (temporário) =====
+    // Mostra na tela cada evento que o seletor recebe, pra enxergar o que o
+    // iPhone faz de verdade (o Chromium não reproduz os bugs de toque do iOS).
+    let _probe = document.getElementById('__wm_probe');
+    if (!_probe) {
+      _probe = document.createElement('div');
+      _probe.id = '__wm_probe';
+      _probe.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;background:#0a0a14;color:#5ee;font:600 12px/1.4 monospace;padding:6px 10px;border-bottom:2px solid #5ee;max-height:38vh;overflow:auto;white-space:pre-wrap;pointer-events:none;';
+      document.body.appendChild(_probe);
+    }
+    let _log = [];
+    const probe = (msg) => {
+      const t = new Date().toLocaleTimeString('pt-BR', {hour12:false}) + '.' + String(Date.now()%1000).padStart(3,'0');
+      _log.unshift(t + '  ' + msg);
+      _log = _log.slice(0, 12);
+      _probe.textContent = 'DIAG SELETOR (toque e me mande print)\n' + _log.join('\n');
+    };
+    probe('pronto. idioma atual=' + idiomaAtual + ' | seletores=' + document.querySelectorAll('.wm-lang').length);
+
+    document.querySelectorAll('.wm-lang').forEach((w, wi) => {
       if (w.__wmLigado) return;
       w.__wmLigado = true;
       const btn = w.querySelector('.wm-lang-btn');
-      const abrir = (v) => { w.classList.toggle('is-open', v); if (btn) btn.setAttribute('aria-expanded', v ? 'true' : 'false'); };
+      const abrir = (v) => { w.classList.toggle('is-open', v); if (btn) btn.setAttribute('aria-expanded', v ? 'true' : 'false'); probe('  → menu ' + (v?'ABERTO':'fechado')); };
 
-      // No iOS/WebKit um toque gera touchend E click. Guardamos o instante do
-      // último touchend pra ignorar o click redundante que vem logo depois.
       let _tBtn = 0;
       const alternar = (e) => {
+        probe('BOTÃO recebeu: ' + e.type + ' (seletor #' + wi + ')');
         if (e.type === 'touchend') { _tBtn = Date.now(); }
-        else if (Date.now() - _tBtn < 700) { return; } // ignora click pós-touch
+        else if (Date.now() - _tBtn < 700) { probe('  (click ignorado, veio após touch)'); return; }
         e.stopPropagation();
         abrir(!w.classList.contains('is-open'));
         w.__wmUltimoGesto = Date.now();
       };
       if (btn) {
+        btn.addEventListener('touchstart', () => probe('BOTÃO recebeu: touchstart'));
         btn.addEventListener('touchend', alternar);
         btn.addEventListener('click', alternar);
       }
 
-      // Escolher idioma — mesma proteção touchend/click.
       w.querySelectorAll('.wm-lang-opt').forEach(o => {
+        const lang0 = o.getAttribute('data-lang');
         let _tOpt = 0;
         const escolher = (e) => {
+          probe('OPÇÃO ' + lang0 + ' recebeu: ' + e.type);
           if (e.type === 'touchend') { _tOpt = Date.now(); }
-          else if (Date.now() - _tOpt < 700) { return; }
+          else if (Date.now() - _tOpt < 700) { probe('  (click ignorado)'); return; }
           e.stopPropagation();
           const lang = o.getAttribute('data-lang');
           w.__wmUltimoGesto = Date.now();
           abrir(false);
+          probe('  → chamando definir(' + lang + ')');
           definir(lang);
+          probe('  → idioma agora=' + idiomaAtual);
         };
+        o.addEventListener('touchstart', () => probe('OPÇÃO ' + lang0 + ' recebeu: touchstart'));
         o.addEventListener('touchend', escolher);
         o.addEventListener('click', escolher);
       });
 
-      // Fechar ao tocar/clicar fora — ignora o gesto que acabou de abrir.
       const fecharFora = (e) => {
         if (!w.classList.contains('is-open')) return;
         if (w.contains(e.target)) return;
         if (Date.now() - (w.__wmUltimoGesto || 0) < 400) return;
+        probe('fechar-fora disparou (' + e.type + ')');
         abrir(false);
       };
       document.addEventListener('touchend', fecharFora);
@@ -31372,7 +31409,7 @@ function initEditor() {
     const inicial = (email && email[0]) ? email[0].toUpperCase() : '\u{1F464}';
 
     card.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">'
-      + '  <h3 style="margin:0;font-size:18px;font-weight:600;">Minha conta</h3>'
+      + '  <h3 style="margin:0;font-size:18px;font-weight:600;">'+(window.WM_T?window.WM_T('set.myAccount'):'Minha conta')+'</h3>'
       + '  <button id="wm-acc-close" style="background:none;border:none;color:#a0a0aa;font-size:22px;cursor:pointer;line-height:1;">&times;</button>'
       + '</div>'
       + '<div style="display:flex;flex-direction:column;gap:14px;">'
@@ -31553,7 +31590,7 @@ function initEditor() {
       : 0;
     const fontesStatus = numFontesLocais > 0
       ? numFontesLocais + ' fontes do computador carregadas'
-      : 'Fontes do computador não carregadas ainda';
+      : (window.WM_T?window.WM_T('set.fontsNotLoaded'):'Fontes do computador não carregadas ainda');
 
     card.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">'
       + '  <h3 style="margin:0;font-size:18px;font-weight:600;">'+(window.WM_T?window.WM_T('dyn.settings'):'Configurações')+'</h3>'
@@ -31561,22 +31598,22 @@ function initEditor() {
       + '</div>'
       + '<div style="display:flex;flex-direction:column;gap:14px;">'
       + '  <div style="background:#22222a;border-radius:8px;padding:14px;">'
-      + '    <div style="font-weight:600;font-size:14px;margin-bottom:6px;">Fontes do computador</div>'
+      + '    <div style="font-weight:600;font-size:14px;margin-bottom:6px;">'+(window.WM_T?window.WM_T('set.pcFonts'):'Fontes do computador')+'</div>'
       + '    <div style="font-size:12px;color:#a0a0aa;margin-bottom:10px;">' + fontesStatus + '</div>'
-      + '    <button id="wm-set-reload-fonts" style="width:100%;padding:10px;background:#3a3a48;border:1px solid #4a8;border-radius:6px;color:#9fd;cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;">Recarregar fontes do computador</button>'
+      + '    <button id="wm-set-reload-fonts" style="width:100%;padding:10px;background:#3a3a48;border:1px solid #4a8;border-radius:6px;color:#9fd;cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;">'+(window.WM_T?window.WM_T('set.reloadFonts'):'Recarregar fontes do computador')+'</button>'
       + '  </div>'
       + '  <div style="background:#22222a;border-radius:8px;padding:14px;">'
-      + '    <div style="font-weight:600;font-size:14px;margin-bottom:8px;">Atalhos de teclado</div>'
+      + '    <div style="font-weight:600;font-size:14px;margin-bottom:8px;">'+(window.WM_T?window.WM_T('set.shortcuts'):'Atalhos de teclado')+'</div>'
       + '    <div style="font-size:12px;color:#a0a0aa;line-height:1.8;">'
-      + '      <div><b style="color:#ccc;">Espaço</b> — tocar animação</div>'
-      + '      <div><b style="color:#ccc;">← →</b> — navegar entre slides</div>'
-      + '      <div><b style="color:#ccc;">Ctrl+S</b> — salvar projeto</div>'
-      + '      <div><b style="color:#ccc;">Ctrl+Z</b> — desfazer</div>'
+      + '      <div><b style="color:#ccc;">'+(window.WM_T?window.WM_T('set.spaceKey'):'Espaço')+'</b> — '+(window.WM_T?window.WM_T('set.scPlay'):'tocar animação')+'</div>'
+      + '      <div><b style="color:#ccc;">← →</b> — '+(window.WM_T?window.WM_T('set.scNav'):'navegar entre slides')+'</div>'
+      + '      <div><b style="color:#ccc;">Ctrl+S</b> — '+(window.WM_T?window.WM_T('set.scSave'):'salvar projeto')+'</div>'
+      + '      <div><b style="color:#ccc;">Ctrl+Z</b> — '+(window.WM_T?window.WM_T('set.scUndo'):'desfazer')+'</div>'
       + '    </div>'
       + '  </div>'
       + '  <div style="background:#22222a;border-radius:8px;padding:14px;">'
-      + '    <div style="font-weight:600;font-size:14px;margin-bottom:6px;">Dica</div>'
-      + '    <div style="font-size:12px;color:#a0a0aa;line-height:1.5;">Se as fontes personalizadas não aparecerem, clique em "Recarregar fontes" acima e permita o acesso quando o navegador pedir.</div>'
+      + '    <div style="font-weight:600;font-size:14px;margin-bottom:6px;">'+(window.WM_T?window.WM_T('set.tip'):'Dica')+'</div>'
+      + '    <div style="font-size:12px;color:#a0a0aa;line-height:1.5;">'+(window.WM_T?window.WM_T('set.tipText'):'Se as fontes personalizadas nao aparecerem, clique em Recarregar fontes acima e permita o acesso quando o navegador pedir.')+'</div>'
       + '  </div>'
       + '</div>';
 
@@ -31589,7 +31626,7 @@ function initEditor() {
 
     card.querySelector('#wm-set-reload-fonts').addEventListener('click', async () => {
       const btn = card.querySelector('#wm-set-reload-fonts');
-      btn.textContent = 'Carregando...';
+      btn.textContent = (window.WM_T?window.WM_T('set.loading'):'Carregando...');
       btn.disabled = true;
       try {
         if (typeof tryQueryLocalFonts === 'function') {
