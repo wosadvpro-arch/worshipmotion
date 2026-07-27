@@ -8048,7 +8048,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'i18n-rotulos-24jul';
+window.__WM_BUILD = 'i18n-palavra-camadas-24jul';
 
 /* ============================================================
    MOTOR DE IDIOMAS (i18n) — Parte 1: a fiação
@@ -8332,6 +8332,48 @@ window.__WM_BUILD = 'i18n-rotulos-24jul';
     'lbl.ending':       { pt: 'Final', en: 'Ending', es: 'Final' },
     'lbl.interlude':    { pt: 'Interlúdio', en: 'Interlude', es: 'Interludio' },
     'lbl.vamp':         { pt: 'Vamp', en: 'Vamp', es: 'Vamp' },
+
+    // ================= EDITOR — painel PALAVRA (clique na palavra do canvas) =================
+    'wp.wordsSelected': { pt: '{n} palavras selecionadas', en: '{n} words selected', es: '{n} palabras seleccionadas' },
+    'wp.layersAll':     { pt: 'Camadas (todas)', en: 'Layers (all)', es: 'Capas (todas)' },
+    'wp.layers':        { pt: 'Camadas', en: 'Layers', es: 'Capas' },
+    'wp.layerN':        { pt: 'camada {n}', en: 'layer {n}', es: 'capa {n}' },
+    'wp.toFront':       { pt: 'Pra frente', en: 'To front', es: 'Al frente' },
+    'wp.forward':       { pt: 'Avançar', en: 'Forward', es: 'Adelantar' },
+    'wp.backward':      { pt: 'Recuar', en: 'Backward', es: 'Atrasar' },
+    'wp.toBack':        { pt: 'Pra trás', en: 'To back', es: 'Al fondo' },
+    'wp.toFrontTip':    { pt: 'Trazer pra frente', en: 'Bring to front', es: 'Traer al frente' },
+    'wp.forwardTip':    { pt: 'Avançar', en: 'Bring forward', es: 'Adelantar' },
+    'wp.backwardTip':   { pt: 'Recuar', en: 'Send backward', es: 'Atrasar' },
+    'wp.toBackTip':     { pt: 'Mandar pra trás', en: 'Send to back', es: 'Enviar al fondo' },
+    'wp.emphasizeWord': { pt: 'Destacar palavra', en: 'Highlight word', es: 'Destacar palabra' },
+    'wp.sizeFontColor': { pt: 'Tamanho, fonte, cor e mais', en: 'Size, font, color and more', es: 'Tamaño, fuente, color y más' },
+    'wp.sizeFontNote':  { pt: 'Use a barra no topo do slide pra mudar fonte, tamanho, espaçamento, negrito, itálico, caixa e cor das palavras selecionadas.', en: 'Use the bar at the top of the slide to change font, size, spacing, bold, italic, case and color of the selected words.', es: 'Usa la barra en la parte superior de la diapositiva para cambiar fuente, tamaño, espaciado, negrita, cursiva, mayúsculas y color de las palabras seleccionadas.' },
+    'wp.clearAllOv':    { pt: '⌫ Limpar TODOS overrides destas palavras', en: '⌫ Clear ALL overrides for these words', es: '⌫ Borrar TODOS los ajustes de estas palabras' },
+    'wp.escDeselect':   { pt: 'desselecionar', en: 'deselect', es: 'deseleccionar' },
+    'wp.delClears':     { pt: 'limpa overrides', en: 'clears overrides', es: 'borra ajustes' },
+    'wp.dragTogether':  { pt: 'Arraste qualquer uma pra mover todas juntas', en: 'Drag any of them to move all together', es: 'Arrastra cualquiera para mover todas juntas' },
+    'wp.moreOptions':   { pt: 'Mais opções', en: 'More options', es: 'Más opciones' },
+    'wp.moreOptionsNote':{ pt: 'Fonte, tamanho, espaçamento, negrito, itálico, caixa, cor e animação ficam na barra do topo do slide. Aqui você organiza as camadas (ordem das palavras).', en: 'Font, size, spacing, bold, italic, case, color and animation are in the bar at the top of the slide. Here you organize the layers (word order).', es: 'Fuente, tamaño, espaciado, negrita, cursiva, mayúsculas, color y animación están en la barra superior de la diapositiva. Aquí organizas las capas (orden de las palabras).' },
+    'wp.previewStanza': { pt: '▶ Prévia estrofe', en: '▶ Preview stanza', es: '▶ Vista previa estrofa' },
+    'wp.resetAll':      { pt: '↺ Resetar tudo', en: '↺ Reset all', es: '↺ Restablecer todo' },
+    'wp.clearSelection':{ pt: '✕ Limpar seleção', en: '✕ Clear selection', es: '✕ Limpiar selección' },
+    'wp.wordNotFound':  { pt: 'Palavra não encontrada', en: 'Word not found', es: 'Palabra no encontrada' },
+    'wp.genFirst':      { pt: 'Gere uma lyric primeiro', en: 'Generate a lyric first', es: 'Genera un lyric primero' },
+
+    // ================= EDITOR — painéis/modais dinâmicos restantes =================
+    'dyn.noAnimStyle':  { pt: 'Nenhuma animação neste estilo', en: 'No animations in this style', es: 'Ninguna animación en este estilo' },
+    'dyn.tapStart':     { pt: 'Toque em Iniciar e vá batendo no ritmo da música', en: 'Tap Start and tap along to the beat of the song', es: 'Pulsa Iniciar y ve marcando al ritmo de la música' },
+    'dyn.clearBeat':    { pt: 'Limpar ritmo', en: 'Clear beat', es: 'Limpiar ritmo' },
+    'dyn.clearBeatTip': { pt: 'Limpar marcação de ritmo desta estrofe', en: 'Clear beat marking of this stanza', es: 'Limpiar la marcación de ritmo de esta estrofa' },
+    'dyn.clearBeatTip2':{ pt: 'Limpar marcações desta estrofe', en: 'Clear markings of this stanza', es: 'Limpiar las marcaciones de esta estrofa' },
+    'dyn.creditsMonth': { pt: 'Créditos este mês', en: 'Credits this month', es: 'Créditos este mes' },
+    'dyn.settings':     { pt: 'Configurações', en: 'Settings', es: 'Configuración' },
+    'dyn.copyCode':     { pt: 'Copiar código', en: 'Copy code', es: 'Copiar código' },
+    'dyn.applyAnyway':  { pt: 'Aplicar mesmo assim', en: 'Apply anyway', es: 'Aplicar de todos modos' },
+    'dyn.whereApplyAnim':{ pt: 'Onde quer aplicar essa animação?', en: 'Where do you want to apply this animation?', es: '¿Dónde quieres aplicar esta animación?' },
+    'dyn.applyAllStanzas':{ pt: 'Aplicar em TODAS as estrofes', en: 'Apply to ALL stanzas', es: 'Aplicar a TODAS las estrofas' },
+    'dyn.durationSec':  { pt: 'Duração (segundos)', en: 'Duration (seconds)', es: 'Duración (segundos)' },
     // pontos que escaparam (nome do projeto, hint da timeline, rótulo automático de estrofe, "de")
     'ed.untitledProject':{ pt: 'Projeto sem título', en: 'Untitled project', es: 'Proyecto sin título' },
     'ed.untitled':      { pt: 'Sem título', en: 'Untitled', es: 'Sin título' },
@@ -21013,7 +21055,7 @@ function initEditor() {
               <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
             </svg>
           </button>
-          ${nMarcadas > 0 ? `<button class="stanza-item-clearmarks" data-clearmarks="${i}" title="Limpar marcação de ritmo desta estrofe" aria-label="Limpar ritmo">
+          ${nMarcadas > 0 ? `<button class="stanza-item-clearmarks" data-clearmarks="${i}" title="${window.WM_T?window.WM_T('dyn.clearBeatTip'):'Limpar marcação de ritmo desta estrofe'}" aria-label="${window.WM_T?window.WM_T('dyn.clearBeat'):'Limpar ritmo'}">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>
               <line x1="3" y1="3" x2="21" y2="21"/>
@@ -21698,7 +21740,7 @@ function initEditor() {
             </div>
 
             <div class="scene-control">
-              <div class="scene-control-label">Duração (segundos)</div>
+              <div class="scene-control-label">${window.WM_T?window.WM_T("dyn.durationSec"):"Duração (segundos)"}</div>
               <div class="scene-control-row">
                 <input type="number" data-scene-prop="stanzaDuration"
                        min="1" max="20" step="0.5"
@@ -24872,6 +24914,7 @@ function initEditor() {
         if (typeof renderTimeline === 'function') renderTimeline(engine.parsed);
         if (typeof renderScenesList === 'function') renderScenesList();
         if (typeof updateTimerDisplay === 'function') updateTimerDisplay();
+        if (typeof renderWordPanel === 'function') renderWordPanel();
       }
     } catch (e) {}
   });
@@ -25910,42 +25953,42 @@ function initEditor() {
 
       container.innerHTML = `
         <div class="word-panel-multi-header">
-          <div class="word-panel-multi-count">${selectedWordIds.size} palavras selecionadas</div>
+          <div class="word-panel-multi-count">${(window.WM_T?window.WM_T("wp.wordsSelected").replace("{n}",selectedWordIds.size):selectedWordIds.size+" palavras selecionadas")}</div>
           <div class="word-panel-multi-preview">${words.slice(0, 6).map(t => `"${escapeHtml(t)}"`).join(', ')}${words.length > 6 ? '…' : ''}</div>
         </div>
 
-        <div class="word-panel-section-title">Camadas (todas)</div>
+        <div class="word-panel-section-title">${window.WM_T?window.WM_T("wp.layersAll"):"Camadas (todas)"}</div>
         <div class="word-zorder-grid">
-          <button class="word-zorder-btn" data-multi-action="zorder-front" title="Trazer pra frente">
+          <button class="word-zorder-btn" data-multi-action="zorder-front" title="${window.WM_T?window.WM_T('wp.toFrontTip'):'Trazer pra frente'}">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="13" height="13" rx="2"/><rect x="8" y="8" width="13" height="13" rx="2" fill="currentColor" fill-opacity="0.3"/></svg>
-            <span>Pra frente</span>
+            <span>${window.WM_T?window.WM_T("wp.toFront"):"Pra frente"}</span>
           </button>
-          <button class="word-zorder-btn" data-multi-action="zorder-forward" title="Avançar">
+          <button class="word-zorder-btn" data-multi-action="zorder-forward" title="${window.WM_T?window.WM_T('wp.forwardTip'):'Avançar'}">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12l7-7 7 7"/></svg>
-            <span>Avançar</span>
+            <span>${window.WM_T?window.WM_T("wp.forward"):"Avançar"}</span>
           </button>
-          <button class="word-zorder-btn" data-multi-action="zorder-backward" title="Recuar">
+          <button class="word-zorder-btn" data-multi-action="zorder-backward" title="${window.WM_T?window.WM_T('wp.backwardTip'):'Recuar'}">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5M5 12l7 7 7-7"/></svg>
-            <span>Recuar</span>
+            <span>${window.WM_T?window.WM_T("wp.backward"):"Recuar"}</span>
           </button>
-          <button class="word-zorder-btn" data-multi-action="zorder-back" title="Mandar pra trás">
+          <button class="word-zorder-btn" data-multi-action="zorder-back" title="${window.WM_T?window.WM_T('wp.toBackTip'):'Mandar pra trás'}">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="8" y="8" width="13" height="13" rx="2"/><rect x="3" y="3" width="13" height="13" rx="2" fill="currentColor" fill-opacity="0.3"/></svg>
-            <span>Pra trás</span>
+            <span>${window.WM_T?window.WM_T("wp.toBack"):"Pra trás"}</span>
           </button>
         </div>
 
-        <div class="word-panel-section-title">Tamanho, fonte, cor e mais</div>
+        <div class="word-panel-section-title">${window.WM_T?window.WM_T("wp.sizeFontColor"):"Tamanho, fonte, cor e mais"}</div>
         <p style="font-size: 11px; color: var(--text-tertiary); margin: 4px 0 0; line-height: 1.5;">
-          Use a <strong>barra no topo do slide</strong> pra mudar fonte, tamanho, espaçamento, negrito, itálico, caixa e cor das palavras selecionadas.
+          ${window.WM_T?window.WM_T("wp.sizeFontNote"):"Use a barra no topo do slide pra mudar fonte, tamanho, espaçamento, negrito, itálico, caixa e cor das palavras selecionadas."}
         </p>
 
         <div class="scene-card-actions" style="margin-top: 16px;">
-          <button class="btn-tiny" data-multi-action="clear-all">⌫ Limpar TODOS overrides destas palavras</button>
+          <button class="btn-tiny" data-multi-action="clear-all">${window.WM_T?window.WM_T("wp.clearAllOv"):"⌫ Limpar TODOS overrides destas palavras"}</button>
         </div>
 
         <p style="font-size: 10px; color: var(--text-tertiary); margin-top: var(--space-4); line-height: 1.5;">
-          <kbd>Esc</kbd> desselecionar • <kbd>Delete</kbd> limpa overrides<br>
-          Arraste qualquer uma pra mover todas juntas
+          <kbd>Esc</kbd> ${window.WM_T?window.WM_T("wp.escDeselect"):"desselecionar"} • <kbd>Delete</kbd> ${window.WM_T?window.WM_T("wp.delClears"):"limpa overrides"}<br>
+          ${window.WM_T?window.WM_T("wp.dragTogether"):"Arraste qualquer uma pra mover todas juntas"}
         </p>
       `;
 
@@ -25957,7 +26000,7 @@ function initEditor() {
     // Seleção única: comportamento normal
     const info = findWordInfo(selectedWordId);
     if (!info) {
-      container.innerHTML = '<div class="word-panel-empty"><strong>Palavra não encontrada</strong>Gere uma lyric primeiro</div>';
+      container.innerHTML = '<div class="word-panel-empty"><strong>'+(window.WM_T?window.WM_T("wp.wordNotFound"):"Palavra não encontrada")+'</strong>'+(window.WM_T?window.WM_T("wp.genFirst"):"Gere uma lyric primeiro")+'</div>';
       return;
     }
 
@@ -25990,7 +26033,7 @@ function initEditor() {
           <div>
             <div class="word-panel-header-text" style="${woStyle.fontFamily ? `font-family: '${woStyle.fontFamily}', sans-serif;` : ''} ${woStyle.color ? `color: ${woStyle.color};` : ''}">"${escapeHtml(info.word.text)}"</div>
             <div class="word-panel-header-meta">
-              Estrofe ${info.stanzaIdx + 1} • Linha ${info.lineIdx + 1} • Palavra ${info.wordIdx + 1}
+              ${window.WM_T ? window.WM_T('ed.stanzaLineWord').replace('{s}', info.stanzaIdx + 1).replace('{l}', info.lineIdx + 1).replace('{w}', info.wordIdx + 1) : `Estrofe ${info.stanzaIdx + 1} • Linha ${info.lineIdx + 1} • Palavra ${info.wordIdx + 1}`}
             </div>
           </div>
         </div>
@@ -25998,7 +26041,7 @@ function initEditor() {
         <div class="word-emphasis-row">
           <div class="word-emphasis-label">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="${info.word.emphasized ? '#fbbf24' : 'none'}" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-            <span>Destacar palavra</span>
+            <span>${window.WM_T?window.WM_T("wp.emphasizeWord"):"Destacar palavra"}</span>
           </div>
           <label class="switch-mini">
             <input type="checkbox" id="word-emphasis-toggle" ${info.word.emphasized ? 'checked' : ''}>
@@ -26006,45 +26049,45 @@ function initEditor() {
           </label>
         </div>
 
-        <div class="word-panel-section-title">Camadas${typeof wo.zIndex === 'number' ? ` <span style="font-size:10px; font-weight:400; color:var(--text-tertiary); text-transform:none; letter-spacing:0;">— camada ${wo.zIndex}</span>` : ''}</div>
+        <div class="word-panel-section-title">${window.WM_T?window.WM_T("wp.layers"):"Camadas"}${typeof wo.zIndex === 'number' ? ` <span style="font-size:10px; font-weight:400; color:var(--text-tertiary); text-transform:none; letter-spacing:0;">— ${window.WM_T?window.WM_T("wp.layerN").replace("{n}",wo.zIndex):"camada "+wo.zIndex}</span>` : ''}</div>
         <div class="word-zorder-grid">
           <button class="word-zorder-btn" data-word-action="zorder-front" title="Trazer pra frente (Ctrl+Shift+])">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="3" y="3" width="13" height="13" rx="2"/>
               <rect x="8" y="8" width="13" height="13" rx="2" fill="currentColor" fill-opacity="0.3"/>
             </svg>
-            <span>Pra frente</span>
+            <span>${window.WM_T?window.WM_T("wp.toFront"):"Pra frente"}</span>
           </button>
           <button class="word-zorder-btn" data-word-action="zorder-forward" title="Avançar (Ctrl+])">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M12 5v14M5 12l7-7 7 7"/>
             </svg>
-            <span>Avançar</span>
+            <span>${window.WM_T?window.WM_T("wp.forward"):"Avançar"}</span>
           </button>
           <button class="word-zorder-btn" data-word-action="zorder-backward" title="Recuar (Ctrl+[)">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M12 19V5M5 12l7 7 7-7"/>
             </svg>
-            <span>Recuar</span>
+            <span>${window.WM_T?window.WM_T("wp.backward"):"Recuar"}</span>
           </button>
           <button class="word-zorder-btn" data-word-action="zorder-back" title="Mandar pra trás (Ctrl+Shift+[)">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="8" y="8" width="13" height="13" rx="2"/>
               <rect x="3" y="3" width="13" height="13" rx="2" fill="currentColor" fill-opacity="0.3"/>
             </svg>
-            <span>Pra trás</span>
+            <span>${window.WM_T?window.WM_T("wp.toBack"):"Pra trás"}</span>
           </button>
         </div>
 
-        <div class="word-panel-section-title">Mais opções</div>
+        <div class="word-panel-section-title">${window.WM_T?window.WM_T("wp.moreOptions"):"Mais opções"}</div>
         <p style="font-size: 11px; color: var(--text-tertiary); margin: 4px 0 0; line-height: 1.5;">
-          Fonte, tamanho, espaçamento, negrito, itálico, caixa, cor e animação ficam na <strong>barra do topo do slide</strong>. Aqui você organiza as <strong>camadas</strong> (ordem das palavras).
+          ${window.WM_T?window.WM_T("wp.moreOptionsNote"):"Fonte, tamanho, espaçamento, negrito, itálico, caixa, cor e animação ficam na barra do topo do slide. Aqui você organiza as camadas (ordem das palavras)."}
         </p>
 
         <div class="scene-card-actions" style="margin-top: 16px;">
-          <button class="btn-tiny" data-word-action="preview">▶ Prévia estrofe</button>
-          <button class="btn-tiny" data-word-action="reset" ${hasOverride ? '' : 'disabled'}>↺ Resetar tudo</button>
-          <button class="btn-tiny" data-word-action="deselect">✕ Limpar seleção</button>
+          <button class="btn-tiny" data-word-action="preview">${window.WM_T?window.WM_T("wp.previewStanza"):"▶ Prévia estrofe"}</button>
+          <button class="btn-tiny" data-word-action="reset" ${hasOverride ? '' : 'disabled'}>${window.WM_T?window.WM_T("wp.resetAll"):"↺ Resetar tudo"}</button>
+          <button class="btn-tiny" data-word-action="deselect">${window.WM_T?window.WM_T("wp.clearSelection"):"✕ Limpar seleção"}</button>
         </div>
 
         ${renderWordOverridesList()}
@@ -26819,7 +26862,7 @@ function initEditor() {
       : `${anims.length}/${total}`;
 
     if (!anims.length) {
-      grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: var(--space-6) 0; font-size: var(--text-xs); color: var(--text-tertiary);">Nenhuma animação neste estilo</div>';
+      grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: var(--space-6) 0; font-size: var(--text-xs); color: var(--text-tertiary);">'+(window.WM_T?window.WM_T("dyn.noAnimStyle"):"Nenhuma animação neste estilo")+'</div>';
       return;
     }
 
@@ -29814,7 +29857,7 @@ function initEditor() {
     if (nextEl) {
       const nx = _tapNextUnit();
       if (!nx) nextEl.textContent = '🎉 Tudo marcado! Toque em Concluir.';
-      else if (!_tapRunning) nextEl.textContent = 'Toque em Iniciar e vá batendo no ritmo da música';
+      else if (!_tapRunning) nextEl.textContent = (window.WM_T?window.WM_T('dyn.tapStart'):'Toque em Iniciar e vá batendo no ritmo da música');
       else {
         const txt = nx.lineMode ? (nx.words.map(w => w.text).join(' ')) : (nx.word.text || '');
         nextEl.textContent = 'Próxima: “' + (txt || '').slice(0, 42) + '”';
@@ -29934,7 +29977,7 @@ function initEditor() {
             <span class="tap-clock" id="tap-clock">0:00</span>
             <span class="tap-progress" id="tap-progress">0/0 palavras</span>
           </div>
-          <div class="tap-next" id="tap-next">Toque em Iniciar e vá batendo no ritmo da música</div>
+          <div class="tap-next" id="tap-next">${window.WM_T?window.WM_T("dyn.tapStart"):"Toque em Iniciar e vá batendo no ritmo da música"}</div>
           <div class="tap-actions">
             <button class="btn btn-ghost btn-sm" id="tap-pause-btn" type="button" style="display:none;">⏸ Pausar</button>
             <button class="btn btn-ghost btn-sm" id="tap-finish-btn" type="button">Concluir</button>
@@ -30335,7 +30378,7 @@ function initEditor() {
                 <button class="mark-mode-btn ${getStanzaMarkMode(si) === 'line' ? 'active' : ''}" data-mode="line" data-si="${si}">Linha</button>
               </div>
               <span class="mark-stanza-count" title="${totalLinhas} linha(s) nesta estrofe">${markedCount}/${stanzaWords.length} · ${totalLinhas} linha${totalLinhas !== 1 ? 's' : ''}</span>
-              ${markedCount > 0 ? `<button class="mark-stanza-clear" data-clear-si="${si}" title="Limpar marcações desta estrofe">Limpar ritmo</button>` : ''}
+              ${markedCount > 0 ? `<button class="mark-stanza-clear" data-clear-si="${si}" title="${window.WM_T?window.WM_T('dyn.clearBeatTip2'):'Limpar marcações desta estrofe'}">${window.WM_T?window.WM_T('dyn.clearBeat'):'Limpar ritmo'}</button>` : ''}
             </div>
             <div class="mark-stanza-lines">${linesHtml || '<span style="font-size:11px;color:rgba(255,255,255,0.4);">(estrofe vazia)</span>'}</div>
           </div>
@@ -31239,7 +31282,7 @@ function initEditor() {
       + '    <span style="font-size:14px;font-weight:700;color:#c4b5fd;">' + nomePlano + '</span>'
       + '  </div>'
       + '  <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:rgba(255,255,255,0.04);border-radius:10px;">'
-      + '    <span style="font-size:13px;color:#9aa;">Créditos este mês</span>'
+      + '    <span style="font-size:13px;color:#9aa;">'+(window.WM_T?window.WM_T('dyn.creditsMonth'):'Créditos este mês')+'</span>'
       + '    <span style="font-size:14px;font-weight:700;">' + creditos + '</span>'
       + '  </div>'
       + (ehGratis
@@ -31409,7 +31452,7 @@ function initEditor() {
       : 'Fontes do computador não carregadas ainda';
 
     card.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">'
-      + '  <h3 style="margin:0;font-size:18px;font-weight:600;">Configurações</h3>'
+      + '  <h3 style="margin:0;font-size:18px;font-weight:600;">'+(window.WM_T?window.WM_T('dyn.settings'):'Configurações')+'</h3>'
       + '  <button id="wm-set-close" style="background:none;border:none;color:#a0a0aa;font-size:22px;cursor:pointer;line-height:1;">&times;</button>'
       + '</div>'
       + '<div style="display:flex;flex-direction:column;gap:14px;">'
@@ -32428,7 +32471,7 @@ function initEditor() {
       + 'border-radius:8px;padding:12px;resize:vertical;" '
       + 'id="__tpl-code">' + escapeHtml(code) + '</textarea>'
       + '<div style="display:flex;gap:8px;margin-top:16px;justify-content:flex-end;">'
-      + '<button id="__tpl-copy" class="btn btn-primary btn-sm">Copiar código</button>'
+      + '<button id="__tpl-copy" class="btn btn-primary btn-sm">'+(window.WM_T?window.WM_T('dyn.copyCode'):'Copiar código')+'</button>'
       + '<button id="__tpl-close" class="btn btn-secondary btn-sm">Fechar</button>'
       + '</div>';
     ov.appendChild(box);
@@ -32889,7 +32932,7 @@ function initEditor() {
         + '</p>'
         + '<div style="display:flex;gap:8px;justify-content:flex-end;">'
         + '  <button id="mm-cancel" style="padding:10px 16px;background:transparent;border:1px solid #444;border-radius:8px;color:#a0a0aa;cursor:pointer;font-family:inherit;font-size:13px;">Cancelar</button>'
-        + '  <button id="mm-continuar" style="padding:10px 16px;background:#2a2a35;border:1px solid #fb0;border-radius:8px;color:#fb0;cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;">Aplicar mesmo assim</button>'
+        + '  <button id="mm-continuar" style="padding:10px 16px;background:#2a2a35;border:1px solid #fb0;border-radius:8px;color:#fb0;cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;">'+(window.WM_T?window.WM_T('dyn.applyAnyway'):'Aplicar mesmo assim')+'</button>'
         + '</div>';
 
       const fechar = (resp) => {
@@ -33102,7 +33145,7 @@ function initEditor() {
     card.style.cssText = 'background:#1a1a1f;border:1px solid #333;border-radius:12px;padding:24px;max-width:440px;width:90%;color:#f4f4f7;font-family:Inter,sans-serif;box-shadow:0 20px 60px rgba(0,0,0,0.5);';
 
     card.innerHTML = '<h3 style="margin:0 0 8px;font-size:18px;font-weight:600;">Aplicar animação de ' + catLabel + '</h3>'
-      + '<p style="margin:0 0 20px;font-size:14px;color:#a0a0aa;line-height:1.5;">Onde quer aplicar essa animação?</p>'
+      + '<p style="margin:0 0 20px;font-size:14px;color:#a0a0aa;line-height:1.5;">'+(window.WM_T?window.WM_T('dyn.whereApplyAnim'):'Onde quer aplicar essa animação?')+'</p>'
       + '<div style="display:flex;flex-direction:column;gap:8px;">'
       + '  <button id="anim-scope-slide" style="text-align:left;padding:14px;background:#2a2a35;border:2px solid #4a8;border-radius:8px;color:#f4f4f7;cursor:pointer;font-family:inherit;">'
       + '    <div style="font-weight:600;font-size:14px;margin-bottom:4px;color:#9fd;">★ Só neste slide (recomendado)</div>'
@@ -33169,7 +33212,7 @@ function initEditor() {
       + '    <div style="font-size:12px;color:#a0a0aa;line-height:1.4;">Aplica fontes individuais, posições, tamanhos, animação, cor e efeitos do template <b>apenas na estrofe selecionada</b>. Outras estrofes ficam intactas. <b>Fundo não é aplicado</b>.</div>'
       + '  </button>'
       + '  <button id="tpl-mode-todas" style="text-align:left;padding:14px;background:#2a2a35;border:1px solid #444;border-radius:8px;color:#f4f4f7;cursor:pointer;font-family:inherit;">'
-      + '    <div style="font-weight:600;font-size:14px;margin-bottom:4px;">Aplicar em TODAS as estrofes</div>'
+      + '    <div style="font-weight:600;font-size:14px;margin-bottom:4px;">'+(window.WM_T?window.WM_T('dyn.applyAllStanzas'):'Aplicar em TODAS as estrofes')+'</div>'
       + '    <div style="font-size:12px;color:#a0a0aa;line-height:1.4;">Replica o template em cada estrofe do projeto. Cada uma recebe fontes individuais e layout do template (pela ordem das palavras de cada estrofe). <b>Fundo não é aplicado</b>.</div>'
       + '  </button>'
       + '  <button id="tpl-mode-exemplo" style="text-align:left;padding:14px;background:#2a2a35;border:1px solid #444;border-radius:8px;color:#f4f4f7;cursor:pointer;font-family:inherit;">'
