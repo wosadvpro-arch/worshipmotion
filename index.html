@@ -6294,6 +6294,9 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
   transition: opacity .15s, transform .15s, visibility .15s;
 }
 .wm-lang.is-open .wm-lang-menu { opacity: 1; visibility: visible; transform: translateY(0); pointer-events: auto; }
+/* menu portado pro body (mobile) — fica visível e tocável por conta própria */
+.wm-lang-menu.is-open { opacity: 1; visibility: visible; pointer-events: auto; }
+.wm-lang-menu.is-open .wm-lang-opt { pointer-events: auto; }
 .wm-lang-menu { pointer-events: none; }
 .wm-lang.is-open .wm-lang-opt { pointer-events: auto; }
 .wm-lang-opt {
@@ -6333,10 +6336,12 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
    centralizado sobre a bandeira, alinhado à barra. */
 @media (max-width: 1080px) {
   .wm-lang-menu-rail {
-    top: auto; bottom: calc(100% + 10px);
+    position: fixed;  /* fixed escapa do overflow:auto da rail (senão o menu é cortado) */
+    top: auto; bottom: 70px;  /* logo acima da barra inferior */
     left: 50%; right: auto;
     transform: translateX(-50%) translateY(6px);
-    min-width: 180px;
+    min-width: 200px;
+    z-index: 100000;
   }
   .wm-lang-rail.is-open .wm-lang-menu-rail {
     transform: translateX(-50%) translateY(0);
@@ -6348,7 +6353,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
     border: 7px solid transparent; border-top-color: #1a1030;
   }
   .wm-lang-rail-toggle { width: 44px; height: 44px; }
-  .wm-lang-menu-rail .wm-lang-opt { padding: 11px 12px; font-size: 14px; }
+  .wm-lang-menu-rail .wm-lang-opt { padding: 12px 14px; font-size: 15px; }
 }
 .page-login .wm-login-card .auth-subtitle { font-size: var(--text-sm); color: var(--text-secondary); margin-bottom: 24px; }
 .page-login .wm-login-tagline { position: relative; z-index: 2; max-width: 430px; text-align: center; font-size: 13px; line-height: 1.5; color: rgba(246,246,249,0.62); }
@@ -8086,7 +8091,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'seletor-delegation-24jul';
+window.__WM_BUILD = 'seletor-portal-fix-24jul';
 
 /* ============================================================
    MOTOR DE IDIOMAS (i18n) — Parte 1: a fiação
@@ -8642,36 +8647,42 @@ window.__WM_BUILD = 'seletor-delegation-24jul';
   function ligarSeletores() {
     _sincronizarSeletores();
 
-    // ===== PROBE DE DIAGNÓSTICO (temporário) =====
-    // Mostra na tela cada evento que o seletor recebe, pra enxergar o que o
-    // iPhone faz de verdade (o Chromium não reproduz os bugs de toque do iOS).
-    let _probe = document.getElementById('__wm_probe');
-    if (!_probe) {
-      _probe = document.createElement('div');
-      _probe.id = '__wm_probe';
-      _probe.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;background:#0a0a14;color:#5ee;font:600 12px/1.4 monospace;padding:6px 10px;border-bottom:2px solid #5ee;max-height:38vh;overflow:auto;white-space:pre-wrap;pointer-events:none;';
-      document.body.appendChild(_probe);
-    }
-    let _log = [];
-    const probe = (msg) => {
-      const t = new Date().toLocaleTimeString('pt-BR', {hour12:false}) + '.' + String(Date.now()%1000).padStart(3,'0');
-      _log.unshift(t + '  ' + msg);
-      _log = _log.slice(0, 12);
-      _probe.textContent = 'DIAG SELETOR (toque e me mande print)\n' + _log.join('\n');
-    };
-    probe('pronto. idioma atual=' + idiomaAtual + ' | seletores=' + document.querySelectorAll('.wm-lang').length);
-
     document.querySelectorAll('.wm-lang').forEach((w, wi) => {
       if (w.__wmLigado) return;
       w.__wmLigado = true;
       const btn = w.querySelector('.wm-lang-btn');
       const menu = w.querySelector('.wm-lang-menu');
-      const abrir = (v) => { w.classList.toggle('is-open', v); if (btn) btn.setAttribute('aria-expanded', v ? 'true' : 'false'); w.__wmUltimoGesto = Date.now(); probe('  → menu ' + (v?'ABERTO':'fechado')); };
+      const abrir = (v) => {
+        w.classList.toggle('is-open', v);
+        if (btn) btn.setAttribute('aria-expanded', v ? 'true' : 'false');
+        w.__wmUltimoGesto = Date.now();
+        // No mobile, porta o menu pro <body> ao abrir — assim ele escapa do
+        // overflow:auto da rail e de qualquer contexto de empilhamento que
+        // faça o canvas/toolbar interceptarem o toque. Reposiciona sobre o botão.
+        if (menu && window.matchMedia('(max-width: 1080px)').matches) {
+          if (v) {
+            if (menu.parentElement !== document.body) {
+              menu.__wmHome = w; // lembra de onde veio
+              document.body.appendChild(menu);
+            }
+            const r = btn.getBoundingClientRect();
+            menu.style.position = 'fixed';
+            menu.style.left = Math.round(r.left + r.width / 2) + 'px';
+            menu.style.bottom = Math.round(window.innerHeight - r.top + 10) + 'px';
+            menu.style.top = 'auto';
+            menu.style.transform = 'translateX(-50%)';
+            menu.style.zIndex = '2147483647'; // topo absoluto
+            menu.classList.add('is-open'); // pro CSS de visibilidade pegar
+          } else {
+            menu.classList.remove('is-open');
+            menu.style.zIndex = '';
+          }
+        }
+      };
 
       // Guarda anti-duplo (touchend+click do mesmo toque no iOS).
       let _tBtn = 0;
       const alternar = (e) => {
-        probe('BOTÃO: ' + e.type);
         if (e.type === 'touchend') { _tBtn = Date.now(); }
         else if (Date.now() - _tBtn < 700) { return; }
         e.stopPropagation();
@@ -8687,7 +8698,6 @@ window.__WM_BUILD = 'seletor-delegation-24jul';
       let _tMenu = 0;
       const escolherNoMenu = (e) => {
         const opt = e.target && e.target.closest ? e.target.closest('.wm-lang-opt') : null;
-        probe('MENU: ' + e.type + (opt ? ' → opt=' + opt.getAttribute('data-lang') : ' (fora de opção)'));
         if (!opt) return;
         if (e.type === 'touchend') { _tMenu = Date.now(); }
         else if (Date.now() - _tMenu < 700) { return; }
@@ -8696,9 +8706,7 @@ window.__WM_BUILD = 'seletor-delegation-24jul';
         const lang = opt.getAttribute('data-lang');
         w.__wmUltimoGesto = Date.now();
         abrir(false);
-        probe('  → definir(' + lang + ')');
         definir(lang);
-        probe('  → idioma=' + idiomaAtual);
       };
       if (menu) {
         menu.addEventListener('touchend', escolherNoMenu);
@@ -8708,9 +8716,10 @@ window.__WM_BUILD = 'seletor-delegation-24jul';
       // Fechar ao tocar fora — só se realmente fora, e não no mesmo gesto.
       const fecharFora = (e) => {
         if (!w.classList.contains('is-open')) return;
-        if (w.contains(e.target)) { probe('fechar-fora: alvo DENTRO, ignora'); return; }
-        if (Date.now() - (w.__wmUltimoGesto || 0) < 500) { probe('fechar-fora: gesto recente, ignora'); return; }
-        probe('fechar-fora: fecha (' + e.type + ')');
+        if (w.contains(e.target)) { return; }
+        // menu pode estar portado pro body — checa nele também
+        if (menu && menu.contains(e.target)) { return; }
+        if (Date.now() - (w.__wmUltimoGesto || 0) < 500) { return; }
         abrir(false);
       };
       document.addEventListener('touchend', fecharFora);
