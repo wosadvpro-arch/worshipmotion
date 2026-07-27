@@ -6739,23 +6739,23 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
       <div class="topbar-scroll">
       <button class="btn btn-ghost btn-sm" id="btn-new-project" data-tooltip="Novo projeto em branco">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-        Novo projeto
+        <span data-i18n="tb.newProject">Novo projeto</span>
       </button>
       <button class="btn btn-ghost btn-sm" id="btn-templates" data-tooltip="Templates">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-        Templates
+        <span data-i18n="tb.templates">Templates</span>
       </button>
       <button class="btn btn-ghost btn-sm" id="btn-my-projects" data-tooltip="Meus projetos">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-        Meus projetos
+        <span data-i18n="tb.myProjects">Meus projetos</span>
       </button>
       <button class="btn btn-sm" id="btn-videoaulas" data-tooltip="Videoaulas" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9); color:#fff; border:1px solid transparent; box-shadow:0 2px 10px rgba(139,92,246,0.35);">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><polygon points="10 9 15 12 10 15 10 9" fill="currentColor" stroke="none"/></svg>
-        Videoaulas
+        <span data-i18n="tb.videos">Videoaulas</span>
       </button>
       <button class="btn btn-sm" id="btn-comparafontes" data-tooltip="Comparar fontes (Pro Plus)" style="background:linear-gradient(135deg,#34e0ff,#8a7bff); color:#04121a; border:1px solid transparent; box-shadow:0 2px 10px rgba(52,224,255,0.32); font-weight:600;">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg>
-        Comparar fontes
+        <span data-i18n="tb.compareFonts">Comparar fontes</span>
         <span style="margin-left:6px; background:rgba(4,18,26,0.28); color:#04121a; font-size:9px; font-weight:800; letter-spacing:.04em; padding:2px 6px; border-radius:6px; line-height:1;">Pro Plus</span>
       </button>
       <div style="width:1px; height:20px; background:var(--border-default); margin: 0 4px;"></div>
@@ -6776,15 +6776,15 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
       </div>
       <button class="btn btn-secondary btn-sm" id="btn-save-project" data-tooltip="Salvar projeto">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-        Salvar
+        <span data-i18n="tb.save">Salvar</span>
       </button>
       <button class="btn btn-secondary btn-sm" id="btn-save-template" data-tooltip="Salvar projeto atual como template reutilizável">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-        Salvar template
+        <span data-i18n="tb.saveTemplate">Salvar template</span>
       </button>
       <button class="btn btn-primary btn-sm" id="btn-export" data-tooltip="Exportar vídeo (MP4)">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        Exportar
+        <span data-i18n="tb.export">Exportar</span>
       </button>
     </div>
   </header>
@@ -8017,7 +8017,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'i18n-bandeiras-svg-24jul';
+window.__WM_BUILD = 'i18n-editor-topbar-24jul';
 
 /* ============================================================
    MOTOR DE IDIOMAS (i18n) — Parte 1: a fiação
@@ -8073,8 +8073,91 @@ window.__WM_BUILD = 'i18n-bandeiras-svg-24jul';
     'reset.msg.unavailable': { pt: 'Serviço indisponível no momento. Recarregue a página.', en: 'Service unavailable right now. Please reload the page.', es: 'Servicio no disponible ahora. Recarga la página.' },
     // ---- Seletor de idioma ----
     'lang.label':            { pt: 'Idioma', en: 'Language', es: 'Idioma' },
+
+    // ================= EDITOR — topbar =================
+    'tb.newProject':   { pt: 'Novo projeto', en: 'New project', es: 'Nuevo proyecto' },
+    'tb.templates':    { pt: 'Templates', en: 'Templates', es: 'Plantillas' },
+    'tb.myProjects':   { pt: 'Meus projetos', en: 'My projects', es: 'Mis proyectos' },
+    'tb.videos':       { pt: 'Videoaulas', en: 'Tutorials', es: 'Videotutoriales' },
+    'tb.compareFonts': { pt: 'Comparar fontes', en: 'Compare fonts', es: 'Comparar fuentes' },
+    'tb.save':         { pt: 'Salvar', en: 'Save', es: 'Guardar' },
+    'tb.saveTemplate': { pt: 'Salvar template', en: 'Save as template', es: 'Guardar plantilla' },
+    'tb.export':       { pt: 'Exportar', en: 'Export', es: 'Exportar' },
+
+    // ================= EDITOR — dicas (tooltips) =================
+    'tip.newProject':   { pt: 'Novo projeto em branco', en: 'New blank project', es: 'Nuevo proyecto en blanco' },
+    'tip.templates':    { pt: 'Templates', en: 'Templates', es: 'Plantillas' },
+    'tip.myProjects':   { pt: 'Meus projetos', en: 'My projects', es: 'Mis proyectos' },
+    'tip.videos':       { pt: 'Videoaulas', en: 'Tutorials', es: 'Videotutoriales' },
+    'tip.compareFonts': { pt: 'Comparar fontes (Pro Plus)', en: 'Compare fonts (Pro Plus)', es: 'Comparar fuentes (Pro Plus)' },
+    'tip.save':         { pt: 'Salvar projeto', en: 'Save project', es: 'Guardar proyecto' },
+    'tip.saveTemplate': { pt: 'Salvar projeto atual como template reutilizável', en: 'Save current project as a reusable template', es: 'Guardar el proyecto actual como plantilla reutilizable' },
+    'tip.export':       { pt: 'Exportar vídeo (MP4)', en: 'Export video (MP4)', es: 'Exportar video (MP4)' },
+    'tip.undo':         { pt: 'Desfazer (Ctrl+Z)', en: 'Undo (Ctrl+Z)', es: 'Deshacer (Ctrl+Z)' },
+    'tip.redo':         { pt: 'Refazer (Ctrl+Shift+Z)', en: 'Redo (Ctrl+Shift+Z)', es: 'Rehacer (Ctrl+Shift+Z)' },
+    'tip.selectAll':    { pt: 'Selecionar tudo (Ctrl+A)', en: 'Select all (Ctrl+A)', es: 'Seleccionar todo (Ctrl+A)' },
+    'tip.duplicate':    { pt: 'Duplicar', en: 'Duplicate', es: 'Duplicar' },
+    'tip.delete':       { pt: 'Excluir', en: 'Delete', es: 'Eliminar' },
+    'tip.rename':       { pt: 'Renomear', en: 'Rename', es: 'Renombrar' },
+    'tip.clear':        { pt: 'Limpar', en: 'Clear', es: 'Limpiar' },
+    'tip.close':        { pt: 'Fechar', en: 'Close', es: 'Cerrar' },
+    'tip.closeEsc':     { pt: 'Fechar (Esc)', en: 'Close (Esc)', es: 'Cerrar (Esc)' },
+    'tip.lyrics':       { pt: 'Lyrics', en: 'Lyrics', es: 'Letras' },
+    'tip.animations':   { pt: 'Animações', en: 'Animations', es: 'Animaciones' },
+    'tip.backgrounds':  { pt: 'Backgrounds', en: 'Backgrounds', es: 'Fondos' },
+    'tip.fonts':        { pt: 'Fontes', en: 'Fonts', es: 'Fuentes' },
+    'tip.settings':     { pt: 'Configurações', en: 'Settings', es: 'Configuración' },
+    'tip.account':      { pt: 'Conta', en: 'Account', es: 'Cuenta' },
+    'tip.addMusic':     { pt: 'Adicionar música', en: 'Add music', es: 'Añadir música' },
+    'tip.removeAudio':  { pt: 'Remover áudio', en: 'Remove audio', es: 'Quitar audio' },
+    'tip.volume':       { pt: 'Volume', en: 'Volume', es: 'Volumen' },
+    'tip.play':         { pt: 'Reproduzir (Espaço)', en: 'Play (Space)', es: 'Reproducir (Espacio)' },
+    'tip.playAll':      { pt: 'Reproduzir tudo', en: 'Play all', es: 'Reproducir todo' },
+    'tip.prevStanza':   { pt: 'Estrofe anterior', en: 'Previous stanza', es: 'Estrofa anterior' },
+    'tip.nextStanza':   { pt: 'Próxima estrofe', en: 'Next stanza', es: 'Estrofa siguiente' },
+    'tip.recenter':     { pt: 'Recentralizar slide', en: 'Recenter slide', es: 'Recentrar diapositiva' },
+    'tip.toggleTimeline':{ pt: 'Esconder/mostrar linha do tempo (mais espaço pro slide)', en: 'Hide/show timeline (more room for the slide)', es: 'Ocultar/mostrar línea de tiempo (más espacio para la diapositiva)' },
+    'tip.markBeat':     { pt: 'Marcar no ritmo: com música carregada ela toca ao clicar em Iniciar; sem música, você ouve por fora e vai batendo', en: 'Tap to the beat: with music loaded it plays when you press Start; without music, play it externally and tap along', es: 'Marcar al ritmo: con música cargada suena al pulsar Iniciar; sin música, la escuchas por fuera y vas marcando' },
   };
   window.WM_I18N_DIC = DIC;
+
+  // Mapa: texto PT original do data-tooltip → chave do dicionário.
+  // Deixa traduzir os 37 tooltips sem marcar cada elemento à mão.
+  const TIP_POR_PT = {
+    'Novo projeto em branco': 'tip.newProject',
+    'Templates': 'tip.templates',
+    'Meus projetos': 'tip.myProjects',
+    'Videoaulas': 'tip.videos',
+    'Comparar fontes (Pro Plus)': 'tip.compareFonts',
+    'Salvar projeto': 'tip.save',
+    'Salvar projeto atual como template reutilizável': 'tip.saveTemplate',
+    'Exportar vídeo (MP4)': 'tip.export',
+    'Desfazer (Ctrl+Z)': 'tip.undo',
+    'Refazer (Ctrl+Shift+Z)': 'tip.redo',
+    'Selecionar tudo (Ctrl+A)': 'tip.selectAll',
+    'Duplicar': 'tip.duplicate',
+    'Excluir': 'tip.delete',
+    'Renomear': 'tip.rename',
+    'Limpar': 'tip.clear',
+    'Fechar': 'tip.close',
+    'Fechar (Esc)': 'tip.closeEsc',
+    'Lyrics': 'tip.lyrics',
+    'Animações': 'tip.animations',
+    'Backgrounds': 'tip.backgrounds',
+    'Fontes': 'tip.fonts',
+    'Configurações': 'tip.settings',
+    'Conta': 'tip.account',
+    'Adicionar música': 'tip.addMusic',
+    'Remover áudio': 'tip.removeAudio',
+    'Volume': 'tip.volume',
+    'Reproduzir (Espaço)': 'tip.play',
+    'Reproduzir tudo': 'tip.playAll',
+    'Estrofe anterior': 'tip.prevStanza',
+    'Próxima estrofe': 'tip.nextStanza',
+    'Recentralizar slide': 'tip.recenter',
+    'Esconder/mostrar linha do tempo (mais espaço pro slide)': 'tip.toggleTimeline',
+    'Marcar no ritmo: com música carregada ela toca ao clicar em Iniciar; sem música, você ouve por fora e vai batendo': 'tip.markBeat',
+  };
 
   function normaliza(cod) {
     if (!cod) return null;
@@ -8123,6 +8206,15 @@ window.__WM_BUILD = 'i18n-bandeiras-svg-24jul';
         const [attr, chave] = par.split(':').map(s => s && s.trim());
         if (attr && chave) el.setAttribute(attr, T(chave));
       });
+    });
+    // TOOLTIPS: traduz todo [data-tooltip] casando o texto PT original com a
+    // chave (mapa TIP_POR_PT). Guarda o PT em data-tooltip-pt na 1ª vez pra a
+    // troca de idioma sempre partir do original (nunca do já-traduzido).
+    escopo.querySelectorAll('[data-tooltip]').forEach(el => {
+      let base = el.getAttribute('data-tooltip-pt');
+      if (base == null) { base = el.getAttribute('data-tooltip'); el.setAttribute('data-tooltip-pt', base); }
+      const chave = TIP_POR_PT[base];
+      if (chave) el.setAttribute('data-tooltip', T(chave));
     });
     document.documentElement.setAttribute('lang', idiomaAtual);
     // avisa quem quiser reagir (ex.: telas que montam texto via JS)
@@ -34987,6 +35079,13 @@ window.wmInitNovaSenha = wmInitNovaSenha;
       window.__landingReady = true;
       if (typeof initLandingAnims === 'function') initLandingAnims();
     }
+    // Re-aplica as traduções na página que entrou (o editor e outras telas
+    // são mostrados dinamicamente; sem isso só o load inicial traduziria).
+    if (typeof window.WM_APLICAR_I18N === 'function') {
+      const pg = document.getElementById(pageId);
+      window.WM_APLICAR_I18N(pg || document);
+    }
+    if (typeof window.WM_LIGAR_SELETORES_IDIOMA === 'function') window.WM_LIGAR_SELETORES_IDIOMA();
     window.scrollTo(0, 0);
   }
 
