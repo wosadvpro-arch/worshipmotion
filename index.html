@@ -6852,8 +6852,8 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
   
   <aside class="editor-left">
     <div class="panel-tabs">
-      <button class="panel-tab active" data-panel="lyrics">Letra</button>
-      <button class="panel-tab" data-panel="animations">Animações</button>
+      <button class="panel-tab active" data-panel="lyrics" data-i18n="panel.lyrics">Letra</button>
+      <button class="panel-tab" data-panel="animations" data-i18n="panel.animations">Animações</button>
     </div>
 
     <div class="panel-body">
@@ -6861,12 +6861,12 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
       <div class="panel-content" data-panel-content="lyrics">
         <div class="panel-section">
           <div class="panel-section-title">
-            <span>Cole sua letra</span>
+            <span data-i18n="ly.paste">Cole sua letra</span>
             <button class="icon-btn" data-tooltip="Limpar" id="btn-clear-lyrics">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
             </button>
           </div>
-          <textarea class="lyrics-textarea" id="lyrics-input" placeholder="Tu és Santo
+          <textarea class="lyrics-textarea" id="lyrics-input" data-i18n-attr="placeholder:ly.placeholder" placeholder="Tu és Santo
 Tu és Santo
 Tu és Santo, Senhor
 
@@ -6878,27 +6878,27 @@ Digno de toda honra"></textarea>
           <div style="display: flex; gap: var(--space-2); margin-top: var(--space-3);">
             <button class="btn btn-primary btn-sm" id="btn-parse-lyrics" style="flex:1">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-              Gerar Lyric
+              <span data-i18n="ly.generate">Gerar Lyric</span>
             </button>
           </div>
         </div>
 
         <div class="panel-section">
           <div class="panel-section-title">
-            <span>Estrofes</span>
+            <span data-i18n="ly.stanzas">Estrofes</span>
             <span class="badge" id="stanza-count">0</span>
-            <button class="stanza-select-toggle" id="btn-select-stanzas" title="Selecionar várias estrofes pra copiar em bloco (ex: o refrão). Dica: segure o dedo numa estrofe pra já começar a selecionar.">Selecionar</button>
+            <button class="stanza-select-toggle" id="btn-select-stanzas" data-i18n="ly.select" data-i18n-attr="title:ly.selectTip" title="Selecionar várias estrofes pra copiar em bloco (ex: o refrão). Dica: segure o dedo numa estrofe pra já começar a selecionar.">Selecionar</button>
           </div>
           <div class="stanza-select-bar" id="stanza-select-bar" style="display:none;">
             <span class="stanza-select-count" id="stanza-select-count">0 selecionadas</span>
             <div class="stanza-select-actions">
-              <button class="btn btn-sm btn-primary" id="btn-dup-selected">Duplicar</button>
-              <button class="btn btn-sm" id="btn-del-selected">Excluir</button>
-              <button class="btn btn-sm btn-ghost" id="btn-cancel-select">Cancelar</button>
+              <button class="btn btn-sm btn-primary" id="btn-dup-selected" data-i18n="ly.duplicate">Duplicar</button>
+              <button class="btn btn-sm" id="btn-del-selected" data-i18n="ly.delete">Excluir</button>
+              <button class="btn btn-sm btn-ghost" id="btn-cancel-select" data-i18n="ly.cancel">Cancelar</button>
             </div>
           </div>
           <div class="stanza-list" id="stanza-list">
-            <div style="font-size: var(--text-xs); color: var(--text-tertiary); text-align: center; padding: var(--space-6) 0;">
+            <div data-i18n="ly.emptyStanzas" style="font-size: var(--text-xs); color: var(--text-tertiary); text-align: center; padding: var(--space-6) 0;">
               Gere uma lyric para ver as estrofes
             </div>
           </div>
@@ -8051,7 +8051,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'i18n-rail-fix-24jul';
+window.__WM_BUILD = 'i18n-painel-letra-24jul';
 
 /* ============================================================
    MOTOR DE IDIOMAS (i18n) — Parte 1: a fiação
@@ -8152,6 +8152,25 @@ window.__WM_BUILD = 'i18n-rail-fix-24jul';
     'tip.recenter':     { pt: 'Recentralizar slide', en: 'Recenter slide', es: 'Recentrar diapositiva' },
     'tip.toggleTimeline':{ pt: 'Esconder/mostrar linha do tempo (mais espaço pro slide)', en: 'Hide/show timeline (more room for the slide)', es: 'Ocultar/mostrar línea de tiempo (más espacio para la diapositiva)' },
     'tip.markBeat':     { pt: 'Marcar no ritmo: com música carregada ela toca ao clicar em Iniciar; sem música, você ouve por fora e vai batendo', en: 'Tap to the beat: with music loaded it plays when you press Start; without music, play it externally and tap along', es: 'Marcar al ritmo: con música cargada suena al pulsar Iniciar; sin música, la escuchas por fuera y vas marcando' },
+
+    // ================= EDITOR — abas dos painéis =================
+    'panel.lyrics':     { pt: 'Letra', en: 'Lyrics', es: 'Letra' },
+    'panel.animations': { pt: 'Animações', en: 'Animations', es: 'Animaciones' },
+
+    // ================= EDITOR — painel de LETRA =================
+    'ly.paste':         { pt: 'Cole sua letra', en: 'Paste your lyrics', es: 'Pega tu letra' },
+    'ly.placeholder':   { pt: 'Tu és Santo\nTu és Santo\nTu és Santo, Senhor\n\n[Refrão]\nGlória, glória ao Cordeiro\nAleluia, aleluia\nSanto, Santo, Santo\nDigno de toda honra', en: 'Holy are You\nHoly are You\nHoly are You, Lord\n\n[Chorus]\nGlory, glory to the Lamb\nHallelujah, hallelujah\nHoly, Holy, Holy\nWorthy of all honor', es: 'Santo eres Tú\nSanto eres Tú\nSanto eres Tú, Señor\n\n[Coro]\nGloria, gloria al Cordero\nAleluya, aleluya\nSanto, Santo, Santo\nDigno de toda honra' },
+    'ly.generate':      { pt: 'Gerar Lyric', en: 'Generate Lyric', es: 'Generar Lyric' },
+    'ly.stanzas':       { pt: 'Estrofes', en: 'Stanzas', es: 'Estrofas' },
+    'ly.select':        { pt: 'Selecionar', en: 'Select', es: 'Seleccionar' },
+    'ly.duplicate':     { pt: 'Duplicar', en: 'Duplicate', es: 'Duplicar' },
+    'ly.delete':        { pt: 'Excluir', en: 'Delete', es: 'Eliminar' },
+    'ly.cancel':        { pt: 'Cancelar', en: 'Cancel', es: 'Cancelar' },
+    'ly.emptyStanzas':  { pt: 'Gere uma lyric para ver as estrofes', en: 'Generate a lyric to see the stanzas', es: 'Genera un lyric para ver las estrofas' },
+    'ly.selectTip':     { pt: 'Selecionar várias estrofes pra copiar em bloco (ex: o refrão). Dica: segure o dedo numa estrofe pra já começar a selecionar.', en: 'Select several stanzas to copy as a block (e.g. the chorus). Tip: press and hold a stanza to start selecting.', es: 'Selecciona varias estrofas para copiarlas en bloque (ej: el coro). Consejo: mantén pulsada una estrofa para empezar a seleccionar.' },
+    // "N selecionada(s)" montado no JS
+    'ly.selectedOne':   { pt: '1 selecionada', en: '1 selected', es: '1 seleccionada' },
+    'ly.selectedN':     { pt: '{n} selecionadas', en: '{n} selected', es: '{n} seleccionadas' },
   };
   window.WM_I18N_DIC = DIC;
 
@@ -20936,7 +20955,9 @@ function initEditor() {
   function _atualizarBarraSelecao() {
     const n = _wmSelSet.size;
     const cnt = $('#stanza-select-count');
-    if (cnt) cnt.textContent = n === 1 ? '1 selecionada' : `${n} selecionadas`;
+    if (cnt) cnt.textContent = n === 1
+      ? (window.WM_T ? window.WM_T('ly.selectedOne') : '1 selecionada')
+      : (window.WM_T ? window.WM_T('ly.selectedN').replace('{n}', n) : `${n} selecionadas`);
     const dup = $('#btn-dup-selected');
     if (dup) dup.disabled = (n === 0);
   }
