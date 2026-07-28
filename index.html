@@ -8091,7 +8091,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'i18n-ritmo-botoes-24jul';
+window.__WM_BUILD = 'i18n-ritmo-polish-24jul';
 
 /* ============================================================
    MOTOR DE IDIOMAS (i18n) — Parte 1: a fiação
@@ -8416,13 +8416,13 @@ window.__WM_BUILD = 'i18n-ritmo-botoes-24jul';
     'mk.distributeTip': { pt: 'Preencher palavras intermediárias entre as já marcadas', en: 'Fill in the words between the ones already marked', es: 'Rellenar las palabras intermedias entre las ya marcadas' },
     'mk.resetAll':      { pt: '↺ Resetar tudo', en: '↺ Reset all', es: '↺ Restablecer todo' },
     'mk.resetAllTip':   { pt: 'Apagar TODAS as marcações', en: 'Clear ALL markings', es: 'Borrar TODAS las marcaciones' },
-    'mk.collapse':      { pt: 'Minimizar (mantém aberto, só esconde a lista)', en: 'Minimize (stays open, just hides the list)', es: 'Minimizar (queda abierto, solo oculta la lista)' },
+    'mk.collapse':      { pt: 'Minimizar (mantém aberto, só esconde a lista)', en: 'Minimize (stays open, just hides the list)', es: 'Minimizar (se queda abierto, solo oculta la lista)' },
     'mk.close':         { pt: 'Fechar (Esc)', en: 'Close (Esc)', es: 'Cerrar (Esc)' },
-    'mk.instructions':  { pt: '<strong>No celular:</strong> toque no <strong>▶</strong> pra tocar e <strong>toque na palavra</strong> no momento dela pra marcar; <strong>↶ Desfazer</strong> corrige. • <strong>No computador:</strong> <kbd>Espaço</kbd> toca/pausa, <kbd>Tab</kbd> marca próxima, <kbd>Shift+Tab</kbd> desfaz. • Clique/toque na <strong>barra de áudio</strong> abaixo pra ir a qualquer ponto • Cada estrofe: modo <strong>Palavra</strong> ou <strong>Linha</strong>', en: '<strong>On mobile:</strong> tap <strong>▶</strong> to play and <strong>tap the word</strong> at its moment to mark it; <strong>↶ Undo</strong> fixes it. • <strong>On desktop:</strong> <kbd>Space</kbd> plays/pauses, <kbd>Tab</kbd> marks next, <kbd>Shift+Tab</kbd> undoes. • Click/tap the <strong>audio bar</strong> below to jump anywhere • Each stanza: <strong>Word</strong> or <strong>Line</strong> mode', es: '<strong>En el móvil:</strong> toca <strong>▶</strong> para reproducir y <strong>toca la palabra</strong> en su momento para marcarla; <strong>↶ Deshacer</strong> corrige. • <strong>En el ordenador:</strong> <kbd>Espacio</kbd> reproduce/pausa, <kbd>Tab</kbd> marca la siguiente, <kbd>Shift+Tab</kbd> deshace. • Haz clic/toca la <strong>barra de audio</strong> abajo para ir a cualquier punto • Cada estrofa: modo <strong>Palabra</strong> o <strong>Línea</strong>' },
+    'mk.instructions':  { pt: '<strong>No celular:</strong> toque no <strong>▶</strong> pra tocar e <strong>toque na palavra</strong> no momento dela pra marcar; <strong>↶ Desfazer</strong> corrige. • <strong>No computador:</strong> <kbd>Espaço</kbd> toca/pausa, <kbd>Tab</kbd> marca próxima, <kbd>Shift+Tab</kbd> desfaz. • Clique/toque na <strong>barra de áudio</strong> abaixo pra ir a qualquer ponto • Cada estrofe: modo <strong>Palavra</strong> ou <strong>Linha</strong>', en: '<strong>On mobile:</strong> tap <strong>▶</strong> to play and <strong>tap the word</strong> at its moment to mark it; <strong>↶ Undo</strong> fixes it. • <strong>On desktop:</strong> <kbd>Space</kbd> plays/pauses, <kbd>Tab</kbd> marks next, <kbd>Shift+Tab</kbd> undoes. • Click/tap the <strong>audio bar</strong> below to jump anywhere • Each stanza: <strong>Word</strong> or <strong>Line</strong> mode', es: '<strong>En el celular:</strong> toca <strong>▶</strong> para reproducir y <strong>toca la palabra</strong> en su momento para marcarla; <strong>↶ Deshacer</strong> corrige. • <strong>En la computadora:</strong> <kbd>Espacio</kbd> reproduce/pausa, <kbd>Tab</kbd> marca la siguiente, <kbd>Shift+Tab</kbd> deshace. • Haz clic/toca la <strong>barra de audio</strong> abajo para ir a cualquier punto • Cada estrofa: modo <strong>Palabra</strong> o <strong>Línea</strong>' },
     'mk.start':         { pt: 'Iniciar', en: 'Start', es: 'Iniciar' },
     'mk.prepare':       { pt: 'prepara…', en: 'get ready…', es: 'prepárate…' },
     'mk.mark':          { pt: 'MARCAR', en: 'TAP', es: 'MARCAR' },
-    'mk.tapBeat':       { pt: 'toque no ritmo', en: 'tap to the beat', es: 'toca al ritmo' },
+    'mk.tapBeat':       { pt: 'toque em cada palavra', en: 'tap each word', es: 'toca cada palabra' },
     'mk.continue':      { pt: 'Continuar', en: 'Resume', es: 'Continuar' },
     'mk.resumeSub':     { pt: 'retoma de onde parou', en: 'picks up where you left off', es: 'retoma donde lo dejaste' },
     'mk.done':          { pt: 'Concluído ✓', en: 'Done ✓', es: 'Completado ✓' },
@@ -8448,8 +8448,8 @@ window.__WM_BUILD = 'i18n-ritmo-botoes-24jul';
     'dyn.clearBeatTip2':{ pt: 'Limpar marcações desta estrofe', en: 'Clear markings of this stanza', es: 'Limpiar las marcaciones de esta estrofa' },
     'dyn.creditsMonth': { pt: 'Créditos este mês', en: 'Credits this month', es: 'Créditos este mes' },
     'dyn.settings':     { pt: 'Configurações', en: 'Settings', es: 'Configuración' },
-    'set.pcFonts':      { pt: 'Fontes do computador', en: 'Computer fonts', es: 'Fuentes del ordenador' },
-    'set.reloadFonts':  { pt: 'Recarregar fontes do computador', en: 'Reload computer fonts', es: 'Recargar fuentes del ordenador' },
+    'set.pcFonts':      { pt: 'Fontes do computador', en: 'Computer fonts', es: 'Fuentes de la computadora' },
+    'set.reloadFonts':  { pt: 'Recarregar fontes do computador', en: 'Reload computer fonts', es: 'Recargar fuentes de la computadora' },
     'set.shortcuts':    { pt: 'Atalhos de teclado', en: 'Keyboard shortcuts', es: 'Atajos de teclado' },
     'set.scPlay':       { pt: 'tocar animação', en: 'play animation', es: 'reproducir animación' },
     'set.scNav':        { pt: 'navegar entre slides', en: 'navigate between slides', es: 'navegar entre diapositivas' },
@@ -8458,7 +8458,7 @@ window.__WM_BUILD = 'i18n-ritmo-botoes-24jul';
     'set.tip':          { pt: 'Dica', en: 'Tip', es: 'Consejo' },
     'set.tipText':      { pt: 'Se as fontes personalizadas não aparecerem, clique em "Recarregar fontes" acima e permita o acesso quando o navegador pedir.', en: 'If your custom fonts don\'t show up, click "Reload fonts" above and allow access when the browser asks.', es: 'Si tus fuentes personalizadas no aparecen, haz clic en "Recargar fuentes" arriba y permite el acceso cuando el navegador lo pida.' },
     'set.loading':      { pt: 'Carregando...', en: 'Loading...', es: 'Cargando...' },
-    'set.fontsNotLoaded':{ pt: 'Fontes do computador não carregadas ainda', en: 'Computer fonts not loaded yet', es: 'Fuentes del ordenador aún no cargadas' },
+    'set.fontsNotLoaded':{ pt: 'Fontes do computador não carregadas ainda', en: 'Computer fonts not loaded yet', es: 'Fuentes de la computadora aún no cargadas' },
     'set.spaceKey':     { pt: 'Espaço', en: 'Space', es: 'Espacio' },
     'set.myAccount':    { pt: 'Minha conta', en: 'My account', es: 'Mi cuenta' },
     'dyn.copyCode':     { pt: 'Copiar código', en: 'Copy code', es: 'Copiar código' },
@@ -8527,7 +8527,7 @@ window.__WM_BUILD = 'i18n-ritmo-botoes-24jul';
     'md.videosTitle':   { pt: 'Videoaulas', en: 'Tutorials', es: 'Videotutoriales' },
     'md.videosSub':     { pt: 'Aprenda a usar o app, adicionar fontes, backgrounds e loops', en: 'Learn to use the app, add fonts, backgrounds and loops', es: 'Aprende a usar la app, añadir fuentes, fondos y loops' },
     'fp.searchFont':    { pt: 'Buscar fonte…', en: 'Search font…', es: 'Buscar fuente…' },
-    'fp.loadFont':      { pt: 'Carregar fonte do computador', en: 'Load font from computer', es: 'Cargar fuente del ordenador' },
+    'fp.loadFont':      { pt: 'Carregar fonte do computador', en: 'Load font from computer', es: 'Cargar fuente de la computadora' },
     'fp.buyFontPack':   { pt: 'Adquirir Pack de Fontes', en: 'Get Font Pack', es: 'Obtener Pack de Fuentes' },
     'fp.addBg':         { pt: 'Adicionar background (imagem ou vídeo)', en: 'Add background (image or video)', es: 'Añadir fondo (imagen o video)' },
     'fp.buyLoopPack':   { pt: 'Adquirir Pack de Loops', en: 'Get Loop Pack', es: 'Obtener Pack de Loops' },
