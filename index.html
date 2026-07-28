@@ -8091,7 +8091,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'i18n-templates-desc-24jul';
+window.__WM_BUILD = 'i18n-marcar-ritmo-24jul';
 
 /* ============================================================
    MOTOR DE IDIOMAS (i18n) — Parte 1: a fiação
@@ -8407,6 +8407,35 @@ window.__WM_BUILD = 'i18n-templates-desc-24jul';
     // ================= EDITOR — painéis/modais dinâmicos restantes =================
     'dyn.noAnimStyle':  { pt: 'Nenhuma animação neste estilo', en: 'No animations in this style', es: 'Ninguna animación en este estilo' },
     'dyn.tapStart':     { pt: 'Toque em Iniciar e vá batendo no ritmo da música', en: 'Tap Start and tap along to the beat of the song', es: 'Pulsa Iniciar y ve marcando al ritmo de la música' },
+    'mk.title':         { pt: 'Marcar no ritmo', en: 'Tap to the beat', es: 'Marcar al ritmo' },
+    'mk.back5':         { pt: 'Voltar 5 segundos', en: 'Back 5 seconds', es: 'Retroceder 5 segundos' },
+    'mk.fwd5':          { pt: 'Avançar 5 segundos', en: 'Forward 5 seconds', es: 'Avanzar 5 segundos' },
+    'mk.undo':          { pt: '↶ Desfazer', en: '↶ Undo', es: '↶ Deshacer' },
+    'mk.undoTip':       { pt: 'Desfazer a última marcação (atalho: Shift+Tab)', en: 'Undo the last mark (shortcut: Shift+Tab)', es: 'Deshacer la última marcación (atajo: Shift+Tab)' },
+    'mk.distribute':    { pt: 'Distribuir', en: 'Distribute', es: 'Distribuir' },
+    'mk.distributeTip': { pt: 'Preencher palavras intermediárias entre as já marcadas', en: 'Fill in the words between the ones already marked', es: 'Rellenar las palabras intermedias entre las ya marcadas' },
+    'mk.resetAll':      { pt: '↺ Resetar tudo', en: '↺ Reset all', es: '↺ Restablecer todo' },
+    'mk.resetAllTip':   { pt: 'Apagar TODAS as marcações', en: 'Clear ALL markings', es: 'Borrar TODAS las marcaciones' },
+    'mk.collapse':      { pt: 'Minimizar (mantém aberto, só esconde a lista)', en: 'Minimize (stays open, just hides the list)', es: 'Minimizar (queda abierto, solo oculta la lista)' },
+    'mk.close':         { pt: 'Fechar (Esc)', en: 'Close (Esc)', es: 'Cerrar (Esc)' },
+    'mk.instructions':  { pt: '<strong>No celular:</strong> toque no <strong>▶</strong> pra tocar e <strong>toque na palavra</strong> no momento dela pra marcar; <strong>↶ Desfazer</strong> corrige. • <strong>No computador:</strong> <kbd>Espaço</kbd> toca/pausa, <kbd>Tab</kbd> marca próxima, <kbd>Shift+Tab</kbd> desfaz. • Clique/toque na <strong>barra de áudio</strong> abaixo pra ir a qualquer ponto • Cada estrofe: modo <strong>Palavra</strong> ou <strong>Linha</strong>', en: '<strong>On mobile:</strong> tap <strong>▶</strong> to play and <strong>tap the word</strong> at its moment to mark it; <strong>↶ Undo</strong> fixes it. • <strong>On desktop:</strong> <kbd>Space</kbd> plays/pauses, <kbd>Tab</kbd> marks next, <kbd>Shift+Tab</kbd> undoes. • Click/tap the <strong>audio bar</strong> below to jump anywhere • Each stanza: <strong>Word</strong> or <strong>Line</strong> mode', es: '<strong>En el móvil:</strong> toca <strong>▶</strong> para reproducir y <strong>toca la palabra</strong> en su momento para marcarla; <strong>↶ Deshacer</strong> corrige. • <strong>En el ordenador:</strong> <kbd>Espacio</kbd> reproduce/pausa, <kbd>Tab</kbd> marca la siguiente, <kbd>Shift+Tab</kbd> deshace. • Haz clic/toca la <strong>barra de audio</strong> abajo para ir a cualquier punto • Cada estrofa: modo <strong>Palabra</strong> o <strong>Línea</strong>' },
+    'mk.start':         { pt: 'Iniciar', en: 'Start', es: 'Iniciar' },
+    'mk.startSub':      { pt: 'contagem 3, 2, 1', en: 'count 3, 2, 1', es: 'cuenta 3, 2, 1' },
+    'mk.pause':         { pt: '⏸ Pausar', en: '⏸ Pause', es: '⏸ Pausar' },
+    'mk.resume':        { pt: '▶ Continuar', en: '▶ Resume', es: '▶ Continuar' },
+    'mk.finish':        { pt: 'Concluir', en: 'Finish', es: 'Finalizar' },
+    'mk.wordsCount':    { pt: '{m}/{t} palavras', en: '{m}/{t} words', es: '{m}/{t} palabras' },
+    'mk.allMarked':     { pt: '🎉 Tudo marcado! Toque em Concluir.', en: '🎉 All marked! Tap Finish.', es: '🎉 ¡Todo marcado! Pulsa Finalizar.' },
+    'mk.next':          { pt: 'Próxima: “{w}”', en: 'Next: “{w}”', es: 'Siguiente: “{w}”' },
+    'mk.noneMarked':    { pt: 'Nenhuma palavra marcada ainda', en: 'No words marked yet', es: 'Ninguna palabra marcada aún' },
+    'mk.modeWord':      { pt: 'Palavra', en: 'Word', es: 'Palabra' },
+    'mk.modeLine':      { pt: 'Linha', en: 'Line', es: 'Línea' },
+    'mk.modeTip':       { pt: 'Como marcar esta estrofe', en: 'How to mark this stanza', es: 'Cómo marcar esta estrofa' },
+    'mk.linesTip':      { pt: '{n} linha(s) nesta estrofe', en: '{n} line(s) in this stanza', es: '{n} línea(s) en esta estrofa' },
+    'mk.countLines':    { pt: '{m}/{t} · {l} linha{s}', en: '{m}/{t} · {l} line{s}', es: '{m}/{t} · {l} línea{s}' },
+    'mk.emptyStanza':   { pt: '(estrofe vazia)', en: '(empty stanza)', es: '(estrofa vacía)' },
+    'mk.waveTip':       { pt: 'Clique ou arraste pra navegar no áudio', en: 'Click or drag to navigate the audio', es: 'Haz clic o arrastra para navegar el audio' },
+    'mk.miniPlay':      { pt: 'Espaço', en: 'Space', es: 'Espacio' },
     'dyn.clearBeat':    { pt: 'Limpar ritmo', en: 'Clear beat', es: 'Limpiar ritmo' },
     'dyn.clearBeatTip': { pt: 'Limpar marcação de ritmo desta estrofe', en: 'Clear beat marking of this stanza', es: 'Limpiar la marcación de ritmo de esta estrofa' },
     'dyn.clearBeatTip2':{ pt: 'Limpar marcações desta estrofe', en: 'Clear markings of this stanza', es: 'Limpiar las marcaciones de esta estrofa' },
@@ -25083,6 +25112,19 @@ function initEditor() {
       if (gridTpl && gridTpl.offsetParent !== null && typeof renderTemplateGrid === 'function') {
         renderTemplateGrid();
       }
+      // re-cria o painel "marcar no ritmo" se estiver aberto (header é HTML fixo
+      // com WM_T inline). ensureMarkingPanel recria E religa os listeners.
+      // Só recria se NÃO estiver com a marcação tap rodando (evita perder o fluxo).
+      if (typeof _markingPanelOpen !== 'undefined' && _markingPanelOpen &&
+          (typeof _tapRunning === 'undefined' || !_tapRunning)) {
+        const mp = document.getElementById('marking-panel');
+        const estavaColapsado = mp && mp.classList.contains('is-collapsed');
+        if (mp) mp.remove();
+        if (typeof ensureMarkingPanel === 'function') ensureMarkingPanel();
+        const novo = document.getElementById('marking-panel');
+        if (novo && estavaColapsado) novo.classList.add('is-collapsed');
+        if (typeof renderMarkingPanel === 'function') renderMarkingPanel();
+      }
     } catch (e) {}
   });
 
@@ -29683,7 +29725,7 @@ function initEditor() {
       track.innerHTML = `
         <div class="timeline-empty-state">
           <div class="timeline-empty-icon">⊕</div>
-          <div>Nenhuma palavra marcada ainda</div>
+          <div>${window.WM_T?window.WM_T("mk.noneMarked"):"Nenhuma palavra marcada ainda"}</div>
           <button class="btn btn-primary btn-sm" id="btn-open-marking-empty" style="margin-top: 10px;">
             Marcar no ritmo
           </button>
@@ -30001,7 +30043,7 @@ function initEditor() {
     if (!btn) return;
     // Só mostra o Pausar/Continuar depois que a marcação começou.
     btn.style.display = (_tapRunning || _tapPaused) ? '' : 'none';
-    btn.textContent = _tapPaused ? '▶ Continuar' : '⏸ Pausar';
+    btn.textContent = _tapPaused ? (window.WM_T?window.WM_T('mk.resume'):'▶ Continuar') : (window.WM_T?window.WM_T('mk.pause'):'⏸ Pausar');
   }
   function _tapFinish(done) {
     _tapRunning = false;
@@ -30019,15 +30061,15 @@ function initEditor() {
   function _updateTapBar() {
     const st = (typeof markStats === 'function') ? markStats() : { marked: 0, total: 0 };
     const prog = document.getElementById('tap-progress');
-    if (prog) prog.textContent = `${st.marked}/${st.total} palavras`;
+    if (prog) prog.textContent = (window.WM_T?window.WM_T('mk.wordsCount').replace('{m}',st.marked).replace('{t}',st.total):`${st.marked}/${st.total} palavras`);
     const nextEl = document.getElementById('tap-next');
     if (nextEl) {
       const nx = _tapNextUnit();
-      if (!nx) nextEl.textContent = '🎉 Tudo marcado! Toque em Concluir.';
+      if (!nx) nextEl.textContent = (window.WM_T?window.WM_T('mk.allMarked'):'🎉 Tudo marcado! Toque em Concluir.');
       else if (!_tapRunning) nextEl.textContent = (window.WM_T?window.WM_T('dyn.tapStart'):'Toque em Iniciar e vá batendo no ritmo da música');
       else {
         const txt = nx.lineMode ? (nx.words.map(w => w.text).join(' ')) : (nx.word.text || '');
-        nextEl.textContent = 'Próxima: “' + (txt || '').slice(0, 42) + '”';
+        nextEl.textContent = (window.WM_T?window.WM_T('mk.next').replace('{w}',(txt||'').slice(0,42)):'Próxima: “' + (txt || '').slice(0, 42) + '”');
       }
     }
   }
@@ -30107,51 +30149,49 @@ function initEditor() {
       <div class="marking-panel-header">
         <div class="marking-panel-title">
           <!-- Mini-player: voltar + play/pause + tempo -->
-          <button class="marking-mini-play" id="mini-back5-btn" title="Voltar 5 segundos" style="font-size:11px;font-weight:700;">−5s</button>
-          <button class="marking-mini-play" id="mini-fwd5-btn" title="Avançar 5 segundos" style="font-size:11px;font-weight:700;">+5s</button>
-          <button class="marking-mini-play" id="mini-play-btn" title="Espaço">
+          <button class="marking-mini-play" id="mini-back5-btn" title="${window.WM_T?window.WM_T("mk.back5"):"Voltar 5 segundos"}" style="font-size:11px;font-weight:700;">−5s</button>
+          <button class="marking-mini-play" id="mini-fwd5-btn" title="${window.WM_T?window.WM_T("mk.fwd5"):"Avançar 5 segundos"}" style="font-size:11px;font-weight:700;">+5s</button>
+          <button class="marking-mini-play" id="mini-play-btn" title="${window.WM_T?window.WM_T("mk.miniPlay"):"Espaço"}">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"/></svg>
           </button>
           <span class="marking-mini-timer" id="mini-timer">0:00 / 0:00</span>
-          <strong style="margin-left: 8px;">Marcar no ritmo</strong>
+          <strong style="margin-left: 8px;">${window.WM_T?window.WM_T("mk.title"):"Marcar no ritmo"}</strong>
           <span class="marking-panel-progress" id="marking-progress">0/0</span>
         </div>
         <div class="marking-panel-tools">
-          <button class="btn btn-ghost btn-sm" id="btn-undo-mark" title="Desfazer a última marcação (atalho: Shift+Tab)">
-            ↶ Desfazer
+          <button class="btn btn-ghost btn-sm" id="btn-undo-mark" title="${window.WM_T?window.WM_T("mk.undoTip"):"Desfazer a última marcação (atalho: Shift+Tab)"}">
+            ${window.WM_T?window.WM_T("mk.undo"):"↶ Desfazer"}
           </button>
-          <button class="btn btn-ghost btn-sm" id="btn-distribute-marks" title="Preencher palavras intermediárias entre as já marcadas">
+          <button class="btn btn-ghost btn-sm" id="btn-distribute-marks" title="${window.WM_T?window.WM_T("mk.distributeTip"):"Preencher palavras intermediárias entre as já marcadas"}">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="12" r="2"/><circle cx="18" cy="12" r="2"/><path d="M10 12h4M8 12h.01M16 12h.01"/></svg>
-            Distribuir
+            ${window.WM_T?window.WM_T("mk.distribute"):"Distribuir"}
           </button>
-          <button class="btn btn-ghost btn-sm" id="btn-reset-marks" title="Apagar TODAS as marcações">
-            ↺ Resetar tudo
+          <button class="btn btn-ghost btn-sm" id="btn-reset-marks" title="${window.WM_T?window.WM_T("mk.resetAllTip"):"Apagar TODAS as marcações"}">
+            ${window.WM_T?window.WM_T("mk.resetAll"):"↺ Resetar tudo"}
           </button>
-          <button class="marking-panel-collapse" id="btn-collapse-marking" title="Minimizar (mantém aberto, só esconde a lista)">−</button>
-          <button class="marking-panel-close" id="btn-close-marking" title="Fechar (Esc)">×</button>
+          <button class="marking-panel-collapse" id="btn-collapse-marking" title="${window.WM_T?window.WM_T("mk.collapse"):"Minimizar (mantém aberto, só esconde a lista)"}">−</button>
+          <button class="marking-panel-close" id="btn-close-marking" title="${window.WM_T?window.WM_T("mk.close"):"Fechar (Esc)"}">×</button>
         </div>
       </div>
-      <div class="marking-panel-instructions">
-        <strong>No celular:</strong> toque no <strong>▶</strong> pra tocar e <strong>toque na palavra</strong> no momento dela pra marcar; <strong>↶ Desfazer</strong> corrige. • <strong>No computador:</strong> <kbd>Espaço</kbd> toca/pausa, <kbd>Tab</kbd> marca próxima, <kbd>Shift+Tab</kbd> desfaz. • Clique/toque na <strong>barra de áudio</strong> abaixo pra ir a qualquer ponto • Cada estrofe: modo <strong>Palavra</strong> ou <strong>Linha</strong>
-      </div>
+      <div class="marking-panel-instructions">${window.WM_T?window.WM_T("mk.instructions"):'<strong>No celular:</strong> toque no <strong>▶</strong> pra tocar e <strong>toque na palavra</strong> no momento dela pra marcar; <strong>↶ Desfazer</strong> corrige. • <strong>No computador:</strong> <kbd>Espaço</kbd> toca/pausa, <kbd>Tab</kbd> marca próxima, <kbd>Shift+Tab</kbd> desfaz. • Clique/toque na <strong>barra de áudio</strong> abaixo pra ir a qualquer ponto • Cada estrofe: modo <strong>Palavra</strong> ou <strong>Linha</strong>'}</div>
       <div class="marking-tap-bar" id="marking-tap-bar" style="display:none;">
         <button class="tap-big-btn" id="tap-big-btn" type="button">
-          <span class="tap-big-label">Iniciar</span>
-          <span class="tap-big-sub">contagem 3, 2, 1</span>
+          <span class="tap-big-label">${window.WM_T?window.WM_T("mk.start"):"Iniciar"}</span>
+          <span class="tap-big-sub">${window.WM_T?window.WM_T("mk.startSub"):"contagem 3, 2, 1"}</span>
         </button>
         <div class="tap-info">
           <div class="tap-info-row">
             <span class="tap-clock" id="tap-clock">0:00</span>
-            <span class="tap-progress" id="tap-progress">0/0 palavras</span>
+            <span class="tap-progress" id="tap-progress">${window.WM_T?window.WM_T("mk.wordsCount").replace("{m}","0").replace("{t}","0"):"0/0 palavras"}</span>
           </div>
           <div class="tap-next" id="tap-next">${window.WM_T?window.WM_T("dyn.tapStart"):"Toque em Iniciar e vá batendo no ritmo da música"}</div>
           <div class="tap-actions">
-            <button class="btn btn-ghost btn-sm" id="tap-pause-btn" type="button" style="display:none;">⏸ Pausar</button>
-            <button class="btn btn-ghost btn-sm" id="tap-finish-btn" type="button">Concluir</button>
+            <button class="btn btn-ghost btn-sm" id="tap-pause-btn" type="button" style="display:none;">${window.WM_T?window.WM_T("mk.pause"):"⏸ Pausar"}</button>
+            <button class="btn btn-ghost btn-sm" id="tap-finish-btn" type="button">${window.WM_T?window.WM_T("mk.finish"):"Concluir"}</button>
           </div>
         </div>
       </div>
-      <div class="marking-wave-wrap" id="marking-wave-wrap" title="Clique ou arraste pra navegar no áudio">
+      <div class="marking-wave-wrap" id="marking-wave-wrap" title="${window.WM_T?window.WM_T("mk.waveTip"):"Clique ou arraste pra navegar no áudio"}">
         <canvas id="marking-wave-canvas"></canvas>
         <div class="marking-wave-playhead" id="marking-wave-playhead"></div>
       </div>
@@ -30540,14 +30580,14 @@ function initEditor() {
           <div class="mark-stanza ${isActive ? 'is-active' : ''}" data-si="${si}">
             <div class="mark-stanza-header">
               <span class="mark-stanza-badge" style="background: ${bg};">${escapeHtml(label)}</span>
-              <div class="mark-mode-toggle" data-si="${si}" title="Como marcar esta estrofe">
-                <button class="mark-mode-btn ${getStanzaMarkMode(si) === 'word' ? 'active' : ''}" data-mode="word" data-si="${si}">Palavra</button>
-                <button class="mark-mode-btn ${getStanzaMarkMode(si) === 'line' ? 'active' : ''}" data-mode="line" data-si="${si}">Linha</button>
+              <div class="mark-mode-toggle" data-si="${si}" title="${window.WM_T?window.WM_T('mk.modeTip'):'Como marcar esta estrofe'}">
+                <button class="mark-mode-btn ${getStanzaMarkMode(si) === 'word' ? 'active' : ''}" data-mode="word" data-si="${si}">${window.WM_T?window.WM_T("mk.modeWord"):"Palavra"}</button>
+                <button class="mark-mode-btn ${getStanzaMarkMode(si) === 'line' ? 'active' : ''}" data-mode="line" data-si="${si}">${window.WM_T?window.WM_T("mk.modeLine"):"Linha"}</button>
               </div>
-              <span class="mark-stanza-count" title="${totalLinhas} linha(s) nesta estrofe">${markedCount}/${stanzaWords.length} · ${totalLinhas} linha${totalLinhas !== 1 ? 's' : ''}</span>
+              <span class="mark-stanza-count" title="${window.WM_T?window.WM_T('mk.linesTip').replace('{n}',totalLinhas):totalLinhas+' linha(s) nesta estrofe'}">${window.WM_T?window.WM_T('mk.countLines').replace('{m}',markedCount).replace('{t}',stanzaWords.length).replace('{l}',totalLinhas).replace('{s}',totalLinhas!==1?'s':''):markedCount+'/'+stanzaWords.length+' · '+totalLinhas+' linha'+(totalLinhas!==1?'s':'')}</span>
               ${markedCount > 0 ? `<button class="mark-stanza-clear" data-clear-si="${si}" title="${window.WM_T?window.WM_T('dyn.clearBeatTip2'):'Limpar marcações desta estrofe'}">${window.WM_T?window.WM_T('dyn.clearBeat'):'Limpar ritmo'}</button>` : ''}
             </div>
-            <div class="mark-stanza-lines">${linesHtml || '<span style="font-size:11px;color:rgba(255,255,255,0.4);">(estrofe vazia)</span>'}</div>
+            <div class="mark-stanza-lines">${linesHtml || ('<span style="font-size:11px;color:rgba(255,255,255,0.4);">' + (window.WM_T?window.WM_T('mk.emptyStanza'):'(estrofe vazia)') + '</span>')}</div>
           </div>
         `;
       }).join('');
