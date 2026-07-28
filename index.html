@@ -8091,7 +8091,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'i18n-marcar-ritmo-24jul';
+window.__WM_BUILD = 'i18n-ritmo-botoes-24jul';
 
 /* ============================================================
    MOTOR DE IDIOMAS (i18n) — Parte 1: a fiação
@@ -8420,6 +8420,13 @@ window.__WM_BUILD = 'i18n-marcar-ritmo-24jul';
     'mk.close':         { pt: 'Fechar (Esc)', en: 'Close (Esc)', es: 'Cerrar (Esc)' },
     'mk.instructions':  { pt: '<strong>No celular:</strong> toque no <strong>▶</strong> pra tocar e <strong>toque na palavra</strong> no momento dela pra marcar; <strong>↶ Desfazer</strong> corrige. • <strong>No computador:</strong> <kbd>Espaço</kbd> toca/pausa, <kbd>Tab</kbd> marca próxima, <kbd>Shift+Tab</kbd> desfaz. • Clique/toque na <strong>barra de áudio</strong> abaixo pra ir a qualquer ponto • Cada estrofe: modo <strong>Palavra</strong> ou <strong>Linha</strong>', en: '<strong>On mobile:</strong> tap <strong>▶</strong> to play and <strong>tap the word</strong> at its moment to mark it; <strong>↶ Undo</strong> fixes it. • <strong>On desktop:</strong> <kbd>Space</kbd> plays/pauses, <kbd>Tab</kbd> marks next, <kbd>Shift+Tab</kbd> undoes. • Click/tap the <strong>audio bar</strong> below to jump anywhere • Each stanza: <strong>Word</strong> or <strong>Line</strong> mode', es: '<strong>En el móvil:</strong> toca <strong>▶</strong> para reproducir y <strong>toca la palabra</strong> en su momento para marcarla; <strong>↶ Deshacer</strong> corrige. • <strong>En el ordenador:</strong> <kbd>Espacio</kbd> reproduce/pausa, <kbd>Tab</kbd> marca la siguiente, <kbd>Shift+Tab</kbd> deshace. • Haz clic/toca la <strong>barra de audio</strong> abajo para ir a cualquier punto • Cada estrofa: modo <strong>Palabra</strong> o <strong>Línea</strong>' },
     'mk.start':         { pt: 'Iniciar', en: 'Start', es: 'Iniciar' },
+    'mk.prepare':       { pt: 'prepara…', en: 'get ready…', es: 'prepárate…' },
+    'mk.mark':          { pt: 'MARCAR', en: 'TAP', es: 'MARCAR' },
+    'mk.tapBeat':       { pt: 'toque no ritmo', en: 'tap to the beat', es: 'toca al ritmo' },
+    'mk.continue':      { pt: 'Continuar', en: 'Resume', es: 'Continuar' },
+    'mk.resumeSub':     { pt: 'retoma de onde parou', en: 'picks up where you left off', es: 'retoma donde lo dejaste' },
+    'mk.done':          { pt: 'Concluído ✓', en: 'Done ✓', es: 'Completado ✓' },
+    'mk.allMarkedSub':  { pt: 'todas marcadas', en: 'all marked', es: 'todas marcadas' },
     'mk.startSub':      { pt: 'contagem 3, 2, 1', en: 'count 3, 2, 1', es: 'cuenta 3, 2, 1' },
     'mk.pause':         { pt: '⏸ Pausar', en: '⏸ Pause', es: '⏸ Pausar' },
     'mk.resume':        { pt: '▶ Continuar', en: '▶ Resume', es: '▶ Continuar' },
@@ -29727,7 +29734,7 @@ function initEditor() {
           <div class="timeline-empty-icon">⊕</div>
           <div>${window.WM_T?window.WM_T("mk.noneMarked"):"Nenhuma palavra marcada ainda"}</div>
           <button class="btn btn-primary btn-sm" id="btn-open-marking-empty" style="margin-top: 10px;">
-            Marcar no ritmo
+            ${window.WM_T?window.WM_T("ed.markBeat"):"Marcar no ritmo"}
           </button>
         </div>
       `;
@@ -29988,11 +29995,11 @@ function initEditor() {
     if (!big) return;
     let n = 3;
     big.disabled = true;
-    _tapSetBig(String(n), 'prepara…', 'is-counting');
+    _tapSetBig(String(n), (window.WM_T?window.WM_T('mk.prepare'):'prepara…'), 'is-counting');
     clearInterval(_tapCountTimer);
     _tapCountTimer = setInterval(() => {
       n--;
-      if (n > 0) { _tapSetBig(String(n), 'prepara…', 'is-counting'); }
+      if (n > 0) { _tapSetBig(String(n), (window.WM_T?window.WM_T('mk.prepare'):'prepara…'), 'is-counting'); }
       else {
         clearInterval(_tapCountTimer);
         big.disabled = false;
@@ -30009,7 +30016,7 @@ function initEditor() {
             audioElement.play().catch(e => console.warn('Audio play falhou:', e));
           } catch (e) {}
         }
-        _tapSetBig('MARCAR', 'toque no ritmo', 'is-running');
+        _tapSetBig((window.WM_T?window.WM_T('mk.mark'):'MARCAR'), (window.WM_T?window.WM_T('mk.tapBeat'):'toque no ritmo'), 'is-running');
         _tapTick();
         _updateTapBar();
         _updatePauseBtn();
@@ -30023,7 +30030,7 @@ function initEditor() {
     _tapPaused = true;
     cancelAnimationFrame(_tapRAF);
     if (_temAudioCarregado()) { try { audioElement.pause(); } catch (e) {} }
-    _tapSetBig('Continuar', 'retoma de onde parou', 'is-paused');
+    _tapSetBig((window.WM_T?window.WM_T('mk.continue'):'Continuar'), (window.WM_T?window.WM_T('mk.resumeSub'):'retoma de onde parou'), 'is-paused');
     const c = document.getElementById('tap-clock'); if (c) c.textContent = formatTime(_markClock());
     _updateTapBar();
     _updatePauseBtn();
@@ -30034,7 +30041,7 @@ function initEditor() {
     _tapRunning = true;
     _tapStartMs = performance.now(); // continua contando a partir do tempo acumulado
     if (_temAudioCarregado()) { try { audioElement.play().catch(() => {}); } catch (e) {} }
-    _tapSetBig('MARCAR', 'toque no ritmo', 'is-running');
+    _tapSetBig((window.WM_T?window.WM_T('mk.mark'):'MARCAR'), (window.WM_T?window.WM_T('mk.tapBeat'):'toque no ritmo'), 'is-running');
     _tapTick();
     _updatePauseBtn();
   }
@@ -30054,7 +30061,7 @@ function initEditor() {
     if (_temAudioCarregado()) { try { audioElement.pause(); } catch (e) {} }
     const big = document.getElementById('tap-big-btn');
     if (big) big.disabled = false;
-    _tapSetBig(done ? 'Concluído ✓' : 'Iniciar', done ? 'todas marcadas' : 'contagem 3, 2, 1', null);
+    _tapSetBig(done ? (window.WM_T?window.WM_T('mk.done'):'Concluído ✓') : (window.WM_T?window.WM_T('mk.start'):'Iniciar'), done ? (window.WM_T?window.WM_T('mk.allMarkedSub'):'todas marcadas') : (window.WM_T?window.WM_T('mk.startSub'):'contagem 3, 2, 1'), null);
     _updateTapBar();
     _updatePauseBtn();
   }
