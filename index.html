@@ -6512,10 +6512,19 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
 .page-landing .lp-stage-hint { text-align: center; margin-top: 14px; font-size: 13px; color: var(--lp-text-faint); }
 .page-landing .lp-video { position: relative; width: 100%; aspect-ratio: 16 / 9; border-radius: 16px; overflow: hidden; border: 1px solid var(--lp-line-strong); box-shadow: 0 28px 64px -28px rgba(139,92,246,0.45); background: #000; }
 .page-landing .lp-video iframe, .page-landing .lp-video #lp-yt-player { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.page-landing .lp-video-shield { position: absolute; inset: 0; z-index: 1; cursor: pointer; background: transparent; }
 .page-landing .lp-video-unmute { position: absolute; bottom: 16px; right: 16px; z-index: 2; display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.25); background: rgba(15,15,20,0.72); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); color: #fff; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.18s, transform 0.18s, opacity 0.25s; box-shadow: 0 4px 16px -4px rgba(0,0,0,0.5); }
 .page-landing .lp-video-unmute:hover { background: linear-gradient(120deg, var(--lp-accent), var(--lp-accent-2)); border-color: transparent; transform: translateY(-1px); }
 .page-landing .lp-video-unmute svg { flex-shrink: 0; }
-.page-landing .lp-video-unmute.is-hidden { opacity: 0; pointer-events: none; }
+/* Alternância de ícones por estado. Padrão (mudo): mostra "som" + texto. */
+.page-landing .lp-video-unmute .ic-pause, .page-landing .lp-video-unmute .ic-play { display: none; }
+/* Com som ativo: vira um botão redondo de play/pause, sem texto. */
+.page-landing .lp-video.som-ativo .lp-video-unmute { padding: 11px; }
+.page-landing .lp-video.som-ativo .lp-video-unmute .lp-video-unmute-txt,
+.page-landing .lp-video.som-ativo .lp-video-unmute .ic-som { display: none; }
+.page-landing .lp-video.som-ativo .lp-video-unmute .ic-play { display: inline-flex; }
+.page-landing .lp-video.som-ativo.is-playing .lp-video-unmute .ic-play { display: none; }
+.page-landing .lp-video.som-ativo.is-playing .lp-video-unmute .ic-pause { display: inline-flex; }
 .page-landing .lp-stage-context { text-align: center; max-width: 720px; margin: 0 auto 28px; font-size: clamp(15px,1.5vw,18px); line-height: 1.6; color: var(--lp-text-dim); }
 .page-landing .lp-stage-context strong { color: var(--lp-text); font-weight: 600; }
 .page-landing .lp-stage-hint strong { color: var(--lp-accent-3); font-weight: 600; }
@@ -6699,9 +6708,16 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
     <p class="lp-stage-context"><strong>A mesma letra. Uma experiência visual completamente diferente.</strong><br>Saia das letras paradas e transforme o telão da sua igreja com movimento, estilo e muito mais presença durante o louvor.</p>
     <div class="lp-video">
       <div id="lp-yt-player"></div>
-      <button type="button" class="lp-video-unmute" id="lp-video-unmute" aria-label="Ativar som e assistir do início">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
-        <span>Ativar som</span>
+      <!-- Camada que captura o toque para o YouTube não abrir; o clique aciona o botão. -->
+      <div class="lp-video-shield" id="lp-video-shield"></div>
+      <button type="button" class="lp-video-unmute" id="lp-video-unmute" aria-label="Ativar som">
+        <!-- ícone som (estado mudo) -->
+        <svg class="ic-som" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+        <!-- ícone pause (tocando com som) -->
+        <svg class="ic-pause" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
+        <!-- ícone play (pausado com som) -->
+        <svg class="ic-play" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+        <span class="lp-video-unmute-txt">Ativar som</span>
       </button>
     </div>
   </div>
@@ -8163,7 +8179,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'landing-fix-botoes-login-24jul';
+window.__WM_BUILD = 'landing-video-limpo-24jul';
 
 /* ============================================================
    MOTOR DE IDIOMAS (i18n) — Parte 1: a fiação
@@ -35285,23 +35301,28 @@ function initLandingAnims() {
   function initVideoYT() {
     const holder = document.getElementById('lp-yt-player');
     const btn = document.getElementById('lp-video-unmute');
-    if (!holder || !btn) return;
+    const wrap = document.querySelector('.lp-video');
+    if (!holder || !btn || !wrap) return;
     const VIDEO_ID = 'MHFSMraUkJM';
-    let player = null, ready = false, comSom = false;
+    let player = null, ready = false, comSom = false, tocando = false;
 
     function criarPlayer() {
       player = new YT.Player('lp-yt-player', {
         videoId: VIDEO_ID,
         host: 'https://www.youtube-nocookie.com',
         playerVars: {
-          rel: 0, modestbranding: 1, playsinline: 1, controls: 1,
-          mute: 1, loop: 1, playlist: VIDEO_ID, // playlist=id necessário p/ loop de 1 vídeo
+          rel: 0, modestbranding: 1, playsinline: 1,
+          controls: 0,        // sem a barra de controles do YouTube
+          disablekb: 1,       // sem atalhos de teclado
+          fs: 0,              // sem botão de tela cheia
+          iv_load_policy: 3,  // sem anotações
+          mute: 1, loop: 1, playlist: VIDEO_ID, // loop de 1 vídeo precisa de playlist=id
         },
         events: {
           onReady: (e) => {
             ready = true;
             e.target.mute();
-            // Só toca quando o vídeo aparece na tela (rola até ele).
+            // Toca só quando o vídeo aparece na tela.
             const obs = new IntersectionObserver((entries) => {
               entries.forEach(ent => {
                 if (!ready) return;
@@ -35309,13 +35330,18 @@ function initLandingAnims() {
                 else if (!comSom) { try { player.pauseVideo(); } catch(_){} }
               });
             }, { threshold: 0.35 });
-            obs.observe(document.querySelector('.lp-video'));
+            obs.observe(wrap);
+          },
+          onStateChange: (e) => {
+            // 1 = tocando, 2 = pausado. Atualiza o ícone do botão quando já tem som.
+            if (!comSom) return;
+            if (e.data === 1) { tocando = true; wrap.classList.add('is-playing'); }
+            else if (e.data === 2 || e.data === 0) { tocando = false; wrap.classList.remove('is-playing'); }
           }
         }
       });
     }
 
-    // Carrega a API do YouTube uma única vez.
     if (window.YT && window.YT.Player) {
       criarPlayer();
     } else {
@@ -35329,19 +35355,27 @@ function initLandingAnims() {
       }
     }
 
-    // Ativar som: reinicia do início, com áudio, sem loop.
     btn.addEventListener('click', () => {
       if (!ready || !player) return;
-      comSom = true;
-      try {
-        player.setLoop && player.setLoop(false);
-        player.unMute();
-        player.setVolume(100);
-        player.seekTo(0, true);
-        player.playVideo();
-      } catch(_) {}
-      btn.classList.add('is-hidden');
+      if (!comSom) {
+        // 1º clique: ativa som e reinicia do início (sem loop).
+        comSom = true;
+        try {
+          player.setLoop && player.setLoop(false);
+          player.unMute();
+          player.setVolume(100);
+          player.seekTo(0, true);
+          player.playVideo();
+        } catch(_) {}
+        wrap.classList.add('som-ativo', 'is-playing');
+      } else {
+        // Depois: o botão vira play/pause.
+        try { tocando ? player.pauseVideo() : player.playVideo(); } catch(_) {}
+      }
     });
+    // Tocar em qualquer parte do vídeo aciona o mesmo controle do botão.
+    const shield = document.getElementById('lp-video-shield');
+    if (shield) shield.addEventListener('click', () => btn.click());
   }
 
   initStage();
