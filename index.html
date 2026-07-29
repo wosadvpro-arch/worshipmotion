@@ -6510,6 +6510,8 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
   box-shadow: 0 4px 16px -4px rgba(139,92,246,0.6);
 }
 .page-landing .lp-stage-hint { text-align: center; margin-top: 14px; font-size: 13px; color: var(--lp-text-faint); }
+.page-landing .lp-video { position: relative; width: 100%; aspect-ratio: 16 / 9; border-radius: 16px; overflow: hidden; border: 1px solid var(--lp-line-strong); box-shadow: 0 28px 64px -28px rgba(139,92,246,0.45); background: #000; }
+.page-landing .lp-video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
 .page-landing .lp-stage-context { text-align: center; max-width: 720px; margin: 0 auto 28px; font-size: clamp(15px,1.5vw,18px); line-height: 1.6; color: var(--lp-text-dim); }
 .page-landing .lp-stage-context strong { color: var(--lp-text); font-weight: 600; }
 .page-landing .lp-stage-hint strong { color: var(--lp-accent-3); font-weight: 600; }
@@ -6568,6 +6570,9 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
 .page-landing .lp-price-btn:hover { background: rgba(255,255,255,0.06); border-color: var(--lp-accent-2); }
 .page-landing .lp-price-card.featured .lp-price-btn { background: linear-gradient(120deg, var(--lp-accent), var(--lp-accent-2)); border-color: transparent; color: #fff; }
 .page-landing .lp-price-card.featured .lp-price-btn:hover { transform: translateY(-2px); }
+/* Destaque sutil (diferente do roxo sólido do Pro Plus) para Começar grátis e Assinar Pro */
+.page-landing .lp-price-btn-destaque { border-color: var(--lp-accent); color: #fff; background: rgba(139,92,246,0.14); box-shadow: 0 0 0 1px rgba(139,92,246,0.35), 0 6px 20px -8px rgba(139,92,246,0.5); }
+.page-landing .lp-price-btn-destaque:hover { background: rgba(139,92,246,0.24); border-color: var(--lp-accent-2); transform: translateY(-2px); box-shadow: 0 0 0 1px var(--lp-accent-2), 0 10px 26px -8px rgba(139,92,246,0.6); }
 .page-landing .lp-pricing-foot { text-align: center; margin-top: 28px; font-size: 13px; color: var(--lp-text-faint); }
 
 /* ---------- POSITIONING ---------- */
@@ -6685,21 +6690,12 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
     <p class="hero-trust">Comece grátis · Sem cartão de crédito · Faça pelo computador ou celular</p>
   </div>
 
-  <!-- PALCO INTERATIVO -->
+  <!-- VÍDEO DE DEMONSTRAÇÃO (YouTube não listado) -->
   <div class="lp-stage-wrap">
     <p class="lp-stage-context"><strong>A mesma letra. Uma experiência visual completamente diferente.</strong><br>Saia das letras paradas e transforme o telão da sua igreja com movimento, estilo e muito mais presença durante o louvor.</p>
-    <div class="lp-stage">
-      <div class="lp-stage-bg" id="lp-stage-bg"></div>
-      <div class="lp-stage-bar">
-        <span class="lp-dot"></span><span class="lp-dot"></span><span class="lp-dot"></span>
-        <span class="lp-stage-url">worshipmotion.com.br / editor</span>
-      </div>
-      <div class="lp-stage-canvas">
-        <div class="lp-stage-text" id="lp-stage-text"></div>
-      </div>
+    <div class="lp-video">
+      <iframe src="https://www.youtube-nocookie.com/embed/MHFSMraUkJM?rel=0&modestbranding=1&playsinline=1" title="WorshipMotion em ação" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
     </div>
-    <div class="lp-stage-controls" id="lp-stage-controls"></div>
-    <p class="lp-stage-hint">↑ <strong>Clique nos estilos</strong> e veja a mesma letra ganhar vida diferente</p>
   </div>
 </header>
 
@@ -6779,14 +6775,14 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
       <div class="lp-price-value">R$0<small>/mês</small></div>
       <div class="lp-price-sub">Pra experimentar</div>
       <ul class="lp-price-features"><li>30 créditos por mês</li><li>Exportação em 720p</li><li>Animações básicas</li><li>Com marca d'água</li></ul>
-      <a href="#login" class="lp-price-btn">Começar grátis</a>
+      <a href="#login" class="lp-price-btn lp-price-btn-destaque">Começar grátis</a>
     </div>
     <div class="lp-price-card">
       <div class="lp-price-name">Pro</div>
       <div class="lp-price-value">R$47<small>/mês</small></div>
       <div class="lp-price-sub">~10 produções por mês</div>
       <ul class="lp-price-features"><li>300 créditos por mês</li><li>Exportação em 1080p</li><li>Todas as animações</li><li>Sem marca d'água</li></ul>
-      <a href="https://pay.hotmart.com/H106461520W?off=uo3npeay&checkoutMode=6" class="lp-price-btn lp-assinar" data-plano="pro" target="_blank" rel="noopener">Assinar Pro</a>
+      <a href="https://pay.hotmart.com/H106461520W?off=uo3npeay&checkoutMode=6" class="lp-price-btn lp-price-btn-destaque lp-assinar" data-plano="pro" target="_blank" rel="noopener">Assinar Pro</a>
     </div>
     <div class="lp-price-card featured">
       <div class="lp-price-badge">MAIS POPULAR</div>
@@ -8159,7 +8155,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'landing-botoes-responsivos-24jul';
+window.__WM_BUILD = 'landing-video-24jul';
 
 /* ============================================================
    MOTOR DE IDIOMAS (i18n) — Parte 1: a fiação
