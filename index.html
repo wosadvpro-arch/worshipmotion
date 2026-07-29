@@ -6685,7 +6685,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
       Cole a letra, escolha o estilo e exporte um vídeo profissional com letras animadas — mesmo sem saber design ou edição de vídeo. Experimente agora: troque os estilos abaixo e veja como a mesma letra pode ganhar movimento, presença e um visual completamente diferente.
     </p>
     <div class="hero-actions">
-      <a href="#editor" class="lp-btn lp-btn-primary lp-btn-lg">
+      <a href="#login" class="lp-btn lp-btn-primary lp-btn-lg">
         Criar meu primeiro louvor grátis
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
       </a>
@@ -6717,7 +6717,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
     <div class="lp-step"><div class="lp-step-num">03</div><h3>Exporte em MP4</h3><p>Exporte o vídeo no formato ideal para o telão da sua igreja e deixe tudo pronto para o próximo louvor.</p></div>
   </div>
   <div style="text-align:center; margin-top:40px;">
-    <a href="#editor" class="lp-btn lp-btn-primary lp-btn-lg">Começar a criar grátis</a>
+    <a href="#login" class="lp-btn lp-btn-primary lp-btn-lg">Começar a criar grátis</a>
   </div>
 </section>
 
@@ -6827,7 +6827,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
   <div class="lp-cta-inner">
     <h2>Não deixe o próximo culto com o mesmo visual de sempre.</h2>
     <p>Transforme letras paradas em letras animadas profissionais e crie seu primeiro louvor em poucos minutos.</p>
-    <a href="#editor" class="lp-btn lp-btn-primary lp-btn-lg">
+    <a href="#login" class="lp-btn lp-btn-primary lp-btn-lg">
       Criar meu primeiro louvor grátis
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
     </a>
@@ -8163,7 +8163,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'landing-video-autoplay-24jul';
+window.__WM_BUILD = 'landing-fix-botoes-login-24jul';
 
 /* ============================================================
    MOTOR DE IDIOMAS (i18n) — Parte 1: a fiação
@@ -35261,22 +35261,21 @@ function initLandingAnims() {
 
   // ---- Links do nav rolam suavemente até a seção (sem mexer no hash/roteador) ----
   function initNavScroll() {
-    document.querySelectorAll('.page-landing .nav-links a[href^="#"]').forEach(link => {
+    // Todos os links da landing que apontam pra uma seção interna (#como-funciona,
+    // #recursos, #precos, #depoimentos...) devem apenas rolar suavemente até a
+    // seção — nunca trocar de "página" (senão o roteador tenta abrir uma página
+    // inexistente e a tela fica preta).
+    const ANCORAS_INTERNAS = ['#como-funciona', '#recursos', '#precos', '#depoimentos', '#positioning'];
+    document.querySelectorAll('.page-landing a[href^="#"]').forEach(link => {
       link.addEventListener('click', (e) => {
         const alvo = link.getAttribute('href');
         if (!alvo || alvo === '#') return;
+        if (!ANCORAS_INTERNAS.includes(alvo)) return; // #login e outros seguem normal
         const sec = document.querySelector(alvo);
         if (sec) {
           e.preventDefault();
           sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
-      });
-    });
-    // O botão "Ver planos" do hero também rola até os preços.
-    document.querySelectorAll('.page-landing a[href="#precos"]').forEach(link => {
-      link.addEventListener('click', (e) => {
-        const sec = document.getElementById('precos');
-        if (sec) { e.preventDefault(); sec.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
       });
     });
   }
@@ -35759,7 +35758,14 @@ window.wmInitNovaSenha = wmInitNovaSenha;
   }
   async function showPage() {
     const hash = (window.location.hash || '#landing').replace('#', '');
-    const pageId = hash === '' ? 'page-landing' : ('page-' + hash);
+    let pageId = hash === '' ? 'page-landing' : ('page-' + hash);
+
+    // Rede de segurança: se o hash não corresponde a nenhuma página real (ex.:
+    // uma âncora de seção da landing como #como-funciona), não escurece a tela —
+    // trata como landing. O scroll até a seção é feito pelo initNavScroll.
+    if (!document.getElementById(pageId)) {
+      pageId = 'page-landing';
+    }
 
     // Proteção de rota: o editor exige login. Evita execuções concorrentes
     // (o onAuthStateChange muda o hash e re-dispara showPage) com um lock.
