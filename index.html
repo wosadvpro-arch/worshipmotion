@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WorshipMotion — Lyrics animados para igrejas</title>
-  <meta name="description" content="Crie lyrics animados em vídeo para o louvor da sua igreja. Cole a letra, escolha o estilo e exporte em MP4. Direto no navegador, sem instalar nada.">
+  <title>WorshipMotion — Letras animadas para igrejas</title>
+  <meta name="description" content="Crie letras animadas profissionais para o telão da sua igreja em poucos minutos. Escolha o estilo, personalize e exporte o vídeo em MP4.">
   <link rel="canonical" href="https://worshipmotion.com.br/">
   <meta name="theme-color" content="#8b5cf6">
 
@@ -12,15 +12,15 @@
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="WorshipMotion">
   <meta property="og:url" content="https://worshipmotion.com.br/">
-  <meta property="og:title" content="WorshipMotion — Lyrics animados para igrejas">
-  <meta property="og:description" content="Crie lyrics animados em vídeo para o louvor da sua igreja. Cole a letra, escolha o estilo e exporte em MP4.">
+  <meta property="og:title" content="WorshipMotion — Letras animadas para igrejas">
+  <meta property="og:description" content="Crie letras animadas profissionais para o telão da sua igreja em poucos minutos. Escolha o estilo, personalize e exporte o vídeo em MP4.">
   <meta property="og:image" content="https://worshipmotion.com.br/favicon.png">
   <meta property="og:image:width" content="512">
   <meta property="og:image:height" content="512">
   <meta property="og:locale" content="pt_BR">
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="WorshipMotion — Lyrics animados para igrejas">
-  <meta name="twitter:description" content="Crie lyrics animados em vídeo para o louvor da sua igreja.">
+  <meta name="twitter:title" content="WorshipMotion — Letras animadas para igrejas">
+  <meta name="twitter:description" content="Crie letras animadas profissionais para o telão da sua igreja em poucos minutos.">
   <meta name="twitter:image" content="https://worshipmotion.com.br/favicon.png">
   <link rel="icon" type="image/png" sizes="512x512" href="/favicon.png">
   <link rel="apple-touch-icon" href="/favicon.png">
@@ -6509,6 +6509,8 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
   box-shadow: 0 4px 16px -4px rgba(139,92,246,0.6);
 }
 .page-landing .lp-stage-hint { text-align: center; margin-top: 14px; font-size: 13px; color: var(--lp-text-faint); }
+.page-landing .lp-stage-context { text-align: center; max-width: 720px; margin: 0 auto 28px; font-size: clamp(15px,1.5vw,18px); line-height: 1.6; color: var(--lp-text-dim); }
+.page-landing .lp-stage-context strong { color: var(--lp-text); font-weight: 600; }
 .page-landing .lp-stage-hint strong { color: var(--lp-accent-3); font-weight: 600; }
 
 /* ---------- SECTIONS ---------- */
@@ -6534,6 +6536,14 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
 /* ---------- FEATURES ---------- */
 .page-landing .features-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-top: 44px; }
 .page-landing .feature-card { background: var(--lp-surface); border: 1px solid var(--lp-line); border-radius: 16px; padding: 30px 26px; transition: transform 0.25s, border-color 0.25s; }
+/* Depoimentos (conteúdo provisório) */
+.page-landing .lp-depo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; max-width: 1080px; margin: 0 auto; }
+.page-landing .lp-depo-card { position: relative; background: var(--lp-surface); border: 1px solid var(--lp-line); border-radius: 16px; padding: 30px 28px 26px; display: flex; flex-direction: column; transition: transform 0.25s, border-color 0.25s; }
+.page-landing .lp-depo-card:hover { transform: translateY(-4px); border-color: var(--lp-line-strong); }
+.page-landing .lp-depo-card::before { content: '\201C'; position: absolute; top: 10px; left: 22px; font-size: 56px; line-height: 1; font-family: Georgia, 'Times New Roman', serif; color: var(--lp-accent); opacity: 0.28; pointer-events: none; }
+.page-landing .lp-depo-quote { position: relative; z-index: 1; margin: 14px 0 20px; font-size: 15px; line-height: 1.7; color: var(--lp-text); letter-spacing: -0.01em; }
+.page-landing .lp-depo-name { font-size: 14px; font-weight: 600; color: var(--lp-text); }
+.page-landing .lp-depo-role { font-size: 13px; color: var(--lp-text-dim); margin-top: 3px; }
 .page-landing .feature-card:hover { transform: translateY(-4px); border-color: var(--lp-line-strong); }
 .page-landing .feature-icon { width: 44px; height: 44px; border-radius: 12px; background: linear-gradient(135deg, rgba(139,92,246,0.25), rgba(139,92,246,0.05)); border: 1px solid rgba(139,92,246,0.3); display: flex; align-items: center; justify-content: center; color: var(--lp-accent-3); margin-bottom: 18px; }
 .page-landing .feature-title { font-size: 17px; font-weight: 600; letter-spacing: -0.02em; margin-bottom: 8px; }
@@ -6582,6 +6592,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
 @media (max-width: 860px) {
   .page-landing .nav-links { display: none; }
   .page-landing .lp-steps, .page-landing .features-grid { grid-template-columns: 1fr; }
+  .page-landing .lp-depo-grid { grid-template-columns: 1fr; }
   .page-landing .lp-pricing-grid { grid-template-columns: 1fr; }
   .page-landing #positioning .positioning { grid-template-columns: 1fr; gap: 32px; }
   .page-landing .hero { padding: 108px 20px 56px; }
@@ -6616,7 +6627,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
     "applicationCategory": "MultimediaApplication",
     "operatingSystem": "Web (navegador)",
     "inLanguage": "pt-BR",
-    "description": "Crie lyrics animados em vídeo para o louvor da sua igreja. Cole a letra, escolha o estilo e exporte em MP4, direto no navegador.",
+    "description": "Crie letras animadas profissionais para o telão da sua igreja em poucos minutos. Cole a letra, escolha o estilo e exporte em MP4, direto no navegador.",
     "image": "https://worshipmotion.com.br/favicon.png",
     "offers": {
       "@type": "Offer",
@@ -6648,22 +6659,23 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
 <header class="hero">
   <div class="hero-inner">
     <div class="hero-badge">Feito para equipes de mídia de igrejas</div>
-    <h1 class="hero-title">Veja sua letra <span class="accent">ganhar vida</span></h1>
+    <h1 class="hero-title">Crie letras animadas para o louvor <span class="accent">em poucos minutos</span></h1>
     <p class="hero-subtitle">
-      Cole a letra, escolha o estilo e exporte um lyric video profissional em minutos. Experimente agora mesmo — troque o estilo abaixo e veja a diferença.
+      Cole a letra, escolha o estilo e exporte um vídeo profissional com letras animadas — mesmo sem saber design ou edição de vídeo. Experimente agora: troque os estilos abaixo e veja como a mesma letra pode ganhar movimento, presença e um visual completamente diferente.
     </p>
     <div class="hero-actions">
       <a href="#editor" class="lp-btn lp-btn-primary lp-btn-lg">
-        Criar o meu grátis
+        Criar meu primeiro louvor grátis
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
       </a>
-      <a href="#precos" class="lp-btn lp-btn-ghost lp-btn-lg">Ver planos</a>
+      <a href="#como-funciona" class="lp-btn lp-btn-ghost lp-btn-lg">Ver como funciona</a>
     </div>
-    <p class="hero-trust">Comece de graça · Sem cartão de crédito · Cancele quando quiser</p>
+    <p class="hero-trust">Comece grátis · Sem cartão de crédito · Faça pelo computador ou celular</p>
   </div>
 
   <!-- PALCO INTERATIVO -->
   <div class="lp-stage-wrap">
+    <p class="lp-stage-context"><strong>A mesma letra. Uma experiência visual completamente diferente.</strong><br>Saia das letras paradas e transforme o telão da sua igreja com movimento, estilo e muito mais presença durante o louvor.</p>
     <div class="lp-stage">
       <div class="lp-stage-bg" id="lp-stage-bg"></div>
       <div class="lp-stage-bar">
@@ -6681,26 +6693,67 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
 
 <section class="section lp-reveal" id="como-funciona">
   <span class="lp-eyebrow">Como funciona</span>
-  <h2 class="section-title">Três passos. Um vídeo pronto.</h2>
+  <h2 class="section-title">Da letra ao vídeo pronto em três passos.</h2>
   <p class="section-subtitle">Do texto da música ao MP4 final sem sair do navegador. Quem opera os slides consegue sozinho.</p>
   <div class="lp-steps">
-    <div class="lp-step"><div class="lp-step-num">01</div><h3>Cole a letra</h3><p>Cole a música inteira. A plataforma separa em estrofes, linhas e palavras automaticamente.</p></div>
-    <div class="lp-step"><div class="lp-step-num">02</div><h3>Escolha o estilo</h3><p>Pick um template e as animações. Ajuste fonte, cor e fundo — ou use os presets prontos.</p></div>
-    <div class="lp-step"><div class="lp-step-num">03</div><h3>Exporte em MP4</h3><p>Renderize em 16:9, 9:16 ou 1:1. O arquivo entra direto na projeção da sua igreja.</p></div>
+    <div class="lp-step"><div class="lp-step-num">01</div><h3>Cole a letra</h3><p>Cole a música completa. O WorshipMotion organiza o conteúdo em estrofes, linhas e palavras para facilitar sua criação.</p></div>
+    <div class="lp-step"><div class="lp-step-num">02</div><h3>Escolha o estilo e as animações</h3><p>Escolha um modelo pronto e personalize as animações, fontes, cores e fundos do seu projeto.</p></div>
+    <div class="lp-step"><div class="lp-step-num">03</div><h3>Exporte em MP4</h3><p>Exporte o vídeo no formato ideal para o telão da sua igreja e deixe tudo pronto para o próximo louvor.</p></div>
+  </div>
+  <div style="text-align:center; margin-top:40px;">
+    <a href="#editor" class="lp-btn lp-btn-primary lp-btn-lg">Começar a criar grátis</a>
   </div>
 </section>
 
 <section class="section lp-reveal" id="recursos">
   <span class="lp-eyebrow">Recursos</span>
-  <h2 class="section-title">Tudo que a mídia precisa</h2>
-  <p class="section-subtitle">Um editor especializado em uma coisa só: letras de louvor com motion design profissional.</p>
+  <h2 class="section-title">Um editor criado especialmente para letras de louvor.</h2>
+  <p class="section-subtitle">O WorshipMotion é especializado em uma única coisa: transformar letras de músicas em vídeos com motion design profissional para o telão da sua igreja.</p>
   <div class="features-grid">
-    <div class="feature-card"><div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16M4 12h16M4 18h10"/></svg></div><h3 class="feature-title">Organização automática</h3><p class="feature-desc">Cole a letra completa. A plataforma separa em estrofes, refrões, linhas e palavras sozinha.</p></div>
-    <div class="feature-card"><div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><polygon points="10 8 16 12 10 16" fill="currentColor"/></svg></div><h3 class="feature-title">88 animações</h3><p class="feature-desc">Entradas, saídas e destaques em 11 estilos, no nível de motion graphics profissional.</p></div>
-    <div class="feature-card"><div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div><h3 class="feature-title">Destaque inteligente</h3><p class="feature-desc">Palavras como "Santo" e "Glória" ganham brilho e presença visual automaticamente.</p></div>
-    <div class="feature-card"><div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 4v16M18 4v16M6 4h12M6 20h12M9 8h6M9 12h6"/></svg></div><h3 class="feature-title">Tipografia moderna</h3><p class="feature-desc">Fontes profissionais com controle total de peso, espaçamento, cor, brilho e gradiente.</p></div>
+    <div class="feature-card"><div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><polygon points="10 8 16 12 10 16" fill="currentColor"/></svg></div><h3 class="feature-title">Animações prontas para aplicar</h3><p class="feature-desc">Entradas, saídas e destaques em vários estilos, no nível de motion graphics profissional.</p></div>
+    <div class="feature-card"><div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 4v16M18 4v16M6 4h12M6 20h12M9 8h6M9 12h6"/></svg></div><h3 class="feature-title">Fontes e estilos profissionais</h3><p class="feature-desc">Tipografia moderna com controle total de peso, espaçamento, cor, brilho e gradiente.</p></div>
     <div class="feature-card"><div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 16l5-5 4 4 5-5 4 4"/></svg></div><h3 class="feature-title">Fundos cinematográficos</h3><p class="feature-desc">Gradientes e ambientes worship com presets prontos para cada momento do culto.</p></div>
-    <div class="feature-card"><div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div><h3 class="feature-title">Exportação MP4</h3><p class="feature-desc">16:9 pro telão, 9:16 pra reels, 1:1 pro feed. Pronto pra projeção da sua igreja.</p></div>
+    <div class="feature-card"><div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2"/></svg></div><h3 class="feature-title">Controle de cores, brilho e espaçamento</h3><p class="feature-desc">Ajuste fino de cada detalhe visual para deixar as letras com a cara da sua igreja.</p></div>
+    <div class="feature-card"><div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div><h3 class="feature-title">Exportação em alta qualidade</h3><p class="feature-desc">Renderize o vídeo pronto para projeção com qualidade profissional.</p></div>
+    <div class="feature-card"><div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="12" rx="2"/><rect x="8" y="18" width="8" height="2" rx="1"/></svg></div><h3 class="feature-title">Formatos 16:9, 9:16 e 1:1</h3><p class="feature-desc">Telão, stories e feed. Exporte no formato ideal para cada tela da sua igreja.</p></div>
+  </div>
+  <p class="section-subtitle" style="margin-top:36px;">Tudo de maneira simples, rápida e sem precisar aprender programas complicados de edição.</p>
+</section>
+
+<!-- ============================================================= -->
+<!-- TODO: substituir por depoimentos reais                         -->
+<!-- Conteúdo PROVISÓRIO — textos E NOMES são fictícios. Não         -->
+<!-- publicar como avaliações reais de clientes. Para trocar: edite   -->
+<!-- apenas o texto dentro de cada .lp-depo-card (a citação em <p>,    -->
+<!-- o nome e a função nos <span>).                                   -->
+<!-- ============================================================= -->
+<section class="section lp-reveal" id="depoimentos">
+  <span class="lp-eyebrow">Depoimentos</span>
+  <h2 class="section-title">Quem usa, vê a diferença no telão.</h2>
+  <p class="section-subtitle">Veja como o WorshipMotion pode facilitar a criação de letras animadas para o louvor.</p>
+  <div class="lp-depo-grid">
+
+    <!-- DEPOIMENTO 1 (provisório) -->
+    <div class="lp-depo-card">
+      <p class="lp-depo-quote">Consegui criar as letras animadas de uma música em poucos minutos. O processo foi simples e não precisei utilizar um programa complicado de edição.</p>
+      <span class="lp-depo-name">Lucas Almeida</span>
+      <span class="lp-depo-role">Equipe de mídia • São Paulo/SP</span>
+    </div>
+
+    <!-- DEPOIMENTO 2 (provisório) -->
+    <div class="lp-depo-card">
+      <p class="lp-depo-quote">Mesmo sem experiência com design, consegui personalizar as fontes, animações e fundos. O resultado ficou muito mais profissional no telão.</p>
+      <span class="lp-depo-name">Rafael Santos</span>
+      <span class="lp-depo-role">Operador de mídia • Guarulhos/SP</span>
+    </div>
+
+    <!-- DEPOIMENTO 3 (provisório) -->
+    <div class="lp-depo-card">
+      <p class="lp-depo-quote">O vídeo em MP4 facilitou bastante. Depois de exportar, consegui reproduzir o resultado diretamente no computador usado durante o louvor.</p>
+      <span class="lp-depo-name">Bruno Oliveira</span>
+      <span class="lp-depo-role">Voluntário de mídia • Campinas/SP</span>
+    </div>
+
   </div>
 </section>
 
@@ -6721,7 +6774,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
       <div class="lp-price-value">R$47<small>/mês</small></div>
       <div class="lp-price-sub">~10 produções por mês</div>
       <ul class="lp-price-features"><li>300 créditos por mês</li><li>Exportação em 1080p</li><li>Todas as animações</li><li>Sem marca d'água</li></ul>
-      <a href="#" class="lp-price-btn lp-assinar" data-plano="pro">Assinar Pro</a>
+      <a href="https://pay.hotmart.com/H106461520W?off=uo3npeay&checkoutMode=6" class="lp-price-btn lp-assinar" data-plano="pro" target="_blank" rel="noopener">Assinar Pro</a>
     </div>
     <div class="lp-price-card featured">
       <div class="lp-price-badge">MAIS POPULAR</div>
@@ -6729,7 +6782,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
       <div class="lp-price-value">R$67<small>/mês</small></div>
       <div class="lp-price-sub">~20 produções por mês</div>
       <ul class="lp-price-features"><li>600 créditos por mês</li><li>Exportação em 4K</li><li>Todas as animações</li><li>Sem marca d'água</li><li>Fontes Exclusivas</li><li>Compara Fontes</li><li>e muito mais...</li></ul>
-      <a href="#" class="lp-price-btn lp-assinar" data-plano="pro_plus">Assinar Pro Plus</a>
+      <a href="https://pay.hotmart.com/H106461520W?off=cjbn7e7y&checkoutMode=6" class="lp-price-btn lp-assinar" data-plano="pro_plus" target="_blank" rel="noopener">Assinar Pro Plus</a>
     </div>
   </div>
   <p class="lp-pricing-foot">+R$20 do Pro pro Pro Plus dobra seus créditos e libera 4K. Pagamento via Pix ou cartão.</p>
@@ -6739,27 +6792,30 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
   <div class="positioning">
     <div>
       <span class="lp-eyebrow">Posicionamento</span>
-      <h3>Não substitui seu ProPresenter. Potencializa.</h3>
-      <p>Sua igreja continua usando o software de projeção que já conhece. A WorshipMotion gera os vídeos MP4 prontos pra rodar dentro dele.</p>
-      <p>Pense no "Canva dos lyric videos": você cria uma vez, e funciona em qualquer sistema.</p>
+      <h3>Transforme o visual do louvor da sua igreja em uma experiência impactante.</h3>
+      <p>Crie letras animadas que acompanham a força de cada música, valorizam o momento da adoração e entregam um visual muito mais profissional no telão.</p>
+      <p>Você não precisa trocar o sistema que sua igreja já utiliza. O WorshipMotion gera vídeos em MP4 prontos para serem reproduzidos nos programas de projeção usados pela sua igreja e em qualquer computador.</p>
+      <p>Caso sua igreja não utilize um programa de projeção, basta reproduzir o vídeo diretamente no computador conectado ao telão.</p>
     </div>
     <div class="positioning-list">
-      <div class="positioning-item"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Funciona com ProPresenter</div>
-      <div class="positioning-item"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Funciona com EasyWorship</div>
-      <div class="positioning-item"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Funciona com OpenLP e Quelea</div>
+      <div class="positioning-item"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Vídeos em MP4 prontos para projeção</div>
+      <div class="positioning-item"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Funciona nos programas que sua igreja já usa</div>
+      <div class="positioning-item"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Roda direto no computador do telão</div>
       <div class="positioning-item"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Exporta em 16:9, 9:16 e 1:1</div>
     </div>
   </div>
+  <p class="section-subtitle" style="margin-top:36px; text-align:center;"><strong style="color:var(--lp-text);">Crie uma vez. Exporte em MP4. Use no telão da sua igreja.</strong></p>
 </section>
 
 <div class="lp-cta lp-reveal">
   <div class="lp-cta-inner">
-    <h2>Pronto pro próximo culto?</h2>
-    <p>Crie seu primeiro lyric video de graça, agora mesmo.</p>
+    <h2>Não deixe o próximo culto com o mesmo visual de sempre.</h2>
+    <p>Transforme letras paradas em letras animadas profissionais e crie seu primeiro louvor em poucos minutos.</p>
     <a href="#editor" class="lp-btn lp-btn-primary lp-btn-lg">
-      Começar grátis
+      Criar meu primeiro louvor grátis
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
     </a>
+    <p style="margin-top:16px; font-size:13px; color:var(--lp-text-faint);">Comece grátis · Sem cartão de crédito</p>
   </div>
 </div>
 
@@ -6769,7 +6825,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
   </div>
   <p>Tecnologia a serviço do louvor. Feito para igrejas, por quem ama o culto.</p>
   <p style="margin-top:14px;"><a href="/privacidade.html" style="color:var(--lp-text-dim);text-decoration:none;">Política de Privacidade</a> &nbsp;·&nbsp; <a href="/termos.html" style="color:var(--lp-text-dim);text-decoration:none;">Termos de Uso</a></p>
-  <p style="margin-top:8px;">© 2026 WorshipMotion · Versão beta</p>
+  <p style="margin-top:8px;">© 2026 WorshipMotion</p>
 </footer>
 
 </section>
@@ -8091,7 +8147,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'i18n-ritmo-polish-24jul';
+window.__WM_BUILD = 'landing-depoimentos-nomes-24jul';
 
 /* ============================================================
    MOTOR DE IDIOMAS (i18n) — Parte 1: a fiação
@@ -35171,7 +35227,9 @@ function initLandingAnims() {
         e.preventDefault();
         const plano = btn.dataset.plano;
         if (!LINKS[plano]) return;
-        // Descobre se há sessão + e-mail (o webhook do Hotmart casa por e-mail).
+        // Se houver sessão, passa o e-mail pro checkout (ajuda o webhook do
+        // Hotmart a casar o pagamento com a conta). Se não houver, abre o
+        // checkout mesmo assim — os botões pagos NUNCA passam pelo login.
         let email = null;
         try {
           if (window.wmSupabase) {
@@ -35179,17 +35237,8 @@ function initLandingAnims() {
             email = data && data.session && data.session.user && data.session.user.email;
           }
         } catch (err) {}
-        if (email) {
-          // Logado: abre o checkout já com o e-mail.
-          window.open(LINKS[plano] + '&email=' + encodeURIComponent(email), '_blank');
-        } else {
-          // GATE PRÉ-CONTA: deslogado NUNCA abre o Hotmart sem e-mail (senão o
-          // webhook não acha a conta e o upgrade se perde). Guarda o plano
-          // pretendido e manda pro login; o handler de SIGNED_IN retoma o
-          // checkout automaticamente, já com o e-mail da conta.
-          try { sessionStorage.setItem('wm_plano_pretendido', plano); } catch (e2) {}
-          window.location.hash = '#login';
-        }
+        const url = email ? (LINKS[plano] + '&email=' + encodeURIComponent(email)) : LINKS[plano];
+        window.open(url, '_blank');
       });
     });
   }
