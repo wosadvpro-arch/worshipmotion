@@ -6429,9 +6429,10 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
 .page-landing .logo-full { height: 26px; width: auto; }
 
 .page-landing .lp-btn {
-  display: inline-flex; align-items: center; gap: 8px; font-family: inherit; font-size: 14px; font-weight: 600;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-family: inherit; font-size: 14px; font-weight: 600;
   letter-spacing: -0.01em; cursor: pointer; border-radius: 9px; padding: 9px 16px; transition: all 0.18s;
   text-decoration: none; border: 1px solid transparent; white-space: nowrap;
+  max-width: 100%; box-sizing: border-box; text-align: center;
 }
 .page-landing .lp-btn-primary { background: linear-gradient(120deg, var(--lp-accent), var(--lp-accent-2)); color: #fff; box-shadow: 0 4px 18px -4px rgba(139,92,246,0.5); }
 .page-landing .lp-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 28px -4px rgba(139,92,246,0.7); }
@@ -6562,7 +6563,8 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
 .page-landing .lp-price-features { list-style: none; padding: 0; margin: 0 0 30px; flex: 1; }
 .page-landing .lp-price-features li { font-size: 14px; color: var(--lp-text-dim); line-height: 1.5; padding: 7px 0 7px 26px; position: relative; }
 .page-landing .lp-price-features li::before { content: ''; position: absolute; left: 0; top: 11px; width: 14px; height: 14px; background: var(--lp-accent-2); -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E") center/contain no-repeat; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E") center/contain no-repeat; }
-.page-landing .lp-price-btn { width: 100%; padding: 13px; border-radius: 11px; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.18s; border: 1px solid var(--lp-line-strong); background: transparent; color: var(--lp-text); text-align: center; text-decoration: none; }
+.page-landing .lp-btn svg { flex-shrink: 0; }
+.page-landing .lp-price-btn { width: 100%; max-width: 100%; box-sizing: border-box; padding: 13px; border-radius: 11px; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.18s; border: 1px solid var(--lp-line-strong); background: transparent; color: var(--lp-text); text-align: center; text-decoration: none; display: flex; align-items: center; justify-content: center; }
 .page-landing .lp-price-btn:hover { background: rgba(255,255,255,0.06); border-color: var(--lp-accent-2); }
 .page-landing .lp-price-card.featured .lp-price-btn { background: linear-gradient(120deg, var(--lp-accent), var(--lp-accent-2)); border-color: transparent; color: #fff; }
 .page-landing .lp-price-card.featured .lp-price-btn:hover { transform: translateY(-2px); }
@@ -6598,6 +6600,16 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
   .page-landing .hero { padding: 108px 20px 56px; }
   .page-landing .section { padding: 68px 20px; }
   .page-landing .lp-stage-wrap { margin-top: 40px; }
+  /* ---- Botões no celular: largura total, empilhados, centralizados ---- */
+  .page-landing .hero-actions { flex-direction: column; align-items: center; gap: 12px; }
+  .page-landing .lp-btn-lg { width: 100%; max-width: 340px; padding: 15px 20px; white-space: normal; }
+  .page-landing .hero-actions .lp-btn-lg { width: 100%; }
+  /* botões soltos (Como funciona, CTA final) já centralizados pelos wrappers;
+     garante que não estourem e fiquem no centro */
+  .page-landing #como-funciona > div[style*="text-align:center"] .lp-btn-lg,
+  .page-landing .lp-cta-inner .lp-btn-lg { margin-left: auto; margin-right: auto; }
+  /* botões dos planos: já são width:100% no card; reforça o box-sizing */
+  .page-landing .lp-price-btn { white-space: normal; }
 }
 /* ===== Modais no mobile: viram bottom-sheet full-width e roláveis ===== */
 @media (max-width: 680px) {
@@ -8147,7 +8159,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'landing-depoimentos-nomes-24jul';
+window.__WM_BUILD = 'landing-botoes-responsivos-24jul';
 
 /* ============================================================
    MOTOR DE IDIOMAS (i18n) — Parte 1: a fiação
