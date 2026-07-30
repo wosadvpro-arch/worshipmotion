@@ -34871,6 +34871,7 @@ function initEditor() {
           `${_arquivos.length} arquivos prontos — toque em cada um para baixar`;
         // Rastreamento: exportação concluída (vários slides).
         window.wmTrack && window.wmTrack('export_concluido', { arquivos: _arquivos.length, tipo: 'multiplos' });
+        try { if (typeof window.fbq === 'function') window.fbq('trackCustom', 'ExportVideo', { tipo: 'multiplos' }); } catch (e) {}
         try { if (window.WM_DIAG) window.WM_DIAG.marca('UI_PRONTA'); } catch (e) {}
         return;
       }
@@ -34937,6 +34938,7 @@ function initEditor() {
       const sizeMB = (blob.size / (1024 * 1024)).toFixed(1);
       // Rastreamento: exportação concluída (arquivo único).
       window.wmTrack && window.wmTrack('export_concluido', { tipo: 'unico', tamanho_mb: Number(sizeMB) });
+      try { if (typeof window.fbq === 'function') window.fbq('trackCustom', 'ExportVideo', { tipo: 'unico' }); } catch (e) {}
 
       // Botão explícito de download (um clique do usuário SEMPRE é aceito).
       const listaUnica = $('#export-files-list');
@@ -35373,6 +35375,7 @@ function initLandingAnims() {
       btn.addEventListener('click', () => {
         const txt = (btn.textContent || '').trim().slice(0, 40);
         window.wmTrack && window.wmTrack('clique_gratis', { botao: txt });
+        try { if (typeof window.fbq === 'function') window.fbq('trackCustom', 'ClickFreeCTA', { botao: txt }); } catch (e) {}
       });
     });
   }
@@ -35947,6 +35950,15 @@ window.wmInitNovaSenha = wmInitNovaSenha;
     document.querySelectorAll('.page').forEach(p => {
       p.classList.toggle('active', p.id === pageId);
     });
+
+    // Rastreamento: como é SPA com hash routing, o PageView do Pixel só
+    // dispara no carregamento inicial. Disparamos um ViewContent virtual
+    // nas telas internas importantes pro Facebook enxergar a navegação.
+    try {
+      if (typeof window.fbq === 'function' && (pageId === 'page-editor' || pageId === 'page-login')) {
+        window.fbq('track', 'ViewContent', { content_name: pageId.replace('page-', '') });
+      }
+    } catch (e) {}
 
     if (pageId === 'page-editor' && !window.__editorReady) {
       window.__editorReady = true;
