@@ -9,6 +9,13 @@
     gtag('js', new Date());
     gtag('config', 'G-4JZV2T556W');
   </script>
+  <script>
+    // Helper central de rastreamento. Envia um evento pro Google Analytics de
+    // forma segura (se o gtag ainda não carregou, não quebra nada).
+    window.wmTrack = function (evento, params) {
+      try { if (typeof window.gtag === 'function') window.gtag('event', evento, params || {}); } catch (e) {}
+    };
+  </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>WorshipMotion — Letras animadas para igrejas</title>
@@ -8187,7 +8194,7 @@ window.__wmSessaoPronta = false;
 // Diagnóstico de login removido para produção (bug já resolvido).
 // __wmLog mantido como no-op pra não quebrar as chamadas espalhadas no fluxo.
 window.__wmLog = function(){};
-window.__WM_BUILD = 'landing-analytics-24jul';
+window.__WM_BUILD = 'analytics-eventos-24jul';
 
 /* ============================================================
    MOTOR DE IDIOMAS (i18n) — Parte 1: a fiação
@@ -34797,6 +34804,8 @@ function initEditor() {
         $('#export-done-state').classList.add('active');
         $('#export-done-subtitle').textContent =
           `${_arquivos.length} arquivos prontos — toque em cada um para baixar`;
+        // Rastreamento: exportação concluída (vários slides).
+        window.wmTrack && window.wmTrack('export_concluido', { arquivos: _arquivos.length, tipo: 'multiplos' });
         try { if (window.WM_DIAG) window.WM_DIAG.marca('UI_PRONTA'); } catch (e) {}
         return;
       }
@@ -34861,6 +34870,8 @@ function initEditor() {
       $('#export-progress-state').classList.remove('active');
       $('#export-done-state').classList.add('active');
       const sizeMB = (blob.size / (1024 * 1024)).toFixed(1);
+      // Rastreamento: exportação concluída (arquivo único).
+      window.wmTrack && window.wmTrack('export_concluido', { tipo: 'unico', tamanho_mb: Number(sizeMB) });
 
       // Botão explícito de download (um clique do usuário SEMPRE é aceito).
       const listaUnica = $('#export-files-list');
@@ -35278,7 +35289,17 @@ function initLandingAnims() {
           }
         } catch (err) {}
         const url = email ? (LINKS[plano] + '&email=' + encodeURIComponent(email)) : LINKS[plano];
+        // Rastreamento: clique num plano pago (interesse de compra).
+        window.wmTrack && window.wmTrack('clique_plano', { plano: plano, logado: !!email });
         window.open(url, '_blank');
+      });
+    });
+    // Rastreamento: cliques nos botões "grátis" (quer experimentar). São os
+    // links primários da landing que vão pro #login.
+    document.querySelectorAll('.page-landing a.lp-btn-primary[href="#login"], .page-landing a.lp-btn-ghost[href="#login"]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const txt = (btn.textContent || '').trim().slice(0, 40);
+        window.wmTrack && window.wmTrack('clique_gratis', { botao: txt });
       });
     });
   }
@@ -35573,6 +35594,8 @@ function initLoginAnim() {
             }
           });
           if (error) throw error;
+          // Rastreamento: cadastro concluído com sucesso (novo usuário).
+          window.wmTrack && window.wmTrack('cadastro_concluido', { metodo: 'email' });
           // Troca pro modo login mas MANTÉM a mensagem de sucesso visível
           // (antes ela sumia rápido porque setModo limpava a mensagem).
           setModo('login');
