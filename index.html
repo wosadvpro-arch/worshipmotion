@@ -35356,6 +35356,14 @@ function initLandingAnims() {
         const url = email ? (LINKS[plano] + '&email=' + encodeURIComponent(email)) : LINKS[plano];
         // Rastreamento: clique num plano pago (interesse de compra).
         window.wmTrack && window.wmTrack('clique_plano', { plano: plano, logado: !!email });
+        try {
+          if (typeof window.fbq === 'function') {
+            window.fbq('track', 'InitiateCheckout', {
+              content_name: plano,
+              content_category: 'assinatura'
+            });
+          }
+        } catch (err) {}
         window.open(url, '_blank');
       });
     });
@@ -35661,6 +35669,7 @@ function initLoginAnim() {
           if (error) throw error;
           // Rastreamento: cadastro concluído com sucesso (novo usuário).
           window.wmTrack && window.wmTrack('cadastro_concluido', { metodo: 'email' });
+          try { if (typeof window.fbq === 'function') window.fbq('track', 'Lead', { content_name: 'cadastro_email' }); } catch (e) {}
           // Troca pro modo login mas MANTÉM a mensagem de sucesso visível
           // (antes ela sumia rápido porque setModo limpava a mensagem).
           setModo('login');
