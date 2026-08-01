@@ -1250,6 +1250,49 @@ html.wm-modal-open, body.wm-modal-open {
   color: var(--text-tertiary);
   letter-spacing: var(--tracking-wide);
 }
+.tpl-filter-chip {
+  font-size: 12px;
+  padding: 6px 12px;
+  background: var(--bg-base);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-full);
+  color: var(--text-secondary, #a0a0aa);
+  cursor: pointer;
+  font-family: inherit;
+  transition: background .15s, border-color .15s, color .15s;
+}
+.tpl-filter-chip:hover { border-color: var(--border-strong, #666); }
+.tpl-filter-chip.active {
+  background: var(--accent, #8b5cf6);
+  border-color: var(--accent, #8b5cf6);
+  color: #fff;
+}
+.template-card.tpl-recommended { border-color: var(--accent, #8b5cf6); }
+.template-line-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  font-size: 10px;
+  padding: 2px 7px;
+  background: rgba(0,0,0,0.55);
+  border-radius: var(--radius-full);
+  color: #fff;
+  letter-spacing: var(--tracking-wide);
+  z-index: 2;
+}
+.template-plan-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  font-size: 10px;
+  padding: 2px 7px;
+  background: linear-gradient(135deg, #8b5cf6, #d4a857);
+  border-radius: var(--radius-full);
+  color: #fff;
+  font-weight: 600;
+  letter-spacing: var(--tracking-wide);
+  z-index: 2;
+}
 
 /* === LISTA DE PROJETOS === */
 .project-list {
@@ -7785,6 +7828,15 @@ Digno de toda honra"></textarea>
 
     <div class="modal-body">
       <div class="modal-content" data-modal-content="templates">
+        <div class="tpl-line-info" id="tpl-line-info" style="font-size:13px;color:#a0a0aa;margin:0 0 10px;"></div>
+        <div class="tpl-filter-bar" id="tpl-filter-bar" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;">
+          <button class="tpl-filter-chip active" data-tpl-filter="recomendados">Recomendados</button>
+          <button class="tpl-filter-chip" data-tpl-filter="todos">Todos</button>
+          <button class="tpl-filter-chip" data-tpl-filter="1">1 linha</button>
+          <button class="tpl-filter-chip" data-tpl-filter="2">2 linhas</button>
+          <button class="tpl-filter-chip" data-tpl-filter="3">3 linhas</button>
+          <button class="tpl-filter-chip" data-tpl-filter="meus">Meus templates</button>
+        </div>
         <div class="template-grid" id="template-grid"></div>
       </div>
       <div class="modal-content" data-modal-content="projects" style="display: none;">
@@ -16102,6 +16154,82 @@ const TEMPLATES = [
 
 function getTemplateById(id) {
   return TEMPLATES.find(t => t.id === id) || null;
+}
+
+/**
+ * Classifica um template pela quantidade de linhas, lendo a tag
+ * convencional já usada em todo o catálogo (ex: '1 linha', '2 linhas',
+ * '3 linhas'...). Não requer nenhum campo novo nos templates antigos —
+ * é 100% compatível com o que já existe.
+ *
+ * Se nenhuma tag bater com o padrão, tenta inferir pela estrutura real
+ * do template (schema de linhas extraído por posição). Se ainda assim
+ * não for possível, classifica como 'generico' (não quebra nada, só
+ * não entra nos filtros por quantidade específica).
+ *
+ * @param {object} tpl - template do catálogo (TEMPLATES)
+ * @returns {number|'generico'}
+ */
+function getTemplateLineCount(tpl) {
+  if (!tpl) return 'generico';
+  if (typeof tpl._lineCount === 'number') return tpl._lineCount; // cache
+  const tags = tpl.tags || [];
+  for (const tag of tags) {
+    const m = /^(\d+)\s*linhas?$/i.exec((tag || '').trim());
+    if (m) {
+      const n = parseInt(m[1], 10);
+      tpl._lineCount = n;
+      return n;
+    }
+  }
+  // Fallback: infere pela estrutura real (schema por linha), quando a
+  // função de extração já estiver disponível neste ponto do arquivo.
+  try {
+    if (typeof _extrairLineSchema === 'function') {
+      const schema = _extrairLineSchema(tpl);
+      if (schema && schema.length) {
+        tpl._lineCount = schema.length;
+        return schema.length;
+      }
+    }
+  } catch (e) {}
+  tpl._lineCount = 'generico';
+  return 'generico';
+}
+
+/**
+ * Conta quantas linhas com conteúdo real existem numa estrofe (slide)
+ * do projeto atual. Ignora linhas totalmente vazias e normaliza a
+ * estrutura já usada pelo parser (stanza.lines[].words[]).
+ *
+ * Conceitualmente equivalente ao "getSlideLineCount(slide)" pedido:
+ * adaptado ao termo "estrofe" já usado nesta base de código.
+ *
+ * @param {object} stanza - uma estrofe de engine.parsed.stanzas
+ * @returns {number}
+ */
+function getSlideLineCount(stanza) {
+  if (!stanza || !Array.isArray(stanza.lines)) return 0;
+  return stanza.lines.filter(ln => ln.words && ln.words.some(w => w.text && w.text.trim().length)).length;
+}
+
+/**
+ * Retorna os templates compatíveis com uma estrofe, já ordenados com
+ * os "recomendados" (mesma quantidade de linhas) primeiro.
+ *
+ * @param {object[]} templates - lista de templates (ex: WM_TEMPLATES.all)
+ * @param {number} lineCount - quantidade de linhas do slide selecionado
+ * @returns {{recommended: object[], others: object[]}}
+ */
+function getCompatibleTemplates(templates, lineCount) {
+  const recommended = [];
+  const others = [];
+  (templates || []).forEach(t => {
+    const n = getTemplateLineCount(t);
+    if (n === lineCount) recommended.push(t);
+    else others.push(t);
+  });
+  return { recommended, others };
 }
 
 window.WM_TEMPLATES = {
@@ -32732,15 +32860,121 @@ function initEditor() {
   }
 
   // ============ MODAL ============
+  // ============ PREVIEW TEMPORÁRIO DE TEMPLATE (não-destrutivo) ============
+  // Guarda o estado ORIGINAL da estrofe antes de qualquer preview, pra
+  // poder restaurar exatamente se o usuário cancelar/fechar sem aplicar.
+  // Não entra no histórico (Ctrl+Z), não salva, não consome créditos —
+  // só o "Aplicar" (commitTemplatePreview) confirma de verdade.
+  let _tplPreviewSnapshot = null;
+
+  function _snapshotStanzaTemplateState(stanzaIdx) {
+    try {
+      const stanza = engine.parsed.stanzas[stanzaIdx];
+      if (!stanza) return null;
+      const wordIds = [];
+      stanza.lines?.forEach(ln => ln.words?.forEach(w => wordIds.push(w.id)));
+      const wordOverrides = {};
+      wordIds.forEach(id => {
+        if (engine.wordOverrides && engine.wordOverrides[id]) {
+          wordOverrides[id] = JSON.parse(JSON.stringify(engine.wordOverrides[id]));
+        }
+      });
+      return {
+        stanzaIdx,
+        stanzaId: stanza.id,
+        lines: JSON.parse(JSON.stringify(stanza.lines)),
+        wordIds,
+        wordOverrides,
+        sceneOverride: (engine.sceneOverrides && engine.sceneOverrides[stanza.id])
+          ? JSON.parse(JSON.stringify(engine.sceneOverrides[stanza.id]))
+          : null,
+      };
+    } catch (e) { console.warn('_snapshotStanzaTemplateState:', e); return null; }
+  }
+
+  function _restoreStanzaTemplateState(snap) {
+    if (!snap) return;
+    try {
+      const stanza = engine.parsed.stanzas[snap.stanzaIdx];
+      if (!stanza) return;
+      stanza.lines = snap.lines;
+      if (!engine.wordOverrides) engine.wordOverrides = {};
+      snap.wordIds.forEach(id => {
+        if (snap.wordOverrides[id]) engine.wordOverrides[id] = snap.wordOverrides[id];
+        else delete engine.wordOverrides[id];
+      });
+      if (engine.sceneOverrides) {
+        if (snap.sceneOverride) engine.sceneOverrides[snap.stanzaId] = snap.sceneOverride;
+        else delete engine.sceneOverrides[snap.stanzaId];
+      }
+      if (typeof engine.renderStanza === 'function') engine.renderStanza(snap.stanzaIdx);
+    } catch (e) { console.warn('_restoreStanzaTemplateState:', e); }
+  }
+
+  /**
+   * Aplica o template imediatamente na estrofe indicada, SEM marcar dirty
+   * e SEM entrar no histórico — é só uma pré-visualização com a letra
+   * real do slide. Reaproveita 100% a lógica de aplicação já existente
+   * (_doApplyTemplateToStanzas), então o preview fica visualmente
+   * idêntico ao resultado final.
+   */
+  function previewTemplateOnSlide(tpl, stanzaIdx) {
+    if (!engine || !engine.parsed || !engine.parsed.stanzas || !engine.parsed.stanzas.length) return false;
+    const idx = (typeof stanzaIdx === 'number') ? stanzaIdx : (engine.currentStanzaIndex || 0);
+    // Só tira um snapshot novo se ainda não houver um preview em andamento
+    // pra esta estrofe — assim, trocar de template no meio do preview não
+    // "perde" o estado ORIGINAL (sempre volta pro antes-de-qualquer-preview).
+    if (!_tplPreviewSnapshot || _tplPreviewSnapshot.stanzaIdx !== idx) {
+      _tplPreviewSnapshot = _snapshotStanzaTemplateState(idx);
+    }
+    const cfg = tpl.config || {};
+    const templateOverridesSeq = [];
+    if (cfg.parsed && cfg.wordOverrides) {
+      cfg.parsed.stanzas?.forEach(st => st.lines?.forEach(ln => ln.words?.forEach(w => {
+        const ov = cfg.wordOverrides[w.id];
+        if (ov && Object.keys(ov).length) templateOverridesSeq.push(JSON.parse(JSON.stringify(ov)));
+      })));
+    }
+    if (!engine.wordOverrides) engine.wordOverrides = {};
+    if (!engine.sceneOverrides) engine.sceneOverrides = {};
+    _doApplyTemplateToStanzas(tpl, 'estrofe', [idx], templateOverridesSeq);
+    return true;
+  }
+
+  /** Desfaz o preview e volta a estrofe exatamente ao estado anterior. */
+  function cancelTemplatePreview() {
+    if (!_tplPreviewSnapshot) return;
+    _restoreStanzaTemplateState(_tplPreviewSnapshot);
+    _tplPreviewSnapshot = null;
+  }
+
+  /** Confirma o preview: não desfaz nada, só para de rastreá-lo. */
+  function commitTemplatePreview() {
+    _tplPreviewSnapshot = null;
+  }
+
   function openModal(tab = 'templates') {
     const overlay = $('#modal-overlay');
     overlay.classList.add('active');
     switchModalTab(tab);
   }
   function closeModal() {
+    // Blindagem: se o modal for fechado (X, Esc, clique fora) com um
+    // preview de template pendente, cancela e restaura antes de fechar —
+    // nenhum caminho de saída pode deixar a estrofe alterada sem "Aplicar".
+    if (_tplPreviewSnapshot) {
+      cancelTemplatePreview();
+      try { engine.renderStanza(engine.currentStanzaIndex); } catch (e) {}
+    }
+    document.getElementById('tpl-mode-overlay')?.remove();
     $('#modal-overlay').classList.remove('active');
   }
   function switchModalTab(tab) {
+    // Blindagem extra: trocar de aba com um preview pendente também cancela.
+    if (_tplPreviewSnapshot) {
+      cancelTemplatePreview();
+      try { engine.renderStanza(engine.currentStanzaIndex); } catch (e) {}
+    }
     $$('.modal-tab').forEach(t => t.classList.toggle('active', t.dataset.modalTab === tab));
     $$('.modal-content').forEach(c => {
       c.style.display = c.dataset.modalContent === tab ? '' : 'none';
@@ -32748,6 +32982,8 @@ function initEditor() {
     if (tab === 'templates') {
       $('#modal-title').textContent = 'Templates';
       $('#modal-subtitle').textContent = 'Comece com um preset pronto';
+      _tplActiveFilter = 'recomendados'; // sempre reabre no filtro padrão
+      $$('.tpl-filter-chip').forEach(c => c.classList.toggle('active', c.dataset.tplFilter === 'recomendados'));
       renderTemplateGrid();
     } else {
       $('#modal-title').textContent = 'Meus projetos';
@@ -32981,6 +33217,26 @@ function initEditor() {
     return `<div style="display:flex;flex-direction:column;justify-content:center;align-items:center;gap:0.15em;width:100%;height:100%;padding:6px;box-sizing:border-box;">${linhasHTML}</div>`;
   }
 
+  let _tplActiveFilter = 'recomendados';
+
+  function _wmCurrentSlideLineCount() {
+    try {
+      const stanzas = engine && engine.parsed && engine.parsed.stanzas;
+      if (!stanzas || !stanzas.length) return 0;
+      const idx = (typeof engine.currentStanzaIndex === 'number') ? engine.currentStanzaIndex : 0;
+      return getSlideLineCount(stanzas[idx]);
+    } catch (e) { return 0; }
+  }
+
+  function _wmUpdateTplLineInfo() {
+    const info = $('#tpl-line-info');
+    if (!info) return;
+    const n = _wmCurrentSlideLineCount();
+    info.textContent = n > 0
+      ? `Modelos para este slide — ${n} ${n === 1 ? 'linha' : 'linhas'}`
+      : 'Adicione uma letra ao slide para visualizar os templates compatíveis.';
+  }
+
   function renderTemplateGrid() {
     const grid = $('#template-grid');
     const BG_CSS = {
@@ -32990,11 +33246,41 @@ function initEditor() {
       warm: 'linear-gradient(135deg, #7c2d12, #d4a857)',
       black: '#050507',
     };
-    grid.innerHTML = WM_TEMPLATES.all.map(t => {
+
+    _wmUpdateTplLineInfo();
+    const currentLineCount = _wmCurrentSlideLineCount();
+    const { recommended, others } = getCompatibleTemplates(WM_TEMPLATES.all, currentLineCount);
+    const recommendedIds = new Set(recommended.map(t => t.id));
+
+    // Define a lista a exibir conforme o filtro ativo, sem remover
+    // nenhum template do catálogo — só reorganiza a exibição.
+    let list;
+    switch (_tplActiveFilter) {
+      case 'todos': list = WM_TEMPLATES.all; break;
+      case '1': case '2': case '3':
+        list = WM_TEMPLATES.all.filter(t => getTemplateLineCount(t) === Number(_tplActiveFilter));
+        break;
+      case 'meus':
+        list = WM_TEMPLATES.all.filter(t => (t.tags || []).includes('meu'));
+        break;
+      case 'recomendados':
+      default:
+        // Recomendados primeiro (mesma quantidade de linhas do slide), depois o resto.
+        list = currentLineCount > 0 ? [...recommended, ...others] : WM_TEMPLATES.all;
+        break;
+    }
+
+    grid.innerHTML = list.map(t => {
       const previewContent = _renderTemplatePreviewContent(t);
+      const lc = getTemplateLineCount(t);
+      const lcLabel = lc === 'generico' ? '' : `${lc} ${lc === 1 ? 'linha' : 'linhas'}`;
+      const isRecommended = recommendedIds.has(t.id) && currentLineCount > 0;
+      const isPremium = (t.tags || []).some(tag => /pro\s*plus/i.test(tag)) || t.requiredPlan === 'pro_plus';
       return `
-        <div class="template-card" data-template-id="${t.id}">
+        <div class="template-card${isRecommended ? ' tpl-recommended' : ''}" data-template-id="${t.id}">
           <div class="template-preview">
+            ${lcLabel ? `<span class="template-line-badge">${escapeHtml(lcLabel)}</span>` : ''}
+            ${isPremium ? `<span class="template-plan-badge">Pro Plus</span>` : ''}
             <div class="template-preview-bg" style="background: ${BG_CSS[t.config.bg] || BG_CSS.brand};"></div>
             <div class="template-preview-text">${previewContent}</div>
           </div>
@@ -33010,20 +33296,43 @@ function initEditor() {
       card.addEventListener('click', () => {
         const tpl = WM_TEMPLATES.get(card.dataset.templateId);
         if (!tpl) return;
+
+        // PREVIEW NÃO-DESTRUTIVO: aplica na hora, na estrofe atual, com a
+        // LETRA REAL do usuário — sem marcar dirty, sem histórico, sem
+        // salvar. Se não houver letra, não há o que pré-visualizar (o
+        // próprio _askApplyTemplateMode já trata esse caso como "exemplo").
+        const temLetraAtual = ($('#lyrics-input')?.value || '').trim().length > 0;
+        if (temLetraAtual) previewTemplateOnSlide(tpl, engine.currentStanzaIndex);
+
         // Modal híbrido com 3 modos:
-        // - "estrofe": aplica template SÓ na estrofe atual (não toca em outras)
-        // - "todas": aplica template em TODAS as estrofes
+        // - "estrofe": CONFIRMA o preview que já está na tela (não reaplica)
+        // - "todas": descarta o preview de 1 estrofe e aplica em TODAS
         // - "exemplo": substitui projeto inteiro pela letra de exemplo do template
         _askApplyTemplateMode(tpl, (mode) => {
-          if (mode === 'cancel') return;
+          if (mode === 'cancel') {
+            cancelTemplatePreview();
+            try { engine.renderStanza(engine.currentStanzaIndex); } catch (e) {}
+            return;
+          }
           try {
-            if (mode === 'estrofe' || mode === 'todas') {
-              // Aplicação ESCOPADA por estrofe (não substitui projeto)
+            if (mode === 'estrofe') {
+              // Já está aplicado pelo preview — só confirma (não reaplica).
+              commitTemplatePreview();
+              _autoEspacarPalavras([engine.currentStanzaIndex]);
+            } else if (mode === 'compativeis') {
+              // O preview era só da estrofe atual — descarta e aplica em
+              // lote nos slides com a MESMA quantidade de linhas.
+              cancelTemplatePreview();
+              const idxs = applyTemplateToMatchingSlides(tpl);
+              _autoEspacarPalavras(idxs.length ? idxs : null);
+            } else if (mode === 'todas') {
+              // O preview era só da estrofe atual — descarta e aplica em todas.
+              cancelTemplatePreview();
               _applyTemplateToStanzas(tpl, mode);
-              // Já nasce espaçado (evita palavras "grudadas" pelo glow)
-              _autoEspacarPalavras(mode === 'estrofe' ? [engine.currentStanzaIndex] : null);
+              _autoEspacarPalavras(null);
             } else {
               // Modo legacy "exemplo": substitui projeto inteiro
+              cancelTemplatePreview();
               const projeto = _buildProjectFromTemplate(tpl, mode);
               applyProjectToEditor(projeto);
               _autoEspacarPalavras(null);
@@ -33040,6 +33349,7 @@ function initEditor() {
             if (typeof showToast === 'function') {
               showToast('Erro ao aplicar template: ' + (err && err.message ? err.message : err));
             }
+            cancelTemplatePreview();
             closeModal();
             // Tenta re-renderizar a estrofe atual pra recuperar as letras
             try { engine.renderStanza(engine.currentStanzaIndex); } catch (e) {}
@@ -33058,6 +33368,15 @@ function initEditor() {
     // carregadas quando a grade abria.
     _ensureTemplateFontsLoaded();
   }
+
+  // Liga os chips de filtro (delegação de evento, criado uma única vez).
+  document.addEventListener('click', (ev) => {
+    const chip = ev.target.closest && ev.target.closest('.tpl-filter-chip');
+    if (!chip) return;
+    _tplActiveFilter = chip.dataset.tplFilter;
+    $$('.tpl-filter-chip').forEach(c => c.classList.toggle('active', c === chip));
+    renderTemplateGrid();
+  });
 
   let _tplFontsLoaded = false;
   function _ensureTemplateFontsLoaded() {
@@ -33270,7 +33589,7 @@ function initEditor() {
     } catch (e) { console.warn('_autoEspacarPalavras:', e); }
   }
 
-  function _applyTemplateToStanzas(tpl, escopo) {
+  function _applyTemplateToStanzas(tpl, escopo, explicitIndices) {
     const cfg = tpl.config || {};
     const parsed = engine.parsed;
     if (!parsed || !parsed.stanzas || !parsed.stanzas.length) {
@@ -33280,10 +33599,13 @@ function initEditor() {
       return;
     }
 
-    // Decide quais estrofes serão alvo
-    const targetIndices = escopo === 'todas'
-      ? parsed.stanzas.map((_, i) => i)
-      : [engine.currentStanzaIndex || 0];
+    // Decide quais estrofes serão alvo. Se uma lista explícita for passada
+    // (ex: aplicação em lote nos slides compatíveis), ela tem prioridade.
+    const targetIndices = Array.isArray(explicitIndices)
+      ? explicitIndices
+      : (escopo === 'todas'
+        ? parsed.stanzas.map((_, i) => i)
+        : [engine.currentStanzaIndex || 0]);
 
     // Coleta sequência de overrides do template (em ordem de leitura)
     const templateOverridesSeq = [];
@@ -33306,6 +33628,41 @@ function initEditor() {
     // ADAPTÁVEL (fonte por linha + auto-layout), então qualquer número
     // de palavras funciona — não precisa avisar.
     _doApplyTemplateToStanzas(tpl, escopo, targetIndices, templateOverridesSeq);
+  }
+
+  /**
+   * Retorna os índices das estrofes (slides) COMPATÍVEIS com um template:
+   * mesma quantidade de linhas. Não aplica nada — só identifica os alvos.
+   * Conceitualmente equivalente ao "getCompatibleSlides(template, slides)"
+   * pedido no brief.
+   *
+   * @param {object} tpl - template do catálogo
+   * @param {object[]} stanzas - engine.parsed.stanzas
+   * @returns {number[]} índices compatíveis, na ordem original
+   */
+  function getCompatibleSlides(tpl, stanzas) {
+    const n = getTemplateLineCount(tpl);
+    if (n === 'generico' || !Array.isArray(stanzas)) return [];
+    const out = [];
+    stanzas.forEach((st, i) => { if (getSlideLineCount(st) === n) out.push(i); });
+    return out;
+  }
+
+  /**
+   * Aplica o template em todos os slides COMPATÍVEIS (mesma quantidade de
+   * linhas), pulando os incompatíveis — diferente do modo "todas" (que
+   * força em qualquer estrofe). Uma única passada = uma única entrada
+   * no histórico (markDirty é chamado uma vez só, fora daqui).
+   *
+   * @returns {number[]} índices que foram efetivamente alterados
+   */
+  function applyTemplateToMatchingSlides(tpl) {
+    const parsed = engine.parsed;
+    if (!parsed || !parsed.stanzas) return [];
+    const idxs = getCompatibleSlides(tpl, parsed.stanzas);
+    if (!idxs.length) return [];
+    _applyTemplateToStanzas(tpl, 'compativeis', idxs);
+    return idxs;
   }
 
   /**
@@ -33532,7 +33889,9 @@ function initEditor() {
     if (typeof showToast === 'function') {
       const msg = escopo === 'todas'
         ? `Template aplicado em ${targetIndices.length} estrofes`
-        : 'Template aplicado na estrofe atual';
+        : escopo === 'compativeis'
+          ? `Template aplicado em ${targetIndices.length} slides compatíveis`
+          : 'Template aplicado na estrofe atual';
       showToast(msg);
     }
   }
@@ -33609,6 +33968,15 @@ function initEditor() {
       return;
     }
 
+    // Verifica quantos slides do projeto são COMPATÍVEIS com este template
+    // (mesma quantidade de linhas), pra oferecer a opção de aplicação em
+    // lote só quando fizer sentido (mais de 1 slide compatível).
+    const tplLineCount = getTemplateLineCount(tpl);
+    const compatIdxs = (tplLineCount !== 'generico' && engine.parsed && engine.parsed.stanzas)
+      ? getCompatibleSlides(tpl, engine.parsed.stanzas)
+      : [];
+    const mostrarLote = compatIdxs.length > 1;
+
     // Cria overlay
     const overlay = document.createElement('div');
     overlay.id = 'tpl-mode-overlay';
@@ -33624,9 +33992,15 @@ function initEditor() {
       + '    <div style="font-weight:600;font-size:14px;margin-bottom:4px;color:#9fd;">★ Aplicar SÓ na estrofe atual (recomendado)</div>'
       + '    <div style="font-size:12px;color:#a0a0aa;line-height:1.4;">Aplica fontes individuais, posições, tamanhos, animação, cor e efeitos do template <b>apenas na estrofe selecionada</b>. Outras estrofes ficam intactas. <b>Fundo não é aplicado</b>.</div>'
       + '  </button>'
+      + (mostrarLote
+        ? '  <button id="tpl-mode-compativeis" style="text-align:left;padding:14px;background:#2a2a35;border:1px solid #8b5cf6;border-radius:8px;color:#f4f4f7;cursor:pointer;font-family:inherit;">'
+        + '    <div style="font-weight:600;font-size:14px;margin-bottom:4px;color:#c4b5fd;">Aplicar em slides semelhantes (' + compatIdxs.length + ')</div>'
+        + '    <div style="font-size:12px;color:#a0a0aa;line-height:1.4;">Aplica em todos os ' + compatIdxs.length + ' slides com ' + tplLineCount + ' ' + (tplLineCount === 1 ? 'linha' : 'linhas') + '. Slides com outra quantidade de linhas não são alterados.</div>'
+        + '  </button>'
+        : '')
       + '  <button id="tpl-mode-todas" style="text-align:left;padding:14px;background:#2a2a35;border:1px solid #444;border-radius:8px;color:#f4f4f7;cursor:pointer;font-family:inherit;">'
       + '    <div style="font-weight:600;font-size:14px;margin-bottom:4px;">'+(window.WM_T?window.WM_T('dyn.applyAllStanzas'):'Aplicar em TODAS as estrofes')+'</div>'
-      + '    <div style="font-size:12px;color:#a0a0aa;line-height:1.4;">Replica o template em cada estrofe do projeto. Cada uma recebe fontes individuais e layout do template (pela ordem das palavras de cada estrofe). <b>Fundo não é aplicado</b>.</div>'
+      + '    <div style="font-size:12px;color:#a0a0aa;line-height:1.4;">Replica o template em cada estrofe do projeto, mesmo as com outra quantidade de linhas. Cada uma recebe fontes individuais e layout do template (pela ordem das palavras de cada estrofe). <b>Fundo não é aplicado</b>.</div>'
       + '  </button>'
       + '  <button id="tpl-mode-exemplo" style="text-align:left;padding:14px;background:#2a2a35;border:1px solid #444;border-radius:8px;color:#f4f4f7;cursor:pointer;font-family:inherit;">'
       + '    <div style="font-weight:600;font-size:14px;margin-bottom:4px;">⚠ SUBSTITUIR todo o projeto pela letra de exemplo</div>'
@@ -33641,12 +34015,12 @@ function initEditor() {
     document.body.appendChild(overlay);
 
     // Hover effects pros botões — preserva destaque do "estrofe atual" (verde)
-    ['tpl-mode-estrofe', 'tpl-mode-todas', 'tpl-mode-exemplo'].forEach(id => {
+    ['tpl-mode-estrofe', 'tpl-mode-compativeis', 'tpl-mode-todas', 'tpl-mode-exemplo'].forEach(id => {
       const btn = card.querySelector('#' + id);
       if (!btn) return;
       const isPrincipal = (id === 'tpl-mode-estrofe');
-      const baseBorder = isPrincipal ? '#4a8' : '#444';
-      const hoverBorder = isPrincipal ? '#5fa' : '#666';
+      const baseBorder = isPrincipal ? '#4a8' : (id === 'tpl-mode-compativeis' ? '#8b5cf6' : '#444');
+      const hoverBorder = isPrincipal ? '#5fa' : (id === 'tpl-mode-compativeis' ? '#a78bfa' : '#666');
       btn.addEventListener('mouseenter', () => {
         btn.style.background = '#3a3a48';
         btn.style.borderColor = hoverBorder;
@@ -33663,6 +34037,18 @@ function initEditor() {
       fechar();
       callback('estrofe');
     });
+    if (mostrarLote) {
+      card.querySelector('#tpl-mode-compativeis').addEventListener('click', () => {
+        // Confirmação extra antes de mexer em vários slides de uma vez,
+        // conforme pedido: "Este template será aplicado em N slides de
+        // X linhas." / Cancelar / "Aplicar em N slides".
+        _confirmBatchApply(compatIdxs.length, tplLineCount).then(ok => {
+          if (!ok) return; // fica no diálogo principal, não fecha nada
+          fechar();
+          callback('compativeis');
+        });
+      });
+    }
     card.querySelector('#tpl-mode-todas').addEventListener('click', () => {
       fechar();
       callback('todas');
@@ -33680,6 +34066,32 @@ function initEditor() {
         fechar();
         callback('cancel');
       }
+    });
+  }
+
+  /**
+   * Confirmação explícita antes de aplicar um template em vários slides
+   * de uma vez. Retorna Promise<boolean> (true = confirmar, false = voltar).
+   */
+  function _confirmBatchApply(n, lineCount) {
+    return new Promise(resolve => {
+      const overlay = document.createElement('div');
+      overlay.style.cssText = 'position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
+      const card = document.createElement('div');
+      card.style.cssText = 'background:#1a1a1f;border:1px solid #8b5cf6;border-radius:12px;padding:24px;max-width:440px;width:90%;color:#f4f4f7;font-family:Inter,sans-serif;box-shadow:0 20px 60px rgba(0,0,0,0.5);';
+      const linhaTxt = lineCount === 1 ? 'linha' : 'linhas';
+      card.innerHTML = '<h3 style="margin:0 0 12px;font-size:17px;font-weight:600;">Aplicar em ' + n + ' slides</h3>'
+        + '<p style="margin:0 0 20px;font-size:14px;color:#ccc;line-height:1.5;">Este template será aplicado em <b>' + n + ' slides de ' + lineCount + ' ' + linhaTxt + '</b>. Os demais slides não serão alterados.</p>'
+        + '<div style="display:flex;gap:8px;justify-content:flex-end;">'
+        + '  <button id="ba-cancel" style="padding:10px 16px;background:transparent;border:1px solid #444;border-radius:8px;color:#a0a0aa;cursor:pointer;font-family:inherit;font-size:13px;">Cancelar</button>'
+        + '  <button id="ba-ok" style="padding:10px 16px;background:#8b5cf6;border:none;border-radius:8px;color:#fff;cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;">Aplicar em ' + n + ' slides</button>'
+        + '</div>';
+      overlay.appendChild(card);
+      document.body.appendChild(overlay);
+      const fechar = (v) => { overlay.remove(); resolve(v); };
+      card.querySelector('#ba-cancel').addEventListener('click', () => fechar(false));
+      card.querySelector('#ba-ok').addEventListener('click', () => fechar(true));
+      overlay.addEventListener('click', (ev) => { if (ev.target === overlay) fechar(false); });
     });
   }
 
