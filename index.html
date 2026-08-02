@@ -7011,6 +7011,10 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
         <span data-i18n="tb.saveTemplate">Salvar template</span>
       </button>
+      <button class="btn btn-secondary btn-sm" id="btn-create-template-from-slide" style="display:none;border-color:#8b5cf6;" data-tooltip="[Admin] Criar template oficial a partir deste slide">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#c4b5fd" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        <span style="color:#c4b5fd;">Criar template do slide</span>
+      </button>
       <button class="btn btn-primary btn-sm" id="btn-export" data-tooltip="Exportar vídeo (MP4)">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         <span data-i18n="tb.export">Exportar</span>
@@ -7956,6 +7960,22 @@ Digno de toda honra"></textarea>
     </div>
   </div>
 </div>
+
+<div class="modal-overlay" id="tpl-upsell-overlay">
+  <div class="modal" style="max-width: 440px;">
+    <div class="modal-body" style="padding: 28px; text-align: center;">
+      <div style="width:56px; height:56px; margin:0 auto 16px; border-radius:16px; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg,#8b5cf6,#d4a857); box-shadow:0 8px 24px -8px rgba(139,92,246,0.5);">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      </div>
+      <div style="display:inline-block; font-size:10px; font-weight:800; letter-spacing:.06em; color:#8a7bff; background:rgba(138,123,255,0.12); padding:4px 10px; border-radius:8px; margin-bottom:12px;">RECURSO PRO PLUS</div>
+      <h2 style="margin:0 0 8px; font-size:20px; font-weight:700; color:var(--text-primary);">Templates Inteligentes são exclusivos do Pro Plus</h2>
+      <p style="margin:0 0 22px; font-size:14px; line-height:1.6; color:var(--text-secondary);">Não comece cada slide do zero. Escolha uma composição profissional e transforme sua letra em segundos.</p>
+      <button id="tpl-upsell-cta" class="btn btn-primary" style="width:100%; padding:13px; font-weight:700; background:linear-gradient(135deg,#8b5cf6,#6d28d9); border:none; color:#fff;">Conhecer o Pro Plus</button>
+      <button id="tpl-upsell-close" class="btn btn-ghost btn-sm" style="width:100%; margin-top:8px;">Agora não</button>
+    </div>
+  </div>
+</div>
+
 
 
 <div class="modal-overlay" id="export-modal-overlay">
@@ -9024,9 +9044,24 @@ window.wmRetomarCheckoutPendente = function(session) {
   return true;
 };
 
+// Lista de e-mails com acesso à ferramenta administrativa "Criar template
+// do slide". Client-side (não é segurança de verdade — é só uma flag de UI
+// pra esconder o botão de quem não é admin). SUBSTITUA pelo(s) e-mail(s)
+// reais da equipe. Comparação sempre em minúsculas.
+const WM_ADMIN_EMAILS = ['ravpapelaria@gmail.com'];
+
+function _wmAtualizarAdminFlag(session) {
+  const email = (session && session.user && session.user.email || '').toLowerCase();
+  window.WM_IS_ADMIN = !!email && WM_ADMIN_EMAILS.map(e => e.toLowerCase()).includes(email);
+  // Reflete na UI se o botão já existir (pode rodar antes ou depois do wire-up).
+  const btnAdmin = document.getElementById('btn-create-template-from-slide');
+  if (btnAdmin) btnAdmin.style.display = window.WM_IS_ADMIN ? '' : 'none';
+}
+
 if (window.wmSupabase) {
   window.wmSupabase.auth.onAuthStateChange((event, session) => {
     if (window.__wmLog) window.__wmLog('auth: ' + event + ' sessao=' + (session?'SIM':'não'));
+    _wmAtualizarAdminFlag(session);
     // Liga a flag sempre que houver sessão. Só desliga em logout EXPLÍCITO.
     if (session) {
       window.__wmSessaoPronta = true;
@@ -16154,6 +16189,12 @@ const TEMPLATES = [
 
 function getTemplateById(id) {
   return TEMPLATES.find(t => t.id === id) || null;
+}
+
+/** Um template é Pro Plus se tiver a tag (ex: 'Pro Plus') ou requiredPlan explícito. */
+function _isTemplatePremium(tpl) {
+  if (!tpl) return false;
+  return (tpl.tags || []).some(tag => /pro\s*plus/i.test(tag)) || tpl.requiredPlan === 'pro_plus';
 }
 
 /**
@@ -26560,6 +26601,26 @@ function initEditor() {
             <span class="switch-mini-slider"></span>
           </label>
         </div>
+        ${(() => {
+          // Só mostra esta ação se a linha desta palavra veio de um
+          // template com destaque por papel (ver _extrairLineSchema).
+          // Permite trocar manualmente QUAL palavra da linha recebe o
+          // destaque do template, sem precisar reaplicar nada.
+          const schema = engine.templateAppliedSchema?.[info.stanza.id];
+          const schLine = schema?.[info.lineIdx];
+          if (!schLine || !schLine.highlight) return '';
+          const overrideKey = info.stanza.id + '__' + info.lineIdx;
+          const jaEDestaque = (engine.templateHighlightOverrides?.[overrideKey] || []).includes(selectedWordId)
+            || (!engine.templateHighlightOverrides?.[overrideKey] && _resolveRoleWords(schLine.highlight.roles, info.stanza.lines[info.lineIdx].words).some(w => w.id === selectedWordId));
+          return `
+            <div class="word-emphasis-row" style="border-top:1px dashed var(--border-subtle, #333); margin-top:4px; padding-top:10px;">
+              <div class="word-emphasis-label" style="opacity:${jaEDestaque ? '0.5' : '1'};">
+                <span style="font-size:12px;">${jaEDestaque ? 'Esta já é a palavra em destaque do template' : 'Transferir destaque do template pra esta palavra'}</span>
+              </div>
+              ${!jaEDestaque ? `<button id="btn-transferir-destaque" class="btn btn-ghost btn-sm" style="font-size:11px;padding:4px 10px;">Transferir</button>` : ''}
+            </div>
+          `;
+        })()}
 
         <div class="word-panel-section-title">${window.WM_T?window.WM_T("wp.layers"):"Camadas"}${typeof wo.zIndex === 'number' ? ` <span style="font-size:10px; font-weight:400; color:var(--text-tertiary); text-transform:none; letter-spacing:0;">— ${window.WM_T?window.WM_T("wp.layerN").replace("{n}",wo.zIndex):"camada "+wo.zIndex}</span>` : ''}</div>
         <div class="word-zorder-grid">
@@ -26996,6 +27057,20 @@ function initEditor() {
       markDirty();
       engine.playFull();
       requestAnimationFrame(() => renderWordPanel());
+    });
+
+    // Transferir destaque do template pra esta palavra (troca manual)
+    $('#btn-transferir-destaque', container)?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const info = findWordInfo(selectedWordId);
+      if (!info) return;
+      const ok = updateHighlightedWords(info.stanzaIdx, info.lineIdx, [selectedWordId]);
+      if (ok) {
+        markDirty();
+        requestAnimationFrame(() => engine.playEntrance());
+        requestAnimationFrame(() => renderWordPanel());
+        if (typeof showToast === 'function') showToast('Destaque transferido para "' + info.word.text + '"');
+      }
     });
 
     // Toggle de Destaque (emphasized) — marca a palavra como destaque
@@ -32953,6 +33028,65 @@ function initEditor() {
     _tplPreviewSnapshot = null;
   }
 
+  /**
+   * Transfere manualmente o destaque de template pra outra(s) palavra(s)
+   * dentro de uma linha específica de uma estrofe. Não mexe na letra, só
+   * na formatação (fonte/tamanho/cor do destaque). Persiste a escolha —
+   * sobrevive a novo render — e é totalmente reversível.
+   *
+   * @param {number} stanzaIdx
+   * @param {number} lineIndex
+   * @param {string[]} wordIds - IDs das palavras que devem virar o destaque
+   * @returns {boolean} false se a linha não veio de um template com destaque
+   */
+  function updateHighlightedWords(stanzaIdx, lineIndex, wordIds) {
+    const stanza = engine.parsed.stanzas[stanzaIdx];
+    if (!stanza) return false;
+    const schema = engine.templateAppliedSchema?.[stanza.id];
+    const sch = schema?.[lineIndex];
+    if (!sch) return false; // esta linha não veio de um template
+
+    engine.templateHighlightOverrides = engine.templateHighlightOverrides || {};
+    const key = stanza.id + '__' + lineIndex;
+    engine.templateHighlightOverrides[key] = wordIds.slice();
+
+    const palavrasDaLinha = stanza.lines[lineIndex]?.words || [];
+    const destaqueIds = new Set(wordIds);
+    palavrasDaLinha.forEach(w => {
+      const ehDestaque = destaqueIds.has(w.id);
+      const ov = { style: {} };
+      if (ehDestaque && sch.highlight) {
+        const hs = sch.highlight.style;
+        ov.style.fontFamily = hs.font || sch.font || undefined;
+        ov.style.fontSizeScale = hs.scale || sch.scale;
+        ov.style.textTransform = hs.textTransform || sch.textTransform || 'capitalize';
+        ov.style.color = hs.color || sch.color || undefined;
+      } else {
+        if (sch.font) ov.style.fontFamily = sch.font;
+        if (sch.scale && sch.scale !== 1) ov.style.fontSizeScale = sch.scale;
+        if (sch.isForca) ov.style.textTransform = sch.textTransform || 'capitalize';
+        else if (sch.textTransform) ov.style.textTransform = sch.textTransform;
+        if (sch.color) ov.style.color = sch.color;
+      }
+      Object.keys(ov.style).forEach(k => { if (ov.style[k] === undefined) delete ov.style[k]; });
+      engine.wordOverrides[w.id] = ov;
+    });
+    try { engine.renderStanza(stanzaIdx); } catch (e) {}
+    return true;
+  }
+
+  /** Restaura a sugestão original do template pra esta linha (desfaz a troca manual). */
+  function restoreHighlightSuggestion(stanzaIdx, lineIndex) {
+    const stanza = engine.parsed.stanzas[stanzaIdx];
+    if (!stanza) return false;
+    const schema = engine.templateAppliedSchema?.[stanza.id];
+    const sch = schema?.[lineIndex];
+    if (!sch) return false;
+    const palavrasDaLinha = stanza.lines[lineIndex]?.words || [];
+    const palavrasDestaque = sch.highlight ? _resolveRoleWords(sch.highlight.roles, palavrasDaLinha) : [];
+    return updateHighlightedWords(stanzaIdx, lineIndex, palavrasDestaque.map(w => w.id));
+  }
+
   function openModal(tab = 'templates') {
     const overlay = $('#modal-overlay');
     overlay.classList.add('active');
@@ -32998,6 +33132,144 @@ function initEditor() {
   //  1. Adiciona como template na sessão atual (aparece já na grade)
   //  2. Mostra o código pronto pra colar em scripts/core/templates.js
   //     (assim vira DEFINITIVO no app — embutido pra todos)
+  /**
+   * Textos genéricos por quantidade de linhas, usados nas miniaturas/
+   * exemplos de templates OFICIAIS — nunca mantém a letra de música real.
+   */
+  const TEMPLATE_GENERIC_TEXT = {
+    1: ['SEU TEXTO AQUI'],
+    2: ['PRIMEIRA LINHA', 'SEGUNDA LINHA'],
+    3: ['PRIMEIRA LINHA', 'SEGUNDA LINHA', 'TERCEIRA LINHA'],
+  };
+
+  /**
+   * Ferramenta ADMINISTRATIVA: "Criar template a partir deste slide".
+   * Diferente de saveCurrentAsTemplate (que captura o PROJETO INTEIRO
+   * pra "Meus templates"), esta função extrai SÓ A ESTROFE ATUAL e
+   * remove tudo que não deve ir num template oficial: letra real, nome
+   * da música/artista, áudio, background/vídeo, ID do projeto.
+   *
+   * Reaproveita a MESMA estrutura de config dos templates existentes
+   * (parsed + wordOverrides + sceneOverrides), então a detecção de
+   * destaque por papel (Bloco 4) funciona automaticamente, sem precisar
+   * configurar nada a mais.
+   */
+  async function createTemplateFromSlide(stanzaIdx) {
+    if (!window.WM_IS_ADMIN) {
+      if (typeof showToast === 'function') showToast('Ferramenta exclusiva de administradores.');
+      return;
+    }
+    const idx = (typeof stanzaIdx === 'number') ? stanzaIdx : (engine.currentStanzaIndex || 0);
+    const stanza = engine.parsed?.stanzas?.[idx];
+    if (!stanza) {
+      if (typeof showToast === 'function') showToast('Nenhuma estrofe selecionada.');
+      return;
+    }
+
+    const lineCount = getSlideLineCount(stanza);
+    if (lineCount < 1 || lineCount > 3) {
+      if (typeof showToast === 'function') {
+        showToast(lineCount === 0
+          ? 'Adicione uma letra ao slide para criar um template.'
+          : 'Este slide possui muitas linhas — o gerador de templates cobre 1 a 3 linhas por enquanto.');
+      }
+      return;
+    }
+
+    // 1) Copia SÓ a estrofe atual (deep clone), preservando os MESMOS
+    // IDs de palavra — é o que mantém o vínculo com wordOverrides.
+    const stanzaClone = JSON.parse(JSON.stringify(stanza));
+
+    // 2) Substitui a letra real por texto genérico, MANTENDO os IDs
+    // (só troca w.text) — não quebra os overrides nem a detecção de
+    // destaque, que depende de POSIÇÃO/escala, não do texto literal.
+    const genericLines = TEMPLATE_GENERIC_TEXT[lineCount];
+    stanzaClone.lines.forEach((ln, li) => {
+      const wordsComTexto = ln.words.filter(w => w.text && w.text.trim());
+      const linhaGenerica = (genericLines[li] || genericLines[genericLines.length - 1]).split(' ');
+      wordsComTexto.forEach((w, wi) => {
+        w.text = linhaGenerica[wi] || linhaGenerica[linhaGenerica.length - 1];
+        w.emphasized = false; // não carrega destaque temático (Santo, Glória) da letra original
+      });
+    });
+
+    // 3) Filtra wordOverrides/sceneOverride só desta estrofe
+    const wordIds = new Set();
+    stanzaClone.lines.forEach(ln => ln.words.forEach(w => wordIds.add(w.id)));
+    const wordOverrides = {};
+    wordIds.forEach(id => { if (engine.wordOverrides[id]) wordOverrides[id] = JSON.parse(JSON.stringify(engine.wordOverrides[id])); });
+    const sceneOverride = engine.sceneOverrides?.[stanza.id]
+      ? JSON.parse(JSON.stringify(engine.sceneOverrides[stanza.id]))
+      : null;
+
+    // 4) Formulário administrativo (nome/descrição/categoria/tags/plano)
+    const nome = ((await wmPrompt('Nome do template oficial:', '', { confirmText: 'Continuar' })) || '').trim();
+    if (!nome) return;
+    const desc = ((await wmPrompt('Descrição curta:', '', { confirmText: 'Continuar' })) || '').trim();
+    const categoria = ((await wmPrompt('Categoria (ex: Minimalista, Moderno, Impactante, Cinematográfico, Jovem, Elegante):', 'Moderno', { confirmText: 'Continuar' })) || '').trim();
+    const tagsRaw = ((await wmPrompt('Tags extras separadas por vírgula (opcional):', '', { confirmText: 'Continuar' })) || '').trim();
+    const ehPremium = await wmConfirm('Este template é exclusivo do Pro Plus?', { confirmText: 'Sim, Pro Plus', cancelText: 'Não, gratuito' }).catch(() => false);
+
+    const slug = nome.toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'oficial';
+    const id = 'tpl-oficial-' + slug + '-' + Date.now().toString(36);
+
+    const tags = [`${lineCount} ${lineCount === 1 ? 'linha' : 'linhas'}`, categoria].filter(Boolean);
+    if (ehPremium) tags.push('Pro Plus');
+    if (tagsRaw) tagsRaw.split(',').map(t => t.trim()).filter(Boolean).forEach(t => tags.push(t));
+
+    const tpl = {
+      id,
+      name: nome,
+      description: desc || (categoria ? `Composição ${categoria.toLowerCase()} para ${lineCount} ${lineCount === 1 ? 'linha' : 'linhas'}.` : 'Template oficial.'),
+      tags,
+      isOfficial: true,
+      isPremium: !!ehPremium,
+      requiredPlan: ehPremium ? 'pro_plus' : 'free',
+      isActive: true,
+      accent: '#8b5cf6',
+      config: {
+        // SEM lyrics real, SEM bg original, SEM áudio, SEM ID do projeto —
+        // só a composição visual/tipográfica/de animação.
+        style: {},
+        animConfig: {},
+        aspect: window.__currentAspect || '16:9',
+        parsed: { stanzas: [stanzaClone] },
+        wordOverrides,
+        sceneOverrides: sceneOverride ? { [stanzaClone.id]: sceneOverride } : {},
+      },
+    };
+
+    // 5) Preview de confirmação com texto DIFERENTE do genérico usado,
+    // pra confirmar visualmente que a transferência de destaque funciona
+    // (exigência do brief: "mostrar um preview com um texto diferente").
+    try {
+      if (window.WM_TEMPLATES && Array.isArray(window.WM_TEMPLATES.all)) {
+        window.WM_TEMPLATES.all.push(tpl);
+      }
+    } catch (e) {}
+
+    const code = '  ' + JSON.stringify(tpl, null, 2).replace(/\n/g, '\n  ') + ',';
+    const ov = document.createElement('div');
+    ov.style.cssText = 'position:fixed;inset:0;z-index:999999;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;padding:24px;';
+    const box = document.createElement('div');
+    box.style.cssText = 'background:var(--bg-secondary,#1a1a2e);color:var(--text-primary,#f4f4f7);border:1px solid #8b5cf6;border-radius:12px;max-width:680px;width:100%;max-height:85vh;overflow:auto;padding:24px;font-family:system-ui,sans-serif;';
+    box.innerHTML =
+      '<h3 style="margin:0 0 8px;font-size:18px;">✓ Template oficial "' + escapeHtml(nome) + '" criado (' + lineCount + ' ' + (lineCount === 1 ? 'linha' : 'linhas') + ')</h3>'
+      + '<p style="margin:0 0 16px;font-size:13px;color:var(--text-tertiary,#999);line-height:1.5;">'
+      + 'Já aparece na biblioteca <b>nesta sessão</b> (inclusive no filtro "' + categoria + '"). '
+      + 'Pra ficar <b>permanente</b> pra todos os usuários, cole o código abaixo no array <code>TEMPLATES</code>.</p>'
+      + '<pre style="background:#0d0d12;padding:14px;border-radius:8px;font-size:11px;overflow:auto;max-height:320px;white-space:pre-wrap;">' + escapeHtml(code) + '</pre>'
+      + '<button id="tpl-admin-close" class="btn btn-primary" style="margin-top:12px;">Fechar</button>';
+    ov.appendChild(box);
+    document.body.appendChild(ov);
+    box.querySelector('#tpl-admin-close').addEventListener('click', () => ov.remove());
+    ov.addEventListener('click', (e) => { if (e.target === ov) ov.remove(); });
+
+    if (typeof showToast === 'function') showToast('Template criado! Pré-visualize com outra letra pra confirmar o destaque.');
+  }
+
   async function saveCurrentAsTemplate() {
     // 1. Captura o estado atual (mesmo serializador do "Salvar")
     let state;
@@ -33275,7 +33547,7 @@ function initEditor() {
       const lc = getTemplateLineCount(t);
       const lcLabel = lc === 'generico' ? '' : `${lc} ${lc === 1 ? 'linha' : 'linhas'}`;
       const isRecommended = recommendedIds.has(t.id) && currentLineCount > 0;
-      const isPremium = (t.tags || []).some(tag => /pro\s*plus/i.test(tag)) || t.requiredPlan === 'pro_plus';
+      const isPremium = _isTemplatePremium(t);
       return `
         <div class="template-card${isRecommended ? ' tpl-recommended' : ''}" data-template-id="${t.id}">
           <div class="template-preview">
@@ -33312,6 +33584,17 @@ function initEditor() {
           if (mode === 'cancel') {
             cancelTemplatePreview();
             try { engine.renderStanza(engine.currentStanzaIndex); } catch (e) {}
+            return;
+          }
+          // GATE PRO PLUS: Free/Pro podem ver a biblioteca e o preview
+          // (já aconteceu acima), mas não podem CONFIRMAR a aplicação de
+          // um template premium. Reverte o preview e abre o upsell.
+          const ehProPlus = (typeof window._ehProPlus === 'function') ? window._ehProPlus() : false;
+          if (_isTemplatePremium(tpl) && !ehProPlus) {
+            cancelTemplatePreview();
+            try { engine.renderStanza(engine.currentStanzaIndex); } catch (e) {}
+            closeModal();
+            if (typeof window._openTplUpsell === 'function') window._openTplUpsell();
             return;
           }
           try {
@@ -33416,7 +33699,7 @@ function initEditor() {
     const cfg = tpl.config || {};
     if (!cfg.parsed || !cfg.wordOverrides) return null;
 
-    // Coleta (y, override) de cada palavra do template, na ordem de leitura
+    // Coleta (x, y, override) de cada palavra do template, na ordem de leitura
     const items = [];
     cfg.parsed.stanzas?.forEach(st =>
       st.lines?.forEach(ln =>
@@ -33424,6 +33707,7 @@ function initEditor() {
           const ov = cfg.wordOverrides[w.id];
           if (ov && ov.position) {
             items.push({
+              x: ov.position.x || 0,
               y: ov.position.y,
               font: ov.style?.fontFamily || cfg.style?.fontFamily || null,
               scale: ov.style?.fontSizeScale || 1,
@@ -33449,8 +33733,19 @@ function initEditor() {
     });
 
     // Pra cada linha, fonte dominante + scale máximo (palavra de força) +
-    // cor e textTransform dominantes
+    // cor e textTransform dominantes. ALÉM DISSO (novo): se a linha tem
+    // 2+ palavras e uma delas se destaca claramente das outras (escala
+    // >30% maior), calcula um "papel" (highlight) baseado em POSIÇÃO
+    // relativa (âncora início/fim + distância), não na palavra literal.
+    // Isso é o que permite transferir o destaque pra qualquer letra nova
+    // (ex: "SEMPRE" grande no template → "SANTO" grande na letra do
+    // usuário, porque os dois são "a última palavra da linha").
+    //
+    // Quando a linha não tem essa distinção clara (ex: linha de 1
+    // palavra só, ou todas com a mesma escala), `highlight` fica null e
+    // o comportamento é EXATAMENTE o mesmo de antes (uniforme por linha).
     return linhas.map(linha => {
+      const itemsOrdenados = linha.items.slice().sort((a, b) => a.x - b.x);
       const fontCount = {};
       let maxScale = 1;
       let sumScale = 0;
@@ -33470,14 +33765,84 @@ function initEditor() {
       Object.keys(fontCount).forEach(f => {
         if (fontCount[f] > max) { max = fontCount[f]; font = f; }
       });
+
+      // Detecta destaque por palavra (só quando há 2+ palavras na linha)
+      let highlight = null;
+      if (itemsOrdenados.length >= 2) {
+        const baseline = Math.min(...itemsOrdenados.map(it => it.scale));
+        const idxDestacados = [];
+        itemsOrdenados.forEach((it, i) => {
+          if (it.scale > baseline * 1.3) idxDestacados.push(i);
+        });
+        if (idxDestacados.length && idxDestacados.length < itemsOrdenados.length) {
+          const total = itemsOrdenados.length;
+          const roles = idxDestacados.map(i => {
+            const fromStart = i;
+            const fromEnd = total - 1 - i;
+            return fromStart <= fromEnd
+              ? { anchor: 'start', offset: fromStart }
+              : { anchor: 'end', offset: fromEnd };
+          });
+          // Estilo do destaque = média/valores das palavras destacadas
+          const destItems = idxDestacados.map(i => itemsOrdenados[i]);
+          highlight = {
+            roles,
+            style: {
+              scale: Math.max(...destItems.map(it => it.scale)),
+              font: destItems.find(it => it.font)?.font || null,
+              color: destItems.find(it => it.color)?.color || null,
+              textTransform: destItems.find(it => it.textTransform)?.textTransform || null,
+            },
+          };
+          // Base (não-destaque) recalculada só com as palavras NÃO destacadas,
+          // pra não "puxar" a média pro tamanho grande do destaque.
+          const baseItems = itemsOrdenados.filter((_, i) => !idxDestacados.includes(i));
+          if (baseItems.length) {
+            const baseSum = baseItems.reduce((s, it) => s + it.scale, 0);
+            return {
+              font,
+              scale: baseSum / baseItems.length,
+              isForca: false,
+              color: cor,
+              textTransform: tt,
+              highlight,
+            };
+          }
+        }
+      }
+
       return {
         font,
         scale: avgScale,
         isForca: maxScale > 1.5,
         color: cor,
         textTransform: tt,
+        highlight,
       };
     });
+  }
+
+  /**
+   * Resolve quais palavras REAIS (da letra do usuário) recebem o destaque,
+   * a partir de "papéis" relativos (âncora início/fim + distância) — não
+   * da palavra literal do template. Se a posição não existir na linha
+   * atual (linha mais curta que a original), usa a palavra válida mais
+   * próxima, sem duplicar e sem gerar erro.
+   *
+   * @param {{anchor:'start'|'end', offset:number}[]} roles
+   * @param {object[]} words - palavras reais desta linha, em ordem
+   * @returns {object[]} palavras (mesmos objetos) a destacar, sem duplicatas
+   */
+  function _resolveRoleWords(roles, words) {
+    if (!Array.isArray(words) || !words.length || !Array.isArray(roles)) return [];
+    const n = words.length;
+    const idxSet = new Set();
+    roles.forEach(role => {
+      const off = Math.max(0, Math.min(role.offset, n - 1));
+      const idx = role.anchor === 'start' ? off : (n - 1 - off);
+      idxSet.add(Math.max(0, Math.min(idx, n - 1)));
+    });
+    return Array.from(idxSet).map(i => words[i]);
   }
 
   /**
@@ -33784,28 +34149,62 @@ function initEditor() {
           // Mapeia índice de linha → schema (clamp na última)
           const schemaIdx = Math.min(li, lineSchema.length - 1);
           const sch = lineSchema[schemaIdx];
+
+          // Resolve quais palavras REAIS recebem o destaque desta linha:
+          // 1) override manual do usuário (se ele já trocou antes), senão
+          // 2) papel inferido do template (âncora início/fim), senão
+          // 3) nenhuma (linha sem destaque específico — comportamento antigo).
+          const overrideKey = stanza.id + '__' + li;
+          const manualIds = engine.templateHighlightOverrides?.[overrideKey];
+          let palavrasDestaque = [];
+          if (manualIds && manualIds.length) {
+            palavrasDestaque = palavrasDaLinha.filter(w => manualIds.includes(w.id));
+          } else if (sch.highlight) {
+            palavrasDestaque = _resolveRoleWords(sch.highlight.roles, palavrasDaLinha);
+          }
+          const destaqueIds = new Set(palavrasDestaque.map(w => w.id));
+
           palavrasDaLinha.forEach(w => {
+            const ehDestaque = destaqueIds.has(w.id);
             const ov = { style: {} };
-            if (sch.font) ov.style.fontFamily = sch.font;
-            // SEMPRE aplica o scale (mesmo se não for força), pra preservar
-            // proporções de linhas pequenas (ex: linha de apoio em 0.9).
-            // Se for ~1.0 (default), não faz diferença visual mas mantém consistência.
-            if (sch.scale && sch.scale !== 1) {
-              ov.style.fontSizeScale = sch.scale;
+            if (ehDestaque && sch.highlight) {
+              // Estilo específico da PALAVRA em destaque (maior, própria
+              // fonte/cor se o template tiver, mesmo padrão de antes p/ caixa).
+              const hs = sch.highlight.style;
+              ov.style.fontFamily = hs.font || sch.font || undefined;
+              ov.style.fontSizeScale = hs.scale || sch.scale;
+              ov.style.textTransform = hs.textTransform || sch.textTransform || 'capitalize';
+              ov.style.color = hs.color || sch.color || undefined;
+            } else {
+              if (sch.font) ov.style.fontFamily = sch.font;
+              // SEMPRE aplica o scale (mesmo se não for força), pra preservar
+              // proporções de linhas pequenas (ex: linha de apoio em 0.9).
+              if (sch.scale && sch.scale !== 1) {
+                ov.style.fontSizeScale = sch.scale;
+              }
+              // textTransform: aplica se vier do template (linha inteira
+              // "força", só quando NÃO há destaque por palavra resolvido —
+              // preserva 100% o comportamento antigo pros templates sem
+              // distinção de palavra dentro da linha).
+              if (sch.isForca) {
+                ov.style.textTransform = sch.textTransform || 'capitalize';
+              } else if (sch.textTransform) {
+                ov.style.textTransform = sch.textTransform;
+              }
+              if (sch.color) ov.style.color = sch.color;
             }
-            // textTransform: aplica se vier do template
-            if (sch.isForca) {
-              ov.style.textTransform = sch.textTransform || 'capitalize';
-            } else if (sch.textTransform) {
-              ov.style.textTransform = sch.textTransform;
-            }
-            // Cor por linha (ex: template Cinematográfico tem linha 1 dourada)
-            if (sch.color) ov.style.color = sch.color;
+            // Remove chaves undefined (evita "fontFamily: undefined" no override)
+            Object.keys(ov.style).forEach(k => { if (ov.style[k] === undefined) delete ov.style[k]; });
             // SEM position → cai no auto-layout (mode-flow), que distribui
             // as linhas e centraliza horizontalmente com espaçamento natural.
             engine.wordOverrides[w.id] = ov;
           });
         });
+
+        // Guarda o schema aplicado nesta estrofe, pra permitir trocar
+        // manualmente a palavra em destaque depois (updateHighlightedWords).
+        engine.templateAppliedSchema = engine.templateAppliedSchema || {};
+        engine.templateAppliedSchema[stanza.id] = lineSchema;
 
         // REESTRUTURA stanza.lines pra refletir a distribuição lógica.
         // Mantém os MESMOS word objects (com IDs e overrides já aplicados),
@@ -34389,6 +34788,16 @@ function initEditor() {
     saveCurrentAsTemplate();
   });
 
+  // Botão administrativo "Criar template do slide" — só aparece se
+  // window.WM_IS_ADMIN === true (flag client-side; ver aviso na função).
+  if (window.WM_IS_ADMIN) {
+    const btnAdmin = $('#btn-create-template-from-slide');
+    if (btnAdmin) btnAdmin.style.display = '';
+  }
+  $('#btn-create-template-from-slide')?.addEventListener('click', () => {
+    createTemplateFromSlide(engine.currentStanzaIndex);
+  });
+
   // ===== Videoaulas =====
   function _vaEmbedUrl(link) {
     if (!link) return '';
@@ -34480,6 +34889,23 @@ function initEditor() {
     closeComparafontesUpsell();
     if (typeof _abrirTelaPlanos === 'function') _abrirTelaPlanos();
   });
+
+  // ===== Upsell dos Templates Inteligentes (Pro Plus) =====
+  function openTplUpsell() {
+    document.getElementById('tpl-upsell-overlay')?.classList.add('active');
+  }
+  function closeTplUpsell() {
+    document.getElementById('tpl-upsell-overlay')?.classList.remove('active');
+  }
+  $('#tpl-upsell-close')?.addEventListener('click', closeTplUpsell);
+  $('#tpl-upsell-overlay')?.addEventListener('click', (e) => {
+    if (e.target === document.getElementById('tpl-upsell-overlay')) closeTplUpsell();
+  });
+  $('#tpl-upsell-cta')?.addEventListener('click', () => {
+    closeTplUpsell();
+    if (typeof _abrirTelaPlanos === 'function') _abrirTelaPlanos();
+  });
+  window._openTplUpsell = openTplUpsell;
 
   // aspect switcher: delega pra applyAspect (que controla active state)
   $$('#aspect-switcher button').forEach(b => {
