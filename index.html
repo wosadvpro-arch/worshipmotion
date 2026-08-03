@@ -2139,6 +2139,7 @@ body.marking-open.marking-collapsed .editor-canvas {
 .lyric-line {
   display: block;
   margin: 0.1em 0;
+  max-width: 100%;
 }
 /* Instrumental: a letra some (fade) e a tela fica limpa até a próxima palavra */
 .editor-canvas.wm-lyrics-blank .lyric-word {
@@ -2148,6 +2149,12 @@ body.marking-open.marking-collapsed .editor-canvas {
 .lyric-word {
   display: inline-block;
   position: relative;
+  /* Quebra a palavra no meio se ela sozinha for mais larga que o slide (ex:
+     um texto colado sem espaços tipo "jjjjjjjjjjj...1jjjjj..."). Sem isso,
+     uma "palavra" gigante vazava pra fora do slide em vez de quebrar linha. */
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  max-width: 100%;
   /* Folga lateral pra letras cursivas/itálicas cujo desenho "vaza" da caixa
      (ex: o "p" de "perdoado") não ser cortado pela camada de composição do
      WebKit no iPhone. O padding é simétrico, então em palavra POSICIONADA
@@ -21605,14 +21612,30 @@ function initEditor() {
       }
     }
 
-    // AUTO-AJUSTE AO SLIDE após COLAR (paste): encolhe as estrofes que não
-    // cabem, igual Canva. Só no paste (não a cada tecla) pra não pesar nem
-    // ficar mexendo na fonte enquanto o usuário digita. Espera 2 frames pra
-    // fonte/layout assentarem antes de medir.
+    // AUTO-AJUSTE AO SLIDE: encolhe a estrofe que não cabe, igual Canva.
+    // Ao COLAR (paste), ajusta TODAS as estrofes de uma vez. Numa edição
+    // normal (digitar), ajusta só a estrofe ATUAL — mais leve, e como
+    // parseAndRender já roda com debounce (400ms após parar de digitar),
+    // não fica "mexendo" na fonte a cada tecla. Sem isso, um texto que
+    // ultrapassa a margem do slide (ex: template com fonte grande demais,
+    // ou uma palavra colada sem espaços) ficava vazando/cortado em vez de
+    // encolher pra caber. Espera 2 frames pra fonte/layout assentarem.
     if (window._wmFitAposParse) {
       window._wmFitAposParse = false;
       requestAnimationFrame(() => requestAnimationFrame(() => {
         try { _wmAjustarTodasEstrofesAoSlide(); } catch (e) {}
+      }));
+    } else if (parsed.stanzas && parsed.stanzas.length) {
+      const _idxAtualFit = Math.min(
+        Math.max(engine.currentStanzaIndex || 0, 0),
+        parsed.stanzas.length - 1
+      );
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        try {
+          _wmAjustarEstrofeAoSlide(_idxAtualFit);
+          engine.renderStanza(_idxAtualFit);
+          engine.playFull();
+        } catch (e) {}
       }));
     }
   }
@@ -34379,6 +34402,21 @@ function initEditor() {
 
       engine.sceneOverrides[stanza.id] = sceneConfig;
     });
+
+    // AUTO-AJUSTE AO SLIDE: o schema do template usa escalas pensadas pra
+    // letras cheias — num texto curto (ex: "SEU TEXTO") isso pode ficar
+    // grande demais e vazar pra fora do slide/quebrar em linhas indesejadas.
+    // Encolhe a fonte de cada estrofe-alvo até caber (mesmo mecanismo do
+    // "colar letra"), sem nunca passar do tamanho base do template.
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      try {
+        const prevIdxFit = engine.currentStanzaIndex;
+        targetIndices.forEach(idx => { try { _wmAjustarEstrofeAoSlide(idx); } catch (e) {} });
+        engine.currentStanzaIndex = prevIdxFit;
+        if (typeof engine.renderStanza === 'function') engine.renderStanza(prevIdxFit);
+        try { engine.playFull(); } catch (e) {}
+      } catch (e) {}
+    }));
 
     // Re-renderiza ESTÁTICO com as palavras VISÍVEIS.
     if (typeof engine.renderStanza === 'function') {
