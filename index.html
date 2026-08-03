@@ -2549,6 +2549,8 @@ body.timeline-collapsed .timeline-collapse-btn {
   .editor-topbar #wm-credits-badge .cred-label { display: none; }   /* mostra só "299/300" */
   .editor-topbar #btn-save-template { font-size: 0; gap: 0; min-width: 34px; justify-content: center; }
   .editor-topbar #btn-save-template svg { margin: 0; }
+  .editor-topbar #btn-create-template-from-slide { font-size: 0; gap: 0; min-width: 34px; justify-content: center; }
+  .editor-topbar #btn-create-template-from-slide svg { margin: 0; }
   .editor-topbar #project-name-input { max-width: 170px; }
 }
 /* Comparar fontes fica SEMPRE cheio (é vitrine de upgrade). Pra compensar,
@@ -2611,7 +2613,7 @@ body.timeline-collapsed .timeline-collapse-btn {
   #project-name-input { max-width: 120px !important; min-width: 0 !important; }
   /* "Salvar template" (avançado), "Templates" (já está na régua de baixo) e o
      status "SALVO" ficam fora no mobile; todas as AÇÕES de fato continuam. */
-  #btn-save-template, #btn-templates, .save-indicator { display: none !important; }
+  #btn-save-template, #btn-templates, #btn-create-template-from-slide, .save-indicator { display: none !important; }
 
   /* ===== PASSE DE COMPACTAÇÃO (Chrome do iPhone com barra fixa embaixo) =====
      A barra fixa que o Chrome do iPhone passou a mostrar (Lens/Nova guia/Todas
@@ -2820,7 +2822,7 @@ body.timeline-collapsed .timeline-collapse-btn {
    (retrato), nem o celular (retrato), nem o PC (pointer: fine). */
 @media (orientation: landscape) and (pointer: coarse) and (min-width: 1081px) and (max-width: 1366px) {
   /* (1) Barra de cima cabe inteira — Exportar nunca cortado. */
-  .editor-topbar #btn-save-template { display: none !important; } /* avançado/raro */
+  .editor-topbar #btn-save-template, .editor-topbar #btn-create-template-from-slide { display: none !important; } /* avançado/raro */
   .editor-topbar #btn-new-project,
   .editor-topbar #btn-templates,
   .editor-topbar #btn-my-projects { font-size: 0 !important; }     /* só ícone */
