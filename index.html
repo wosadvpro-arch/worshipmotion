@@ -34326,6 +34326,29 @@ function initEditor() {
             if (ok && engine && typeof engine.applyStyleToExisting === 'function') {
               engine.applyStyleToExisting();
             }
+            // A fonte pode não estar carregada ainda no momento em que o
+            // espaçamento das palavras é calculado logo abaixo (mede a
+            // largura do texto pra centralizar/afastar as palavras
+            // posicionadas do template). Sem a fonte real disponível, essa
+            // medição usa uma fonte de fallback — largura errada — e as
+            // palavras ficam coladas (sem espaço) ou, se o navegador
+            // "inventa" um negrito falso pra um peso que não existe no
+            // arquivo, com espaço demais. Assim que a fonte termina de
+            // carregar, recalcula o espaçamento com a métrica REAL.
+            try { _autoEspacarPalavras(targetIndices); } catch (e) {}
+            if (typeof engine.renderStanza === 'function') {
+              try { engine.renderStanza(engine.currentStanzaIndex || 0); } catch (e) {}
+            }
+            if (typeof engine.killAllAnimations === 'function') {
+              try { engine.killAllAnimations(); } catch (e) {}
+            }
+            const _stzFont = (typeof getStanzaEl === 'function') ? getStanzaEl() : null;
+            if (_stzFont) {
+              _stzFont.querySelectorAll('.lyric-word').forEach(el => {
+                el.style.opacity = '1';
+                el.style.animation = 'none';
+              });
+            }
           }).catch(() => {});
         }
       });
