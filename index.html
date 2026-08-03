@@ -23534,19 +23534,24 @@ function initEditor() {
     // Ordena pela posição X atual (esquerda → direita)
     palavras.sort((a, b) => a.x - b.x);
 
-    // Gap entre palavras: proporcional ao TAMANHO das palavras da linha.
-    // Antes era fixo (0.015), então ao aumentar as palavras o espaço ficava
-    // minúsculo perto delas (parecia grudado). Agora cresce com a escala.
-    let _escalaMax = 1;
+    // Gap entre palavras: proporcional ao TAMANHO DA FONTE renderizada
+    // (0.32em — mesma proporção usada no espaçamento inicial do template,
+    // em _autoEspacarPalavras), não mais uma fração fixa da largura do
+    // slide multiplicada pela escala. A fórmula antiga (0.015 * escala)
+    // ignorava o tamanho BASE da fonte: em templates com fontSizeScale
+    // bem alto (ex: 5.9x, como o "Duplo Impacto"), isso dava um espaço
+    // enorme — e sempre o MESMO valor, porque nem peso nem fonte entravam
+    // na conta (só a escala, que não muda). Por isso mudar peso/fonte
+    // sempre pulava pro mesmo espaçamento grande, em vez de acompanhar o
+    // tamanho real do texto.
+    let _maxFontPx = 0;
     palavras.forEach(p => {
-      const _wo = engine.wordOverrides[p.id];
-      const _sc = (_wo && _wo.style && _wo.style.fontSizeScale) || 1;
-      if (_sc > _escalaMax) _escalaMax = _sc;
+      const fpx = parseFloat(getComputedStyle(p.el).fontSize) || 0;
+      if (fpx > _maxFontPx) _maxFontPx = fpx;
     });
-    // Espaço ALVO entre os DESENHOS de duas palavras (fração da largura).
-    // As larguras acima já ignoram a folga transparente, então o GAP é o alvo
-    // puro — não precisa descontar nada.
-    const GAP = 0.015 * _escalaMax;
+    const GAP = (_maxFontPx > 0 && stanzaRect.width > 0)
+      ? (0.32 * _maxFontPx) / stanzaRect.width
+      : 0.015;
 
     // Largura total do bloco (somatório das larguras + gaps)
     let larguraTotal = 0;
@@ -34045,7 +34050,6 @@ function initEditor() {
       } catch (e) {}
       const baseFS = (engine.style.fontSize || 64) * (H / 600);
       const lsEm = engine.style.letterSpacing || 0;
-      const GAP = 0.32 * baseFS; // folga confortável entre palavras (px)
       const mctx = document.createElement('canvas').getContext('2d');
       const stanzas = engine.parsed.stanzas || [];
       const idxs = Array.isArray(stanzaIdxList)
@@ -34058,6 +34062,25 @@ function initEditor() {
           const ws = (ln.words || []).filter(w =>
             engine.wordOverrides[w.id] && engine.wordOverrides[w.id].position);
           if (ws.length < 2) return;
+          // GAP proporcional ao TAMANHO DA FONTE renderizada (0.32em da
+          // maior escala da linha) — MESMA fórmula usada em
+          // _reflowLinhaDaPalavra. As duas funções calculavam o gap de
+          // formas diferentes antes: aqui era 0.32×fonte-BASE (sem
+          // multiplicar pela escala da palavra) e lá era 0.015×escala×
+          // largura do slide — em templates com escala grande (ex: 5.9x)
+          // essas duas contas davam valores bem diferentes, então o
+          // espaçamento "pulava" pra outro valor assim que o usuário
+          // mexia em peso/itálico/fonte (o que disparava o reflow com a
+          // OUTRA fórmula). Usando a mesma conta nos dois lugares, o
+          // espaçamento sai certo ao aplicar o template e não muda mais
+          // depois só porque a fonte/peso foi trocado.
+          let escalaMax = 1;
+          ws.forEach(w => {
+            const wo = engine.wordOverrides[w.id];
+            const sc = (wo.style && wo.style.fontSizeScale) || 1;
+            if (sc > escalaMax) escalaMax = sc;
+          });
+          const GAP = 0.32 * baseFS * escalaMax; // px
           const meta = ws.map(w => {
             const wo = engine.wordOverrides[w.id];
             const sc = (wo.style && wo.style.fontSizeScale) || 1;
