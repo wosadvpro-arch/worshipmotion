@@ -16269,10 +16269,12 @@ function getTemplateById(id) {
   return TEMPLATES.find(t => t.id === id) || null;
 }
 
-/** Um template é Pro Plus se tiver a tag (ex: 'Pro Plus') ou requiredPlan explícito. */
+/** Um template é Pro Plus se tiver a tag (ex: 'Pro Plus') ou requiredPlan explícito.
+ * ATUALIZAÇÃO: TODOS os templates agora exigem o plano Pro Plus (pedido do
+ * cliente) — não depende mais de tag/requiredPlan individual de cada um. */
 function _isTemplatePremium(tpl) {
   if (!tpl) return false;
-  return (tpl.tags || []).some(tag => /pro\s*plus/i.test(tag)) || tpl.requiredPlan === 'pro_plus';
+  return true;
 }
 
 /**
