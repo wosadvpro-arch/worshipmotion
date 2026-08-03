@@ -26219,6 +26219,13 @@ function initEditor() {
         engine.renderStanza(engine.currentStanzaIndex);
         if (typeof engine.killAllAnimations === 'function') { try { engine.killAllAnimations(); } catch (e) {} }
         if (stzEl) stzEl.querySelectorAll('.lyric-word').forEach(el => { el.style.opacity = '1'; el.style.animation = 'none'; });
+        // Reflui as linhas com posição livre pra RE-MEDIR o espaço real
+        // depois do resize. O "escala ao redor do centro" acima é só uma
+        // aproximação; ele confia que a largura da palavra cresceu na
+        // mesma proporção da posição, mas isso pode dessincronizar (fonte
+        // não carregada, arredondamento, etc.) e as palavras colam ou
+        // abrem um vão gigante. O reflow mede o DOM de verdade e corrige.
+        if (typeof reflowLinhasDasPalavras === 'function') reflowLinhasDasPalavras(ids);
         // Se a estrofe inteira estava selecionada, re-marca o highlight
         // (o renderStanza recria os elementos e perde a classe).
         if (_ctxTemSelecao()) {
@@ -26279,6 +26286,10 @@ function initEditor() {
         engine.renderStanza(engine.currentStanzaIndex);
         if (typeof engine.killAllAnimations === 'function') { try { engine.killAllAnimations(); } catch (e) {} }
         if (stzEl) stzEl.querySelectorAll('.lyric-word').forEach(el => { el.style.opacity = '1'; el.style.animation = 'none'; });
+        // Reflui as posições livres com base na medição REAL do DOM depois
+        // do resize (mesma razão do aplicarTamanho — a escala ao redor do
+        // centro é só aproximação).
+        if (typeof reflowLinhasDasPalavras === 'function') reflowLinhasDasPalavras(ids);
         const slider = document.getElementById('font-size');
         if (slider) { slider.value = Math.min(140, px); const v2 = document.getElementById('font-size-val'); if (v2) v2.textContent = px; }
         if (typeof markDirty === 'function') markDirty();
