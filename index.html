@@ -16187,6 +16187,75 @@ const TEMPLATES = [
       sceneOverrides: {},
     },
   },
+  // ====== TEMPLATES OFICIAIS ======
+  {
+    id: 'tpl-oficial-duplo-impacto-1-linha-msdevk3f',
+    name: 'Duplo Impacto — 1 linha',
+    description: 'Uma única palavra em destaque, com tipografia ampla e centralizada para criar força, presença e impacto visual.',
+    tags: ['1 linha', 'Impactante', 'Pro Plus'],
+    isOfficial: true,
+    isPremium: true,
+    requiredPlan: 'pro_plus',
+    isActive: true,
+    accent: '#8b5cf6',
+    config: {
+      style: {},
+      animConfig: {},
+      aspect: '1:1',
+      parsed: {
+        stanzas: [
+          {
+            id: 'stz_9lmfon0',
+            label: 'Estrofe 1',
+            lines: [
+              {
+                id: 'ln_hqanxeb',
+                words: [
+                  {
+                    id: 'w_z9yhulm',
+                    text: 'SEU',
+                    chars: [
+                      { id: 'ch_pl7191o', text: 'S' },
+                      { id: 'ch_qa2x8v9', text: 'E' },
+                      { id: 'ch_hn4t61b', text: 'U' },
+                    ],
+                    tStart: 175.108224,
+                    emphasized: false,
+                  },
+                  {
+                    id: 'w_nurr8mf',
+                    text: 'TEXTO',
+                    chars: [
+                      { id: 'ch_l5o9l0d', text: 'T' },
+                      { id: 'ch_pw2k21y', text: 'E' },
+                      { id: 'ch_ipy0slw', text: 'X' },
+                      { id: 'ch_ft83jd2', text: 'T' },
+                      { id: 'ch_wm7k0e5', text: 'O' },
+                    ],
+                    tStart: 175.108224,
+                    emphasized: false,
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+      wordOverrides: {
+        w_z9yhulm: {
+          style: { fontFamily: 'Bebas Neue', fontWeight: 700, fontSizeScale: 5.9483597040000005 },
+          entrance: 'typewriter-blur-fast',
+          position: { x: 0.28059794398642707, y: 0.5388838193666418 },
+        },
+        w_nurr8mf: {
+          style: { fontFamily: 'Bebas Neue', fontWeight: 700, fontSizeScale: 5.9483597040000005 },
+          entrance: 'typewriter-blur-fast',
+          position: { x: 0.6019657488543884, y: 0.5388838193666418 },
+        },
+      },
+      sceneOverrides: { stz_9lmfon0: {} },
+    },
+  },
 ];
 
 function getTemplateById(id) {
