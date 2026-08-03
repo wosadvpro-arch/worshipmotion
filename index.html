@@ -21516,6 +21516,17 @@ function initEditor() {
         }
       });
     }
+    // Idem pro schema POR-LINHA de um TEMPLATE (fonte/escala/destaque de
+    // cada linha). Sem isso, editar a letra ao vivo (ex: acrescentar uma
+    // palavra) fazia a estrofe voltar pro layout de linha única — o
+    // template "não colava" na edição, só no momento do clique.
+    const _prevTemplateSchemas = [];
+    if (engine.parsed && engine.parsed.stanzas && engine.templateAppliedSchema) {
+      engine.parsed.stanzas.forEach((st, idx) => {
+        const sch = engine.templateAppliedSchema[st.id];
+        if (sch && sch.length) _prevTemplateSchemas.push({ index: idx, schema: sch });
+      });
+    }
 
     let parsed = WM_PARSER.parse(text);
     if ($('#auto-emphasis')?.checked) {
@@ -21547,6 +21558,18 @@ function initEditor() {
         }
       });
       engine.sceneOverrides = novosScene;
+    }
+    // Reaplica automaticamente o schema do template nas estrofes que já
+    // tinham um template aplicado — a palavra nova (ou editada) recebe o
+    // estilo certo da linha e a estrutura de linhas do template se mantém,
+    // em vez de "descolar" pro layout de linha única a cada edição.
+    if (_prevTemplateSchemas.length && parsed.stanzas) {
+      if (!engine.wordOverrides) engine.wordOverrides = {};
+      engine.templateAppliedSchema = {};
+      _prevTemplateSchemas.forEach(item => {
+        const stNova = parsed.stanzas[item.index];
+        if (stNova) { try { _aplicarLineSchemaNaEstrofe(stNova, item.schema); } catch (e) {} }
+      });
     }
 
     engine.setParsed(parsed);
@@ -33940,7 +33963,14 @@ function initEditor() {
     linhasReais.forEach(ln => ln.words.forEach(w => todasPalavras.push(w)));
     if (todasPalavras.length === 0) return [];
 
-    const n = Math.min(numLinhasSchema, todasPalavras.length);
+    let n = Math.min(numLinhasSchema, todasPalavras.length);
+    // Evita "esticar" um texto curto (ex: 2 palavras) em várias linhas de
+    // 1 palavra só — cada linha herda a escala de fonte do template, então
+    // uma linha com 1 palavra fica gigante e ocupa a tela toda. Só quebra
+    // em N linhas se sobrar pelo menos 2 palavras por linha; senão mantém
+    // tudo numa linha só (aplicando o estilo da 1ª linha do schema).
+    const MIN_PALAVRAS_POR_LINHA = 2;
+    n = Math.max(1, Math.min(n, Math.floor(todasPalavras.length / MIN_PALAVRAS_POR_LINHA)));
     if (n <= 1) return [todasPalavras];
 
     // Divide o mais uniforme possível
@@ -34160,6 +34190,102 @@ function initEditor() {
   /**
    * Aplicação efetiva (depois do aviso de incompatibilidade, se houver).
    */
+  /**
+   * Aplica o schema por-linha (fonte/escala/destaque de cada linha do
+   * template) numa estrofe específica. Extraído de _doApplyTemplateToStanzas
+   * pra poder ser chamado de novo automaticamente quando o texto da letra é
+   * editado ao vivo (ex: usuário acrescenta uma palavra) — sem isso, o
+   * template só "colava" no momento do clique e se perdia na primeira edição.
+   * Reorganiza stanza.lines e preenche engine.wordOverrides. Retorna true se
+   * aplicou algo.
+   */
+  function _aplicarLineSchemaNaEstrofe(stanza, lineSchema) {
+    if (!stanza || !lineSchema || !lineSchema.length) return false;
+
+    // Distribui as palavras da estrofe em N linhas lógicas (híbrido:
+    // usa quebras do usuário ou divide automático).
+    const linhasPalavras = _distribuirEmLinhas(stanza, lineSchema.length);
+    if (!linhasPalavras.length) return false;
+
+    // Aplica o schema de cada linha nas palavras correspondentes.
+    // Se a letra tem MAIS linhas que o schema, as linhas extras
+    // repetem o schema da última. Se tem MENOS, usa as primeiras.
+    linhasPalavras.forEach((palavrasDaLinha, li) => {
+      // Mapeia índice de linha → schema (clamp na última)
+      const schemaIdx = Math.min(li, lineSchema.length - 1);
+      const sch = lineSchema[schemaIdx];
+
+      // Resolve quais palavras REAIS recebem o destaque desta linha:
+      // 1) override manual do usuário (se ele já trocou antes), senão
+      // 2) papel inferido do template (âncora início/fim), senão
+      // 3) nenhuma (linha sem destaque específico — comportamento antigo).
+      const overrideKey = stanza.id + '__' + li;
+      const manualIds = engine.templateHighlightOverrides?.[overrideKey];
+      let palavrasDestaque = [];
+      if (manualIds && manualIds.length) {
+        palavrasDestaque = palavrasDaLinha.filter(w => manualIds.includes(w.id));
+      } else if (sch.highlight) {
+        palavrasDestaque = _resolveRoleWords(sch.highlight.roles, palavrasDaLinha);
+      }
+      const destaqueIds = new Set(palavrasDestaque.map(w => w.id));
+
+      palavrasDaLinha.forEach(w => {
+        const ehDestaque = destaqueIds.has(w.id);
+        const ov = { style: {} };
+        if (ehDestaque && sch.highlight) {
+          // Estilo específico da PALAVRA em destaque (maior, própria
+          // fonte/cor se o template tiver, mesmo padrão de antes p/ caixa).
+          const hs = sch.highlight.style;
+          ov.style.fontFamily = hs.font || sch.font || undefined;
+          ov.style.fontSizeScale = hs.scale || sch.scale;
+          ov.style.textTransform = hs.textTransform || sch.textTransform || 'capitalize';
+          ov.style.color = hs.color || sch.color || undefined;
+        } else {
+          if (sch.font) ov.style.fontFamily = sch.font;
+          // SEMPRE aplica o scale (mesmo se não for força), pra preservar
+          // proporções de linhas pequenas (ex: linha de apoio em 0.9).
+          if (sch.scale && sch.scale !== 1) {
+            ov.style.fontSizeScale = sch.scale;
+          }
+          // textTransform: aplica se vier do template (linha inteira
+          // "força", só quando NÃO há destaque por palavra resolvido —
+          // preserva 100% o comportamento antigo pros templates sem
+          // distinção de palavra dentro da linha).
+          if (sch.isForca) {
+            ov.style.textTransform = sch.textTransform || 'capitalize';
+          } else if (sch.textTransform) {
+            ov.style.textTransform = sch.textTransform;
+          }
+          if (sch.color) ov.style.color = sch.color;
+        }
+        // Remove chaves undefined (evita "fontFamily: undefined" no override)
+        Object.keys(ov.style).forEach(k => { if (ov.style[k] === undefined) delete ov.style[k]; });
+        // SEM position → cai no auto-layout (mode-flow), que distribui
+        // as linhas e centraliza horizontalmente com espaçamento natural.
+        engine.wordOverrides[w.id] = ov;
+      });
+    });
+
+    // Guarda o schema aplicado nesta estrofe, pra permitir trocar
+    // manualmente a palavra em destaque depois (updateHighlightedWords) e
+    // pra reaplicar automaticamente se o texto for editado depois.
+    engine.templateAppliedSchema = engine.templateAppliedSchema || {};
+    engine.templateAppliedSchema[stanza.id] = lineSchema;
+
+    // REESTRUTURA stanza.lines pra refletir a distribuição lógica.
+    // Mantém os MESMOS word objects (com IDs e overrides já aplicados),
+    // só reorganiza em quantas linhas o schema definiu. Assim o
+    // mode-flow renderiza cada linha visual corretamente, sem precisar
+    // re-parsear (que perderia os IDs/overrides).
+    const novasLines = linhasPalavras.map((palavras, li) => ({
+      id: (stanza.lines[li]?.id) || ('ln_adapt_' + stanza.id + '_' + li + '_' + Date.now()),
+      words: palavras,
+      label: null,
+    }));
+    stanza.lines = novasLines;
+    return true;
+  }
+
   function _doApplyTemplateToStanzas(tpl, escopo, targetIndices, templateOverridesSeq) {
     const cfg = tpl.config || {};
     const parsed = engine.parsed;
@@ -34209,87 +34335,7 @@ function initEditor() {
 
       if (lineSchema && lineSchema.length > 0) {
         // === MODO ADAPTÁVEL (fonte por linha, sem position fixa) ===
-        // Distribui as palavras da estrofe em N linhas lógicas (híbrido:
-        // usa quebras do usuário ou divide automático).
-        const linhasPalavras = _distribuirEmLinhas(stanza, lineSchema.length);
-
-        // Aplica o schema de cada linha nas palavras correspondentes.
-        // Se a letra tem MAIS linhas que o schema, as linhas extras
-        // repetem o schema da última. Se tem MENOS, usa as primeiras.
-        linhasPalavras.forEach((palavrasDaLinha, li) => {
-          // Mapeia índice de linha → schema (clamp na última)
-          const schemaIdx = Math.min(li, lineSchema.length - 1);
-          const sch = lineSchema[schemaIdx];
-
-          // Resolve quais palavras REAIS recebem o destaque desta linha:
-          // 1) override manual do usuário (se ele já trocou antes), senão
-          // 2) papel inferido do template (âncora início/fim), senão
-          // 3) nenhuma (linha sem destaque específico — comportamento antigo).
-          const overrideKey = stanza.id + '__' + li;
-          const manualIds = engine.templateHighlightOverrides?.[overrideKey];
-          let palavrasDestaque = [];
-          if (manualIds && manualIds.length) {
-            palavrasDestaque = palavrasDaLinha.filter(w => manualIds.includes(w.id));
-          } else if (sch.highlight) {
-            palavrasDestaque = _resolveRoleWords(sch.highlight.roles, palavrasDaLinha);
-          }
-          const destaqueIds = new Set(palavrasDestaque.map(w => w.id));
-
-          palavrasDaLinha.forEach(w => {
-            const ehDestaque = destaqueIds.has(w.id);
-            const ov = { style: {} };
-            if (ehDestaque && sch.highlight) {
-              // Estilo específico da PALAVRA em destaque (maior, própria
-              // fonte/cor se o template tiver, mesmo padrão de antes p/ caixa).
-              const hs = sch.highlight.style;
-              ov.style.fontFamily = hs.font || sch.font || undefined;
-              ov.style.fontSizeScale = hs.scale || sch.scale;
-              ov.style.textTransform = hs.textTransform || sch.textTransform || 'capitalize';
-              ov.style.color = hs.color || sch.color || undefined;
-            } else {
-              if (sch.font) ov.style.fontFamily = sch.font;
-              // SEMPRE aplica o scale (mesmo se não for força), pra preservar
-              // proporções de linhas pequenas (ex: linha de apoio em 0.9).
-              if (sch.scale && sch.scale !== 1) {
-                ov.style.fontSizeScale = sch.scale;
-              }
-              // textTransform: aplica se vier do template (linha inteira
-              // "força", só quando NÃO há destaque por palavra resolvido —
-              // preserva 100% o comportamento antigo pros templates sem
-              // distinção de palavra dentro da linha).
-              if (sch.isForca) {
-                ov.style.textTransform = sch.textTransform || 'capitalize';
-              } else if (sch.textTransform) {
-                ov.style.textTransform = sch.textTransform;
-              }
-              if (sch.color) ov.style.color = sch.color;
-            }
-            // Remove chaves undefined (evita "fontFamily: undefined" no override)
-            Object.keys(ov.style).forEach(k => { if (ov.style[k] === undefined) delete ov.style[k]; });
-            // SEM position → cai no auto-layout (mode-flow), que distribui
-            // as linhas e centraliza horizontalmente com espaçamento natural.
-            engine.wordOverrides[w.id] = ov;
-          });
-        });
-
-        // Guarda o schema aplicado nesta estrofe, pra permitir trocar
-        // manualmente a palavra em destaque depois (updateHighlightedWords).
-        engine.templateAppliedSchema = engine.templateAppliedSchema || {};
-        engine.templateAppliedSchema[stanza.id] = lineSchema;
-
-        // REESTRUTURA stanza.lines pra refletir a distribuição lógica.
-        // Mantém os MESMOS word objects (com IDs e overrides já aplicados),
-        // só reorganiza em quantas linhas o schema definiu. Assim o
-        // mode-flow renderiza cada linha visual corretamente, sem precisar
-        // re-parsear (que perderia os IDs/overrides).
-        if (linhasPalavras.length >= 1) {
-          const novasLines = linhasPalavras.map((palavras, li) => ({
-            id: (stanza.lines[li]?.id) || ('ln_adapt_' + stanzaIdx + '_' + li + '_' + Date.now()),
-            words: palavras,
-            label: null,
-          }));
-          stanza.lines = novasLines;
-        }
+        _aplicarLineSchemaNaEstrofe(stanza, lineSchema);
       } else {
         // === MODO ANTIGO (posição fixa) — fallback se schema falhar ===
         const limit = Math.min(templateOverridesSeq.length, flatPalavras.length);
