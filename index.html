@@ -20574,18 +20574,19 @@ class RenderEngineV2 {
 
         line.words.forEach((word, wi) => {
           const wordEl = createWordEl(word);
-          // Espaço entre palavras: MARGEM em vez de caractere de espaço.
-          // O texto de um espaço normal (nó de texto) NÃO herda o
-          // font-size da palavra (cada .lyric-word tem seu próprio
-          // font-size em "em" via override) — ele fica do tamanho da
-          // LINHA (base), então numa palavra com escala grande (ex: um
-          // template "força" com a palavra 5-6x maior), o espaço
-          // continua pequeno/normal e vira um pixel imperceptível perto
-          // da letra gigante — as palavras parecem coladas. Margem em
-          // "em" é relativa ao PRÓPRIO font-size da palavra, então cresce
-          // junto com ela. Mesma proporção (0.18em) usada no
-          // espaçamento de palavras livres, pra ficar consistente.
-          if (wi > 0) wordEl.style.marginLeft = '0.18em';
+          // Espaço entre palavras: em vez de um caractere de espaço (que
+          // não herda o font-size individual da palavra — some perto de
+          // uma palavra "força" 5-6x maior, colando o texto), reaproveita
+          // a folga transparente que a própria .lyric-word já tem
+          // (padding: 0 0.18em — pensada pra letras cursivas não
+          // cortarem). Por padrão essa folga vem CANCELADA por uma
+          // margem negativa (margin: 0 -0.18em), pra não abrir espaço
+          // demais quando havia o caractere de espaço real. Zerando só a
+          // margem ESQUERDA aqui, a folga da ESQUERDA volta a valer como
+          // gap visível — e como o padding é medido em "em" da própria
+          // palavra, o gap escala junto com ela (igual ao reflow usado
+          // ao trocar peso/fonte, que também usa 0.18em).
+          if (wi > 0) wordEl.style.marginLeft = '0';
           lineEl.appendChild(wordEl);
         });
 
