@@ -21718,37 +21718,17 @@ function initEditor() {
       }
     }
 
-    // AUTO-AJUSTE AO SLIDE: encolhe a estrofe que não cabe, igual Canva.
-    // Ao COLAR (paste), ajusta TODAS as estrofes de uma vez. Numa edição
-    // normal (digitar), ajusta só a estrofe ATUAL — mais leve, e como
-    // parseAndRender já roda com debounce (400ms após parar de digitar),
-    // não fica "mexendo" na fonte a cada tecla. Sem isso, um texto que
-    // ultrapassa a margem do slide (ex: template com fonte grande demais,
-    // ou uma palavra colada sem espaços) ficava vazando/cortado em vez de
-    // encolher pra caber. Espera 2 frames pra fonte/layout assentarem.
+    // AUTO-AJUSTE AO SLIDE após COLAR (paste): encolhe as estrofes que não
+    // cabem, igual Canva. Só no paste (não a cada edição) — uma tentativa
+    // anterior de rodar isso a cada edição normal (digitar) causou um bug
+    // sério (texto sumindo completamente depois de editar), então voltei
+    // pro comportamento mais simples e testado. Os outros pontos que
+    // precisavam de auto-ajuste (aplicar template, botão de tamanho +/-)
+    // já têm sua própria correção específica, feita separadamente.
     if (window._wmFitAposParse) {
       window._wmFitAposParse = false;
       requestAnimationFrame(() => requestAnimationFrame(() => {
         try { _wmAjustarTodasEstrofesAoSlide(); } catch (e) {}
-      }));
-    } else if (parsed.stanzas && parsed.stanzas.length) {
-      const _idxAtualFit = Math.min(
-        Math.max(engine.currentStanzaIndex || 0, 0),
-        parsed.stanzas.length - 1
-      );
-      requestAnimationFrame(() => requestAnimationFrame(() => {
-        try {
-          // _wmAjustarEstrofeAoSlide já termina com uma renderização
-          // ESTÁTICA (renderEstatico(): renderStanza + mata animações +
-          // força opacity 1) — não precisa (e não deve) chamar
-          // engine.playFull() depois. playFull() TOCA a animação de
-          // entrada de novo, que começa com as palavras invisíveis
-          // (opacity 0) até a animação completar — fora do contexto
-          // normal de "dar play" isso deixava o texto sumido depois de
-          // editar (bug relatado: "nada aparece, letra nenhuma nos
-          // slides").
-          _wmAjustarEstrofeAoSlide(_idxAtualFit);
-        } catch (e) {}
       }));
     }
   }
