@@ -20650,7 +20650,7 @@ class RenderEngineV2 {
       // fonte (_wmAjustarEstrofeAoSlide) encolhe até caber numa linha só,
       // que é o comportamento esperado (ex: "TESTE TESTE" não devia virar
       // 2 linhas, devia diminuir a fonte pra caber numa linha).
-      const _linhaFixaPorTemplate = !!(engine.templateAppliedSchema && engine.templateAppliedSchema[stanza.id]);
+      const _linhaFixaPorTemplate = !!(this.templateAppliedSchema && this.templateAppliedSchema[stanza.id]);
       stanza.lines.forEach(line => {
         const lineEl = document.createElement('div');
         lineEl.className = 'lyric-line';
