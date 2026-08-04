@@ -16334,7 +16334,6 @@ const TEMPLATES = [
         stz_2sm2nrk: {
           style: { fontSize: 55 },
           entrance: 'film-fade',
-          _sizeManual: true,
         },
       },
     },
@@ -20643,10 +20642,20 @@ class RenderEngineV2 {
       });
     } else {
       // === MODO FLOW: auto-layout com lines ===
+      // Se estas linhas vieram do schema de um TEMPLATE (ver
+      // _aplicarLineSchemaNaEstrofe), o número de linhas foi decidido de
+      // propósito (ex: template "1 linha" = 1 linha SEMPRE). Força
+      // white-space:nowrap nelas pra impedir o navegador de quebrar
+      // sozinho quando o texto não cabe — em vez disso, o auto-ajuste de
+      // fonte (_wmAjustarEstrofeAoSlide) encolhe até caber numa linha só,
+      // que é o comportamento esperado (ex: "TESTE TESTE" não devia virar
+      // 2 linhas, devia diminuir a fonte pra caber numa linha).
+      const _linhaFixaPorTemplate = !!(engine.templateAppliedSchema && engine.templateAppliedSchema[stanza.id]);
       stanza.lines.forEach(line => {
         const lineEl = document.createElement('div');
         lineEl.className = 'lyric-line';
         lineEl.dataset.lineId = line.id;
+        if (_linhaFixaPorTemplate) lineEl.style.whiteSpace = 'nowrap';
 
         line.words.forEach((word, wi) => {
           const wordEl = createWordEl(word);
@@ -33436,6 +33445,12 @@ function initEditor() {
     const sceneOverride = engine.sceneOverrides?.[stanza.id]
       ? JSON.parse(JSON.stringify(engine.sceneOverrides[stanza.id]))
       : null;
+    // Remove _sizeManual: é a flag de "tamanho ajustado manualmente NESTE
+    // slide" — foi setada enquanto você montava o exemplo aqui, mas não
+    // deve ir pro template. Se for junto, todo mundo que aplicar esse
+    // template fica com o auto-ajuste de fonte travado (o app nunca
+    // encolhe pra caber, mesmo que o texto seja maior que o exemplo).
+    if (sceneOverride) delete sceneOverride._sizeManual;
 
     // 4) Formulário administrativo (nome/descrição/categoria/tags/plano)
     const nome = ((await wmPrompt('Nome do template oficial:', '', { confirmText: 'Continuar' })) || '').trim();
@@ -34549,6 +34564,16 @@ function initEditor() {
         Object.keys(tplSceneOv).forEach(k => {
           // Não copia bg/background — mantém o do projeto
           if (k === 'bg' || k === 'background') return;
+          // Não copia _sizeManual: é uma flag INTERNA que trava o
+          // auto-ajuste de fonte pro slide ("o usuário redimensionou
+          // manualmente, não mexe"). Ela fica gravada no template porque
+          // foi setada durante a CRIAÇÃO dele (o admin ajustou o tamanho
+          // manualmente montando o exemplo) — mas isso não tem nada a
+          // ver com o slide do USUÁRIO que está aplicando o template
+          // agora. Copiar ela trava o auto-ajuste pra sempre nesse
+          // slide (ex: template "1 linha" aplicado num texto maior não
+          // conseguia encolher a fonte pra caber numa linha só).
+          if (k === '_sizeManual') return;
           sceneConfig[k] = JSON.parse(JSON.stringify(tplSceneOv[k]));
         });
       }
