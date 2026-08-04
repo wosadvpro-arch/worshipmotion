@@ -23544,13 +23544,18 @@ function initEditor() {
     // na conta (só a escala, que não muda). Por isso mudar peso/fonte
     // sempre pulava pro mesmo espaçamento grande, em vez de acompanhar o
     // tamanho real do texto.
+    // Multiplicador do gap: fração do TAMANHO DA FONTE (em), igual a um
+    // espaço de texto normal — não um respiro exagerado. É o MESMO valor
+    // usado em _autoEspacarPalavras (aplicação do template), pra ficar
+    // igual ao resultado do Canva nas duas situações.
+    const GAP_EM = 0.18;
     let _maxFontPx = 0;
     palavras.forEach(p => {
       const fpx = parseFloat(getComputedStyle(p.el).fontSize) || 0;
       if (fpx > _maxFontPx) _maxFontPx = fpx;
     });
     const GAP = (_maxFontPx > 0 && stanzaRect.width > 0)
-      ? (0.32 * _maxFontPx) / stanzaRect.width
+      ? (GAP_EM * _maxFontPx) / stanzaRect.width
       : 0.015;
 
     // Largura total do bloco (somatório das larguras + gaps)
@@ -34073,25 +34078,19 @@ function initEditor() {
           const ws = (ln.words || []).filter(w =>
             engine.wordOverrides[w.id] && engine.wordOverrides[w.id].position);
           if (ws.length < 2) return;
-          // GAP proporcional ao TAMANHO DA FONTE renderizada (0.32em da
-          // maior escala da linha) — MESMA fórmula usada em
-          // _reflowLinhaDaPalavra. As duas funções calculavam o gap de
-          // formas diferentes antes: aqui era 0.32×fonte-BASE (sem
-          // multiplicar pela escala da palavra) e lá era 0.015×escala×
-          // largura do slide — em templates com escala grande (ex: 5.9x)
-          // essas duas contas davam valores bem diferentes, então o
-          // espaçamento "pulava" pra outro valor assim que o usuário
-          // mexia em peso/itálico/fonte (o que disparava o reflow com a
-          // OUTRA fórmula). Usando a mesma conta nos dois lugares, o
-          // espaçamento sai certo ao aplicar o template e não muda mais
-          // depois só porque a fonte/peso foi trocado.
+          // GAP proporcional ao TAMANHO DA FONTE renderizada (fração do
+          // tamanho real, como um espaço de texto normal) — MESMA fórmula
+          // e MESMO valor (GAP_EM) usados em _reflowLinhaDaPalavra, pra
+          // não "pular" pra um espaçamento diferente quando o usuário
+          // mexe em peso/itálico/fonte depois (o que dispara o reflow).
+          const GAP_EM = 0.18;
           let escalaMax = 1;
           ws.forEach(w => {
             const wo = engine.wordOverrides[w.id];
             const sc = (wo.style && wo.style.fontSizeScale) || 1;
             if (sc > escalaMax) escalaMax = sc;
           });
-          const GAP = 0.32 * baseFS * escalaMax; // px
+          const GAP = GAP_EM * baseFS * escalaMax; // px
           const meta = ws.map(w => {
             const wo = engine.wordOverrides[w.id];
             const sc = (wo.style && wo.style.fontSizeScale) || 1;
