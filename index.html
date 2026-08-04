@@ -20604,42 +20604,39 @@ class RenderEngineV2 {
     // isso acontecer, encolhe a fonte dessa palavra até ela caber inteira
     // numa linha só. Só mexe no modo flow (mode-free usa posição custom do
     // usuário, não deve ser tocado aqui).
-    // getClientRects() NÃO é confiável aqui: .lyric-word é display:inline-block
-    // (precisa ser, pra permitir rotação/escala custom), e um inline-block
-    // retorna só 1 rect por fora mesmo com o texto quebrado em 2 linhas por
-    // dentro — então a detecção por rects nunca (ou quase nunca, com falsos
-    // positivos por rects de largura zero na borda da linha) acerta se a
-    // palavra realmente quebrou. Isso causava dois bugs: a palavra ("SANTO")
-    // continuava quebrada ("SANT"/"O") OU o texto encolhia sem necessidade
-    // em telas onde nem tinha quebrado.
-    // Em vez disso, MEDE a largura real do texto (canvas 2D, igual ao resto
-    // do app) contra a largura disponível da estrofe, e calcula o fator de
-    // encolhimento exato numa única conta — determinístico, sem depender de
-    // como o navegador fragmenta rects.
+    // MEDE COM O PRÓPRIO DOM (não canvas 2D): forçamos temporariamente
+    // white-space:nowrap na palavra e lemos getBoundingClientRect().width —
+    // isso reflete a largura REAL já renderizada (fonte custom carregada,
+    // peso, letter-spacing e padding aplicados de verdade). A versão
+    // anterior media com canvas 2D reconstruindo a string da fonte manualmente;
+    // se a fonte custom (ex: Montserrat via @font-face) ainda não tivesse
+    // terminado de carregar no momento exato da medição, o canvas usava um
+    // fallback mais estreito pra medir, concluía (errado) que a palavra
+    // cabia, e a quebra ("SANT"/"O") passava batido.
     if (stanzaEl.classList.contains('mode-flow')) {
       const stanzaWidth = stanzaEl.clientWidth || stanzaEl.getBoundingClientRect().width;
       if (stanzaWidth > 0) {
-        const _mctx = document.createElement('canvas').getContext('2d');
         stanzaEl.querySelectorAll('.lyric-line').forEach(lineEl => {
           const words = lineEl.querySelectorAll(':scope > .lyric-word');
           if (words.length !== 1) return; // só o caso de palavra única na linha
           const wordEl = words[0];
+          const prevWhiteSpace = wordEl.style.whiteSpace;
+          const prevMaxWidth = wordEl.style.maxWidth;
           let guard = 0;
           while (guard < 6) { // 1 conta certeira + poucas voltas de ajuste fino
-            const cs = getComputedStyle(wordEl);
-            const atualPx = parseFloat(cs.fontSize);
+            // maxWidth:none também é necessário na medição — sem isso, o
+            // max-width:100% do CSS (.lyric-word) prende a caixa na largura
+            // do container mesmo com nowrap, e a medição nunca veria o
+            // overflow de verdade (sempre "cabia", sem nunca encolher).
+            wordEl.style.whiteSpace = 'nowrap';
+            wordEl.style.maxWidth = 'none';
+            const larguraNatural = wordEl.getBoundingClientRect().width;
+            wordEl.style.whiteSpace = prevWhiteSpace;
+            wordEl.style.maxWidth = prevMaxWidth;
+            if (larguraNatural <= stanzaWidth) break; // cabe numa linha só, nada a fazer
+            const atualPx = parseFloat(getComputedStyle(wordEl).fontSize);
             if (!atualPx || atualPx <= 10) break; // piso de segurança — nunca some
-            let texto = wordEl.textContent || '';
-            if (cs.textTransform === 'uppercase') texto = texto.toUpperCase();
-            else if (cs.textTransform === 'lowercase') texto = texto.toLowerCase();
-            _mctx.font = `${cs.fontStyle || 'normal'} ${cs.fontWeight || '400'} ${atualPx}px ${cs.fontFamily || 'sans-serif'}`;
-            let largura = _mctx.measureText(texto).width;
-            const lsRaw = parseFloat(cs.letterSpacing);
-            if (lsRaw) largura += lsRaw * Math.max(0, texto.length - 1);
-            // padding lateral 0.18em de cada lado (ver CSS .lyric-word)
-            largura += 0.18 * atualPx * 2;
-            if (largura <= stanzaWidth) break; // cabe numa linha só, nada a fazer
-            const novoPx = Math.max(10, atualPx * (stanzaWidth / largura) * 0.98);
+            const novoPx = Math.max(10, atualPx * (stanzaWidth / larguraNatural) * 0.98);
             wordEl.style.fontSize = novoPx + 'px';
             guard++;
           }
