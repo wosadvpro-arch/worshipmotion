@@ -20600,35 +20600,51 @@ class RenderEngineV2 {
     // CORREÇÃO DE BUG: quando uma linha tem UMA ÚNICA palavra e ela é larga
     // demais pro slide, o CSS (overflow-wrap: anywhere) quebra a palavra no
     // meio como último recurso — sobrando 1-2 letras "órfãs" numa segunda
-    // linha (ex: "PROPAROXITON" / "A"). Em vez de deixar isso acontecer,
-    // encolhe a fonte dessa palavra até ela caber inteira numa linha só.
-    // getClientRects() retorna 1 retângulo por linha visual ocupada — se a
-    // palavra quebrou, retorna mais de 1. Só mexe no modo flow (mode-free
-    // usa posição custom do usuário, não deve ser tocado aqui).
+    // linha (ex: "PROPAROXITON" / "A", ou "SANT" / "O"). Em vez de deixar
+    // isso acontecer, encolhe a fonte dessa palavra até ela caber inteira
+    // numa linha só. Só mexe no modo flow (mode-free usa posição custom do
+    // usuário, não deve ser tocado aqui).
+    // getClientRects() NÃO é confiável aqui: .lyric-word é display:inline-block
+    // (precisa ser, pra permitir rotação/escala custom), e um inline-block
+    // retorna só 1 rect por fora mesmo com o texto quebrado em 2 linhas por
+    // dentro — então a detecção por rects nunca (ou quase nunca, com falsos
+    // positivos por rects de largura zero na borda da linha) acerta se a
+    // palavra realmente quebrou. Isso causava dois bugs: a palavra ("SANTO")
+    // continuava quebrada ("SANT"/"O") OU o texto encolhia sem necessidade
+    // em telas onde nem tinha quebrado.
+    // Em vez disso, MEDE a largura real do texto (canvas 2D, igual ao resto
+    // do app) contra a largura disponível da estrofe, e calcula o fator de
+    // encolhimento exato numa única conta — determinístico, sem depender de
+    // como o navegador fragmenta rects.
     if (stanzaEl.classList.contains('mode-flow')) {
-      stanzaEl.querySelectorAll('.lyric-line').forEach(lineEl => {
-        const words = lineEl.querySelectorAll(':scope > .lyric-word');
-        if (words.length !== 1) return; // só o caso de palavra única na linha
-        const wordEl = words[0];
-        // NOTA: NÃO usar wordEl.getClientRects() aqui — .lyric-word é
-        // display:inline-block (precisa ser pra permitir rotação/escala
-        // custom), e um inline-block SEMPRE retorna 1 client rect por
-        // fora, mesmo com o texto quebrado em 2 linhas dentro dele. Isso
-        // fazia essa detecção nunca disparar (bug relatado: "SANTO"
-        // ficava com o "O" numa segunda linha e a fonte não encolhia).
-        // Um Range sobre o conteúdo (nó de texto) reporta 1 rect POR
-        // LINHA VISUAL de verdade, porque opera no conteúdo inline, não
-        // na caixa do container.
-        const range = document.createRange();
-        range.selectNodeContents(wordEl);
-        let guard = 0;
-        while (range.getClientRects().length > 1 && guard < 40) {
-          const atualPx = parseFloat(getComputedStyle(wordEl).fontSize);
-          if (!atualPx || atualPx <= 10) break; // piso de segurança — nunca some
-          wordEl.style.fontSize = (atualPx * 0.94) + 'px';
-          guard++;
-        }
-      });
+      const stanzaWidth = stanzaEl.clientWidth || stanzaEl.getBoundingClientRect().width;
+      if (stanzaWidth > 0) {
+        const _mctx = document.createElement('canvas').getContext('2d');
+        stanzaEl.querySelectorAll('.lyric-line').forEach(lineEl => {
+          const words = lineEl.querySelectorAll(':scope > .lyric-word');
+          if (words.length !== 1) return; // só o caso de palavra única na linha
+          const wordEl = words[0];
+          let guard = 0;
+          while (guard < 6) { // 1 conta certeira + poucas voltas de ajuste fino
+            const cs = getComputedStyle(wordEl);
+            const atualPx = parseFloat(cs.fontSize);
+            if (!atualPx || atualPx <= 10) break; // piso de segurança — nunca some
+            let texto = wordEl.textContent || '';
+            if (cs.textTransform === 'uppercase') texto = texto.toUpperCase();
+            else if (cs.textTransform === 'lowercase') texto = texto.toLowerCase();
+            _mctx.font = `${cs.fontStyle || 'normal'} ${cs.fontWeight || '400'} ${atualPx}px ${cs.fontFamily || 'sans-serif'}`;
+            let largura = _mctx.measureText(texto).width;
+            const lsRaw = parseFloat(cs.letterSpacing);
+            if (lsRaw) largura += lsRaw * Math.max(0, texto.length - 1);
+            // padding lateral 0.18em de cada lado (ver CSS .lyric-word)
+            largura += 0.18 * atualPx * 2;
+            if (largura <= stanzaWidth) break; // cabe numa linha só, nada a fazer
+            const novoPx = Math.max(10, atualPx * (stanzaWidth / largura) * 0.98);
+            wordEl.style.fontSize = novoPx + 'px';
+            guard++;
+          }
+        });
+      }
     }
 
     // Inicializa palavras com estado "antes da entrada" (opacity 0) APENAS
