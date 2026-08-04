@@ -20641,14 +20641,14 @@ class RenderEngineV2 {
           wordEl.style.whiteSpace = prevWhiteSpace;
           wordEl.style.maxWidth = prevMaxWidth;
           // eslint-disable-next-line no-console
-          console.log('[fix-palavra-unica]', {
-            texto: wordEl.textContent,
-            guard,
-            stanzaWidth,
-            larguraNatural,
-            fontSizeAtual: getComputedStyle(wordEl).fontSize,
-            cabe: larguraNatural <= stanzaWidth,
-          });
+          console.log(
+            '[fix-palavra-unica] texto="' + wordEl.textContent + '"' +
+            ' guard=' + guard +
+            ' stanzaWidth=' + stanzaWidth +
+            ' larguraNatural=' + larguraNatural +
+            ' fontSizeAtual=' + getComputedStyle(wordEl).fontSize +
+            ' cabe=' + (larguraNatural <= stanzaWidth)
+          );
           if (larguraNatural <= stanzaWidth) break; // cabe numa linha só, nada a fazer
           const atualPx = parseFloat(getComputedStyle(wordEl).fontSize);
           if (!atualPx || atualPx <= 10) break; // piso de segurança — nunca some
