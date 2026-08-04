@@ -16269,6 +16269,76 @@ const TEMPLATES = [
       sceneOverrides: { stz_9lmfon0: {} },
     },
   },
+  {
+    id: 'tpl-oficial-bebas-neue-1-linha-2-palavras-mse6ucll',
+    name: 'Bebas Neue · 1 linha - 2 Palavras',
+    description: 'Composição moderno para 1 linha.',
+    tags: ['1 linha', 'Moderno', 'Pro Plus'],
+    isOfficial: true,
+    isPremium: true,
+    requiredPlan: 'pro_plus',
+    isActive: true,
+    accent: '#8b5cf6',
+    config: {
+      style: {},
+      animConfig: {},
+      aspect: '16:9',
+      parsed: {
+        stanzas: [
+          {
+            id: 'stz_2sm2nrk',
+            label: 'Estrofe 2',
+            lines: [
+              {
+                id: 'ln_nwk3p0s',
+                words: [
+                  {
+                    id: 'w_7eq0guv',
+                    text: 'SEU',
+                    chars: [
+                      { id: 'ch_9vfueef', text: 'P' },
+                      { id: 'ch_4mhqvib', text: 'O' },
+                      { id: 'ch_mzq9cwg', text: 'R' },
+                    ],
+                    tStart: 178.056857,
+                    emphasized: false,
+                  },
+                  {
+                    id: 'w_smee4h7',
+                    text: 'TEXTO',
+                    chars: [
+                      { id: 'ch_cug1xfe', text: 'E' },
+                      { id: 'ch_4lulvwf', text: 'L' },
+                      { id: 'ch_q03zwp7', text: 'E' },
+                    ],
+                    tStart: 178.056857,
+                    emphasized: false,
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+      wordOverrides: {
+        w_7eq0guv: {
+          style: { fontFamily: 'Bebas Neue', fontWeight: 700, fontSizeScale: 5.4073349098496 },
+          position: { x: 0.31934636078140677, y: 0.500899414863767 },
+        },
+        w_smee4h7: {
+          style: { fontFamily: 'Bebas Neue', fontWeight: 700, fontSizeScale: 5.4073349098496 },
+          position: { x: 0.6945867604069711, y: 0.500899414863767 },
+        },
+      },
+      sceneOverrides: {
+        stz_2sm2nrk: {
+          style: { fontSize: 55 },
+          entrance: 'film-fade',
+          _sizeManual: true,
+        },
+      },
+    },
+  },
 ];
 
 function getTemplateById(id) {
