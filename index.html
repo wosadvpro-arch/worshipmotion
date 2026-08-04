@@ -20605,43 +20605,64 @@ class RenderEngineV2 {
     // numa linha só. Só mexe no modo flow (mode-free usa posição custom do
     // usuário, não deve ser tocado aqui).
     // MEDE COM O PRÓPRIO DOM (não canvas 2D): forçamos temporariamente
-    // white-space:nowrap na palavra e lemos getBoundingClientRect().width —
-    // isso reflete a largura REAL já renderizada (fonte custom carregada,
-    // peso, letter-spacing e padding aplicados de verdade). A versão
-    // anterior media com canvas 2D reconstruindo a string da fonte manualmente;
-    // se a fonte custom (ex: Montserrat via @font-face) ainda não tivesse
-    // terminado de carregar no momento exato da medição, o canvas usava um
-    // fallback mais estreito pra medir, concluía (errado) que a palavra
-    // cabia, e a quebra ("SANT"/"O") passava batido.
-    if (stanzaEl.classList.contains('mode-flow')) {
+    // white-space:nowrap + maxWidth:none na palavra e lemos
+    // getBoundingClientRect().width — reflete a largura REAL renderizada
+    // (peso, letter-spacing e padding aplicados de verdade).
+    const _fixPalavraUnicaQuebrada = () => {
+      if (!stanzaEl.isConnected || !stanzaEl.classList.contains('mode-flow')) return;
       const stanzaWidth = stanzaEl.clientWidth || stanzaEl.getBoundingClientRect().width;
-      if (stanzaWidth > 0) {
-        stanzaEl.querySelectorAll('.lyric-line').forEach(lineEl => {
-          const words = lineEl.querySelectorAll(':scope > .lyric-word');
-          if (words.length !== 1) return; // só o caso de palavra única na linha
-          const wordEl = words[0];
-          const prevWhiteSpace = wordEl.style.whiteSpace;
-          const prevMaxWidth = wordEl.style.maxWidth;
-          let guard = 0;
-          while (guard < 6) { // 1 conta certeira + poucas voltas de ajuste fino
-            // maxWidth:none também é necessário na medição — sem isso, o
-            // max-width:100% do CSS (.lyric-word) prende a caixa na largura
-            // do container mesmo com nowrap, e a medição nunca veria o
-            // overflow de verdade (sempre "cabia", sem nunca encolher).
-            wordEl.style.whiteSpace = 'nowrap';
-            wordEl.style.maxWidth = 'none';
-            const larguraNatural = wordEl.getBoundingClientRect().width;
-            wordEl.style.whiteSpace = prevWhiteSpace;
-            wordEl.style.maxWidth = prevMaxWidth;
-            if (larguraNatural <= stanzaWidth) break; // cabe numa linha só, nada a fazer
-            const atualPx = parseFloat(getComputedStyle(wordEl).fontSize);
-            if (!atualPx || atualPx <= 10) break; // piso de segurança — nunca some
-            const novoPx = Math.max(10, atualPx * (stanzaWidth / larguraNatural) * 0.98);
-            wordEl.style.fontSize = novoPx + 'px';
-            guard++;
-          }
-        });
-      }
+      if (!(stanzaWidth > 0)) return;
+      stanzaEl.querySelectorAll('.lyric-line').forEach(lineEl => {
+        const words = lineEl.querySelectorAll(':scope > .lyric-word');
+        if (words.length !== 1) return; // só o caso de palavra única na linha
+        const wordEl = words[0];
+        const prevWhiteSpace = wordEl.style.whiteSpace;
+        const prevMaxWidth = wordEl.style.maxWidth;
+        let guard = 0;
+        while (guard < 6) { // 1 conta certeira + poucas voltas de ajuste fino
+          // maxWidth:none também é necessário na medição — sem isso, o
+          // max-width:100% do CSS (.lyric-word) prende a caixa na largura
+          // do container mesmo com nowrap, e a medição nunca veria o
+          // overflow de verdade (sempre "cabia", sem nunca encolher).
+          wordEl.style.whiteSpace = 'nowrap';
+          wordEl.style.maxWidth = 'none';
+          const larguraNatural = wordEl.getBoundingClientRect().width;
+          wordEl.style.whiteSpace = prevWhiteSpace;
+          wordEl.style.maxWidth = prevMaxWidth;
+          // eslint-disable-next-line no-console
+          console.debug('[fix-palavra-unica]', {
+            texto: wordEl.textContent,
+            guard,
+            stanzaWidth,
+            larguraNatural,
+            fontSizeAtual: getComputedStyle(wordEl).fontSize,
+            cabe: larguraNatural <= stanzaWidth,
+          });
+          if (larguraNatural <= stanzaWidth) break; // cabe numa linha só, nada a fazer
+          const atualPx = parseFloat(getComputedStyle(wordEl).fontSize);
+          if (!atualPx || atualPx <= 10) break; // piso de segurança — nunca some
+          const novoPx = Math.max(10, atualPx * (stanzaWidth / larguraNatural) * 0.98);
+          wordEl.style.fontSize = novoPx + 'px';
+          guard++;
+        }
+      });
+    };
+    // Roda imediatamente (cobre a maioria dos casos)...
+    _fixPalavraUnicaQuebrada();
+    // ...de novo no próximo frame (garante que o layout já assentou)...
+    if (typeof requestAnimationFrame === 'function') {
+      requestAnimationFrame(_fixPalavraUnicaQuebrada);
+    }
+    // ...e roda de novo quando as fontes confirmarem que terminaram de
+    // carregar. Se a fonte custom (ex: Montserrat via @font-face) ainda
+    // não tivesse terminado de baixar no momento da 1ª medição, o
+    // navegador mede com uma fonte de fallback mais estreita, a checagem
+    // passa como "cabe" (errado), e só depois — quando a fonte real
+    // carrega — o texto quebra na tela. document.fonts.ready resolve
+    // (quase) na hora se as fontes já estiverem prontas, então isso não
+    // adiciona atraso perceptível no caso comum.
+    if (window.document && document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(_fixPalavraUnicaQuebrada).catch(() => {});
     }
 
     // Inicializa palavras com estado "antes da entrada" (opacity 0) APENAS
