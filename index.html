@@ -20597,6 +20597,29 @@ class RenderEngineV2 {
     this.canvas.appendChild(stanzaEl);
     this._applyStyleToStanzaEl(stanzaEl);
 
+    // CORREÇÃO DE BUG: quando uma linha tem UMA ÚNICA palavra e ela é larga
+    // demais pro slide, o CSS (overflow-wrap: anywhere) quebra a palavra no
+    // meio como último recurso — sobrando 1-2 letras "órfãs" numa segunda
+    // linha (ex: "PROPAROXITON" / "A"). Em vez de deixar isso acontecer,
+    // encolhe a fonte dessa palavra até ela caber inteira numa linha só.
+    // getClientRects() retorna 1 retângulo por linha visual ocupada — se a
+    // palavra quebrou, retorna mais de 1. Só mexe no modo flow (mode-free
+    // usa posição custom do usuário, não deve ser tocado aqui).
+    if (stanzaEl.classList.contains('mode-flow')) {
+      stanzaEl.querySelectorAll('.lyric-line').forEach(lineEl => {
+        const words = lineEl.querySelectorAll(':scope > .lyric-word');
+        if (words.length !== 1) return; // só o caso de palavra única na linha
+        const wordEl = words[0];
+        let guard = 0;
+        while (wordEl.getClientRects().length > 1 && guard < 40) {
+          const atualPx = parseFloat(getComputedStyle(wordEl).fontSize);
+          if (!atualPx || atualPx <= 10) break; // piso de segurança — nunca some
+          wordEl.style.fontSize = (atualPx * 0.94) + 'px';
+          guard++;
+        }
+      });
+    }
+
     // Inicializa palavras com estado "antes da entrada" (opacity 0) APENAS
     // se uma animação vai rodar logo em seguida (this._prepararParaAnimacao).
     // Em render ESTÁTICO (navegação simples, aplicar template, edição), as
