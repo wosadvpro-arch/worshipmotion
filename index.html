@@ -20656,6 +20656,28 @@ class RenderEngineV2 {
           wordEl.style.fontSize = novoPx + 'px';
           guard++;
         }
+
+        // DIAGNÓSTICO TEMPORÁRIO: denuncia quem muda o style desta palavra
+        // depois da nossa correção rodar (com stack trace), pra achar o
+        // código que está aumentando a fonte de novo sem passar por aqui.
+        // Ver console: procurar por '[fix-palavra-unica][ALARME]'.
+        if (wordEl._wmFixObserver) wordEl._wmFixObserver.disconnect();
+        const fsNaSaida = wordEl.style.fontSize;
+        const obs = new MutationObserver((mutations) => {
+          mutations.forEach(m => {
+            if (m.attributeName !== 'style') return;
+            const fsAgora = wordEl.style.fontSize;
+            if (fsAgora === fsNaSaida) return; // mudou outra coisa no style, ignora
+            console.log(
+              '[fix-palavra-unica][ALARME] texto="' + wordEl.textContent + '"' +
+              ' fontSize mudou de ' + fsNaSaida + ' para ' + fsAgora +
+              ' fontSizeComputado=' + getComputedStyle(wordEl).fontSize
+            );
+            console.trace('[fix-palavra-unica][ALARME] stack de quem mudou:');
+          });
+        });
+        obs.observe(wordEl, { attributes: true, attributeFilter: ['style'] });
+        wordEl._wmFixObserver = obs;
       });
     };
     // Roda imediatamente (cobre a maioria dos casos)...
