@@ -2150,11 +2150,17 @@ body.marking-open.marking-collapsed .editor-canvas {
   display: inline-block;
   position: relative;
   /* Quebra a palavra no meio se ela sozinha for mais larga que o slide (ex:
-     um texto colado sem espaços tipo "jjjjjjjjjjj...1jjjjj..."). Sem isso,
-     uma "palavra" gigante vazava pra fora do slide em vez de quebrar linha. */
+     um texto colado sem espaços tipo "jjjjjjjjjjj...1jjjjj..."). SEM o
+     max-width:100% — ele forçava esse limite em toda palavra (mesmo
+     curtas), e somado à folga transparente (padding abaixo) fazia o
+     navegador achar que faltava uma fração de pixel e quebrar só a
+     ÚLTIMA LETRA numa linha isolada (só acontecia com 1 palavra sozinha
+     no slide, porque com mais palavras o navegador prefere quebrar ANTES
+     da palavra inteira, e essa opção só existe se houver outra palavra).
+     Sem max-width, o navegador só quebra DENTRO da palavra quando ela
+     realmente não cabe na linha toda — não por essa folga de alguns px. */
   overflow-wrap: anywhere;
   word-break: break-word;
-  max-width: 100%;
   /* Folga lateral pra letras cursivas/itálicas cujo desenho "vaza" da caixa
      (ex: o "p" de "perdoado") não ser cortado pela camada de composição do
      WebKit no iPhone. O padding é simétrico, então em palavra POSICIONADA
@@ -20597,107 +20603,6 @@ class RenderEngineV2 {
     this.canvas.appendChild(stanzaEl);
     this._applyStyleToStanzaEl(stanzaEl);
 
-    // CORREÇÃO DE BUG: quando uma linha tem UMA ÚNICA palavra e ela é larga
-    // demais pro slide, o CSS (overflow-wrap: anywhere) quebra a palavra no
-    // meio como último recurso — sobrando 1-2 letras "órfãs" numa segunda
-    // linha (ex: "PROPAROXITON" / "A", ou "SANT" / "O"). Em vez de deixar
-    // isso acontecer, encolhe a fonte dessa palavra até ela caber inteira
-    // numa linha só. Só mexe no modo flow (mode-free usa posição custom do
-    // usuário, não deve ser tocado aqui).
-    // MEDE COM O PRÓPRIO DOM (não canvas 2D): forçamos temporariamente
-    // white-space:nowrap + maxWidth:none na palavra e lemos
-    // getBoundingClientRect().width — reflete a largura REAL renderizada
-    // (peso, letter-spacing e padding aplicados de verdade).
-    const _fixPalavraUnicaQuebrada = () => {
-      if (!stanzaEl.isConnected || !stanzaEl.classList.contains('mode-flow')) {
-        console.log('[fix-palavra-unica] saiu cedo: isConnected=', stanzaEl.isConnected, 'classList=', stanzaEl.className);
-        return;
-      }
-      const stanzaWidth = stanzaEl.clientWidth || stanzaEl.getBoundingClientRect().width;
-      if (!(stanzaWidth > 0)) {
-        console.log('[fix-palavra-unica] saiu cedo: stanzaWidth=', stanzaWidth);
-        return;
-      }
-      const totalLinhas = stanzaEl.querySelectorAll('.lyric-line').length;
-      console.log('[fix-palavra-unica] rodando, stanzaWidth=', stanzaWidth, 'totalLinhas=', totalLinhas);
-      stanzaEl.querySelectorAll('.lyric-line').forEach(lineEl => {
-        const words = lineEl.querySelectorAll(':scope > .lyric-word');
-        if (words.length !== 1) {
-          console.log('[fix-palavra-unica] linha ignorada, palavras nesta linha=', words.length);
-          return; // só o caso de palavra única na linha
-        }
-        const wordEl = words[0];
-        const prevWhiteSpace = wordEl.style.whiteSpace;
-        const prevMaxWidth = wordEl.style.maxWidth;
-        let guard = 0;
-        while (guard < 6) { // 1 conta certeira + poucas voltas de ajuste fino
-          // maxWidth:none também é necessário na medição — sem isso, o
-          // max-width:100% do CSS (.lyric-word) prende a caixa na largura
-          // do container mesmo com nowrap, e a medição nunca veria o
-          // overflow de verdade (sempre "cabia", sem nunca encolher).
-          wordEl.style.whiteSpace = 'nowrap';
-          wordEl.style.maxWidth = 'none';
-          const larguraNatural = wordEl.getBoundingClientRect().width;
-          wordEl.style.whiteSpace = prevWhiteSpace;
-          wordEl.style.maxWidth = prevMaxWidth;
-          // eslint-disable-next-line no-console
-          console.log(
-            '[fix-palavra-unica] texto="' + wordEl.textContent + '"' +
-            ' guard=' + guard +
-            ' stanzaWidth=' + stanzaWidth +
-            ' larguraNatural=' + larguraNatural +
-            ' fontSizeAtual=' + getComputedStyle(wordEl).fontSize +
-            ' cabe=' + (larguraNatural <= stanzaWidth)
-          );
-          if (larguraNatural <= stanzaWidth) break; // cabe numa linha só, nada a fazer
-          const atualPx = parseFloat(getComputedStyle(wordEl).fontSize);
-          if (!atualPx || atualPx <= 10) break; // piso de segurança — nunca some
-          const novoPx = Math.max(10, atualPx * (stanzaWidth / larguraNatural) * 0.98);
-          wordEl.style.fontSize = novoPx + 'px';
-          guard++;
-        }
-
-        // DIAGNÓSTICO TEMPORÁRIO: denuncia quem muda o style desta palavra
-        // depois da nossa correção rodar (com stack trace), pra achar o
-        // código que está aumentando a fonte de novo sem passar por aqui.
-        // Ver console: procurar por '[fix-palavra-unica][ALARME]'.
-        if (wordEl._wmFixObserver) wordEl._wmFixObserver.disconnect();
-        const fsNaSaida = wordEl.style.fontSize;
-        const obs = new MutationObserver((mutations) => {
-          mutations.forEach(m => {
-            if (m.attributeName !== 'style') return;
-            const fsAgora = wordEl.style.fontSize;
-            if (fsAgora === fsNaSaida) return; // mudou outra coisa no style, ignora
-            console.log(
-              '[fix-palavra-unica][ALARME] texto="' + wordEl.textContent + '"' +
-              ' fontSize mudou de ' + fsNaSaida + ' para ' + fsAgora +
-              ' fontSizeComputado=' + getComputedStyle(wordEl).fontSize
-            );
-            console.trace('[fix-palavra-unica][ALARME] stack de quem mudou:');
-          });
-        });
-        obs.observe(wordEl, { attributes: true, attributeFilter: ['style'] });
-        wordEl._wmFixObserver = obs;
-      });
-    };
-    // Roda imediatamente (cobre a maioria dos casos)...
-    _fixPalavraUnicaQuebrada();
-    // ...de novo no próximo frame (garante que o layout já assentou)...
-    if (typeof requestAnimationFrame === 'function') {
-      requestAnimationFrame(_fixPalavraUnicaQuebrada);
-    }
-    // ...e roda de novo quando as fontes confirmarem que terminaram de
-    // carregar. Se a fonte custom (ex: Montserrat via @font-face) ainda
-    // não tivesse terminado de baixar no momento da 1ª medição, o
-    // navegador mede com uma fonte de fallback mais estreita, a checagem
-    // passa como "cabe" (errado), e só depois — quando a fonte real
-    // carrega — o texto quebra na tela. document.fonts.ready resolve
-    // (quase) na hora se as fontes já estiverem prontas, então isso não
-    // adiciona atraso perceptível no caso comum.
-    if (window.document && document.fonts && document.fonts.ready) {
-      document.fonts.ready.then(_fixPalavraUnicaQuebrada).catch(() => {});
-    }
-
     // Inicializa palavras com estado "antes da entrada" (opacity 0) APENAS
     // se uma animação vai rodar logo em seguida (this._prepararParaAnimacao).
     // Em render ESTÁTICO (navegação simples, aplicar template, edição), as
@@ -34119,18 +34024,12 @@ function initEditor() {
   function _distribuirEmLinhas(stanza, numLinhasSchema) {
     const linhasReais = (stanza.lines || []).filter(ln => ln.words && ln.words.length);
 
-    // Só respeita as quebras do usuário quando o número de linhas BATE
-    // com o que o template espera. Antes era "linhasReais.length >= 2",
-    // sem comparar com numLinhasSchema — isso fazia um template de 1
-    // linha (ex: "Duplo Impacto", 2 palavras lado a lado) manter 2
-    // linhas gigantes empilhadas quando o usuário digitava a letra
-    // quebrada em 2 linhas (bug relatado: "SEU" / "TEXTO" enormes).
-    if (linhasReais.length === numLinhasSchema) {
+    // Se já tem o mesmo número de linhas (ou mais), usa as quebras do usuário
+    if (linhasReais.length >= 2) {
       return linhasReais.map(ln => ln.words.slice());
     }
 
-    // Número de linhas diferente do schema (a mais ou a menos): achata
-    // tudo e redistribui pra bater com o template.
+    // Linha única: distribui as palavras igualmente entre numLinhasSchema
     const todasPalavras = [];
     linhasReais.forEach(ln => ln.words.forEach(w => todasPalavras.push(w)));
     if (todasPalavras.length === 0) return [];
