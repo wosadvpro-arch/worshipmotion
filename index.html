@@ -20610,8 +20610,19 @@ class RenderEngineV2 {
         const words = lineEl.querySelectorAll(':scope > .lyric-word');
         if (words.length !== 1) return; // só o caso de palavra única na linha
         const wordEl = words[0];
+        // NOTA: NÃO usar wordEl.getClientRects() aqui — .lyric-word é
+        // display:inline-block (precisa ser pra permitir rotação/escala
+        // custom), e um inline-block SEMPRE retorna 1 client rect por
+        // fora, mesmo com o texto quebrado em 2 linhas dentro dele. Isso
+        // fazia essa detecção nunca disparar (bug relatado: "SANTO"
+        // ficava com o "O" numa segunda linha e a fonte não encolhia).
+        // Um Range sobre o conteúdo (nó de texto) reporta 1 rect POR
+        // LINHA VISUAL de verdade, porque opera no conteúdo inline, não
+        // na caixa do container.
+        const range = document.createRange();
+        range.selectNodeContents(wordEl);
         let guard = 0;
-        while (wordEl.getClientRects().length > 1 && guard < 40) {
+        while (range.getClientRects().length > 1 && guard < 40) {
           const atualPx = parseFloat(getComputedStyle(wordEl).fontSize);
           if (!atualPx || atualPx <= 10) break; // piso de segurança — nunca some
           wordEl.style.fontSize = (atualPx * 0.94) + 'px';
@@ -34041,12 +34052,18 @@ function initEditor() {
   function _distribuirEmLinhas(stanza, numLinhasSchema) {
     const linhasReais = (stanza.lines || []).filter(ln => ln.words && ln.words.length);
 
-    // Se já tem o mesmo número de linhas (ou mais), usa as quebras do usuário
-    if (linhasReais.length >= 2) {
+    // Só respeita as quebras do usuário quando o número de linhas BATE
+    // com o que o template espera. Antes era "linhasReais.length >= 2",
+    // sem comparar com numLinhasSchema — isso fazia um template de 1
+    // linha (ex: "Duplo Impacto", 2 palavras lado a lado) manter 2
+    // linhas gigantes empilhadas quando o usuário digitava a letra
+    // quebrada em 2 linhas (bug relatado: "SEU" / "TEXTO" enormes).
+    if (linhasReais.length === numLinhasSchema) {
       return linhasReais.map(ln => ln.words.slice());
     }
 
-    // Linha única: distribui as palavras igualmente entre numLinhasSchema
+    // Número de linhas diferente do schema (a mais ou a menos): achata
+    // tudo e redistribui pra bater com o template.
     const todasPalavras = [];
     linhasReais.forEach(ln => ln.words.forEach(w => todasPalavras.push(w)));
     if (todasPalavras.length === 0) return [];
