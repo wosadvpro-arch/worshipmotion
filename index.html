@@ -21718,17 +21718,33 @@ function initEditor() {
       }
     }
 
-    // AUTO-AJUSTE AO SLIDE após COLAR (paste): encolhe as estrofes que não
-    // cabem, igual Canva. Só no paste (não a cada edição) — uma tentativa
-    // anterior de rodar isso a cada edição normal (digitar) causou um bug
-    // sério (texto sumindo completamente depois de editar), então voltei
-    // pro comportamento mais simples e testado. Os outros pontos que
-    // precisavam de auto-ajuste (aplicar template, botão de tamanho +/-)
-    // já têm sua própria correção específica, feita separadamente.
+    // AUTO-AJUSTE AO SLIDE: encolhe a estrofe que não cabe, igual Canva.
+    // Ao COLAR (paste), ajusta TODAS as estrofes de uma vez. Numa edição
+    // normal (digitar/acrescentar palavra), ajusta só a estrofe ATUAL —
+    // mais leve, e como parseAndRender já roda com debounce (400ms após
+    // parar de digitar), não fica "mexendo" na fonte a cada tecla. Sem
+    // isso, acrescentar uma palavra numa linha de template (que agora
+    // força 1 linha só, sem quebrar) ultrapassava a margem do slide sem
+    // encolher (bug relatado: "SANTO SANTO SANTO" vazando).
+    // IMPORTANTE: só renderização ESTÁTICA aqui — NUNCA engine.playFull()
+    // depois disso. playFull() re-toca a animação de entrada (começa com
+    // opacity 0 até completar) e, chamada fora do momento de dar play,
+    // já deixou o texto sumido inteiro numa correção anterior. O crash
+    // "nada aparece" que veio depois disso era, na real, um erro de
+    // digitação diferente (engine.x em vez de this.x dentro da classe) —
+    // já corrigido — então esse auto-ajuste por edição é seguro de novo.
     if (window._wmFitAposParse) {
       window._wmFitAposParse = false;
       requestAnimationFrame(() => requestAnimationFrame(() => {
         try { _wmAjustarTodasEstrofesAoSlide(); } catch (e) {}
+      }));
+    } else if (parsed.stanzas && parsed.stanzas.length) {
+      const _idxAtualFit = Math.min(
+        Math.max(engine.currentStanzaIndex || 0, 0),
+        parsed.stanzas.length - 1
+      );
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        try { _wmAjustarEstrofeAoSlide(_idxAtualFit); } catch (e) {}
       }));
     }
   }
