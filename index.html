@@ -20609,12 +20609,23 @@ class RenderEngineV2 {
     // getBoundingClientRect().width — reflete a largura REAL renderizada
     // (peso, letter-spacing e padding aplicados de verdade).
     const _fixPalavraUnicaQuebrada = () => {
-      if (!stanzaEl.isConnected || !stanzaEl.classList.contains('mode-flow')) return;
+      if (!stanzaEl.isConnected || !stanzaEl.classList.contains('mode-flow')) {
+        console.log('[fix-palavra-unica] saiu cedo: isConnected=', stanzaEl.isConnected, 'classList=', stanzaEl.className);
+        return;
+      }
       const stanzaWidth = stanzaEl.clientWidth || stanzaEl.getBoundingClientRect().width;
-      if (!(stanzaWidth > 0)) return;
+      if (!(stanzaWidth > 0)) {
+        console.log('[fix-palavra-unica] saiu cedo: stanzaWidth=', stanzaWidth);
+        return;
+      }
+      const totalLinhas = stanzaEl.querySelectorAll('.lyric-line').length;
+      console.log('[fix-palavra-unica] rodando, stanzaWidth=', stanzaWidth, 'totalLinhas=', totalLinhas);
       stanzaEl.querySelectorAll('.lyric-line').forEach(lineEl => {
         const words = lineEl.querySelectorAll(':scope > .lyric-word');
-        if (words.length !== 1) return; // só o caso de palavra única na linha
+        if (words.length !== 1) {
+          console.log('[fix-palavra-unica] linha ignorada, palavras nesta linha=', words.length);
+          return; // só o caso de palavra única na linha
+        }
         const wordEl = words[0];
         const prevWhiteSpace = wordEl.style.whiteSpace;
         const prevMaxWidth = wordEl.style.maxWidth;
@@ -20630,7 +20641,7 @@ class RenderEngineV2 {
           wordEl.style.whiteSpace = prevWhiteSpace;
           wordEl.style.maxWidth = prevMaxWidth;
           // eslint-disable-next-line no-console
-          console.debug('[fix-palavra-unica]', {
+          console.log('[fix-palavra-unica]', {
             texto: wordEl.textContent,
             guard,
             stanzaWidth,
