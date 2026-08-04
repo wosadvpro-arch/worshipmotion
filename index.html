@@ -21738,9 +21738,16 @@ function initEditor() {
       );
       requestAnimationFrame(() => requestAnimationFrame(() => {
         try {
+          // _wmAjustarEstrofeAoSlide já termina com uma renderização
+          // ESTÁTICA (renderEstatico(): renderStanza + mata animações +
+          // força opacity 1) — não precisa (e não deve) chamar
+          // engine.playFull() depois. playFull() TOCA a animação de
+          // entrada de novo, que começa com as palavras invisíveis
+          // (opacity 0) até a animação completar — fora do contexto
+          // normal de "dar play" isso deixava o texto sumido depois de
+          // editar (bug relatado: "nada aparece, letra nenhuma nos
+          // slides").
           _wmAjustarEstrofeAoSlide(_idxAtualFit);
-          engine.renderStanza(_idxAtualFit);
-          engine.playFull();
         } catch (e) {}
       }));
     }
@@ -34591,8 +34598,20 @@ function initEditor() {
         const prevIdxFit = engine.currentStanzaIndex;
         targetIndices.forEach(idx => { try { _wmAjustarEstrofeAoSlide(idx); } catch (e) {} });
         engine.currentStanzaIndex = prevIdxFit;
+        // Render ESTÁTICO (sem playFull!) pra deixar a estrofe visível
+        // atual em pé — playFull() re-toca a animação de entrada, que
+        // começa com opacity 0 até completar; fora do contexto normal de
+        // "dar play" isso deixava o texto sumido (bug relatado: "nada
+        // aparece, letra nenhuma nos slides" depois de aplicar template).
         if (typeof engine.renderStanza === 'function') engine.renderStanza(prevIdxFit);
-        try { engine.playFull(); } catch (e) {}
+        try { engine.killAllAnimations(); } catch (e) {}
+        const _stzTplFit = (typeof getStanzaEl === 'function') ? getStanzaEl() : null;
+        if (_stzTplFit) {
+          _stzTplFit.querySelectorAll('.lyric-word').forEach(el => {
+            el.style.opacity = '1';
+            el.style.animation = 'none';
+          });
+        }
       } catch (e) {}
     }));
 
