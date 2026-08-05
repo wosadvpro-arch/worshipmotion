@@ -22493,13 +22493,16 @@ function initEditor() {
     // se auto-desliga na mesma hora, pra nunca ficar preso e travar edições
     // futuras da letra.
     if (window._suppressReparse) { window._suppressReparse = false; return; }
-    // PRESERVA O SLIDE ATUAL: usado pela edição AO VIVO (digitando na caixa
-    // de letra) pra não "pular" pro slide 1 a cada re-parse. Botão "Gerar"/
-    // colar letra nova continuam indo pro slide 1 normalmente (comportamento
-    // padrão, sem passar essa opção).
-    const _preservarIdx = !!opts.preserveStanzaIndex;
-    const _idxParaPreservar = _preservarIdx && engine && typeof engine.currentStanzaIndex === 'number'
-      ? engine.currentStanzaIndex : 0;
+    // PRESERVA/SEGUE O SLIDE: usado pela edição AO VIVO (digitando na caixa
+    // de letra) pra não "pular" pro slide 1 a cada re-parse. Pode ser `true`
+    // (mantém o slide atual do engine) ou um NÚMERO (o slide sob o cursor,
+    // pra digitar em qualquer parte do texto e o preview seguir junto —
+    // igual ao clique). Botão "Gerar"/colar letra nova continuam indo pro
+    // slide 1 normalmente (comportamento padrão, sem passar essa opção).
+    const _preservarIdx = opts.preserveStanzaIndex !== undefined && opts.preserveStanzaIndex !== false;
+    const _idxParaPreservar = typeof opts.preserveStanzaIndex === 'number'
+      ? opts.preserveStanzaIndex
+      : (_preservarIdx && engine && typeof engine.currentStanzaIndex === 'number' ? engine.currentStanzaIndex : 0);
     const text = $('#lyrics-input').value;
     if (!text.trim()) {
       // Letra vazia = projeto do ZERO: limpa TUDO (antes só limpava a lista e
@@ -32907,9 +32910,16 @@ function initEditor() {
         }
 
         const _aplicarAtualizacao = () => {
-          // preserveStanzaIndex: mantém o slide que o usuário estava editando
-          // (ex: slide 4) em vez de voltar pro slide 1 a cada tecla.
-          parseAndRender({ preserveStanzaIndex: true });
+          // Segue o slide sob o CURSOR (igual ao clique) — assim, escrever
+          // em qualquer parte do texto atualiza o slide certo, não sempre
+          // o primeiro. _stanzaIdxAtCaret só existe depois de definida
+          // (função abaixo, mas já hoisted no bloco antes deste callback rodar).
+          let _idxAlvo = -1;
+          try { _idxAlvo = _stanzaIdxAtCaret(_liveLyricsInput.value, _liveLyricsInput.selectionStart); } catch (e) {}
+          if (_idxAlvo < 0) {
+            _idxAlvo = (engine && typeof engine.currentStanzaIndex === 'number') ? engine.currentStanzaIndex : 0;
+          }
+          parseAndRender({ preserveStanzaIndex: _idxAlvo });
           if (_canvasEl) {
             requestAnimationFrame(() => {
               requestAnimationFrame(() => {
