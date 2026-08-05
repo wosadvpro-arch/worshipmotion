@@ -33577,12 +33577,16 @@ function initEditor() {
         ov.style.fontSizeScale = hs.scale || sch.scale;
         ov.style.textTransform = hs.textTransform || sch.textTransform || 'capitalize';
         ov.style.color = hs.color || sch.color || undefined;
+        ov.style.fontWeight = hs.fontWeight || sch.fontWeight || undefined;
+        ov.style.fontStyle = hs.fontStyle || sch.fontStyle || undefined;
       } else {
         if (sch.font) ov.style.fontFamily = sch.font;
         if (sch.scale && sch.scale !== 1) ov.style.fontSizeScale = sch.scale;
         if (sch.isForca) ov.style.textTransform = sch.textTransform || 'capitalize';
         else if (sch.textTransform) ov.style.textTransform = sch.textTransform;
         if (sch.color) ov.style.color = sch.color;
+        if (sch.fontWeight) ov.style.fontWeight = sch.fontWeight;
+        if (sch.fontStyle) ov.style.fontStyle = sch.fontStyle;
       }
       Object.keys(ov.style).forEach(k => { if (ov.style[k] === undefined) delete ov.style[k]; });
       engine.wordOverrides[w.id] = ov;
@@ -34235,6 +34239,8 @@ function initEditor() {
               scale: ov.style?.fontSizeScale || 1,
               color: ov.style?.color || null,
               textTransform: ov.style?.textTransform || null,
+              fontWeight: ov.style?.fontWeight || null,
+              fontStyle: ov.style?.fontStyle || null,
             });
           }
         })
@@ -34274,6 +34280,8 @@ function initEditor() {
       let countScale = 0;
       let cor = null;
       let tt = null;
+      let peso = null;
+      let itClass = null;
       linha.items.forEach(it => {
         if (it.font) fontCount[it.font] = (fontCount[it.font] || 0) + 1;
         if (it.scale > maxScale) maxScale = it.scale;
@@ -34281,6 +34289,8 @@ function initEditor() {
         countScale++;
         if (it.color && !cor) cor = it.color;
         if (it.textTransform && !tt) tt = it.textTransform;
+        if (it.fontWeight && !peso) peso = it.fontWeight;
+        if (it.fontStyle && !itClass) itClass = it.fontStyle;
       });
       const avgScale = countScale > 0 ? sumScale / countScale : 1;
       let font = null, max = 0;
@@ -34314,6 +34324,8 @@ function initEditor() {
               font: destItems.find(it => it.font)?.font || null,
               color: destItems.find(it => it.color)?.color || null,
               textTransform: destItems.find(it => it.textTransform)?.textTransform || null,
+              fontWeight: destItems.find(it => it.fontWeight)?.fontWeight || null,
+              fontStyle: destItems.find(it => it.fontStyle)?.fontStyle || null,
             },
           };
           // Base (não-destaque) recalculada só com as palavras NÃO destacadas,
@@ -34327,6 +34339,8 @@ function initEditor() {
               isForca: false,
               color: cor,
               textTransform: tt,
+              fontWeight: peso,
+              fontStyle: itClass,
               highlight,
             };
           }
@@ -34339,6 +34353,8 @@ function initEditor() {
         isForca: maxScale > 1.5,
         color: cor,
         textTransform: tt,
+        fontWeight: peso,
+        fontStyle: itClass,
         highlight,
       };
     });
@@ -34680,6 +34696,8 @@ function initEditor() {
           ov.style.fontSizeScale = hs.scale || sch.scale;
           ov.style.textTransform = hs.textTransform || sch.textTransform || 'capitalize';
           ov.style.color = hs.color || sch.color || undefined;
+          ov.style.fontWeight = hs.fontWeight || sch.fontWeight || undefined;
+          ov.style.fontStyle = hs.fontStyle || sch.fontStyle || undefined;
         } else {
           if (sch.font) ov.style.fontFamily = sch.font;
           // SEMPRE aplica o scale (mesmo se não for força), pra preservar
@@ -34697,6 +34715,12 @@ function initEditor() {
             ov.style.textTransform = sch.textTransform;
           }
           if (sch.color) ov.style.color = sch.color;
+          // Negrito/itálico da linha (ex: 2ª linha em bold+italic num
+          // template de 2 linhas) — antes essa informação era perdida na
+          // extração do schema, então templates com negrito/itálico numa
+          // linha específica perdiam esse estilo ao aplicar.
+          if (sch.fontWeight) ov.style.fontWeight = sch.fontWeight;
+          if (sch.fontStyle) ov.style.fontStyle = sch.fontStyle;
         }
         // Remove chaves undefined (evita "fontFamily: undefined" no override)
         Object.keys(ov.style).forEach(k => { if (ov.style[k] === undefined) delete ov.style[k]; });
