@@ -32898,44 +32898,21 @@ function initEditor() {
       _liveLyricsTimer = setTimeout(() => {
         _liveLyricsTimer = null;
 
-        // FADE PREMIUM: em vez do texto trocar "seco" (innerHTML novo aparece
-        // instantâneo), o canvas dá um fade-out, troca o conteúdo, e faz
-        // fade-in. Fica com o toque suave que tinha antes, sem depender
-        // da animação de entrada (que só toca por estrofe/palavra, não no
-        // "refresh" ao vivo da digitação).
-        const _canvasEl = engine && engine.canvas;
-        if (_canvasEl) {
-          _canvasEl.style.transition = 'opacity 0.6s ease';
-          _canvasEl.style.opacity = '0';
+        // Segue o slide sob o CURSOR (igual ao clique) — assim, escrever em
+        // qualquer parte do texto atualiza o slide certo, não sempre o
+        // primeiro. _stanzaIdxAtCaret só existe depois de definida (função
+        // abaixo, mas já hoisted no bloco antes deste callback rodar).
+        let _idxAlvo = -1;
+        try { _idxAlvo = _stanzaIdxAtCaret(_liveLyricsInput.value, _liveLyricsInput.selectionStart); } catch (e) {}
+        if (_idxAlvo < 0) {
+          _idxAlvo = (engine && typeof engine.currentStanzaIndex === 'number') ? engine.currentStanzaIndex : 0;
         }
-
-        const _aplicarAtualizacao = () => {
-          // Segue o slide sob o CURSOR (igual ao clique) — assim, escrever
-          // em qualquer parte do texto atualiza o slide certo, não sempre
-          // o primeiro. _stanzaIdxAtCaret só existe depois de definida
-          // (função abaixo, mas já hoisted no bloco antes deste callback rodar).
-          let _idxAlvo = -1;
-          try { _idxAlvo = _stanzaIdxAtCaret(_liveLyricsInput.value, _liveLyricsInput.selectionStart); } catch (e) {}
-          if (_idxAlvo < 0) {
-            _idxAlvo = (engine && typeof engine.currentStanzaIndex === 'number') ? engine.currentStanzaIndex : 0;
-          }
-          parseAndRender({ preserveStanzaIndex: _idxAlvo });
-          if (_canvasEl) {
-            requestAnimationFrame(() => {
-              requestAnimationFrame(() => {
-                _canvasEl.style.opacity = '1';
-              });
-            });
-          }
-        };
-
-        if (_canvasEl) {
-          // Espera o fade-out terminar antes de trocar o conteúdo, senão o
-          // texto novo "pisca" no meio da transição de opacidade.
-          setTimeout(_aplicarAtualizacao, 600);
-        } else {
-          _aplicarAtualizacao();
-        }
+        // parseAndRender → engine.playFull() já toca a MESMA animação de
+        // entrada (entrance) usada ao trocar de slide (setas/clique na
+        // lista). Antes havia um fade artificial só pra digitação, que
+        // duplicava/competia com essa animação — removido pra usar sempre
+        // o mesmo efeito, com o toque premium consistente em qualquer ação.
+        parseAndRender({ preserveStanzaIndex: _idxAlvo });
       }, 400);
     });
 
