@@ -16338,6 +16338,119 @@ const TEMPLATES = [
       },
     },
   },
+  {
+    id: 'tpl-oficial-antara-2-linhas-msfhgver',
+    name: 'Antara - 2 Linhas',
+    description: 'Composição moderno para 2 linhas.',
+    tags: ['2 linhas', 'Moderno', 'Pro Plus'],
+    isOfficial: true,
+    isPremium: true,
+    requiredPlan: 'pro_plus',
+    isActive: true,
+    accent: '#8b5cf6',
+    config: {
+      style: {},
+      animConfig: {},
+      aspect: '16:9',
+      parsed: {
+        stanzas: [
+          {
+            id: 'stz_2ym3mza',
+            label: 'Estrofe 1',
+            lines: [
+              {
+                id: 'ln_25ggelp',
+                words: [
+                  {
+                    id: 'w_7g3reqg',
+                    text: 'PRIMEIRA',
+                    chars: [
+                      { id: 'ch_2bmh6ys', text: 'Q' },
+                      { id: 'ch_02xzhps', text: 'u' },
+                      { id: 'ch_5tho5is', text: 'e' },
+                      { id: 'ch_z6vhuqa', text: 'm' },
+                    ],
+                    tStart: 23.400889,
+                    emphasized: false,
+                  },
+                  {
+                    id: 'w_xhr5i3x',
+                    text: 'LINHA',
+                    chars: [
+                      { id: 'ch_ml6trb5', text: 'f' },
+                      { id: 'ch_ursf8sg', text: 'o' },
+                      { id: 'ch_k5tuyaf', text: 'i' },
+                    ],
+                    tStart: 23.400889,
+                    emphasized: false,
+                  },
+                  {
+                    id: 'w_i70pmqp',
+                    text: 'LINHA',
+                    chars: [
+                      { id: 'ch_b9gh290', text: 'm' },
+                      { id: 'ch_jmr65h1', text: 'u' },
+                      { id: 'ch_7hdxmn7', text: 'i' },
+                      { id: 'ch_2aujvhx', text: 't' },
+                      { id: 'ch_ouwkus9', text: 'o' },
+                    ],
+                    tStart: 23.400889,
+                    emphasized: false,
+                  },
+                ],
+              },
+              {
+                id: 'ln_0pzl54z',
+                words: [
+                  {
+                    id: 'w_e018161',
+                    text: 'SEGUNDA',
+                    chars: [
+                      { id: 'ch_g37zaa6', text: 'p' },
+                      { id: 'ch_b4kp1yi', text: 'e' },
+                      { id: 'ch_zynojur', text: 'r' },
+                      { id: 'ch_316pkib', text: 'd' },
+                      { id: 'ch_eh2xndq', text: 'o' },
+                      { id: 'ch_q19zg0c', text: 'a' },
+                      { id: 'ch_xdjmpat', text: 'd' },
+                      { id: 'ch_787xc3j', text: 'o' },
+                    ],
+                    tStart: 24.426033,
+                    emphasized: false,
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+      wordOverrides: {
+        w_7g3reqg: {
+          style: { fontSizeScale: 1.302 },
+          position: { x: 0.2550271986721696, y: 0.27656693611196226 },
+        },
+        w_xhr5i3x: {
+          style: { scaleY: 1.0971822305517744, fontSizeScale: 1.302 },
+          position: { x: 0.5, y: 0.28297527722275595 },
+          rotation: 0.24163158797132667,
+        },
+        w_i70pmqp: {
+          style: { fontSizeScale: 1.302 },
+          position: { x: 0.7559627372541418, y: 0.2797972201331438 },
+        },
+        w_e018161: {
+          style: { fontFamily: 'Antara Rough', fontSizeScale: 3.6456, textTransform: 'lowercase' },
+          entrance: 'glory-flash',
+          position: { x: 0.49999999999999994, y: 0.5889082800077563 },
+        },
+      },
+      sceneOverrides: {
+        stz_2ym3mza: {
+          style: { fontSize: 69 },
+        },
+      },
+    },
+  },
 ];
 
 function getTemplateById(id) {
