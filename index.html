@@ -32905,7 +32905,7 @@ function initEditor() {
         // "refresh" ao vivo da digitação).
         const _canvasEl = engine && engine.canvas;
         if (_canvasEl) {
-          _canvasEl.style.transition = 'opacity 0.4s ease';
+          _canvasEl.style.transition = 'opacity 0.8s ease';
           _canvasEl.style.opacity = '0';
         }
 
@@ -32932,7 +32932,7 @@ function initEditor() {
         if (_canvasEl) {
           // Espera o fade-out terminar antes de trocar o conteúdo, senão o
           // texto novo "pisca" no meio da transição de opacidade.
-          setTimeout(_aplicarAtualizacao, 200);
+          setTimeout(_aplicarAtualizacao, 800);
         } else {
           _aplicarAtualizacao();
         }
