@@ -22487,12 +22487,19 @@ function initEditor() {
    * extrapolar o canvas.
    */
   // ============ Parse e Render ============
-  function parseAndRender() {
+  function parseAndRender(opts = {}) {
     // Quando duplicamos/reordenamos, reescrevemos o textarea programaticamente;
     // esse guard consome UMA re-execução (a que o input debounced dispararia) e
     // se auto-desliga na mesma hora, pra nunca ficar preso e travar edições
     // futuras da letra.
     if (window._suppressReparse) { window._suppressReparse = false; return; }
+    // PRESERVA O SLIDE ATUAL: usado pela edição AO VIVO (digitando na caixa
+    // de letra) pra não "pular" pro slide 1 a cada re-parse. Botão "Gerar"/
+    // colar letra nova continuam indo pro slide 1 normalmente (comportamento
+    // padrão, sem passar essa opção).
+    const _preservarIdx = !!opts.preserveStanzaIndex;
+    const _idxParaPreservar = _preservarIdx && engine && typeof engine.currentStanzaIndex === 'number'
+      ? engine.currentStanzaIndex : 0;
     const text = $('#lyrics-input').value;
     if (!text.trim()) {
       // Letra vazia = projeto do ZERO: limpa TUDO (antes só limpava a lista e
@@ -22599,9 +22606,11 @@ function initEditor() {
     if (typeof updateTimerDisplay === 'function') { try { updateTimerDisplay(); } catch (e) {} }
 
     if (parsed.stanzas.length > 0) {
-      engine.currentStanzaIndex = 0;
+      const _idxAlvo = (_preservarIdx && _idxParaPreservar < parsed.stanzas.length)
+        ? _idxParaPreservar : 0;
+      engine.currentStanzaIndex = _idxAlvo;
       engine.playFull();
-      updateActiveStanzaInList(0);
+      updateActiveStanzaInList(_idxAlvo);
     }
 
     // Reset do histórico de undo/redo: nova letra = nova base
@@ -32885,31 +32894,22 @@ function initEditor() {
       if (_liveLyricsTimer) clearTimeout(_liveLyricsTimer);
       _liveLyricsTimer = setTimeout(() => {
         _liveLyricsTimer = null;
-        // Preserva qual estrofe está ativa pra não "pular" o preview.
-        const prevIdx = engine && typeof engine.currentStanzaIndex === 'number'
-          ? engine.currentStanzaIndex : 0;
 
         // FADE PREMIUM: em vez do texto trocar "seco" (innerHTML novo aparece
-        // instantâneo), o canvas dá um fade-out rápido, troca o conteúdo, e
-        // faz fade-in. Fica com o toque suave que tinha antes, sem depender
+        // instantâneo), o canvas dá um fade-out, troca o conteúdo, e faz
+        // fade-in. Fica com o toque suave que tinha antes, sem depender
         // da animação de entrada (que só toca por estrofe/palavra, não no
         // "refresh" ao vivo da digitação).
         const _canvasEl = engine && engine.canvas;
         if (_canvasEl) {
-          _canvasEl.style.transition = 'opacity 0.22s ease';
+          _canvasEl.style.transition = 'opacity 0.4s ease';
           _canvasEl.style.opacity = '0';
         }
 
         const _aplicarAtualizacao = () => {
-          parseAndRender();
-          if (engine && engine.parsed && engine.parsed.stanzas
-              && prevIdx < engine.parsed.stanzas.length) {
-            engine.currentStanzaIndex = prevIdx;
-            try { engine.playFull(); } catch (e) {}
-            if (typeof updateActiveStanzaInList === 'function') {
-              updateActiveStanzaInList(prevIdx);
-            }
-          }
+          // preserveStanzaIndex: mantém o slide que o usuário estava editando
+          // (ex: slide 4) em vez de voltar pro slide 1 a cada tecla.
+          parseAndRender({ preserveStanzaIndex: true });
           if (_canvasEl) {
             requestAnimationFrame(() => {
               requestAnimationFrame(() => {
@@ -32920,9 +32920,9 @@ function initEditor() {
         };
 
         if (_canvasEl) {
-          // Espera o fade-out (curto) terminar antes de trocar o conteúdo,
-          // senão o texto novo "pisca" no meio da transição de opacidade.
-          setTimeout(_aplicarAtualizacao, 120);
+          // Espera o fade-out terminar antes de trocar o conteúdo, senão o
+          // texto novo "pisca" no meio da transição de opacidade.
+          setTimeout(_aplicarAtualizacao, 200);
         } else {
           _aplicarAtualizacao();
         }
