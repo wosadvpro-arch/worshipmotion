@@ -34223,6 +34223,9 @@ function initEditor() {
         ov.style.color = hs.color || sch.color || undefined;
         ov.style.fontWeight = hs.fontWeight || sch.fontWeight || undefined;
         ov.style.fontStyle = hs.fontStyle || sch.fontStyle || undefined;
+        ov.style.glow = _primeiroDefinido(hs.glow, sch.glow);
+        ov.style.shadowBlur = _primeiroDefinido(hs.shadowBlur, sch.shadowBlur);
+        ov.style.outline = _primeiroDefinido(hs.outline, sch.outline);
       } else {
         if (sch.font) ov.style.fontFamily = sch.font;
         if (sch.scale && sch.scale !== 1) ov.style.fontSizeScale = sch.scale;
@@ -34231,6 +34234,9 @@ function initEditor() {
         if (sch.color) ov.style.color = sch.color;
         if (sch.fontWeight) ov.style.fontWeight = sch.fontWeight;
         if (sch.fontStyle) ov.style.fontStyle = sch.fontStyle;
+        if (sch.glow !== undefined) ov.style.glow = sch.glow;
+        if (sch.shadowBlur !== undefined) ov.style.shadowBlur = sch.shadowBlur;
+        if (sch.outline !== undefined) ov.style.outline = sch.outline;
       }
       Object.keys(ov.style).forEach(k => { if (ov.style[k] === undefined) delete ov.style[k]; });
       engine.wordOverrides[w.id] = ov;
@@ -34885,6 +34891,13 @@ function initEditor() {
               textTransform: ov.style?.textTransform || null,
               fontWeight: ov.style?.fontWeight || null,
               fontStyle: ov.style?.fontStyle || null,
+              // glow/outline podem ser 0 DE PROPÓSITO (desligados no
+              // template) — usa undefined (não 0/falsy) como "não veio
+              // definido", senão um 0 legítimo seria tratado igual a
+              // "não tem" e o efeito desligado do template se perderia.
+              glow: ov.style?.glow !== undefined ? ov.style.glow : undefined,
+              shadowBlur: ov.style?.shadowBlur !== undefined ? ov.style.shadowBlur : undefined,
+              outline: ov.style?.outline !== undefined ? ov.style.outline : undefined,
             });
           }
         })
@@ -34926,6 +34939,7 @@ function initEditor() {
       let tt = null;
       let peso = null;
       let itClass = null;
+      let glowVal, shadowBlurVal, outlineVal; // undefined = "linha não define"
       linha.items.forEach(it => {
         if (it.font) fontCount[it.font] = (fontCount[it.font] || 0) + 1;
         if (it.scale > maxScale) maxScale = it.scale;
@@ -34935,6 +34949,9 @@ function initEditor() {
         if (it.textTransform && !tt) tt = it.textTransform;
         if (it.fontWeight && !peso) peso = it.fontWeight;
         if (it.fontStyle && !itClass) itClass = it.fontStyle;
+        if (glowVal === undefined && it.glow !== undefined) glowVal = it.glow;
+        if (shadowBlurVal === undefined && it.shadowBlur !== undefined) shadowBlurVal = it.shadowBlur;
+        if (outlineVal === undefined && it.outline !== undefined) outlineVal = it.outline;
       });
       const avgScale = countScale > 0 ? sumScale / countScale : 1;
       let font = null, max = 0;
@@ -34961,6 +34978,9 @@ function initEditor() {
           });
           // Estilo do destaque = média/valores das palavras destacadas
           const destItems = idxDestacados.map(i => itemsOrdenados[i]);
+          const destGlow = destItems.find(it => it.glow !== undefined)?.glow;
+          const destShadowBlur = destItems.find(it => it.shadowBlur !== undefined)?.shadowBlur;
+          const destOutline = destItems.find(it => it.outline !== undefined)?.outline;
           highlight = {
             roles,
             style: {
@@ -34970,6 +34990,9 @@ function initEditor() {
               textTransform: destItems.find(it => it.textTransform)?.textTransform || null,
               fontWeight: destItems.find(it => it.fontWeight)?.fontWeight || null,
               fontStyle: destItems.find(it => it.fontStyle)?.fontStyle || null,
+              glow: destGlow,
+              shadowBlur: destShadowBlur,
+              outline: destOutline,
             },
           };
           // Base (não-destaque) recalculada só com as palavras NÃO destacadas,
@@ -34985,6 +35008,9 @@ function initEditor() {
               textTransform: tt,
               fontWeight: peso,
               fontStyle: itClass,
+              glow: glowVal,
+              shadowBlur: shadowBlurVal,
+              outline: outlineVal,
               highlight,
             };
           }
@@ -34999,6 +35025,9 @@ function initEditor() {
         textTransform: tt,
         fontWeight: peso,
         fontStyle: itClass,
+        glow: glowVal,
+        shadowBlur: shadowBlurVal,
+        outline: outlineVal,
         highlight,
       };
     });
@@ -35299,6 +35328,16 @@ function initEditor() {
    * Reorganiza stanza.lines e preenche engine.wordOverrides. Retorna true se
    * aplicou algo.
    */
+  /**
+   * Retorna o primeiro argumento que não é `undefined`. Usado pra glow/
+   * shadowBlur/outline, que podem ser 0 DE PROPÓSITO (efeito desligado) —
+   * um "||" trataria 0 como "não tem" e pularia pro próximo valor errado.
+   */
+  function _primeiroDefinido(...vals) {
+    for (const v of vals) { if (v !== undefined) return v; }
+    return undefined;
+  }
+
   function _aplicarLineSchemaNaEstrofe(stanza, lineSchema) {
     if (!stanza || !lineSchema || !lineSchema.length) return false;
 
@@ -35342,6 +35381,12 @@ function initEditor() {
           ov.style.color = hs.color || sch.color || undefined;
           ov.style.fontWeight = hs.fontWeight || sch.fontWeight || undefined;
           ov.style.fontStyle = hs.fontStyle || sch.fontStyle || undefined;
+          // glow/outline podem ser 0 de propósito (efeito desligado) — não
+          // dá pra usar "||" aqui (0 é falsy, cairia pro próximo valor
+          // errado). _primeiroDefinido pega o primeiro que não é undefined.
+          ov.style.glow = _primeiroDefinido(hs.glow, sch.glow);
+          ov.style.shadowBlur = _primeiroDefinido(hs.shadowBlur, sch.shadowBlur);
+          ov.style.outline = _primeiroDefinido(hs.outline, sch.outline);
         } else {
           if (sch.font) ov.style.fontFamily = sch.font;
           // SEMPRE aplica o scale (mesmo se não for força), pra preservar
@@ -35365,6 +35410,11 @@ function initEditor() {
           // linha específica perdiam esse estilo ao aplicar.
           if (sch.fontWeight) ov.style.fontWeight = sch.fontWeight;
           if (sch.fontStyle) ov.style.fontStyle = sch.fontStyle;
+          // Glow/sombra/contorno da linha (ex: efeitos desligados no
+          // template — glow:0 — precisam chegar mesmo sendo "zero").
+          if (sch.glow !== undefined) ov.style.glow = sch.glow;
+          if (sch.shadowBlur !== undefined) ov.style.shadowBlur = sch.shadowBlur;
+          if (sch.outline !== undefined) ov.style.outline = sch.outline;
         }
         // Remove chaves undefined (evita "fontFamily: undefined" no override)
         Object.keys(ov.style).forEach(k => { if (ov.style[k] === undefined) delete ov.style[k]; });
