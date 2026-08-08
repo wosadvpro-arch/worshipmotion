@@ -17771,6 +17771,23 @@ const CanvasRenderer = {
           delayMs = (delayIdx * stagger) + extraDelayMs;
         }
 
+        // === ANIMAÇÃO ISOLADA POR PALAVRA (export) ===
+        // CORREÇÃO: uma palavra com override apontando pra uma animação
+        // ISOLADA (motor próprio, ex: "Máquina de Escrever") não pode
+        // passar pelo interpolateKeyframes — os keyframes desses presets
+        // são só um placeholder neutro (opacity 0→1), então a física real
+        // (letras entrando com mola/colisão) nunca era desenhada no
+        // export: a palavra saía com um fade genérico ("animação nativa"),
+        // mesmo estando perfeita no preview (que já trata isso em
+        // _playIsolatedPerWord). Replica o mesmo aqui, com o tempo LOCAL
+        // da palavra (elapsedMs - delayMs).
+        if (entrance && entrance.isolatedEngine === 'maquina-escrever' && window.WM_MAQUINA_SIM) {
+          if (elapsedMs >= delayMs) {
+            this._drawWordIsolatedMaquina(ctx, word, entrance, slide.style, elapsedMs - delayMs);
+          }
+          return;
+        }
+
         // Calcula progresso de entrada
         const entDur = entrance ? entrance.duration * 1000 * durationScale : 0;
         let entProgress = 0;
@@ -18876,6 +18893,55 @@ const CanvasRenderer = {
    * Não é bit-a-bit idêntico ao preview (simulação é sensível ao passo),
    * mas é estável e visualmente fiel.
    */
+  /**
+   * Versão POR PALAVRA de _drawSlideIsolatedMaquina — usada quando a
+   * animação isolada "Máquina de Escrever" foi aplicada a uma palavra
+   * individual (override), não à estrofe inteira. Mesma física
+   * (WM_MAQUINA_SIM.simulate), mas centralizada em word.cx/word.lineCy
+   * em vez de centralizada no canvas inteiro.
+   * elapsedMs aqui já deve vir RELATIVO ao início da animação da palavra
+   * (isto é, elapsedMsGlobal - delayMs) — igual ao _playIsolatedPerWord
+   * do preview, que reinicia o RAF em t=0 pra cada palavra.
+   */
+  _drawWordIsolatedMaquina(ctx, word, entrance, style, elapsedMs) {
+    const SIM = window.WM_MAQUINA_SIM;
+    if (!SIM || elapsedMs < 0) return;
+    const cfg = entrance.physicsCfg || {};
+    const text = this._applyTransform(
+      word.text, (style && style.textTransform) || 'none');
+    if (!text || !text.trim()) return;
+
+    if (word.font) {
+      ctx.font = `${word.font.weight} ${word.font.size}px "${word.font.family}", sans-serif`;
+    }
+
+    const chars = Array.from(text);
+    const charW = chars.map(ch => ctx.measureText(ch).width);
+    const totalW = charW.reduce((a, b) => a + b, 0);
+    const states = SIM.simulate(chars.length, elapsedMs, cfg);
+
+    ctx.save();
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = (style && style.color) || '#ffffff';
+
+    // Centralizado em cx (igual ao _drawWord normal), não no canvas inteiro.
+    let penX = word.cx - totalW / 2;
+    const cy = word.lineCy;
+    for (let i = 0; i < chars.length; i++) {
+      const ch = chars[i];
+      if (ch !== ' ') {
+        const stt = states[i] || { x: 0, opacity: 1 };
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, Math.min(1, stt.opacity));
+        ctx.fillText(ch, penX + (stt.x || 0), cy);
+        ctx.restore();
+      }
+      penX += charW[i];
+    }
+    ctx.restore();
+  },
+
   _drawSlideIsolatedMaquina(ctx, slide, layout, anim, elapsedMs, W, H) {
     const SIM = window.WM_MAQUINA_SIM;
     if (!SIM) return;
@@ -38518,6 +38584,14 @@ window.__wmMostrarDiag = function (forcar) {
 };
 
 window.WM_EXPORT_STORE = (function () {
+  // CORREÇÃO: DB/VER/STORE eram usados abaixo sem nunca terem sido
+  // definidos, o que gerava "ReferenceError: DB is not defined" logo no
+  // primeiro uso (indexedDB.open(DB, VER)) — e como open() cacheia a
+  // Promise (dbP) mesmo rejeitada, o recurso de backup local do export
+  // ficava quebrado pro resto da sessão inteira a partir daí.
+  const DB = 'worshipmotion_export_recovery';
+  const VER = 1;
+  const STORE = 'exports';
   let dbP = null;
   function open() {
     if (dbP) return dbP;
