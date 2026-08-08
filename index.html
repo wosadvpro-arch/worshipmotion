@@ -19709,6 +19709,24 @@ class VideoExporter {
         });
       });
 
+      // ANIMAÇÃO POR PALAVRA tem prioridade sobre o target global (mesma
+      // lógica de playEntrance() no preview): se QUALQUER palavra da
+      // estrofe tem animação própria (wo.entrance/wo.exit), força
+      // target='word' pro export respeitar os overrides. Sem isto, quando
+      // o target global/da estrofe era 'stanza' (comum quando a animação é
+      // aplicada "no slide inteiro" antes de customizar palavras), a
+      // animação individual das palavras era 100% IGNORADA no export — a
+      // palavra saía com a animação padrão da estrofe, mesmo estando
+      // perfeita no preview.
+      let _target = sceneConfig?.target || this.engine.animConfig.target || 'word';
+      if (slideWordOverrides) {
+        const _temWordAnim = Object.keys(slideWordOverrides).some(wid => {
+          const wo = slideWordOverrides[wid];
+          return wo && (wo.entrance || wo.exit);
+        });
+        if (_temWordAnim) _target = 'word';
+      }
+
       slides.push({
         stanzaIdx: idx,
         idxOriginal: _idxOriginal,
@@ -19735,7 +19753,7 @@ class VideoExporter {
           exitId: sceneConfig?.exit || this.engine.animConfig.exit,
           stanzaDuration: sceneConfig?.stanzaDuration || this.options.stanzaDuration,
           stagger: sceneConfig?.stagger ?? (this.engine.animConfig.stagger || 0.06),
-          target: sceneConfig?.target || this.engine.animConfig.target || 'word',
+          target: _target,
         },
       });
     });
