@@ -17947,7 +17947,32 @@ const CanvasRenderer = {
     // Tempo em que a ENTRADA de todas as palavras termina.
     // Considera o maior delay (stagger acumulado) + duração da entrada +
     // transição de cor (palavras emphasized = 600ms). Margem de segurança.
-    const entDur = entrance ? entrance.duration * 1000 : 0;
+    //
+    // CORREÇÃO: antes só olhava a duração da animação PADRÃO da estrofe
+    // (`entrance.duration`). Quando uma palavra tem uma animação PRÓPRIA
+    // (override) mais longa que a padrão — ex: estrofe usa "Fade Suave"
+    // (1.1s) mas uma palavra usa "Radiância Suave" (1.4s) — o export achava
+    // que o slide já tinha ficado estático (parava de redesenhar/gravar
+    // frames novos) ANTES da animação da palavra realmente terminar, e ela
+    // saía cortada ou nem chegava a aparecer no vídeo. Agora usamos a MAIOR
+    // duração entre a padrão e todas as animações individuais por palavra.
+    let entDur = entrance ? entrance.duration * 1000 : 0;
+    if (slide.wordOverrides) {
+      Object.keys(slide.wordOverrides).forEach(wid => {
+        const wo = slide.wordOverrides[wid];
+        const woEnt = wo && wo.entrance
+          ? window.WM_ANIM_V2?.byId(wo.entrance)
+          : null;
+        if (woEnt) {
+          // Isoladas (motor próprio) já são cobertas pelo "return false"
+          // acima quando são a padrão da estrofe; por segurança, se uma
+          // palavra usa uma isolada como override, também nunca é estática.
+          if (woEnt.isolatedEngine || woEnt.charStagger) { entDur = Infinity; return; }
+          const woDur = woEnt.duration * 1000;
+          if (woDur > entDur) entDur = woDur;
+        }
+      });
+    }
     // Conta palavras pra estimar o maior stagger
     let numWords = 0;
     if (slide.stanza && slide.stanza.lines) {
