@@ -38827,6 +38827,447 @@ window.__wmVerificarExportsPendentes = async function () {
 };
 </script>
 
+
+<!-- ============================================================
+     WM_ANIM_ENGINE (v2) — Etapa 1+2 do novo motor de animações.
+     Módulo 100% ADITIVO: não é chamado por nenhuma UI/preview/export
+     existente ainda. Roda isolado, com 1 recipe de prova de conceito
+     ('cinematic-reveal-v2') validada por teste de paridade contra o
+     motor antigo. Próxima etapa: ligar num preset real na UI, atrás
+     de flag, antes de migrar o resto da biblioteca.
+     ============================================================ -->
+<script>
+/**
+ * WM_ANIM_ENGINE — Motor de Animações Nativo (v2), Etapa 1 + 2 da proposta.
+ *
+ * IMPORTANTE: este módulo é 100% ADITIVO. Não modifica, substitui nem
+ * depende de ANIMATIONS_V2 / interpolateKeyframes / WMAnimate /
+ * CanvasRenderer já existentes. Roda em paralelo, atrás do id
+ * 'cinematic-reveal-v2' (prova de conceito), enquanto o sistema atual
+ * continua sendo o que está em produção.
+ *
+ * Convenção de valores (igual ao sistema atual, pra manter familiaridade):
+ *   opacity: 0..1
+ *   scale / scaleX / scaleY: multiplicador (1 = 100%)
+ *   translateX / translateY: pixels
+ *   rotate / skewX / skewY: graus
+ *   blur: pixels
+ *   glowIntensity: 0..N (px de drop-shadow)
+ *   chromatic: 0..N (px de deslocamento RGB)
+ *   letterSpacing: pixels
+ *
+ * Contrato central (item 8 da proposta): UMA função pura calcula o
+ * estado em qualquer instante t. Preview e export chamam a MESMA função —
+ * a única diferença é o adaptador que aplica o resultado (DOM vs Canvas).
+ */
+window.WM_ANIM_ENGINE = (function () {
+  'use strict';
+
+  // ---------------------------------------------------------------------
+  // Easings — independentes do sistema atual, mas com as mesmas curvas
+  // usadas hoje (cubic-bezier aproximado por easeOut/easeInOut padrão).
+  // ---------------------------------------------------------------------
+  // easeOutQuint / easeInCubic / easeInOutQuad têm exatamente a mesma
+  // fórmula usada hoje em applyEasing() (index.html ~linha 10954), pra
+  // permitir migração 1:1 dos presets existentes sem alterar a curva.
+  const EASINGS = {
+    linear: t => t,
+    easeOut: t => 1 - Math.pow(1 - t, 2),
+    easeOutCubic: t => 1 - Math.pow(1 - t, 3),
+    easeOutQuint: t => 1 - Math.pow(1 - t, 5),
+    easeOutExpo: t => (t === 1 ? 1 : 1 - Math.pow(2, -10 * t)),
+    easeInCubic: t => t * t * t,
+    easeInOut: t => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2),
+    easeInOutQuad: t => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2),
+  };
+
+  const DEFAULT_STATE = Object.freeze({
+    opacity: 1, scale: 1, scaleX: 1, scaleY: 1,
+    translateX: 0, translateY: 0, rotate: 0, blur: 0,
+    skewX: 0, skewY: 0, letterSpacing: 0,
+    glowIntensity: 0, chromatic: 0,
+  });
+
+  function lerp(a, b, t) { return a + (b - a) * t; }
+
+  function stripAt(kf) {
+    const out = {};
+    for (const k in kf) { if (k !== 'at') out[k] = kf[k]; }
+    return out;
+  }
+
+  /**
+   * Amostra uma lista de keyframes num progresso 0..1.
+   * Mesma lógica conceitual do interpolateKeyframes() atual, reimplementada
+   * aqui de forma independente (sem chamar o código antigo) — assim este
+   * módulo pode ser testado e evoluído isoladamente.
+   */
+  function sampleKeyframes(keyframes, progress, easingName) {
+    if (!keyframes || !keyframes.length) return {};
+    const ease = EASINGS[easingName] || EASINGS.easeOut;
+    const first = keyframes[0], last = keyframes[keyframes.length - 1];
+    if (progress <= first.at) return stripAt(first);
+    if (progress >= last.at) return stripAt(last);
+
+    let kf0 = first, kf1 = last;
+    for (let i = 0; i < keyframes.length - 1; i++) {
+      if (progress >= keyframes[i].at && progress <= keyframes[i + 1].at) {
+        kf0 = keyframes[i]; kf1 = keyframes[i + 1];
+        break;
+      }
+    }
+    const span = kf1.at - kf0.at;
+    const localT = span > 0 ? (progress - kf0.at) / span : 1;
+    const easedT = ease(Math.max(0, Math.min(1, localT)));
+
+    const keys = new Set([...Object.keys(kf0), ...Object.keys(kf1)]);
+    keys.delete('at');
+    const out = {};
+    keys.forEach(k => {
+      const v0 = kf0[k] != null ? kf0[k] : DEFAULT_STATE[k];
+      const v1 = kf1[k] != null ? kf1[k] : DEFAULT_STATE[k];
+      out[k] = lerp(v0, v1, easedT);
+    });
+    return out;
+  }
+
+  // ---------------------------------------------------------------------
+  // Registro de recipes / motores físicos / efeitos plugáveis
+  // ---------------------------------------------------------------------
+  const RECIPES = {};
+  const PHYSICS_ENGINES = {};
+  const EFFECTS = {};
+
+  function registerRecipe(recipe) { RECIPES[recipe.id] = recipe; return recipe; }
+  function registerPhysicsEngine(id, sampleFn) { PHYSICS_ENGINES[id] = sampleFn; }
+  function registerEffect(id, applyFn) { EFFECTS[id] = applyFn; }
+
+  /**
+   * sampleAnimation — a função central (item C/E da proposta).
+   *
+   * @param {object} recipe  { entrance?, loop?, exit?, effects?, effectsCfg? }
+   * @param {object} timing  {
+   *   elapsedMs,            tempo global decorrido
+   *   entranceDelayMs,      quando a entrada começa (stagger já resolvido)
+   *   entranceDurEndMs,     quando a entrada termina (delay + duration)
+   *   exitStartMs,          quando a saída começa (ou null)
+   * }
+   * @returns RenderState — objeto plano, pronto pros adaptadores.
+   */
+  function sampleAnimation(recipe, timing) {
+    let state = { ...DEFAULT_STATE };
+    const elapsedMs = timing.elapsedMs;
+
+    // ---- ENTRADA ----
+    if (recipe.entrance) {
+      const spec = recipe.entrance;
+      const delay = timing.entranceDelayMs || 0;
+
+      if (elapsedMs < delay) {
+        // ainda não começou: fica no estado inicial da entrada (kf 0)
+        if (spec.engine === 'keyframes' && spec.keyframes && spec.keyframes.length) {
+          state = { ...state, ...stripAt(spec.keyframes[0]) };
+        } else if (spec.engine === 'physics') {
+          state.opacity = 0;
+        }
+      } else if (spec.engine === 'physics') {
+        const fn = PHYSICS_ENGINES[spec.physicsId];
+        if (fn) {
+          const localT = elapsedMs - delay;
+          state = { ...state, ...fn(localT, spec.physicsCfg || {}) };
+        }
+      } else {
+        const durMs = spec.duration * 1000;
+        const localT = elapsedMs - delay;
+        const progress = durMs > 0 ? Math.max(0, Math.min(1, localT / durMs)) : 1;
+        state = { ...state, ...sampleKeyframes(spec.keyframes, progress, spec.easing) };
+      }
+    }
+
+    // ---- LOOP (aditivo, só depois que a entrada terminou) ----
+    if (recipe.loop && timing.entranceDurEndMs != null && elapsedMs >= timing.entranceDurEndMs) {
+      const spec = recipe.loop;
+      const durMs = spec.duration * 1000;
+      if (durMs > 0) {
+        const loopT = (elapsedMs - timing.entranceDurEndMs) % durMs;
+        const progress = loopT / durMs;
+        const loopState = sampleKeyframes(spec.keyframes, progress, spec.easing);
+        Object.keys(loopState).forEach(k => {
+          if (k === 'opacity') return; // loop não deve reabrir/fechar opacidade
+          if (typeof loopState[k] === 'number') {
+            const base = DEFAULT_STATE[k] || 0;
+            state[k] = (state[k] || 0) + (loopState[k] - base);
+          }
+        });
+      }
+    }
+
+    // ---- SAÍDA (substitui, tem prioridade sobre entrada/loop) ----
+    if (recipe.exit && timing.exitStartMs != null && elapsedMs >= timing.exitStartMs) {
+      const spec = recipe.exit;
+      const durMs = spec.duration * 1000;
+      const localT = elapsedMs - timing.exitStartMs;
+      const progress = durMs > 0 ? Math.max(0, Math.min(1, localT / durMs)) : 1;
+      state = { ...state, ...sampleKeyframes(spec.keyframes, progress, spec.easing) };
+    }
+
+    // ---- EFEITOS (camada plugável, aplicada por último, em ordem) ----
+    if (recipe.effects && recipe.effects.length) {
+      recipe.effects.forEach(effectId => {
+        const fx = EFFECTS[effectId];
+        if (fx) state = fx(state, elapsedMs, (recipe.effectsCfg && recipe.effectsCfg[effectId]) || {});
+      });
+    }
+
+    return state;
+  }
+
+  // ---------------------------------------------------------------------
+  // Adaptadores — a ÚNICA parte que sabe se está desenhando em DOM ou
+  // Canvas. Recebem o MESMO RenderState calculado por sampleAnimation().
+  // ---------------------------------------------------------------------
+  function applyStateToDOM(el, state) {
+    const t = [];
+    if (state.translateX || state.translateY) {
+      t.push(`translate(${state.translateX}px, ${state.translateY}px)`);
+    }
+    if (state.scaleX !== 1 || state.scaleY !== 1) {
+      t.push(`scale(${state.scaleX}, ${state.scaleY})`);
+    } else if (state.scale !== 1) {
+      t.push(`scale(${state.scale})`);
+    }
+    if (state.rotate) t.push(`rotate(${state.rotate}deg)`);
+    if (state.skewX) t.push(`skewX(${state.skewX}deg)`);
+    if (state.skewY) t.push(`skewY(${state.skewY}deg)`);
+    el.style.transform = t.join(' ');
+    el.style.opacity = String(Math.max(0, Math.min(1, state.opacity)));
+
+    const f = [];
+    if (state.blur > 0.001) f.push(`blur(${state.blur}px)`);
+    if (state.glowIntensity > 0.001) f.push(`drop-shadow(0 0 ${state.glowIntensity}px currentColor)`);
+    el.style.filter = f.join(' ');
+    if (state.letterSpacing) el.style.letterSpacing = `${state.letterSpacing}px`;
+  }
+
+  /**
+   * Aplica o estado num contexto de canvas 2D. cx/cy = ponto de ancoragem
+   * (ex: centro da palavra). Retorna uma função restore() — chamar depois
+   * de desenhar o conteúdo (fillText etc).
+   */
+  function applyStateToCanvas(ctx, state, cx, cy) {
+    ctx.save();
+    ctx.globalAlpha *= Math.max(0, Math.min(1, state.opacity));
+    ctx.translate(cx + (state.translateX || 0), cy + (state.translateY || 0));
+    if (state.rotate) ctx.rotate((state.rotate * Math.PI) / 180);
+    if (state.skewX || state.skewY) {
+      ctx.transform(1, Math.tan((state.skewY || 0) * Math.PI / 180),
+        Math.tan((state.skewX || 0) * Math.PI / 180), 1, 0, 0);
+    }
+    const sx = state.scaleX !== 1 ? state.scaleX : state.scale;
+    const sy = state.scaleY !== 1 ? state.scaleY : state.scale;
+    if (sx !== 1 || sy !== 1) ctx.scale(sx, sy);
+    if (state.blur > 0.001) {
+      try { ctx.filter = `blur(${state.blur}px)`; } catch (e) { /* navegador sem suporte: ignora */ }
+    }
+    ctx.translate(-cx, -cy);
+    return function restore() { ctx.restore(); };
+  }
+
+  // ---------------------------------------------------------------------
+  // Prova de conceito (Etapa 2): migração fiel de 1 preset existente.
+  // Valores copiados exatamente de ANIMATIONS_V2['cinematic-reveal']
+  // (index.html, ~linha 9247) pra permitir comparação direta entre o
+  // preview antigo e o novo motor.
+  // ---------------------------------------------------------------------
+  registerRecipe({
+    id: 'cinematic-reveal-v2',
+    entrance: {
+      engine: 'keyframes',
+      duration: 1.4,
+      easing: 'easeOutQuint', // idêntico ao cubic-bezier(0.22,1,0.36,1) original
+      keyframes: [
+        { at: 0, opacity: 0, translateY: 60, scale: 0.92, blur: 10 },
+        { at: 1, opacity: 1, translateY: 0, scale: 1, blur: 0 },
+      ],
+    },
+  });
+
+  return {
+    // registro
+    registerRecipe, RECIPES,
+    registerPhysicsEngine, PHYSICS_ENGINES,
+    registerEffect, EFFECTS,
+    // núcleo
+    sampleAnimation, sampleKeyframes,
+    // adaptadores
+    applyStateToDOM, applyStateToCanvas,
+    // utilitário
+    EASINGS, DEFAULT_STATE,
+  };
+})();
+</script>
+
+<!-- ============================================================
+     PAINEL DE TESTE — WM_ANIM_ENGINE v2 (Etapa 3 da proposta)
+     Isolado do editor: não lê nem escreve em nenhum estado real do
+     projeto (slides, wordOverrides, etc). Só existe pra comparação
+     visual lado a lado: motor ANTIGO (CSS real) vs. motor NOVO (DOM
+     via sampleAnimation) vs. motor NOVO (Canvas via sampleAnimation).
+     Pode ser removido a qualquer momento sem efeito colateral.
+     ============================================================ -->
+<style>
+  #wmTestV2Toggle {
+    position: fixed; right: 16px; bottom: 16px; z-index: 999999;
+    background: #6d28d9; color: #fff; border: none; border-radius: 999px;
+    padding: 10px 16px; font: 600 13px/1 system-ui, sans-serif; cursor: pointer;
+    box-shadow: 0 4px 14px rgba(0,0,0,.35);
+  }
+  #wmTestV2Panel {
+    position: fixed; right: 16px; bottom: 64px; z-index: 999999;
+    width: 620px; max-width: calc(100vw - 32px);
+    background: #111318; color: #e8e8f0; border: 1px solid #333;
+    border-radius: 12px; padding: 16px; font: 13px/1.4 system-ui, sans-serif;
+    box-shadow: 0 12px 40px rgba(0,0,0,.5); display: none;
+  }
+  #wmTestV2Panel.open { display: block; }
+  #wmTestV2Panel h3 { margin: 0 0 4px; font-size: 14px; }
+  #wmTestV2Panel p.wmSub { margin: 0 0 12px; opacity: .65; font-size: 12px; }
+  .wmTestV2Row { display: flex; gap: 10px; margin-bottom: 10px; }
+  .wmTestV2Col {
+    flex: 1; background: #0a0b0e; border: 1px solid #262833; border-radius: 8px;
+    padding: 8px; min-height: 110px; position: relative; overflow: hidden;
+  }
+  .wmTestV2Col .wmLabel {
+    position: absolute; top: 6px; left: 8px; font-size: 10px; letter-spacing: .04em;
+    text-transform: uppercase; opacity: .5;
+  }
+  .wmTestV2Col .wmStage {
+    height: 100%; display: flex; align-items: center; justify-content: center;
+  }
+  .wm-test-old {
+    font: 700 26px/1 system-ui, sans-serif; color: #fff; opacity: 0;
+    will-change: transform, opacity, filter;
+  }
+  @keyframes wm_test_old_cinematic {
+    0%   { opacity: 0; transform: translateY(60px) scale(0.92); filter: blur(10px); }
+    100% { opacity: 1; transform: translateY(0)     scale(1);    filter: blur(0px); }
+  }
+  .wm-test-old.playing { animation: wm_test_old_cinematic 1.4s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+  .wm-test-newdom {
+    font: 700 26px/1 system-ui, sans-serif; color: #fff;
+    will-change: transform, opacity, filter;
+  }
+  #wmTestV2Canvas { width: 100%; height: 100%; display: block; }
+  #wmTestV2Play {
+    background: #22c55e; color: #05230f; border: none; border-radius: 6px;
+    padding: 8px 14px; font: 700 13px/1 system-ui, sans-serif; cursor: pointer;
+  }
+  #wmTestV2Readout {
+    margin-top: 10px; font: 11px/1.5 ui-monospace, monospace; white-space: pre;
+    background: #0a0b0e; border: 1px solid #262833; border-radius: 8px; padding: 8px;
+    max-height: 90px; overflow: auto; color: #9ae6b4;
+  }
+</style>
+
+<button id="wmTestV2Toggle" type="button">🧪 Teste Motor v2</button>
+<div id="wmTestV2Panel">
+  <h3>Cinematic Reveal — motor antigo vs. motor novo</h3>
+  <p class="wmSub">Painel de validação isolado (Etapa 3). Não afeta seu projeto — só compara os 3 caminhos de renderização.</p>
+  <div class="wmTestV2Row">
+    <div class="wmTestV2Col">
+      <span class="wmLabel">Antigo · CSS real (preview hoje)</span>
+      <div class="wmStage"><div class="wm-test-old" id="wmTestV2OldEl">GRANDE</div></div>
+    </div>
+    <div class="wmTestV2Col">
+      <span class="wmLabel">Novo · DOM (sampleAnimation)</span>
+      <div class="wmStage"><div class="wm-test-newdom" id="wmTestV2NewDomEl">GRANDE</div></div>
+    </div>
+    <div class="wmTestV2Col">
+      <span class="wmLabel">Novo · Canvas (sampleAnimation)</span>
+      <canvas id="wmTestV2Canvas" width="260" height="110"></canvas>
+    </div>
+  </div>
+  <button id="wmTestV2Play" type="button">▶ Rodar os 3 juntos</button>
+  <div id="wmTestV2Readout">clique em "Rodar" pra ver os valores numéricos frame a frame</div>
+</div>
+
+<script>
+(function () {
+  const toggleBtn = document.getElementById('wmTestV2Toggle');
+  const panel = document.getElementById('wmTestV2Panel');
+  const playBtn = document.getElementById('wmTestV2Play');
+  const oldEl = document.getElementById('wmTestV2OldEl');
+  const newDomEl = document.getElementById('wmTestV2NewDomEl');
+  const canvas = document.getElementById('wmTestV2Canvas');
+  const readout = document.getElementById('wmTestV2Readout');
+  const ctx = canvas.getContext('2d');
+
+  toggleBtn.addEventListener('click', () => panel.classList.toggle('open'));
+
+  const RECIPE = window.WM_ANIM_ENGINE.RECIPES['cinematic-reveal-v2'];
+  const DUR_MS = 1400;
+  let rafId = null;
+
+  function drawCanvasFrame(elapsedMs) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.filter = 'none';
+    const state = window.WM_ANIM_ENGINE.sampleAnimation(RECIPE, {
+      elapsedMs, entranceDelayMs: 0, entranceDurEndMs: DUR_MS, exitStartMs: null,
+    });
+    const cx = canvas.width / 2, cy = canvas.height / 2;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = '700 26px system-ui, sans-serif';
+    ctx.fillStyle = '#ffffff';
+    const restore = window.WM_ANIM_ENGINE.applyStateToCanvas(ctx, state, cx, cy);
+    ctx.fillText('GRANDE', cx, cy);
+    restore();
+    return state;
+  }
+
+  function play() {
+    if (rafId) cancelAnimationFrame(rafId);
+
+    // Motor ANTIGO: reinicia a animação CSS real
+    oldEl.classList.remove('playing');
+    void oldEl.offsetWidth; // força reflow pra reiniciar a keyframe
+    oldEl.classList.add('playing');
+
+    const t0 = performance.now();
+
+    function tick(now) {
+      const elapsedMs = now - t0;
+
+      // Motor NOVO → DOM
+      const domState = window.WM_ANIM_ENGINE.sampleAnimation(RECIPE, {
+        elapsedMs, entranceDelayMs: 0, entranceDurEndMs: DUR_MS, exitStartMs: null,
+      });
+      window.WM_ANIM_ENGINE.applyStateToDOM(newDomEl, domState);
+
+      // Motor NOVO → Canvas
+      const canvasState = drawCanvasFrame(elapsedMs);
+
+      readout.textContent =
+        `t=${elapsedMs.toFixed(0)}ms\n` +
+        `DOM    → opacity=${domState.opacity.toFixed(3)} translateY=${domState.translateY.toFixed(2)} scale=${domState.scale.toFixed(3)} blur=${domState.blur.toFixed(2)}\n` +
+        `Canvas → opacity=${canvasState.opacity.toFixed(3)} translateY=${canvasState.translateY.toFixed(2)} scale=${canvasState.scale.toFixed(3)} blur=${canvasState.blur.toFixed(2)}`;
+
+      if (elapsedMs < DUR_MS + 300) {
+        rafId = requestAnimationFrame(tick);
+      }
+    }
+    rafId = requestAnimationFrame(tick);
+  }
+
+  playBtn.addEventListener('click', play);
+  // primeiro frame renderizado parado, só pra não começar em branco
+  drawCanvasFrame(0);
+  window.WM_ANIM_ENGINE.applyStateToDOM(newDomEl, window.WM_ANIM_ENGINE.sampleAnimation(RECIPE, {
+    elapsedMs: 0, entranceDelayMs: 0, entranceDurEndMs: DUR_MS, exitStartMs: null,
+  }));
+})();
+</script>
+
 </body>
 
 </html>
