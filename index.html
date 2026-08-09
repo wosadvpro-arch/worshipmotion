@@ -39202,19 +39202,41 @@ window.WM_ANIM_ENGINE = (function () {
   const readout = document.getElementById('wmTestV2Readout');
   const ctx = canvas.getContext('2d');
 
-  toggleBtn.addEventListener('click', () => panel.classList.toggle('open'));
+  toggleBtn.addEventListener('click', () => {
+    panel.classList.toggle('open');
+    if (panel.classList.contains('open')) resizeCanvas();
+  });
 
   const RECIPE = window.WM_ANIM_ENGINE.RECIPES['cinematic-reveal-v2'];
   const DUR_MS = 1400;
   let rafId = null;
+  let cssW = 260, cssH = 110; // tamanho em pixels CSS (não em pixels do buffer)
+
+  // CORREÇÃO: o <canvas> tinha width/height fixos no HTML (260x110), mas o
+  // CSS esticava ele pra 100% da coluna — como os dois tamanhos não batem,
+  // o navegador reamostra a imagem já desenhada, encolhendo a fonte. Aqui
+  // ajustamos a resolução real do buffer pro tamanho renderizado (incluindo
+  // devicePixelRatio, pra não ficar borrado em telas retina), e usamos
+  // ctx.setTransform pra poder continuar desenhando em coordenadas "CSS px".
+  function resizeCanvas() {
+    const rect = canvas.getBoundingClientRect();
+    if (rect.width < 1 || rect.height < 1) return; // painel ainda fechado/oculto
+    const dpr = window.devicePixelRatio || 1;
+    cssW = rect.width;
+    cssH = rect.height;
+    canvas.width = Math.round(cssW * dpr);
+    canvas.height = Math.round(cssH * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  window.addEventListener('resize', () => { if (panel.classList.contains('open')) resizeCanvas(); });
 
   function drawCanvasFrame(elapsedMs) {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.clearRect(0, 0, cssW, cssH);
     ctx.filter = 'none';
     const state = window.WM_ANIM_ENGINE.sampleAnimation(RECIPE, {
       elapsedMs, entranceDelayMs: 0, entranceDurEndMs: DUR_MS, exitStartMs: null,
     });
-    const cx = canvas.width / 2, cy = canvas.height / 2;
+    const cx = cssW / 2, cy = cssH / 2;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.font = '700 26px system-ui, sans-serif';
@@ -39227,6 +39249,7 @@ window.WM_ANIM_ENGINE = (function () {
 
   function play() {
     if (rafId) cancelAnimationFrame(rafId);
+    resizeCanvas();
 
     // Motor ANTIGO: reinicia a animação CSS real
     oldEl.classList.remove('playing');
