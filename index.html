@@ -38887,6 +38887,33 @@ window.__wmVerificarExportsPendentes = async function () {
 // no index.html — lá `window` já existe de verdade).
 if (typeof window === 'undefined') { global.window = {}; }
 
+/**
+ * WM_ANIM_ENGINE — Motor de Animações Nativo (v2), Etapa 1 + 2 da proposta.
+ *
+ * IMPORTANTE: este módulo é 100% ADITIVO. Não modifica, substitui nem
+ * depende de ANIMATIONS_V2 / interpolateKeyframes / WMAnimate /
+ * CanvasRenderer já existentes. Roda em paralelo, atrás do id
+ * 'cinematic-reveal-v2' (prova de conceito), enquanto o sistema atual
+ * continua sendo o que está em produção.
+ *
+ * Convenção de valores (igual ao sistema atual, pra manter familiaridade):
+ *   opacity: 0..1
+ *   scale / scaleX / scaleY: multiplicador (1 = 100%)
+ *   translateX / translateY: pixels
+ *   rotate / skewX / skewY: graus
+ *   blur: pixels
+ *   glowIntensity: 0..N (px de drop-shadow)
+ *   chromatic: 0..N (px de deslocamento RGB)
+ *   letterSpacing: pixels
+ *
+ * Contrato central (item 8 da proposta): UMA função pura calcula o
+ * estado em qualquer instante t. Preview e export chamam a MESMA função —
+ * a única diferença é o adaptador que aplica o resultado (DOM vs Canvas).
+ */
+// Shim mínimo pra rodar em Node.js durante o teste de paridade (não entra
+// no index.html — lá `window` já existe de verdade).
+if (typeof window === 'undefined') { global.window = {}; }
+
 window.WM_ANIM_ENGINE = (function () {
   'use strict';
 
@@ -39107,6 +39134,21 @@ window.WM_ANIM_ENGINE = (function () {
     if (state.blur > 0.001) {
       try { ctx.filter = `blur(${state.blur}px)`; } catch (e) { /* navegador sem suporte: ignora */ }
     }
+    // CORREÇÃO: glowIntensity nunca era aplicado no canvas — só existia no
+    // adaptador DOM (via filter: drop-shadow). Usa shadowColor/shadowBlur,
+    // que é o equivalente nativo do canvas 2D pra glow em torno do texto.
+    // shadowColor/shadowBlur fazem parte do estado salvo por ctx.save(),
+    // então são desfeitos automaticamente no restore() — sem vazar pro
+    // próximo elemento desenhado.
+    if (state.glowIntensity > 0.001) {
+      ctx.shadowColor = ctx.fillStyle;
+      ctx.shadowBlur = state.glowIntensity * 12; // mesma escala visual do drop-shadow do DOM
+    }
+    // NOTA: chromatic (RGB split) ainda não está implementado no adaptador
+    // de canvas — precisa de 2-3 passes de fillText deslocados/coloridos,
+    // o que exige mexer também na chamada de fillText (fora desta função).
+    // Fica registrado como pendência pra próxima iteração; não afeta os
+    // presets migrados até agora (nenhum deles usa chromatic).
     ctx.translate(-cx, -cy);
     return function restore() { ctx.restore(); };
   }
@@ -39567,11 +39609,33 @@ window.WM_ANIM_ENGINE = (function () {
     return { elapsedMs, entranceDelayMs: 0, entranceDurEndMs: def.duration * 1000, exitStartMs: null };
   }
 
-  function drawCanvasWord(text, cx, cy, state) {
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.font = '700 26px system-ui, sans-serif'; ctx.fillStyle = '#ffffff';
+  // CORREÇÃO 1: fontSize agora é parâmetro — no modo "Word Reveal" a coluna
+  // DOM usa 20px (pra 3 palavras caberem lado a lado), mas o Canvas estava
+  // fixo em 26px sempre, ficando maior que o DOM no mesmo teste.
+  // CORREÇÃO 2: textBaseline:'middle' do Canvas 2D centraliza com base nas
+  // métricas da fonte (ascent/descent), que pra fontes bold costumam ficar
+  // um pouco ACIMA do centro visual real do glyph — diferente do
+  // flexbox (align-items:center) usado nas colunas DOM, que centraliza
+  // pela caixa visual. Corrigido usando actualBoundingBoxAscent/Descent
+  // (medida real do texto desenhado) pra centralizar pixel a pixel igual
+  // ao DOM, com fallback pro 'middle' padrão em navegadores sem suporte.
+  function drawCanvasWord(text, cx, cy, state, fontSize) {
+    fontSize = fontSize || 26;
+    ctx.textAlign = 'center';
+    ctx.font = `700 ${fontSize}px system-ui, sans-serif`;
+    ctx.fillStyle = '#ffffff';
+    let baselineY = cy;
+    ctx.textBaseline = 'alphabetic';
+    const m = ctx.measureText(text);
+    if (m.actualBoundingBoxAscent != null && m.actualBoundingBoxDescent != null) {
+      const h = m.actualBoundingBoxAscent + m.actualBoundingBoxDescent;
+      baselineY = cy - h / 2 + m.actualBoundingBoxAscent;
+    } else {
+      ctx.textBaseline = 'middle';
+      baselineY = cy;
+    }
     const restore = window.WM_ANIM_ENGINE.applyStateToCanvas(ctx, state, cx, cy);
-    ctx.fillText(text, cx, cy);
+    ctx.fillText(text, cx, baselineY);
     restore();
   }
 
@@ -39630,7 +39694,7 @@ window.WM_ANIM_ENGINE = (function () {
             elapsedMs, entranceDelayMs: delayMs, entranceDurEndMs: delayMs + def.duration * 1000, exitStartMs: null,
           });
           window.WM_ANIM_ENGINE.applyStateToDOM(el, state);
-          drawCanvasWord(words[i], gap * (i + 1), cssH / 2, state);
+          drawCanvasWord(words[i], gap * (i + 1), cssH / 2, state, 20); // 20px = mesmo tamanho do DOM em modo palavra
           lastDomState = state; lastCanvasState = state;
         });
       } else {
@@ -39638,12 +39702,25 @@ window.WM_ANIM_ENGINE = (function () {
         lastDomState = window.WM_ANIM_ENGINE.sampleAnimation(recipe, timing);
         window.WM_ANIM_ENGINE.applyStateToDOM(newDomEl, lastDomState);
         lastCanvasState = lastDomState;
-        drawCanvasWord('GRANDE', cssW / 2, cssH / 2, lastCanvasState);
+        drawCanvasWord('GRANDE', cssW / 2, cssH / 2, lastCanvasState, 26);
       }
 
-      readout.textContent =
-        `t=${elapsedMs.toFixed(0)}ms  (${recipeId}${fx.length ? ' + ' + fx.join('+') : ''})\n` +
-        `DOM/Canvas → opacity=${lastDomState.opacity.toFixed(3)} translateX=${lastDomState.translateX.toFixed(2)} translateY=${lastDomState.translateY.toFixed(2)} scale=${lastDomState.scale.toFixed(3)} blur=${lastDomState.blur.toFixed(2)} chromatic=${lastDomState.chromatic.toFixed(2)} glow=${lastDomState.glowIntensity.toFixed(2)}`;
+      // CORREÇÃO (engasgo nos loops): escrever no textContent do readout
+      // TODO frame força reflow síncrono no navegador — 60x por segundo,
+      // pra sempre em animações de loop. Isso competia pela thread
+      // principal com a animação CSS (composta) e causava os
+      // "engasgos"/travadas que você viu especificamente nos loops (são
+      // longos o bastante pra o acúmulo ficar visível; entradas/saídas
+      // de <1.5s terminam rápido demais pra notar). Agora atualiza no
+      // máximo a cada ~120ms — continua legível, sem competir a cada frame.
+      // (Esse é exatamente o risco de "alocação/custo por frame" citado
+      // na seção H do documento de arquitetura.)
+      if (!tick._lastReadout || now - tick._lastReadout > 120) {
+        tick._lastReadout = now;
+        readout.textContent =
+          `t=${elapsedMs.toFixed(0)}ms  (${recipeId}${fx.length ? ' + ' + fx.join('+') : ''})\n` +
+          `DOM/Canvas → opacity=${lastDomState.opacity.toFixed(3)} translateX=${lastDomState.translateX.toFixed(2)} translateY=${lastDomState.translateY.toFixed(2)} scale=${lastDomState.scale.toFixed(3)} blur=${lastDomState.blur.toFixed(2)} chromatic=${lastDomState.chromatic.toFixed(2)} glow=${lastDomState.glowIntensity.toFixed(2)}`;
+      }
 
       if (isLoop || elapsedMs < maxDurMs + 300) {
         rafId = requestAnimationFrame(tick);
