@@ -38860,6 +38860,33 @@ window.__wmVerificarExportsPendentes = async function () {
  * estado em qualquer instante t. Preview e export chamam a MESMA função —
  * a única diferença é o adaptador que aplica o resultado (DOM vs Canvas).
  */
+/**
+ * WM_ANIM_ENGINE — Motor de Animações Nativo (v2), Etapa 1 + 2 da proposta.
+ *
+ * IMPORTANTE: este módulo é 100% ADITIVO. Não modifica, substitui nem
+ * depende de ANIMATIONS_V2 / interpolateKeyframes / WMAnimate /
+ * CanvasRenderer já existentes. Roda em paralelo, atrás do id
+ * 'cinematic-reveal-v2' (prova de conceito), enquanto o sistema atual
+ * continua sendo o que está em produção.
+ *
+ * Convenção de valores (igual ao sistema atual, pra manter familiaridade):
+ *   opacity: 0..1
+ *   scale / scaleX / scaleY: multiplicador (1 = 100%)
+ *   translateX / translateY: pixels
+ *   rotate / skewX / skewY: graus
+ *   blur: pixels
+ *   glowIntensity: 0..N (px de drop-shadow)
+ *   chromatic: 0..N (px de deslocamento RGB)
+ *   letterSpacing: pixels
+ *
+ * Contrato central (item 8 da proposta): UMA função pura calcula o
+ * estado em qualquer instante t. Preview e export chamam a MESMA função —
+ * a única diferença é o adaptador que aplica o resultado (DOM vs Canvas).
+ */
+// Shim mínimo pra rodar em Node.js durante o teste de paridade (não entra
+// no index.html — lá `window` já existe de verdade).
+if (typeof window === 'undefined') { global.window = {}; }
+
 window.WM_ANIM_ENGINE = (function () {
   'use strict';
 
@@ -38867,9 +38894,9 @@ window.WM_ANIM_ENGINE = (function () {
   // Easings — independentes do sistema atual, mas com as mesmas curvas
   // usadas hoje (cubic-bezier aproximado por easeOut/easeInOut padrão).
   // ---------------------------------------------------------------------
-  // easeOutQuint / easeInCubic / easeInOutQuad têm exatamente a mesma
-  // fórmula usada hoje em applyEasing() (index.html ~linha 10954), pra
-  // permitir migração 1:1 dos presets existentes sem alterar a curva.
+  // easeOutQuint / easeInCubic / easeInOutQuad / easeOutBack têm exatamente
+  // a mesma fórmula usada hoje em applyEasing() (index.html ~linha 10966),
+  // pra permitir migração 1:1 dos presets existentes sem alterar a curva.
   const EASINGS = {
     linear: t => t,
     easeOut: t => 1 - Math.pow(1 - t, 2),
@@ -38879,6 +38906,10 @@ window.WM_ANIM_ENGINE = (function () {
     easeInCubic: t => t * t * t,
     easeInOut: t => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2),
     easeInOutQuad: t => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2),
+    easeOutBack: t => {
+      const c1 = 1.70158, c3 = c1 + 1;
+      return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
+    },
   };
 
   const DEFAULT_STATE = Object.freeze({
@@ -38886,6 +38917,7 @@ window.WM_ANIM_ENGINE = (function () {
     translateX: 0, translateY: 0, rotate: 0, blur: 0,
     skewX: 0, skewY: 0, letterSpacing: 0,
     glowIntensity: 0, chromatic: 0,
+    splitX: 0, splitY: 0,
   });
 
   function lerp(a, b, t) { return a + (b - a) * t; }
@@ -38898,27 +38930,33 @@ window.WM_ANIM_ENGINE = (function () {
 
   /**
    * Amostra uma lista de keyframes num progresso 0..1.
-   * Mesma lógica conceitual do interpolateKeyframes() atual, reimplementada
-   * aqui de forma independente (sem chamar o código antigo) — assim este
-   * módulo pode ser testado e evoluído isoladamente.
+   * CORREÇÃO: o easing é aplicado UMA VEZ, globalmente, ao progress —
+   * exatamente como o interpolateKeyframes() antigo faz (index.html
+   * ~linha 11018-11019) — e só DEPOIS disso o segmento entre 2 keyframes
+   * é escolhido e interpolado linearmente dentro dele. A primeira versão
+   * deste módulo aplicava o easing por segmento (localmente), o que só
+   * coincidia com o antigo em presets de 2 keyframes — divergia em
+   * qualquer preset com 3+ keyframes (pego pelo teste de paridade).
    */
   function sampleKeyframes(keyframes, progress, easingName) {
     if (!keyframes || !keyframes.length) return {};
-    const ease = EASINGS[easingName] || EASINGS.easeOut;
+    const ease = EASINGS[easingName] || EASINGS.linear;
+    const p = Math.max(0, Math.min(1, progress));
+    const eased = ease(p);
+
     const first = keyframes[0], last = keyframes[keyframes.length - 1];
-    if (progress <= first.at) return stripAt(first);
-    if (progress >= last.at) return stripAt(last);
+    if (eased <= first.at) return stripAt(first);
+    if (eased >= last.at) return stripAt(last);
 
     let kf0 = first, kf1 = last;
     for (let i = 0; i < keyframes.length - 1; i++) {
-      if (progress >= keyframes[i].at && progress <= keyframes[i + 1].at) {
+      if (eased >= keyframes[i].at && eased <= keyframes[i + 1].at) {
         kf0 = keyframes[i]; kf1 = keyframes[i + 1];
         break;
       }
     }
     const span = kf1.at - kf0.at;
-    const localT = span > 0 ? (progress - kf0.at) / span : 1;
-    const easedT = ease(Math.max(0, Math.min(1, localT)));
+    const localT = span > 0 ? (eased - kf0.at) / span : 1;
 
     const keys = new Set([...Object.keys(kf0), ...Object.keys(kf1)]);
     keys.delete('at');
@@ -38926,7 +38964,7 @@ window.WM_ANIM_ENGINE = (function () {
     keys.forEach(k => {
       const v0 = kf0[k] != null ? kf0[k] : DEFAULT_STATE[k];
       const v1 = kf1[k] != null ? kf1[k] : DEFAULT_STATE[k];
-      out[k] = lerp(v0, v1, easedT);
+      out[k] = lerp(v0, v1, localT);
     });
     return out;
   }
@@ -39074,7 +39112,20 @@ window.WM_ANIM_ENGINE = (function () {
   }
 
   // ---------------------------------------------------------------------
-  // Prova de conceito (Etapa 2): migração fiel de 1 preset existente.
+  // Granularidade genérica (item 4/5 da proposta original): calcula o
+  // delay de entrada de um elemento dado seu índice, o total de elementos
+  // e o stagger — independente de qual animação está sendo usada. Isso é
+  // o que generaliza "charStagger" (hoje uma flag fixa por preset) pra
+  // qualquer receita, em qualquer modo.
+  //   mode: 'text' | 'line' | 'word' | 'character'
+  // Em 'text' (a estrofe inteira anima junto) o delay é sempre 0.
+  // ---------------------------------------------------------------------
+  function computeStaggerDelayMs(mode, index, staggerSec) {
+    if (mode === 'text') return 0;
+    return Math.max(0, index) * (staggerSec || 0) * 1000;
+  }
+
+
   // Valores copiados exatamente de ANIMATIONS_V2['cinematic-reveal']
   // (index.html, ~linha 9247) pra permitir comparação direta entre o
   // preview antigo e o novo motor.
@@ -39092,13 +39143,196 @@ window.WM_ANIM_ENGINE = (function () {
     },
   });
 
+  // ---------------------------------------------------------------------
+  // Lote de prova de conceito (Etapa 3): migração fiel dos presets
+  // existentes escolhidos como amostra representativa de cada categoria
+  // (item 11 da proposta original). Cada um foi copiado byte-a-byte da
+  // definição em ANIMATIONS_V2 pra garantir paridade visual com o que já
+  // existe — não são criações novas, são o mesmo resultado, só passando
+  // pelo motor novo.
+  // ---------------------------------------------------------------------
+
+  // ENTRADAS
+  registerRecipe({ // = 'impact-in' (Impacto), index.html ~linha 9500
+    id: 'impact-in-v2',
+    entrance: {
+      engine: 'keyframes', duration: 0.5, easing: 'linear',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 1.8 },
+        { at: 0.5, opacity: 1, scale: 0.9 },
+        { at: 1, opacity: 1, scale: 1 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'punch-in' (Punch/Scale Punch), index.html ~linha 10043
+    id: 'punch-in-v2',
+    entrance: {
+      engine: 'keyframes', duration: 0.4, easing: 'easeOutQuint', // = cubic-bezier(0.22,1,0.36,1) original
+      keyframes: [
+        { at: 0, opacity: 0, scale: 1.6, splitX: 30, splitY: 0 },
+        { at: 0.5, opacity: 1, scale: 0.95, splitX: 4, splitY: 0 },
+        { at: 1, opacity: 1, scale: 1, splitX: 0, splitY: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'glory-rise' (Slide Up), index.html ~linha 9366
+    id: 'slide-up-in-v2',
+    entrance: {
+      engine: 'keyframes', duration: 1.2, easing: 'easeOutQuint',
+      keyframes: [
+        { at: 0, opacity: 0, translateY: 40, scale: 0.9 },
+        { at: 1, opacity: 1, translateY: 0, scale: 1 },
+      ],
+    },
+  });
+
+  // SAÍDAS
+  registerRecipe({ // = 'slide-away-up' (Slide Out), index.html ~linha 9736
+    id: 'slide-out-v2',
+    exit: {
+      engine: 'keyframes', duration: 0.7, easing: 'easeInCubic', // = cubic-bezier(0.55,0,0.55,0.2) original
+      keyframes: [
+        { at: 0, opacity: 1, translateY: 0, blur: 0 },
+        { at: 1, opacity: 0, translateY: -40, blur: 4 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'dissolve' (Blur Out), index.html ~linha 9658
+    id: 'blur-out-v2',
+    exit: {
+      engine: 'keyframes', duration: 1.2, easing: 'easeInCubic', // = cubic-bezier(0.55,0,0.55,0.2) original
+      keyframes: [
+        { at: 0, opacity: 1, scale: 1, blur: 0 },
+        { at: 1, opacity: 0, scale: 1.1, blur: 20 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'darken-out' (Scale Down), index.html ~linha 9775
+    id: 'scale-down-out-v2',
+    exit: {
+      engine: 'keyframes', duration: 1.1, easing: 'easeInCubic', // = cubic-bezier(0.55,0,0.55,0.2) original
+      keyframes: [
+        { at: 0, opacity: 1, scale: 1 },
+        { at: 1, opacity: 0, scale: 0.95 },
+      ],
+    },
+  });
+
+  // LOOPS
+  registerRecipe({ // = 'loop-breath' (Breathing), index.html ~linha 10873
+    id: 'breathing-loop-v2',
+    loop: {
+      engine: 'keyframes', duration: 4.0, easing: 'easeInOut',
+      keyframes: [
+        { at: 0, scale: 1 },
+        { at: 0.5, scale: 1.025 },
+        { at: 1, scale: 1 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'loop-float' (Floating), index.html ~linha 10897
+    id: 'floating-loop-v2',
+    loop: {
+      engine: 'keyframes', duration: 3.5, easing: 'easeInOut',
+      keyframes: [
+        { at: 0, translateY: 0 },
+        { at: 0.5, translateY: -6 },
+        { at: 1, translateY: 0 },
+      ],
+    },
+  });
+  registerRecipe({
+    // NOVO (não existia na biblioteca antiga): "Slow Zoom", zoom lento e
+    // contínuo — comum em typography motion pra dar sensação de câmera
+    // viva mesmo em texto estático. Amplitude pequena de propósito (1%),
+    // pra não competir visualmente com a entrada/saída.
+    id: 'slow-zoom-loop-v2',
+    loop: {
+      engine: 'keyframes', duration: 6.0, easing: 'easeInOut',
+      keyframes: [
+        { at: 0, scale: 1 },
+        { at: 1, scale: 1.04 },
+      ],
+    },
+  });
+
+  // ---------------------------------------------------------------------
+  // EFEITOS PLUGÁVEIS (Etapa 4 antecipada) — a peça que não existia antes
+  // de jeito nenhum: uma função que MODIFICA o estado já calculado pela
+  // entrada/loop/saída, componível em cima de QUALQUER recipe (item 2/3
+  // da proposta original: "Efeito" como slot independente).
+  //
+  // Todos são função pura de elapsedMs (nunca Math.random()) — isso é
+  // proposital: garante que o export possa desenhar qualquer frame
+  // isoladamente e sempre bater com o preview no mesmo instante (ver
+  // seção H do documento de arquitetura sobre motores não-determinísticos).
+  // ---------------------------------------------------------------------
+
+  // Pseudo-aleatório determinístico (mesmo t → sempre o mesmo valor)
+  function pseudoNoise(seed) {
+    const x = Math.sin(seed * 12.9898) * 43758.5453;
+    return x - Math.floor(x); // 0..1
+  }
+
+  registerEffect('shake', (state, elapsedMs, cfg) => {
+    const amp = cfg.amplitude != null ? cfg.amplitude : 4;
+    const freq = cfg.frequency != null ? cfg.frequency : 0.025;
+    return {
+      ...state,
+      translateX: state.translateX + Math.sin(elapsedMs * freq) * amp,
+      translateY: state.translateY + Math.cos(elapsedMs * freq * 1.7) * amp * 0.6,
+    };
+  });
+
+  registerEffect('glitch', (state, elapsedMs, cfg) => {
+    const stepMs = cfg.stepMs != null ? cfg.stepMs : 80; // "quadro" do glitch
+    const intensity = cfg.intensity != null ? cfg.intensity : 8;
+    const step = Math.floor(elapsedMs / stepMs);
+    const n = pseudoNoise(step);
+    // só "glitcha" em ~35% dos steps, pra parecer intermitente, não constante
+    if (n > 0.65) {
+      return {
+        ...state,
+        translateX: state.translateX + (pseudoNoise(step + 0.5) - 0.5) * intensity * 2,
+        chromatic: state.chromatic + n * intensity,
+      };
+    }
+    return state;
+  });
+
+  registerEffect('glow-pulse', (state, elapsedMs, cfg) => {
+    const period = cfg.periodMs != null ? cfg.periodMs : 2500;
+    const min = cfg.min != null ? cfg.min : 0.6;
+    const max = cfg.max != null ? cfg.max : 1.8;
+    const t = (elapsedMs % period) / period;
+    const wave = (Math.sin(t * Math.PI * 2) + 1) / 2; // 0..1
+    return { ...state, glowIntensity: state.glowIntensity + min + wave * (max - min) };
+  });
+
+  registerRecipe({
+    // Demonstra a granularidade genérica (mode/stagger) descrita na seção
+    // C/D do documento de arquitetura — qualquer entrada pode ganhar
+    // `mode: 'word'` (ou 'character'/'line') sem precisar de um preset
+    // dedicado como o antigo 'typewriter-blur-fast' fixo em char.
+    id: 'word-reveal-v2',
+    mode: 'word',
+    stagger: 0.08,
+    entrance: {
+      engine: 'keyframes', duration: 0.5, easing: 'easeOutQuint',
+      keyframes: [
+        { at: 0, opacity: 0, translateY: 16, blur: 4 },
+        { at: 1, opacity: 1, translateY: 0, blur: 0 },
+      ],
+    },
+  });
+
   return {
     // registro
     registerRecipe, RECIPES,
     registerPhysicsEngine, PHYSICS_ENGINES,
     registerEffect, EFFECTS,
     // núcleo
-    sampleAnimation, sampleKeyframes,
+    sampleAnimation, sampleKeyframes, computeStaggerDelayMs,
     // adaptadores
     applyStateToDOM, applyStateToCanvas,
     // utilitário
@@ -39148,16 +39382,18 @@ window.WM_ANIM_ENGINE = (function () {
     font: 700 26px/1 system-ui, sans-serif; color: #fff; opacity: 0;
     will-change: transform, opacity, filter;
   }
-  @keyframes wm_test_old_cinematic {
-    0%   { opacity: 0; transform: translateY(60px) scale(0.92); filter: blur(10px); }
-    100% { opacity: 1; transform: translateY(0)     scale(1);    filter: blur(0px); }
-  }
-  .wm-test-old.playing { animation: wm_test_old_cinematic 1.4s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
   .wm-test-newdom {
     font: 700 26px/1 system-ui, sans-serif; color: #fff;
     will-change: transform, opacity, filter;
   }
+  .wm-test-newdom.wmWordsWrap { display: flex; gap: 8px; font-size: 20px; }
   #wmTestV2Canvas { width: 100%; height: 100%; display: block; }
+  #wmTestV2Controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; }
+  #wmTestV2Select {
+    background: #1a1c24; color: #e8e8f0; border: 1px solid #333; border-radius: 6px;
+    padding: 7px 10px; font: 600 12px/1 system-ui, sans-serif;
+  }
+  .wmFxLabel { font-size: 11px; opacity: .8; display: flex; align-items: center; gap: 4px; cursor: pointer; }
   #wmTestV2Play {
     background: #22c55e; color: #05230f; border: none; border-radius: 6px;
     padding: 8px 14px; font: 700 13px/1 system-ui, sans-serif; cursor: pointer;
@@ -39171,11 +39407,37 @@ window.WM_ANIM_ENGINE = (function () {
 
 <button id="wmTestV2Toggle" type="button">🧪 Teste Motor v2</button>
 <div id="wmTestV2Panel">
-  <h3>Cinematic Reveal — motor antigo vs. motor novo</h3>
-  <p class="wmSub">Painel de validação isolado (Etapa 3). Não afeta seu projeto — só compara os 3 caminhos de renderização.</p>
+  <h3>Lote migrado — motor antigo vs. motor novo</h3>
+  <p class="wmSub">Painel de validação isolado (Etapa 3). Não afeta seu projeto — só compara os caminhos de renderização.</p>
+  <div id="wmTestV2Controls">
+    <select id="wmTestV2Select">
+      <optgroup label="Entrada">
+        <option value="cinematic-reveal-v2">Cinematográfico</option>
+        <option value="impact-in-v2">Impacto</option>
+        <option value="punch-in-v2">Punch</option>
+        <option value="slide-up-in-v2">Slide Up</option>
+      </optgroup>
+      <optgroup label="Saída">
+        <option value="slide-out-v2">Slide Out</option>
+        <option value="blur-out-v2">Blur Out</option>
+        <option value="scale-down-out-v2">Scale Down</option>
+      </optgroup>
+      <optgroup label="Loop (roda contínuo)">
+        <option value="breathing-loop-v2">Breathing</option>
+        <option value="floating-loop-v2">Floating</option>
+        <option value="slow-zoom-loop-v2">Slow Zoom (novo)</option>
+      </optgroup>
+      <optgroup label="Granularidade (recurso novo)">
+        <option value="word-reveal-v2">Word Reveal — 3 palavras com stagger</option>
+      </optgroup>
+    </select>
+    <label class="wmFxLabel"><input type="checkbox" id="wmFxShake"> + Shake</label>
+    <label class="wmFxLabel"><input type="checkbox" id="wmFxGlitch"> + Glitch</label>
+    <label class="wmFxLabel"><input type="checkbox" id="wmFxGlow"> + Glow Pulse</label>
+  </div>
   <div class="wmTestV2Row">
     <div class="wmTestV2Col">
-      <span class="wmLabel">Antigo · CSS real (preview hoje)</span>
+      <span class="wmLabel" id="wmTestV2OldLabel">Antigo · CSS real</span>
       <div class="wmStage"><div class="wm-test-old" id="wmTestV2OldEl">GRANDE</div></div>
     </div>
     <div class="wmTestV2Col">
@@ -39191,15 +39453,21 @@ window.WM_ANIM_ENGINE = (function () {
   <div id="wmTestV2Readout">clique em "Rodar" pra ver os valores numéricos frame a frame</div>
 </div>
 
+
 <script>
 (function () {
   const toggleBtn = document.getElementById('wmTestV2Toggle');
   const panel = document.getElementById('wmTestV2Panel');
   const playBtn = document.getElementById('wmTestV2Play');
+  const select = document.getElementById('wmTestV2Select');
   const oldEl = document.getElementById('wmTestV2OldEl');
+  const oldLabel = document.getElementById('wmTestV2OldLabel');
   const newDomEl = document.getElementById('wmTestV2NewDomEl');
   const canvas = document.getElementById('wmTestV2Canvas');
   const readout = document.getElementById('wmTestV2Readout');
+  const fxShake = document.getElementById('wmFxShake');
+  const fxGlitch = document.getElementById('wmFxGlitch');
+  const fxGlow = document.getElementById('wmFxGlow');
   const ctx = canvas.getContext('2d');
 
   toggleBtn.addEventListener('click', () => {
@@ -39207,75 +39475,177 @@ window.WM_ANIM_ENGINE = (function () {
     if (panel.classList.contains('open')) resizeCanvas();
   });
 
-  const RECIPE = window.WM_ANIM_ENGINE.RECIPES['cinematic-reveal-v2'];
-  const DUR_MS = 1400;
-  let rafId = null;
-  let cssW = 260, cssH = 110; // tamanho em pixels CSS (não em pixels do buffer)
+  // Definições ORIGINAIS (motor antigo) dos presets migrados — só pra
+  // gerar a animação CSS real de referência na coluna "Antigo". Os
+  // valores são cópia fiel de ANIMATIONS_V2 (mesmos usados no teste de
+  // paridade em Node). category: 'entrance' | 'exit' | 'loop'.
+  const OLD_DEFS = {
+    'cinematic-reveal-v2': { category: 'entrance', duration: 1.4, bezier: '0.22, 1, 0.36, 1',
+      from: { opacity: 0, translateY: 60, scale: 0.92, blur: 10 }, to: { opacity: 1, translateY: 0, scale: 1, blur: 0 } },
+    'impact-in-v2': { category: 'entrance', duration: 0.5, bezier: null, // multi-keyframe, sem bezier única — CSS abaixo usa 2 estágios
+      steps: [[0,{opacity:0,scale:1.8}],[50,{opacity:1,scale:0.9}],[100,{opacity:1,scale:1}]] },
+    'punch-in-v2': { category: 'entrance', duration: 0.4, bezier: '0.22, 1, 0.36, 1',
+      steps: [[0,{opacity:0,scale:1.6}],[50,{opacity:1,scale:0.95}],[100,{opacity:1,scale:1}]] },
+    'slide-up-in-v2': { category: 'entrance', duration: 1.2, bezier: '0.22, 1, 0.36, 1',
+      from: { opacity: 0, translateY: 40, scale: 0.9 }, to: { opacity: 1, translateY: 0, scale: 1 } },
+    'slide-out-v2': { category: 'exit', duration: 0.7, bezier: '0.55, 0, 0.55, 0.2',
+      from: { opacity: 1, translateY: 0, blur: 0 }, to: { opacity: 0, translateY: -40, blur: 4 } },
+    'blur-out-v2': { category: 'exit', duration: 1.2, bezier: '0.55, 0, 0.55, 0.2',
+      from: { opacity: 1, scale: 1, blur: 0 }, to: { opacity: 0, scale: 1.1, blur: 20 } },
+    'scale-down-out-v2': { category: 'exit', duration: 1.1, bezier: '0.55, 0, 0.55, 0.2',
+      from: { opacity: 1, scale: 1 }, to: { opacity: 0, scale: 0.95 } },
+    'breathing-loop-v2': { category: 'loop', duration: 4.0, bezier: '0.45, 0, 0.55, 1',
+      steps: [[0,{scale:1}],[50,{scale:1.025}],[100,{scale:1}]] },
+    'floating-loop-v2': { category: 'loop', duration: 3.5, bezier: '0.45, 0, 0.55, 1',
+      steps: [[0,{translateY:0}],[50,{translateY:-6}],[100,{translateY:0}]] },
+    'slow-zoom-loop-v2': { category: 'loop', duration: 6.0, bezier: '0.45, 0, 0.55, 1',
+      from: { scale: 1 }, to: { scale: 1.04 } },
+    'word-reveal-v2': { category: 'word', duration: 0.5, bezier: '0.22, 1, 0.36, 1',
+      from: { opacity: 0, translateY: 16, blur: 4 }, to: { opacity: 1, translateY: 0, blur: 0 } },
+  };
 
-  // CORREÇÃO: o <canvas> tinha width/height fixos no HTML (260x110), mas o
-  // CSS esticava ele pra 100% da coluna — como os dois tamanhos não batem,
-  // o navegador reamostra a imagem já desenhada, encolhendo a fonte. Aqui
-  // ajustamos a resolução real do buffer pro tamanho renderizado (incluindo
-  // devicePixelRatio, pra não ficar borrado em telas retina), e usamos
-  // ctx.setTransform pra poder continuar desenhando em coordenadas "CSS px".
+  function cssTransform(s) {
+    const t = [];
+    if (s.translateX || s.translateY) t.push(`translate(${s.translateX||0}px, ${s.translateY||0}px)`);
+    if (s.scale != null) t.push(`scale(${s.scale})`);
+    return t.join(' ');
+  }
+  function cssFilter(s) { return s.blur ? `blur(${s.blur}px)` : 'none'; }
+
+  let dynStyleTag = document.getElementById('wmTestV2DynStyle');
+  if (!dynStyleTag) {
+    dynStyleTag = document.createElement('style');
+    dynStyleTag.id = 'wmTestV2DynStyle';
+    document.head.appendChild(dynStyleTag);
+  }
+
+  // Gera (ou reaproveita) uma @keyframes CSS real batendo com a definição
+  // antiga do preset selecionado, e devolve o nome da animação + duração.
+  function buildOldCssAnimation(def) {
+    const name = 'wmTestOldAnim';
+    let body;
+    if (def.steps) {
+      body = def.steps.map(([pct, s]) =>
+        `${pct}% { opacity: ${s.opacity != null ? s.opacity : 1}; transform: ${cssTransform(s)}; filter: ${cssFilter(s)}; }`
+      ).join(' ');
+    } else {
+      body = `0% { opacity: ${def.from.opacity != null ? def.from.opacity : 1}; transform: ${cssTransform(def.from)}; filter: ${cssFilter(def.from)}; }
+              100% { opacity: ${def.to.opacity != null ? def.to.opacity : 1}; transform: ${cssTransform(def.to)}; filter: ${cssFilter(def.to)}; }`;
+    }
+    dynStyleTag.textContent = `@keyframes ${name} { ${body} }`;
+    const easing = def.bezier ? `cubic-bezier(${def.bezier})` : 'linear';
+    const iter = def.category === 'loop' ? 'infinite' : '1';
+    const fill = def.category === 'loop' ? 'none' : 'forwards';
+    return `${name} ${def.duration}s ${easing} ${iter} ${fill}`;
+  }
+
+  let rafId = null;
+  let cssW = 260, cssH = 110;
+
   function resizeCanvas() {
     const rect = canvas.getBoundingClientRect();
-    if (rect.width < 1 || rect.height < 1) return; // painel ainda fechado/oculto
+    if (rect.width < 1 || rect.height < 1) return;
     const dpr = window.devicePixelRatio || 1;
-    cssW = rect.width;
-    cssH = rect.height;
+    cssW = rect.width; cssH = rect.height;
     canvas.width = Math.round(cssW * dpr);
     canvas.height = Math.round(cssH * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
   window.addEventListener('resize', () => { if (panel.classList.contains('open')) resizeCanvas(); });
 
-  function drawCanvasFrame(elapsedMs) {
-    ctx.clearRect(0, 0, cssW, cssH);
-    ctx.filter = 'none';
-    const state = window.WM_ANIM_ENGINE.sampleAnimation(RECIPE, {
-      elapsedMs, entranceDelayMs: 0, entranceDurEndMs: DUR_MS, exitStartMs: null,
-    });
-    const cx = cssW / 2, cy = cssH / 2;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.font = '700 26px system-ui, sans-serif';
-    ctx.fillStyle = '#ffffff';
+  function activeEffects() {
+    const fx = [];
+    if (fxShake.checked) fx.push('shake');
+    if (fxGlitch.checked) fx.push('glitch');
+    if (fxGlow.checked) fx.push('glow-pulse');
+    return fx;
+  }
+
+  function timingFor(def, elapsedMs) {
+    if (def.category === 'exit') return { elapsedMs, entranceDelayMs: 0, entranceDurEndMs: 0, exitStartMs: 0 };
+    if (def.category === 'loop') return { elapsedMs, entranceDelayMs: 0, entranceDurEndMs: 0, exitStartMs: null };
+    return { elapsedMs, entranceDelayMs: 0, entranceDurEndMs: def.duration * 1000, exitStartMs: null };
+  }
+
+  function drawCanvasWord(text, cx, cy, state) {
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.font = '700 26px system-ui, sans-serif'; ctx.fillStyle = '#ffffff';
     const restore = window.WM_ANIM_ENGINE.applyStateToCanvas(ctx, state, cx, cy);
-    ctx.fillText('GRANDE', cx, cy);
+    ctx.fillText(text, cx, cy);
     restore();
-    return state;
   }
 
   function play() {
     if (rafId) cancelAnimationFrame(rafId);
     resizeCanvas();
 
-    // Motor ANTIGO: reinicia a animação CSS real
-    oldEl.classList.remove('playing');
-    void oldEl.offsetWidth; // força reflow pra reiniciar a keyframe
-    oldEl.classList.add('playing');
+    const recipeId = select.value;
+    const def = OLD_DEFS[recipeId];
+    const baseRecipe = window.WM_ANIM_ENGINE.RECIPES[recipeId];
+    const fx = activeEffects();
+    const recipe = { ...baseRecipe, effects: fx };
+    const isWord = def.category === 'word';
+    const isLoop = def.category === 'loop';
+    const words = ['TU', 'ÉS', 'SANTO'];
+    const stagger = baseRecipe.stagger || 0.08;
+
+    // Motor ANTIGO: CSS real
+    if (isWord) {
+      oldLabel.textContent = 'Antigo · sem equivalente (recurso novo)';
+      oldEl.style.animation = 'none';
+      oldEl.style.opacity = '0.25';
+      oldEl.textContent = '— granularidade por palavra não existe no motor antigo —';
+      oldEl.style.fontSize = '11px';
+    } else {
+      oldLabel.textContent = 'Antigo · CSS real';
+      oldEl.style.fontSize = '';
+      oldEl.textContent = 'GRANDE';
+      oldEl.style.opacity = def.category === 'exit' ? '1' : '';
+      oldEl.style.animation = 'none';
+      void oldEl.offsetWidth;
+      oldEl.style.animation = buildOldCssAnimation(def);
+    }
+
+    // Monta DOM novo: 1 palavra ou 3 (modo word)
+    newDomEl.innerHTML = '';
+    newDomEl.classList.toggle('wmWordsWrap', isWord);
+    const domSpans = isWord
+      ? words.map(w => { const el = document.createElement('span'); el.textContent = w; newDomEl.appendChild(el); return el; })
+      : [(() => { newDomEl.textContent = 'GRANDE'; return newDomEl; })()];
 
     const t0 = performance.now();
+    const maxDurMs = def.duration * 1000 + (isWord ? stagger * 1000 * (words.length - 1) : 0);
 
     function tick(now) {
       const elapsedMs = now - t0;
 
-      // Motor NOVO → DOM
-      const domState = window.WM_ANIM_ENGINE.sampleAnimation(RECIPE, {
-        elapsedMs, entranceDelayMs: 0, entranceDurEndMs: DUR_MS, exitStartMs: null,
-      });
-      window.WM_ANIM_ENGINE.applyStateToDOM(newDomEl, domState);
+      let lastDomState, lastCanvasState;
+      ctx.clearRect(0, 0, cssW, cssH); ctx.filter = 'none';
 
-      // Motor NOVO → Canvas
-      const canvasState = drawCanvasFrame(elapsedMs);
+      if (isWord) {
+        const gap = cssW / (words.length + 1);
+        domSpans.forEach((el, i) => {
+          const delayMs = window.WM_ANIM_ENGINE.computeStaggerDelayMs('word', i, stagger);
+          const state = window.WM_ANIM_ENGINE.sampleAnimation(recipe, {
+            elapsedMs, entranceDelayMs: delayMs, entranceDurEndMs: delayMs + def.duration * 1000, exitStartMs: null,
+          });
+          window.WM_ANIM_ENGINE.applyStateToDOM(el, state);
+          drawCanvasWord(words[i], gap * (i + 1), cssH / 2, state);
+          lastDomState = state; lastCanvasState = state;
+        });
+      } else {
+        const timing = timingFor(def, elapsedMs);
+        lastDomState = window.WM_ANIM_ENGINE.sampleAnimation(recipe, timing);
+        window.WM_ANIM_ENGINE.applyStateToDOM(newDomEl, lastDomState);
+        lastCanvasState = lastDomState;
+        drawCanvasWord('GRANDE', cssW / 2, cssH / 2, lastCanvasState);
+      }
 
       readout.textContent =
-        `t=${elapsedMs.toFixed(0)}ms\n` +
-        `DOM    → opacity=${domState.opacity.toFixed(3)} translateY=${domState.translateY.toFixed(2)} scale=${domState.scale.toFixed(3)} blur=${domState.blur.toFixed(2)}\n` +
-        `Canvas → opacity=${canvasState.opacity.toFixed(3)} translateY=${canvasState.translateY.toFixed(2)} scale=${canvasState.scale.toFixed(3)} blur=${canvasState.blur.toFixed(2)}`;
+        `t=${elapsedMs.toFixed(0)}ms  (${recipeId}${fx.length ? ' + ' + fx.join('+') : ''})\n` +
+        `DOM/Canvas → opacity=${lastDomState.opacity.toFixed(3)} translateX=${lastDomState.translateX.toFixed(2)} translateY=${lastDomState.translateY.toFixed(2)} scale=${lastDomState.scale.toFixed(3)} blur=${lastDomState.blur.toFixed(2)} chromatic=${lastDomState.chromatic.toFixed(2)} glow=${lastDomState.glowIntensity.toFixed(2)}`;
 
-      if (elapsedMs < DUR_MS + 300) {
+      if (isLoop || elapsedMs < maxDurMs + 300) {
         rafId = requestAnimationFrame(tick);
       }
     }
@@ -39283,11 +39653,7 @@ window.WM_ANIM_ENGINE = (function () {
   }
 
   playBtn.addEventListener('click', play);
-  // primeiro frame renderizado parado, só pra não começar em branco
-  drawCanvasFrame(0);
-  window.WM_ANIM_ENGINE.applyStateToDOM(newDomEl, window.WM_ANIM_ENGINE.sampleAnimation(RECIPE, {
-    elapsedMs: 0, entranceDelayMs: 0, entranceDurEndMs: DUR_MS, exitStartMs: null,
-  }));
+  select.addEventListener('change', () => { if (rafId) cancelAnimationFrame(rafId); });
 })();
 </script>
 
