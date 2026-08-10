@@ -17485,10 +17485,32 @@ const CanvasRenderer = {
     ctx.save();
     try {
       ctx.translate(_cx.x, _cx.y);
+      // Etapa 6 — transição entre cenas: replica o playFull() do preview,
+      // que anima só o TEXTO entrando (o fundo troca na hora, sem fade,
+      // igual sempre foi). Só o crossfade está implementado por enquanto;
+      // os outros tipos (slide-*/zoom-*) ainda caem em 'cut' (sem efeito)
+      // até serem migrados também.
+      const transProgress = this._sceneTransitionProgress(slide, elapsedMs);
+      if (transProgress < 1) ctx.globalAlpha = transProgress;
       this._drawSlideTexto(ctx, slide, elapsedMs, _cx.w, _cx.h);
     } finally {
       ctx.restore();
     }
+  },
+
+  /**
+   * Progresso (0..1) da transição de ENTRADA da cena atual. 1 = sem
+   * transição ativa (ou já terminou) → desenha o texto normal, opaco.
+   * < 1 → ainda dentro da janela de transição, aplicar como alpha.
+   *
+   * Só o primeiro slide do vídeo NUNCA transiciona (não tem de onde vir).
+   */
+  _sceneTransitionProgress(slide, elapsedMs) {
+    if (!slide || slide.stanzaIdx === 0) return 1;
+    if (slide.transition !== 'crossfade') return 1; // outros tipos: TODO
+    const durMs = (slide.transitionDuration || 0.5) * 1000;
+    if (durMs <= 0) return 1;
+    return Math.max(0, Math.min(1, elapsedMs / durMs));
   },
 
   /**
@@ -17785,6 +17807,11 @@ const CanvasRenderer = {
         && slide.background.type === 'video') {
       return false;
     }
+
+    // Etapa 6 — transição de cena: enquanto o crossfade ainda está rodando
+    // (alpha do texto mudando frame a frame), o slide NÃO é estático —
+    // senão o export congelaria no meio do fade.
+    if (this._sceneTransitionProgress(slide, elapsedMs) < 1) return false;
 
     const entrance = window.WM_ANIM_V2?.byId(anim.entranceId);
     const exit = window.WM_ANIM_V2?.byId(anim.exitId);
@@ -19622,6 +19649,12 @@ class VideoExporter {
         wordOverrides: slideWordOverrides,
         wordTStarts: wordTStarts,
         hasAnyTStart: hasAnyTStart,
+        // Etapa 6 — transição entre cenas: config é global (sem override por
+        // estrofe, igual ao painel do editor). Aplicada no drawSlide() ao
+        // texto (não ao fundo) durante os primeiros transitionDuration
+        // segundos do slide — mesmo comportamento do preview (playFull()).
+        transition: this.engine.animConfig.transition || 'cut',
+        transitionDuration: this.engine.animConfig.transitionDuration || 0.5,
         animation: {
           entranceId: sceneConfig?.entrance || this.engine.animConfig.entrance,
           exitId: sceneConfig?.exit || this.engine.animConfig.exit,
