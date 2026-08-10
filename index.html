@@ -39050,7 +39050,9 @@ window.WM_ANIM_ENGINE = (function () {
     };
   }
 
-  EASINGS.easeCinematicBezier = makeCubicBezier(0.22, 1, 0.36, 1);
+  // Nome genérico: usada por qualquer preset migrado cujo original é
+  // cubic-bezier(0.22, 1, 0.36, 1) — não é exclusiva do Cinematográfico.
+  EASINGS.easeBezier22_1_36_1 = makeCubicBezier(0.22, 1, 0.36, 1);
 
   const DEFAULT_STATE = Object.freeze({
     opacity: 1, scale: 1, scaleX: 1, scaleY: 1,
@@ -39301,8 +39303,8 @@ window.WM_ANIM_ENGINE = (function () {
       // Curva bezier real (não a aproximação easeOutQuint) — corrige a
       // divergência de timing entre preview (DOM, bezier nativa do
       // navegador) e export (que antes usava a aproximação). Ver
-      // makeCubicBezier() acima. Escopo: só esta animação.
-      easing: 'easeCinematicBezier',
+      // makeCubicBezier() acima.
+      easing: 'easeBezier22_1_36_1',
       keyframes: [
         { at: 0, opacity: 0, translateY: 60, scale: 0.92, blur: 10 },
         { at: 1, opacity: 1, translateY: 0, scale: 1, blur: 0 },
@@ -39334,7 +39336,7 @@ window.WM_ANIM_ENGINE = (function () {
   registerRecipe({ // = 'punch-in' (Punch/Scale Punch), index.html ~linha 10043
     id: 'punch-in-v2',
     entrance: {
-      engine: 'keyframes', duration: 0.4, easing: 'easeOutQuint', // = cubic-bezier(0.22,1,0.36,1) original
+      engine: 'keyframes', duration: 0.4, easing: 'easeBezier22_1_36_1', // bezier real; = cubic-bezier(0.22,1,0.36,1) original
       keyframes: [
         { at: 0, opacity: 0, scale: 1.6, splitX: 30, splitY: 0 },
         { at: 0.5, opacity: 1, scale: 0.95, splitX: 4, splitY: 0 },
@@ -39345,7 +39347,7 @@ window.WM_ANIM_ENGINE = (function () {
   registerRecipe({ // = 'glory-rise' (Slide Up), index.html ~linha 9366
     id: 'slide-up-in-v2',
     entrance: {
-      engine: 'keyframes', duration: 1.2, easing: 'easeOutQuint',
+      engine: 'keyframes', duration: 1.2, easing: 'easeBezier22_1_36_1', // bezier real; = cubic-bezier(0.22,1,0.36,1) original
       keyframes: [
         { at: 0, opacity: 0, translateY: 40, scale: 0.9 },
         { at: 1, opacity: 1, translateY: 0, scale: 1 },
@@ -39531,9 +39533,14 @@ window.WM_ANIM_ENGINE = (function () {
  */
 window.WM_ENGINE_V2_ACTIVE_IDS = new Set([
   'cinematic-reveal', // primeira animação real migrada, prova de conceito
+  'punch-in',         // Etapa 5: paridade validada (147 checks, 0 divergências,
+                       // incluindo o caso de 3 keyframes)
+  'glory-rise',        // Etapa 5: paridade validada
 ]);
 window.WM_ENGINE_V2_ID_MAP = {
   'cinematic-reveal': 'cinematic-reveal-v2',
+  'punch-in': 'punch-in-v2',
+  'glory-rise': 'slide-up-in-v2',
 };
 
 function wmSampleAnimState(anim, progress) {
