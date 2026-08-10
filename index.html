@@ -38914,6 +38914,33 @@ if (typeof window === 'undefined') { global.window = {}; }
 // no index.html — lá `window` já existe de verdade).
 if (typeof window === 'undefined') { global.window = {}; }
 
+/**
+ * WM_ANIM_ENGINE — Motor de Animações Nativo (v2), Etapa 1 + 2 da proposta.
+ *
+ * IMPORTANTE: este módulo é 100% ADITIVO. Não modifica, substitui nem
+ * depende de ANIMATIONS_V2 / interpolateKeyframes / WMAnimate /
+ * CanvasRenderer já existentes. Roda em paralelo, atrás do id
+ * 'cinematic-reveal-v2' (prova de conceito), enquanto o sistema atual
+ * continua sendo o que está em produção.
+ *
+ * Convenção de valores (igual ao sistema atual, pra manter familiaridade):
+ *   opacity: 0..1
+ *   scale / scaleX / scaleY: multiplicador (1 = 100%)
+ *   translateX / translateY: pixels
+ *   rotate / skewX / skewY: graus
+ *   blur: pixels
+ *   glowIntensity: 0..N (px de drop-shadow)
+ *   chromatic: 0..N (px de deslocamento RGB)
+ *   letterSpacing: pixels
+ *
+ * Contrato central (item 8 da proposta): UMA função pura calcula o
+ * estado em qualquer instante t. Preview e export chamam a MESMA função —
+ * a única diferença é o adaptador que aplica o resultado (DOM vs Canvas).
+ */
+// Shim mínimo pra rodar em Node.js durante o teste de paridade (não entra
+// no index.html — lá `window` já existe de verdade).
+if (typeof window === 'undefined') { global.window = {}; }
+
 window.WM_ANIM_ENGINE = (function () {
   'use strict';
 
@@ -39134,15 +39161,17 @@ window.WM_ANIM_ENGINE = (function () {
     if (state.blur > 0.001) {
       try { ctx.filter = `blur(${state.blur}px)`; } catch (e) { /* navegador sem suporte: ignora */ }
     }
-    // CORREÇÃO: glowIntensity nunca era aplicado no canvas — só existia no
-    // adaptador DOM (via filter: drop-shadow). Usa shadowColor/shadowBlur,
-    // que é o equivalente nativo do canvas 2D pra glow em torno do texto.
-    // shadowColor/shadowBlur fazem parte do estado salvo por ctx.save(),
-    // então são desfeitos automaticamente no restore() — sem vazar pro
-    // próximo elemento desenhado.
-    if (state.glowIntensity > 0.001) {
+    // CORREÇÃO 2: um halo desfocado (shadowBlur) permanece perceptível a
+    // olho nu mesmo com opacidade quase zero — luz difusa espalhada numa
+    // área grande "segura" a visibilidade mais que o texto nítido no
+    // mesmo nível de transparência. Isso fazia o glow parecer "não
+    // desaparecer no final" quando combinado com uma saída (opacity→0).
+    // Agora o próprio brilho é multiplicado pela opacidade (encolhe e
+    // some junto com o texto, não depois) e é cortado de vez abaixo de
+    // um limiar bem baixo, garantindo sumiço total como as outras colunas.
+    if (state.glowIntensity > 0.001 && state.opacity > 0.02) {
       ctx.shadowColor = ctx.fillStyle;
-      ctx.shadowBlur = state.glowIntensity * 12; // mesma escala visual do drop-shadow do DOM
+      ctx.shadowBlur = state.glowIntensity * 12 * state.opacity; // mesma escala visual do drop-shadow do DOM
     }
     // NOTA: chromatic (RGB split) ainda não está implementado no adaptador
     // de canvas — precisa de 2-3 passes de fillText deslocados/coloridos,
