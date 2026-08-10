@@ -39690,7 +39690,13 @@ window.WM_ANIM_ENGINE = (function () {
       oldEl.textContent = '— granularidade por palavra não existe no motor antigo —';
       oldEl.style.fontSize = '11px';
     } else {
-      oldLabel.textContent = 'Antigo · CSS real';
+      // Avisa quando um efeito está ligado: o motor antigo nunca teve
+      // conceito de "efeito plugável" (é a peça nova desta etapa), então
+      // a coluna Antigo NUNCA vai tremer/glitchar/brilhar, propositalmente
+      // — comparar só faz sentido pro movimento base (fade/slide/scale).
+      oldLabel.textContent = fx.length
+        ? `Antigo · CSS real (sem "${fx.join('+')}" — efeito não existe aqui)`
+        : 'Antigo · CSS real';
       oldEl.style.fontSize = '';
       oldEl.textContent = 'GRANDE';
       oldEl.style.opacity = def.category === 'exit' ? '1' : '';
