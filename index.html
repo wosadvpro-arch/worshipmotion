@@ -41299,11 +41299,18 @@ window.WM_ENGINE_V2_ACTIVE_IDS = new Set([
   'punch-in',         // Etapa 5: paridade validada (147 checks, 0 divergências,
                        // incluindo o caso de 3 keyframes)
   'glory-rise',        // Etapa 5: paridade validada
+  // Etapa 5, lote 2 — 2 entradas + 2 saídas correspondentes, pra testar
+  // fade simples de cada lado (paridade validada no lote automático):
+  'fade-in-soft', 'whisper-in', 'fade-out-soft', 'whisper-out',
 ]);
 window.WM_ENGINE_V2_ID_MAP = {
   'cinematic-reveal': 'cinematic-reveal-v2',
   'punch-in': 'punch-in-v2',
   'glory-rise': 'slide-up-in-v2',
+  'fade-in-soft': 'fade-in-soft-v2',
+  'whisper-in': 'whisper-in-v2',
+  'fade-out-soft': 'fade-out-soft-v2',
+  'whisper-out': 'whisper-out-v2',
 };
 
 function wmSampleAnimState(anim, progress) {
