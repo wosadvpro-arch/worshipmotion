@@ -7078,6 +7078,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
     <div class="panel-tabs">
       <button class="panel-tab active" data-panel="lyrics" data-i18n="panel.lyrics">Letra</button>
       <button class="panel-tab" data-panel="animations" data-i18n="panel.animations">Animações</button>
+      <button class="panel-tab" data-panel="transitions" data-i18n="panel.transitions">Transições</button>
     </div>
 
     <div class="panel-body">
@@ -7174,6 +7175,27 @@ Digno de toda honra"></textarea>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:5px; vertical-align:-2px;"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
             <span data-i18n="an.applyAll">Aplicar esta animação em todos os slides</span>
           </button>
+        </div>
+      </div>
+
+      <div class="panel-content" data-panel-content="transitions" style="display:none;">
+        <div class="panel-section">
+          <div class="panel-section-title" data-i18n="sp.transition">Transição entre estrofes</div>
+          <select id="transition-type" class="input" style="width:100%; font-size:11px; padding:6px 8px;">
+            <option value="cut" data-i18n="sp.trCut">Cut (instantâneo)</option>
+            <option value="crossfade" data-i18n="sp.trCrossfade">Crossfade (fade)</option>
+            <option value="slide-left" data-i18n="sp.trSlideLeft">Slide ← (vem da direita)</option>
+            <option value="slide-right" data-i18n="sp.trSlideRight">Slide → (vem da esquerda)</option>
+            <option value="slide-up" data-i18n="sp.trSlideUp">Slide ↑ (sobe)</option>
+            <option value="slide-down" data-i18n="sp.trSlideDown">Slide ↓ (desce)</option>
+            <option value="zoom-in" data-i18n="sp.trZoomIn">Zoom In</option>
+            <option value="zoom-out" data-i18n="sp.trZoomOut">Zoom Out</option>
+          </select>
+          <label class="label" style="font-size: 10px; margin-top: var(--space-2); margin-bottom: var(--space-1); display:block;" data-i18n="sp.duration">Duração</label>
+          <div style="display: flex; align-items: center; gap: var(--space-3);">
+            <input type="range" class="range" id="transition-duration" min="2" max="15" value="5" style="flex:1">
+            <span class="value-display" id="transition-duration-val">0.5s</span>
+          </div>
         </div>
       </div>
     </div>
@@ -7663,25 +7685,6 @@ Digno de toda honra"></textarea>
           <div style="display: flex; align-items: center; gap: var(--space-3);">
             <input type="range" class="range" id="stagger" min="0" max="30" value="6" style="flex:1">
             <span class="value-display" id="stagger-val">0.06s</span>
-          </div>
-        </div>
-
-        <div class="panel-section">
-          <div class="panel-section-title" data-i18n="sp.transition">Transição entre estrofes</div>
-          <select id="transition-type" class="input" style="width:100%; font-size:11px; padding:6px 8px;">
-            <option value="cut" data-i18n="sp.trCut">Cut (instantâneo)</option>
-            <option value="crossfade" data-i18n="sp.trCrossfade">Crossfade (fade)</option>
-            <option value="slide-left" data-i18n="sp.trSlideLeft">Slide ← (vem da direita)</option>
-            <option value="slide-right" data-i18n="sp.trSlideRight">Slide → (vem da esquerda)</option>
-            <option value="slide-up" data-i18n="sp.trSlideUp">Slide ↑ (sobe)</option>
-            <option value="slide-down" data-i18n="sp.trSlideDown">Slide ↓ (desce)</option>
-            <option value="zoom-in" data-i18n="sp.trZoomIn">Zoom In</option>
-            <option value="zoom-out" data-i18n="sp.trZoomOut">Zoom Out</option>
-          </select>
-          <label class="label" style="font-size: 10px; margin-top: var(--space-2); margin-bottom: var(--space-1); display:block;" data-i18n="sp.duration">Duração</label>
-          <div style="display: flex; align-items: center; gap: var(--space-3);">
-            <input type="range" class="range" id="transition-duration" min="2" max="15" value="5" style="flex:1">
-            <span class="value-display" id="transition-duration-val">0.5s</span>
           </div>
         </div>
 
@@ -8404,6 +8407,7 @@ window.__WM_BUILD = 'export-quebra-linha-30jul';
     // ================= EDITOR — abas dos painéis =================
     'panel.lyrics':     { pt: 'Letra', en: 'Lyrics', es: 'Letra' },
     'panel.animations': { pt: 'Animações', en: 'Animations', es: 'Animaciones' },
+    'panel.transitions': { pt: 'Transições', en: 'Transitions', es: 'Transiciones' },
 
     // ================= EDITOR — painel de LETRA =================
     'ly.paste':         { pt: 'Cole sua letra', en: 'Paste your lyrics', es: 'Pega tu letra' },
