@@ -18366,15 +18366,19 @@ const CanvasRenderer = {
 
     const style = slide.style || {};
     const baseColor = style.color || '#ffffff';
+    // Mesmo bug corrigido em _drawSlideIsolatedMaquina: usa _wordText()
+    // pra respeitar override de caixa por palavra, em vez de aplicar só
+    // o textTransform global do slide na linha inteira.
+    const wordOverrides = slide.wordOverrides || {};
 
     layout.lines.forEach(line => {
       if (!line.words || !line.words.length) return;
 
       // Reconstrói a STRING da linha inteira (palavras + espaço entre elas),
       // exatamente como o demo recebe "SANTO É O SENHOR".
-      const lineText = this._applyTransform(
-        line.words.map(w => w.text).join(' '),
-        (slide.style && slide.style.textTransform) || 'none');
+      const lineText = line.words
+        .map(w => this._wordText(w, style.textTransform, wordOverrides))
+        .join(' ');
       if (!lineText.trim()) return;
 
       // Geometria comum: fonte + cy da linha
@@ -18833,12 +18837,19 @@ const CanvasRenderer = {
     const cfg = anim.physicsCfg || {};
     const style = slide.style || {};
     const baseColor = style.color || '#ffffff';
+    // BUG CORRIGIDO: antes aplicava só o textTransform global do slide,
+    // ignorando quando uma palavra específica tem override de caixa
+    // (ex: uma palavra marcada pra ficar normal enquanto o slide é
+    // maiúsculo por padrão) — causava "ESSE?" no export quando o editor
+    // mostrava "Esse?". _wordText() já resolve isso corretamente (usada
+    // no caminho normal de export); só não estava sendo usada aqui.
+    const wordOverrides = slide.wordOverrides || {};
 
     layout.lines.forEach(line => {
       if (!line.words || !line.words.length) return;
-      const lineText = this._applyTransform(
-        line.words.map(w => w.text).join(' '),
-        (slide.style && slide.style.textTransform) || 'none');
+      const lineText = line.words
+        .map(w => this._wordText(w, style.textTransform, wordOverrides))
+        .join(' ');
       if (!lineText.trim()) return;
 
       const firstW = line.words[0];
