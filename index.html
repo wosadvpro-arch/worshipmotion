@@ -39458,16 +39458,11 @@ window.WM_ANIM_ENGINE = (function () {
       ],
     },
   });
-  registerRecipe({ // = 'maquina-escrever', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'maquina-escrever-v2',
-    entrance: {
-      engine: 'keyframes', duration: 1.2, easing: 'linear',
-      keyframes: [
-        { at: 0, opacity: 0 },
-        { at: 1, opacity: 1 },
-      ],
-    },
-  });
+  // NOTA: 'maquina-escrever' foi excluída da migração automática de
+  // propósito — ela usa um motor de física próprio (isolatedEngine +
+  // physicsCfg, não keyframes simples). Uma receita simples de fade já
+  // tinha sido gerada por engano aqui; removida pra nunca ser ativada
+  // sem querer (perderia o efeito real de física da máquina de escrever).
   registerRecipe({ // = 'depth-emerge', migração automática Etapa 5 (validada: paridade numérica)
     id: 'depth-emerge-v2',
     entrance: {
@@ -40960,6 +40955,45 @@ window.WM_ANIM_ENGINE = (function () {
       ],
     },
   });
+  // Typewriter Blur / Rápido / Forte — migração manual (não entraram no
+  // lote automático porque usam charStagger, granularidade por caractere).
+  // O delay entre letras continua 100% no código antigo (_drawWordCharByChar,
+  // index.html ~linha 18888) — só a amostragem de cada caractere passa
+  // pela ponte wmSampleAnimState(), então a receita é uma entrada normal,
+  // sem nada especial de stagger aqui.
+  registerRecipe({ // = 'typewriter-blur'
+    id: 'typewriter-blur-v2',
+    entrance: {
+      engine: 'keyframes', duration: 0.5, easing: 'easeBezier16_1_3_1',
+      keyframes: [
+        { at: 0, opacity: 0, translateX: -40, blur: 8 },
+        { at: 0.4, opacity: 0.7, translateX: -8, blur: 3 },
+        { at: 1, opacity: 1, translateX: 0, blur: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'typewriter-blur-fast'
+    id: 'typewriter-blur-fast-v2',
+    entrance: {
+      engine: 'keyframes', duration: 0.35, easing: 'easeBezier16_1_3_1',
+      keyframes: [
+        { at: 0, opacity: 0, translateX: -30, blur: 6 },
+        { at: 1, opacity: 1, translateX: 0, blur: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'typewriter-blur-strong'
+    id: 'typewriter-blur-strong-v2',
+    entrance: {
+      engine: 'keyframes', duration: 0.7, easing: 'easeBezier16_1_3_1',
+      keyframes: [
+        { at: 0, opacity: 0, translateX: -70, blur: 14 },
+        { at: 0.3, opacity: 0.4, translateX: -25, blur: 7 },
+        { at: 0.6, opacity: 0.85, translateX: -5, blur: 2 },
+        { at: 1, opacity: 1, translateX: 0, blur: 0 },
+      ],
+    },
+  });
   registerRecipe({ // = 'loop-glow-pulse', migração automática Etapa 5 (validada: paridade numérica)
     id: 'loop-glow-pulse-v2',
     loop: {
@@ -41035,6 +41069,45 @@ window.WM_ENGINE_V2_ACTIVE_IDS = new Set([
   'depth-recede', 'slide-away-down', 'collapse-out', 'imax-out',
   'sacred-vanish', 'whisper-fade-out', 'sacred-dissolve', 'thunder-out',
   'loop-glow-pulse',
+  // Etapa 5, lote 5 — 30 animações, validadas em lote (18.450 checks, 0
+  // divergências). 22 entradas + 8 saídas.
+  'fade-down-elegant', 'cascade-down', 'depth-emerge', 'glory-flash',
+  'snap-in', 'pop-burst', 'impact-in', 'royal-entrance', 'gentle-embrace',
+  'glow-emerge', 'faith-wind', 'temple-rise', 'dove-descent',
+  'kinetic-slide', 'flicker-in', 'tape-warp', 'pull-focus', 'lens-flare-in',
+  'fog-emerge', 'rocket-launch', 'beat-pulse', 'spin-toss', 'mist-away',
+  'slide-away-left', 'motion-blur-exit', 'shatter-exit', 'jelly-deflate',
+  'spin-out', 'depth-vanish', 'whispered-farewell',
+  // Etapa 5, lote 6 — 30 animações, validadas em lote (18.450 checks, 0
+  // divergências). 22 entradas + 8 saídas.
+  'silk-flow', 'film-fade', 'focus-pull', 'sacred-pulse', 'mask-up',
+  'spring-in', 'dramatic-rise', 'tender-rise', 'mist-arrive',
+  'eternal-glory', 'burning-heart', 'manna-fall', 'jelly-pop',
+  'squeeze-in', 'mirror-flip', 'imax-reveal', 'title-drop', 'epic-zoom',
+  'skate-boom', 'pinball-bounce', 'street-tag', 'youth-anthem',
+  'fade-out-elegant', 'slide-away-right', 'darken-out', 'flash-out',
+  'kinetic-slide-out', 'tilt-fall', 'velvet-recede', 'mist-dissolve',
+  // Etapa 5, lote 7 (final) — 49 animações, validadas em lote (30.135
+  // checks, 0 divergências). Fecha praticamente toda a biblioteca, exceto
+  // as 3 Typewriter (charStagger) e 'maquina-escrever' (motor de física
+  // próprio — excluída de propósito, ver nota junto ao registerRecipe
+  // removido).
+  'graceful-arc', 'heaven-descent', 'slide-in-left', 'mask-down',
+  'wiggle-in', 'luxury-fade', 'heart-pulse', 'tide-in',
+  'gentle-vanish', 'slide-away-up', 'long-fade-out', 'dramatic-fall',
+  'living-spirit', 'holy-ascension', 'shofar-call', 'stamp-impact',
+  'tilt-pop', 'spread-pop', 'trailer-darkness', 'camera-shake',
+  'film-roll', 'smash-hit', 'graffiti-spray', 'comic-pow',
+  'silk-drape', 'velvet-rise', 'parisian-fade', 'editorial-hold',
+  'platinum-glow', 'whisper-elegant', 'gala-arrival', 'spotlight-off',
+  'collapse-implode', 'sacred-fade', 'descending-grace', 'rising-to-heaven',
+  'tender-arrival', 'heart-opening', 'gentle-confession', 'mist-form',
+  'fade-into-air', 'shock-arrival', 'power-burst', 'shake-out',
+  'pixel-out', 'swift-exit', 'clean-vanish', 'theatrical-exit',
+  'credit-roll',
+  // Etapa 5, lote 8 (typewriters) — migração manual (charStagger), 2.295
+  // checks, 0 divergências, incluindo o caso de 4 keyframes do Forte.
+  'typewriter-blur', 'typewriter-blur-fast', 'typewriter-blur-strong',
 ]);
 window.WM_ENGINE_V2_ID_MAP = {
   'cinematic-reveal': 'cinematic-reveal-v2',
@@ -41075,6 +41148,118 @@ window.WM_ENGINE_V2_ID_MAP = {
   'sacred-dissolve': 'sacred-dissolve-v2',
   'thunder-out': 'thunder-out-v2',
   'loop-glow-pulse': 'loop-glow-pulse-v2',
+  'fade-down-elegant': 'fade-down-elegant-v2',
+  'cascade-down': 'cascade-down-v2',
+  'depth-emerge': 'depth-emerge-v2',
+  'glory-flash': 'glory-flash-v2',
+  'snap-in': 'snap-in-v2',
+  'pop-burst': 'pop-burst-v2',
+  'impact-in': 'impact-in-v2',
+  'royal-entrance': 'royal-entrance-v2',
+  'gentle-embrace': 'gentle-embrace-v2',
+  'glow-emerge': 'glow-emerge-v2',
+  'faith-wind': 'faith-wind-v2',
+  'temple-rise': 'temple-rise-v2',
+  'dove-descent': 'dove-descent-v2',
+  'kinetic-slide': 'kinetic-slide-v2',
+  'flicker-in': 'flicker-in-v2',
+  'tape-warp': 'tape-warp-v2',
+  'pull-focus': 'pull-focus-v2',
+  'lens-flare-in': 'lens-flare-in-v2',
+  'fog-emerge': 'fog-emerge-v2',
+  'rocket-launch': 'rocket-launch-v2',
+  'beat-pulse': 'beat-pulse-v2',
+  'spin-toss': 'spin-toss-v2',
+  'mist-away': 'mist-away-v2',
+  'slide-away-left': 'slide-away-left-v2',
+  'motion-blur-exit': 'motion-blur-exit-v2',
+  'shatter-exit': 'shatter-exit-v2',
+  'jelly-deflate': 'jelly-deflate-v2',
+  'spin-out': 'spin-out-v2',
+  'depth-vanish': 'depth-vanish-v2',
+  'whispered-farewell': 'whispered-farewell-v2',
+  'silk-flow': 'silk-flow-v2',
+  'film-fade': 'film-fade-v2',
+  'focus-pull': 'focus-pull-v2',
+  'sacred-pulse': 'sacred-pulse-v2',
+  'mask-up': 'mask-up-v2',
+  'spring-in': 'spring-in-v2',
+  'dramatic-rise': 'dramatic-rise-v2',
+  'tender-rise': 'tender-rise-v2',
+  'mist-arrive': 'mist-arrive-v2',
+  'eternal-glory': 'eternal-glory-v2',
+  'burning-heart': 'burning-heart-v2',
+  'manna-fall': 'manna-fall-v2',
+  'jelly-pop': 'jelly-pop-v2',
+  'squeeze-in': 'squeeze-in-v2',
+  'mirror-flip': 'mirror-flip-v2',
+  'imax-reveal': 'imax-reveal-v2',
+  'title-drop': 'title-drop-v2',
+  'epic-zoom': 'epic-zoom-v2',
+  'skate-boom': 'skate-boom-v2',
+  'pinball-bounce': 'pinball-bounce-v2',
+  'street-tag': 'street-tag-v2',
+  'youth-anthem': 'youth-anthem-v2',
+  'fade-out-elegant': 'fade-out-elegant-v2',
+  'slide-away-right': 'slide-away-right-v2',
+  'darken-out': 'scale-down-out-v2',
+  'flash-out': 'flash-out-v2',
+  'kinetic-slide-out': 'kinetic-slide-out-v2',
+  'tilt-fall': 'tilt-fall-v2',
+  'velvet-recede': 'velvet-recede-v2',
+  'mist-dissolve': 'mist-dissolve-v2',
+  'graceful-arc': 'graceful-arc-v2',
+  'heaven-descent': 'heaven-descent-v2',
+  'slide-in-left': 'slide-in-left-v2',
+  'mask-down': 'mask-down-v2',
+  'wiggle-in': 'wiggle-in-v2',
+  'luxury-fade': 'luxury-fade-v2',
+  'heart-pulse': 'heart-pulse-v2',
+  'tide-in': 'tide-in-v2',
+  'gentle-vanish': 'gentle-vanish-v2',
+  'slide-away-up': 'slide-out-v2',
+  'long-fade-out': 'long-fade-out-v2',
+  'dramatic-fall': 'dramatic-fall-v2',
+  'living-spirit': 'living-spirit-v2',
+  'holy-ascension': 'holy-ascension-v2',
+  'shofar-call': 'shofar-call-v2',
+  'stamp-impact': 'stamp-impact-v2',
+  'tilt-pop': 'tilt-pop-v2',
+  'spread-pop': 'spread-pop-v2',
+  'trailer-darkness': 'trailer-darkness-v2',
+  'camera-shake': 'camera-shake-v2',
+  'film-roll': 'film-roll-v2',
+  'smash-hit': 'smash-hit-v2',
+  'graffiti-spray': 'graffiti-spray-v2',
+  'comic-pow': 'comic-pow-v2',
+  'silk-drape': 'silk-drape-v2',
+  'velvet-rise': 'velvet-rise-v2',
+  'parisian-fade': 'parisian-fade-v2',
+  'editorial-hold': 'editorial-hold-v2',
+  'platinum-glow': 'platinum-glow-v2',
+  'whisper-elegant': 'whisper-elegant-v2',
+  'gala-arrival': 'gala-arrival-v2',
+  'spotlight-off': 'spotlight-off-v2',
+  'collapse-implode': 'collapse-implode-v2',
+  'sacred-fade': 'sacred-fade-v2',
+  'descending-grace': 'descending-grace-v2',
+  'rising-to-heaven': 'rising-to-heaven-v2',
+  'tender-arrival': 'tender-arrival-v2',
+  'heart-opening': 'heart-opening-v2',
+  'gentle-confession': 'gentle-confession-v2',
+  'mist-form': 'mist-form-v2',
+  'fade-into-air': 'fade-into-air-v2',
+  'shock-arrival': 'shock-arrival-v2',
+  'power-burst': 'power-burst-v2',
+  'shake-out': 'shake-out-v2',
+  'pixel-out': 'pixel-out-v2',
+  'swift-exit': 'swift-exit-v2',
+  'clean-vanish': 'clean-vanish-v2',
+  'theatrical-exit': 'theatrical-exit-v2',
+  'credit-roll': 'credit-roll-v2',
+  'typewriter-blur': 'typewriter-blur-v2',
+  'typewriter-blur-fast': 'typewriter-blur-fast-v2',
+  'typewriter-blur-strong': 'typewriter-blur-strong-v2',
 };
 
 function wmSampleAnimState(anim, progress) {
