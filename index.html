@@ -9168,15 +9168,6 @@ const ANIMATIONS_V2 = [
       { at: 1, opacity: 1, translateY: 0,  blur: 0 },
     ],
   },{
-    id: 'whisper-in',
-    name: 'Sussurro',
-    category: 'entrance', style: 'soft',
-    duration: 1.4, easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
-    keyframes: [
-      { at: 0, opacity: 0, scale: 1.02, blur: 2 },
-      { at: 1, opacity: 1, scale: 1,    blur: 0 },
-    ],
-  },{
     id: 'feather-drop',
     name: 'Pluma Caindo',
     category: 'entrance', style: 'soft',
@@ -9184,15 +9175,6 @@ const ANIMATIONS_V2 = [
     keyframes: [
       { at: 0, opacity: 0, translateY: -30 },
       { at: 1, opacity: 1, translateY: 0 },
-    ],
-  },{
-    id: 'gentle-radiance',
-    name: 'Radiância Suave',
-    category: 'entrance', style: 'soft',
-    duration: 1.4, easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
-    keyframes: [
-      { at: 0, opacity: 0, scale: 0.95 },
-      { at: 1, opacity: 1, scale: 1 },
     ],
   },{
     id: 'fade-down-elegant',
@@ -9341,15 +9323,6 @@ const ANIMATIONS_V2 = [
       { at: 0, opacity: 0, translateY: 80, blur: 6 },
       { at: 1, opacity: 1, translateY: 0,  blur: 0 },
     ],
-  },{
-    id: 'long-fade',
-    name: 'Fade Longo',
-    category: 'entrance', style: 'cinematic',
-    duration: 2.2, easing: 'cubic-bezier(0.45, 0, 0.55, 1)',
-    keyframes: [
-      { at: 0, opacity: 0, translateY: 20 },
-      { at: 1, opacity: 1, translateY: 0 },
-    ],
   },// ============================================================
   // ENTRANCES — HOLY (7)
   // ============================================================
@@ -9361,15 +9334,6 @@ const ANIMATIONS_V2 = [
     keyframes: [
       { at: 0, opacity: 0, translateY: -40, scale: 1.1 },
       { at: 1, opacity: 1, translateY: 0,   scale: 1 },
-    ],
-  },{
-    id: 'glory-rise',
-    name: 'Glória Subindo',
-    category: 'entrance', style: 'holy',
-    duration: 1.2, easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
-    keyframes: [
-      { at: 0, opacity: 0, translateY: 40, scale: 0.9 },
-      { at: 1, opacity: 1, translateY: 0,  scale: 1 },
     ],
   },{
     id: 'heaven-descent',
@@ -9537,15 +9501,6 @@ const ANIMATIONS_V2 = [
       { at: 1, opacity: 1, translateY: 0,  scale: 1 },
     ],
   },{
-    id: 'awards-reveal',
-    name: 'Awards Reveal',
-    category: 'entrance', style: 'premium',
-    duration: 1.5, easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
-    keyframes: [
-      { at: 0, opacity: 0, scale: 0.85, blur: 6 },
-      { at: 1, opacity: 1, scale: 1,    blur: 0 },
-    ],
-  },{
     id: 'royal-entrance',
     name: 'Real',
     category: 'entrance', style: 'premium',
@@ -9607,15 +9562,6 @@ const ANIMATIONS_V2 = [
       { at: 1, opacity: 1, scale: 1,    blur: 0 },
     ],
   },{
-    id: 'breath-in',
-    name: 'Respiração',
-    category: 'entrance', style: 'ambient',
-    duration: 2.0, easing: 'cubic-bezier(0.45, 0, 0.55, 1)',
-    keyframes: [
-      { at: 0, opacity: 0, scale: 0.97 },
-      { at: 1, opacity: 1, scale: 1 },
-    ],
-  },{
     id: 'tide-in',
     name: 'Maré',
     category: 'entrance', style: 'ambient',
@@ -9671,15 +9617,6 @@ const ANIMATIONS_V2 = [
     keyframes: [
       { at: 0, opacity: 1, scale: 1,    blur: 0 },
       { at: 1, opacity: 0, scale: 1.15, blur: 30 },
-    ],
-  },{
-    id: 'whisper-out',
-    name: 'Sussurro Out',
-    category: 'exit', style: 'soft',
-    duration: 1.3, easing: 'cubic-bezier(0.55, 0, 0.55, 0.2)',
-    keyframes: [
-      { at: 0, opacity: 1, scale: 1,    blur: 0 },
-      { at: 1, opacity: 0, scale: 1.03, blur: 3 },
     ],
   },// ============================================================
   // EXITS — ELEGANT (3)
@@ -9754,15 +9691,6 @@ const ANIMATIONS_V2 = [
   // EXITS — CINEMATIC (4)
   // ============================================================
   {
-    id: 'film-end',
-    name: 'Film End',
-    category: 'exit', style: 'cinematic',
-    duration: 1.6, easing: 'cubic-bezier(0.45, 0, 0.55, 1)',
-    keyframes: [
-      { at: 0, opacity: 1, scale: 1,    blur: 0 },
-      { at: 1, opacity: 0, scale: 1.02, blur: 3 },
-    ],
-  },{
     id: 'motion-blur-exit',
     name: 'Motion Blur',
     category: 'exit', style: 'cinematic',
@@ -10717,16 +10645,6 @@ const ANIMATIONS_V2 = [
     ],
   },// === AMBIENT ENTRANCE (3) — pads atmosféricos ===
   {
-    id: 'ethereal-drift',
-    name: 'Deriva Etérea',
-    category: 'entrance', style: 'ambient',
-    duration: 2.2, easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
-    keyframes: [
-      { at: 0,    opacity: 0,    translateX: -15, blur: 10 },
-      { at: 0.5,  opacity: 0.5,  translateX: -3,  blur: 4  },
-      { at: 1,    opacity: 1,    translateX: 0,   blur: 0  },
-    ],
-  },{
     id: 'mist-form',
     name: 'Formação de Bruma',
     category: 'entrance', style: 'ambient',
@@ -10846,16 +10764,6 @@ const ANIMATIONS_V2 = [
       { at: 1,   opacity: 0,    translateY: -30, scale: 0.95 },
     ],
   },{
-    id: 'epilogue-fade',
-    name: 'Epílogo',
-    category: 'exit', style: 'cinematic',
-    duration: 1.8, easing: 'cubic-bezier(0.65, 0, 0.35, 1)',
-    keyframes: [
-      { at: 0,   opacity: 1,   scale: 1,    blur: 0 },
-      { at: 0.6, opacity: 0.6, scale: 1.01, blur: 1 },
-      { at: 1,   opacity: 0,   scale: 1.02, blur: 4 },
-    ],
-  },{
     id: 'credit-roll',
     name: 'Créditos Subindo',
     category: 'exit', style: 'cinematic',
@@ -10881,30 +10789,6 @@ const ANIMATIONS_V2 = [
       { at: 1,   scale: 1 },
     ],
   },{
-    id: 'loop-drift',
-    name: 'Deriva Suave',
-    category: 'loop', style: 'organic',
-    duration: 6.0, easing: 'cubic-bezier(0.45, 0, 0.55, 1)',
-    loop: true,
-    keyframes: [
-      { at: 0,    translateX: 0, translateY: 0 },
-      { at: 0.25, translateX: 3, translateY: -2 },
-      { at: 0.5,  translateX: 0, translateY: -4 },
-      { at: 0.75, translateX: -3, translateY: -2 },
-      { at: 1,    translateX: 0, translateY: 0 },
-    ],
-  },{
-    id: 'loop-float',
-    name: 'Flutuação',
-    category: 'loop', style: 'organic',
-    duration: 3.5, easing: 'cubic-bezier(0.45, 0, 0.55, 1)',
-    loop: true,
-    keyframes: [
-      { at: 0,   translateY: 0 },
-      { at: 0.5, translateY: -6 },
-      { at: 1,   translateY: 0 },
-    ],
-  },{
     id: 'loop-glow-pulse',
     name: 'Brilho Pulsante',
     category: 'loop', style: 'divine',
@@ -10914,32 +10798,6 @@ const ANIMATIONS_V2 = [
       { at: 0,   glowIntensity: 1.0 },
       { at: 0.5, glowIntensity: 1.6 },
       { at: 1,   glowIntensity: 1.0 },
-    ],
-  },{
-    id: 'loop-shimmer',
-    name: 'Cintilar',
-    category: 'loop', style: 'divine',
-    duration: 3.0, easing: 'linear',
-    loop: true,
-    keyframes: [
-      { at: 0,    opacity: 1 },
-      { at: 0.4,  opacity: 0.85 },
-      { at: 0.5,  opacity: 1 },
-      { at: 0.6,  opacity: 0.85 },
-      { at: 1,    opacity: 1 },
-    ],
-  },{
-    id: 'loop-sway',
-    name: 'Balanço',
-    category: 'loop', style: 'organic',
-    duration: 5.0, easing: 'cubic-bezier(0.45, 0, 0.55, 1)',
-    loop: true,
-    keyframes: [
-      { at: 0,    rotate: 0 },
-      { at: 0.25, rotate: 0.5 },
-      { at: 0.5,  rotate: 0 },
-      { at: 0.75, rotate: -0.5 },
-      { at: 1,    rotate: 0 },
     ],
   },
 ];
@@ -11931,1741 +11789,6 @@ function parseLyrics(rawText) {
   // se a primeira estrofe não tem label, dar um padrão
   stanzas.forEach((s, i) => {
     if (!s.label) s.label = `Estrofe ${i + 1}`;
-  });
-
-  // -------------------------------------------------------------------
-  // Etapa 5 — lote automático: 158 animações geradas direto de
-  // ANIMATIONS_V2 por um conversor (não escritas à mão uma por uma).
-  // Todas com paridade numérica 100% confirmada contra o motor antigo
-  // (50.085 comparações, easing bezier real). Ainda NÃO estão na
-  // whitelist de produção (WM_ENGINE_V2_ACTIVE_IDS) — só registradas e
-  // validadas; ativação em produção é feita aos poucos, id por id.
-  //
-  // Exceção conhecida: 'loop-shimmer' ficou de fora (anima só opacidade
-  // dentro de um loop, e o motor novo propositalmente não deixa o loop
-  // mexer em opacidade — precisa de tratamento à parte).
-  // -------------------------------------------------------------------
-  registerRecipe({ // = 'sem-animacao', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'sem-animacao-v2',
-    entrance: {
-      engine: 'keyframes', duration: 0.01, easing: 'linear',
-      keyframes: [
-        { at: 0, opacity: 1 },
-        { at: 1, opacity: 1 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'fade-in-soft', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'fade-in-soft-v2',
-    entrance: {
-      engine: 'keyframes', duration: 1.1, easing: 'easeBezier22_1_36_1',
-      keyframes: [
-        { at: 0, opacity: 0, translateY: 12, blur: 6 },
-        { at: 1, opacity: 1, translateY: 0, blur: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'whisper-in', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'whisper-in-v2',
-    entrance: {
-      engine: 'keyframes', duration: 1.4, easing: 'easeBezier22_1_36_1',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 1.02, blur: 2 },
-        { at: 1, opacity: 1, scale: 1, blur: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'feather-drop', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'feather-drop-v2',
-    entrance: {
-      engine: 'keyframes', duration: 1.5, easing: 'easeBezier45_0_55_1',
-      keyframes: [
-        { at: 0, opacity: 0, translateY: -30 },
-        { at: 1, opacity: 1, translateY: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'gentle-radiance', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'gentle-radiance-v2',
-    entrance: {
-      engine: 'keyframes', duration: 1.4, easing: 'easeBezier22_1_36_1',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 0.95 },
-        { at: 1, opacity: 1, scale: 1 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'fade-down-elegant', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'fade-down-elegant-v2',
-    entrance: {
-      engine: 'keyframes', duration: 1, easing: 'easeBezier22_1_36_1',
-      keyframes: [
-        { at: 0, opacity: 0, translateY: -40 },
-        { at: 1, opacity: 1, translateY: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'silk-flow', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'silk-flow-v2',
-    entrance: {
-      engine: 'keyframes', duration: 1.1, easing: 'easeBezier22_1_36_1',
-      keyframes: [
-        { at: 0, opacity: 0, translateX: -60 },
-        { at: 1, opacity: 1, translateX: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'graceful-arc', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'graceful-arc-v2',
-    entrance: {
-      engine: 'keyframes', duration: 1.2, easing: 'easeBezier22_1_36_1',
-      keyframes: [
-        { at: 0, opacity: 0, translateX: 40, translateY: -20 },
-        { at: 0.5, opacity: 0.5, translateX: 20, translateY: -10 },
-        { at: 1, opacity: 1, translateX: 0, translateY: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'cascade-down', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'cascade-down-v2',
-    entrance: {
-      engine: 'keyframes', duration: 1.1, easing: 'easeBezier22_1_36_1',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 0.9, translateY: -50 },
-        { at: 1, opacity: 1, scale: 1, translateY: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'blur-reveal', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'blur-reveal-v2',
-    entrance: {
-      engine: 'keyframes', duration: 1.3, easing: 'easeBezier22_1_36_1',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 1.08, blur: 20 },
-        { at: 1, opacity: 1, scale: 1, blur: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'film-fade', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'film-fade-v2',
-    entrance: {
-      engine: 'keyframes', duration: 1.8, easing: 'easeBezier45_0_55_1',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 0.96, blur: 3 },
-        { at: 1, opacity: 1, scale: 1, blur: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'maquina-escrever', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'maquina-escrever-v2',
-    entrance: {
-      engine: 'keyframes', duration: 1.2, easing: 'linear',
-      keyframes: [
-        { at: 0, opacity: 0 },
-        { at: 1, opacity: 1 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'depth-emerge', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'depth-emerge-v2',
-    entrance: {
-      engine: 'keyframes', duration: 1.3, easing: 'easeBezier22_1_36_1',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 0.6, blur: 12 },
-        { at: 1, opacity: 1, scale: 1, blur: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'focus-pull', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'focus-pull-v2',
-    entrance: {
-      engine: 'keyframes', duration: 1.4, easing: 'easeBezier22_1_36_1',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 1.15, blur: 30 },
-        { at: 1, opacity: 1, scale: 1, blur: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'horizon-rise', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'horizon-rise-v2',
-    entrance: {
-      engine: 'keyframes', duration: 1.5, easing: 'easeBezier22_1_36_1',
-      keyframes: [
-        { at: 0, opacity: 0, translateY: 80, blur: 6 },
-        { at: 1, opacity: 1, translateY: 0, blur: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'long-fade', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'long-fade-v2',
-    entrance: {
-      engine: 'keyframes', duration: 2.2, easing: 'easeBezier45_0_55_1',
-      keyframes: [
-        { at: 0, opacity: 0, translateY: 20 },
-        { at: 1, opacity: 1, translateY: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'divine-light', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'divine-light-v2',
-    entrance: {
-      engine: 'keyframes', duration: 1.3, easing: 'easeBezier22_1_36_1',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 1.1, translateY: -40 },
-        { at: 1, opacity: 1, scale: 1, translateY: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'heaven-descent', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'heaven-descent-v2',
-    entrance: {
-      engine: 'keyframes', duration: 1.6, easing: 'easeBezier22_1_36_1',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 1.15, translateY: -100, blur: 8 },
-        { at: 1, opacity: 1, scale: 1, translateY: 0, blur: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'glory-flash', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'glory-flash-v2',
-    entrance: {
-      engine: 'keyframes', duration: 0.8, easing: 'easeBezier22_1_36_1',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 0.7 },
-        { at: 1, opacity: 1, scale: 1 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'sacred-pulse', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'sacred-pulse-v2',
-    entrance: {
-      engine: 'keyframes', duration: 1, easing: 'linear',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 1.2 },
-        { at: 0.5, opacity: 1, scale: 0.95 },
-        { at: 1, opacity: 1, scale: 1 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'slide-in-left', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'slide-in-left-v2',
-    entrance: {
-      engine: 'keyframes', duration: 0.9, easing: 'easeBezier22_1_36_1',
-      keyframes: [
-        { at: 0, opacity: 0, translateX: -80, blur: 4 },
-        { at: 1, opacity: 1, translateX: 0, blur: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'slide-in-right', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'slide-in-right-v2',
-    entrance: {
-      engine: 'keyframes', duration: 0.9, easing: 'easeBezier22_1_36_1',
-      keyframes: [
-        { at: 0, opacity: 0, translateX: 80, blur: 4 },
-        { at: 1, opacity: 1, translateX: 0, blur: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'snap-in', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'snap-in-v2',
-    entrance: {
-      engine: 'keyframes', duration: 0.35, easing: 'easeBezier22_1_36_1',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 1.4, blur: 15 },
-        { at: 1, opacity: 1, scale: 1, blur: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'mask-up', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'mask-up-v2',
-    entrance: {
-      engine: 'keyframes', duration: 1, easing: 'easeBezier22_1_36_1',
-      keyframes: [
-        { at: 0, opacity: 0, translateY: 20 },
-        { at: 1, opacity: 1, translateY: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'mask-down', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'mask-down-v2',
-    entrance: {
-      engine: 'keyframes', duration: 1, easing: 'easeBezier22_1_36_1',
-      keyframes: [
-        { at: 0, opacity: 0, translateY: -20 },
-        { at: 1, opacity: 1, translateY: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'zoom-in-power', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'zoom-in-power-v2',
-    entrance: {
-      engine: 'keyframes', duration: 0.8, easing: 'easeBezier34_156_64_1',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 0.3, blur: 8 },
-        { at: 1, opacity: 1, scale: 1, blur: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'pop-burst', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'pop-burst-v2',
-    entrance: {
-      engine: 'keyframes', duration: 0.5, easing: 'easeBezier34_156_64_1',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 0 },
-        { at: 1, opacity: 1, scale: 1 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'rotate-in', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'rotate-in-v2',
-    entrance: {
-      engine: 'keyframes', duration: 0.9, easing: 'easeBezier34_156_64_1',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 0.85, translateY: 20, rotate: -15 },
-        { at: 1, opacity: 1, scale: 1, translateY: 0, rotate: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'spring-in', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'spring-in-v2',
-    entrance: {
-      engine: 'keyframes', duration: 0.9, easing: 'easeBezier34_156_64_1',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 0.4, translateY: -40 },
-        { at: 1, opacity: 1, scale: 1, translateY: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'wiggle-in', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'wiggle-in-v2',
-    entrance: {
-      engine: 'keyframes', duration: 0.8, easing: 'linear',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 0.8, rotate: -10 },
-        { at: 0.5, opacity: 1, scale: 1.05, rotate: 5 },
-        { at: 1, opacity: 1, scale: 1, rotate: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'dramatic-rise', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'dramatic-rise-v2',
-    entrance: {
-      engine: 'keyframes', duration: 1.5, easing: 'easeBezier22_1_36_1',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 0.7, translateY: 120, blur: 15 },
-        { at: 1, opacity: 1, scale: 1, translateY: 0, blur: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'gold-reveal', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'gold-reveal-v2',
-    entrance: {
-      engine: 'keyframes', duration: 1.4, easing: 'easeBezier22_1_36_1',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 1.1, blur: 8 },
-        { at: 1, opacity: 1, scale: 1, blur: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'luxury-fade', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'luxury-fade-v2',
-    entrance: {
-      engine: 'keyframes', duration: 1.6, easing: 'easeBezier45_0_55_1',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 0.97, translateY: 30 },
-        { at: 1, opacity: 1, scale: 1, translateY: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'awards-reveal', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'awards-reveal-v2',
-    entrance: {
-      engine: 'keyframes', duration: 1.5, easing: 'easeBezier22_1_36_1',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 0.85, blur: 6 },
-        { at: 1, opacity: 1, scale: 1, blur: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'royal-entrance', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'royal-entrance-v2',
-    entrance: {
-      engine: 'keyframes', duration: 1.8, easing: 'easeBezier22_1_36_1',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 1.05, translateY: -50, blur: 4 },
-        { at: 1, opacity: 1, scale: 1, translateY: 0, blur: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'tender-rise', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'tender-rise-v2',
-    entrance: {
-      engine: 'keyframes', duration: 1.3, easing: 'easeBezier22_1_36_1',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 0.95, translateY: 25 },
-        { at: 1, opacity: 1, scale: 1, translateY: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'heart-pulse', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'heart-pulse-v2',
-    entrance: {
-      engine: 'keyframes', duration: 1.1, easing: 'linear',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 0.9 },
-        { at: 0.5, opacity: 1, scale: 1.08 },
-        { at: 1, opacity: 1, scale: 1 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'soul-rise', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'soul-rise-v2',
-    entrance: {
-      engine: 'keyframes', duration: 1.5, easing: 'easeBezier45_0_55_1',
-      keyframes: [
-        { at: 0, opacity: 0, translateY: 50, blur: 5 },
-        { at: 1, opacity: 1, translateY: 0, blur: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'gentle-embrace', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'gentle-embrace-v2',
-    entrance: {
-      engine: 'keyframes', duration: 1.3, easing: 'easeBezier22_1_36_1',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 1.05 },
-        { at: 1, opacity: 1, scale: 1 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'mist-arrive', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'mist-arrive-v2',
-    entrance: {
-      engine: 'keyframes', duration: 1.8, easing: 'easeBezier45_0_55_1',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 1.08, blur: 18 },
-        { at: 1, opacity: 1, scale: 1, blur: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'breath-in', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'breath-in-v2',
-    entrance: {
-      engine: 'keyframes', duration: 2, easing: 'easeBezier45_0_55_1',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 0.97 },
-        { at: 1, opacity: 1, scale: 1 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'tide-in', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'tide-in-v2',
-    entrance: {
-      engine: 'keyframes', duration: 1.8, easing: 'easeBezier45_0_55_1',
-      keyframes: [
-        { at: 0, opacity: 0, translateX: -40, blur: 6 },
-        { at: 1, opacity: 1, translateX: 0, blur: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'glow-emerge', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'glow-emerge-v2',
-    entrance: {
-      engine: 'keyframes', duration: 1.7, easing: 'easeBezier22_1_36_1',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 0.93, blur: 8 },
-        { at: 1, opacity: 1, scale: 1, blur: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'fade-out-soft', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'fade-out-soft-v2',
-    exit: {
-      engine: 'keyframes', duration: 0.9, easing: 'easeBezier55_0_55_2',
-      keyframes: [
-        { at: 0, opacity: 1, translateY: 0, blur: 0 },
-        { at: 1, opacity: 0, translateY: -12, blur: 6 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'zoom-out-soft', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'zoom-out-soft-v2',
-    exit: {
-      engine: 'keyframes', duration: 0.8, easing: 'easeBezier55_0_55_2',
-      keyframes: [
-        { at: 0, opacity: 1, scale: 1, blur: 0 },
-        { at: 1, opacity: 0, scale: 0.7, blur: 8 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'mist-away', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'mist-away-v2',
-    exit: {
-      engine: 'keyframes', duration: 1.6, easing: 'linear',
-      keyframes: [
-        { at: 0, opacity: 1, scale: 1, blur: 0 },
-        { at: 1, opacity: 0, scale: 1.15, blur: 30 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'whisper-out', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'whisper-out-v2',
-    exit: {
-      engine: 'keyframes', duration: 1.3, easing: 'easeBezier55_0_55_2',
-      keyframes: [
-        { at: 0, opacity: 1, scale: 1, blur: 0 },
-        { at: 1, opacity: 0, scale: 1.03, blur: 3 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'fade-out-elegant', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'fade-out-elegant-v2',
-    exit: {
-      engine: 'keyframes', duration: 1, easing: 'easeBezier55_0_55_2',
-      keyframes: [
-        { at: 0, opacity: 1, translateY: 0 },
-        { at: 1, opacity: 0, translateY: -20 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'gentle-vanish', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'gentle-vanish-v2',
-    exit: {
-      engine: 'keyframes', duration: 1.2, easing: 'easeBezier45_0_55_1',
-      keyframes: [
-        { at: 0, opacity: 1, translateY: 0, blur: 0 },
-        { at: 1, opacity: 0, translateY: 10, blur: 2 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'depth-recede', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'depth-recede-v2',
-    exit: {
-      engine: 'keyframes', duration: 1, easing: 'easeBezier55_0_55_2',
-      keyframes: [
-        { at: 0, opacity: 1, scale: 1, blur: 0 },
-        { at: 1, opacity: 0, scale: 0.5, blur: 10 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'slide-away-left', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'slide-away-left-v2',
-    exit: {
-      engine: 'keyframes', duration: 0.7, easing: 'easeBezier55_0_55_2',
-      keyframes: [
-        { at: 0, opacity: 1, translateX: 0, blur: 0 },
-        { at: 1, opacity: 0, translateX: -60, blur: 4 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'slide-away-right', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'slide-away-right-v2',
-    exit: {
-      engine: 'keyframes', duration: 0.7, easing: 'easeBezier55_0_55_2',
-      keyframes: [
-        { at: 0, opacity: 1, translateX: 0, blur: 0 },
-        { at: 1, opacity: 0, translateX: 60, blur: 4 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'slide-away-down', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'slide-away-down-v2',
-    exit: {
-      engine: 'keyframes', duration: 0.7, easing: 'easeBezier55_0_55_2',
-      keyframes: [
-        { at: 0, opacity: 1, translateY: 0, blur: 0 },
-        { at: 1, opacity: 0, translateY: 40, blur: 4 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'film-end', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'film-end-v2',
-    exit: {
-      engine: 'keyframes', duration: 1.6, easing: 'easeBezier45_0_55_1',
-      keyframes: [
-        { at: 0, opacity: 1, scale: 1, blur: 0 },
-        { at: 1, opacity: 0, scale: 1.02, blur: 3 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'motion-blur-exit', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'motion-blur-exit-v2',
-    exit: {
-      engine: 'keyframes', duration: 0.8, easing: 'easeBezier55_0_55_2',
-      keyframes: [
-        { at: 0, opacity: 1, translateX: 0, blur: 0 },
-        { at: 1, opacity: 0, translateX: 60, blur: 14 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'long-fade-out', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'long-fade-out-v2',
-    exit: {
-      engine: 'keyframes', duration: 2, easing: 'easeBezier45_0_55_1',
-      keyframes: [
-        { at: 0, opacity: 1, translateY: 0 },
-        { at: 1, opacity: 0, translateY: -20 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'collapse-out', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'collapse-out-v2',
-    exit: {
-      engine: 'keyframes', duration: 0.7, easing: 'easeBezier55_0_55_2',
-      keyframes: [
-        { at: 0, opacity: 1, scale: 1, rotate: 0 },
-        { at: 1, opacity: 0, scale: 0, rotate: -180 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'shatter-exit', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'shatter-exit-v2',
-    exit: {
-      engine: 'keyframes', duration: 0.6, easing: 'easeBezier55_0_55_2',
-      keyframes: [
-        { at: 0, opacity: 1, scale: 1, blur: 0 },
-        { at: 1, opacity: 0, scale: 1.4, blur: 8 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'flash-out', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'flash-out-v2',
-    exit: {
-      engine: 'keyframes', duration: 0.4, easing: 'easeBezier22_1_36_1',
-      keyframes: [
-        { at: 0, opacity: 1, scale: 1 },
-        { at: 0.3, opacity: 1, scale: 1.3 },
-        { at: 1, opacity: 0, scale: 1.5 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'dramatic-fall', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'dramatic-fall-v2',
-    exit: {
-      engine: 'keyframes', duration: 0.9, easing: 'easeBezier55_0_55_2',
-      keyframes: [
-        { at: 0, opacity: 1, scale: 1, translateY: 0, blur: 0 },
-        { at: 1, opacity: 0, scale: 0.8, translateY: 80, blur: 10 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'resurrection', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'resurrection-v2',
-    entrance: {
-      engine: 'keyframes', duration: 1.6, easing: 'linear',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 0.6, blur: 12, glowIntensity: 0 },
-        { at: 0.5, opacity: 0.7, scale: 1.08, blur: 4, glowIntensity: 2.5 },
-        { at: 0.75, opacity: 1, scale: 0.96, blur: 1, glowIntensity: 1.8 },
-        { at: 1, opacity: 1, scale: 1, blur: 0, glowIntensity: 1.2 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'eternal-glory', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'eternal-glory-v2',
-    entrance: {
-      engine: 'keyframes', duration: 1.8, easing: 'easeBezier22_1_36_1',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 1.1, translateY: -60, blur: 8, glowIntensity: 0 },
-        { at: 0.6, opacity: 1, scale: 0.98, translateY: 5, blur: 0, glowIntensity: 2 },
-        { at: 1, opacity: 1, scale: 1, translateY: 0, blur: 0, glowIntensity: 1.5 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'living-spirit', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'living-spirit-v2',
-    entrance: {
-      engine: 'keyframes', duration: 2.2, easing: 'linear',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 0.98, blur: 6 },
-        { at: 0.3, opacity: 0.7, scale: 1.02, blur: 2 },
-        { at: 0.6, opacity: 1, scale: 0.99, blur: 0 },
-        { at: 0.85, opacity: 1, scale: 1.01, blur: 0 },
-        { at: 1, opacity: 1, scale: 1, blur: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'faith-wind', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'faith-wind-v2',
-    entrance: {
-      engine: 'keyframes', duration: 1.3, easing: 'easeBezier22_1_36_1',
-      keyframes: [
-        { at: 0, opacity: 0, translateX: -50, translateY: -20, rotate: -8, blur: 5 },
-        { at: 0.7, opacity: 1, translateX: 5, translateY: 0, rotate: 1, blur: 0 },
-        { at: 1, opacity: 1, translateX: 0, translateY: 0, rotate: 0, blur: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'burning-heart', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'burning-heart-v2',
-    entrance: {
-      engine: 'keyframes', duration: 1.4, easing: 'linear',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 0.85, glowIntensity: 0 },
-        { at: 0.3, opacity: 1, scale: 1.12, glowIntensity: 2.5 },
-        { at: 0.5, opacity: 1, scale: 0.95, glowIntensity: 1.5 },
-        { at: 0.7, opacity: 1, scale: 1.04, glowIntensity: 2 },
-        { at: 1, opacity: 1, scale: 1, glowIntensity: 1 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'sacred-bloom', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'sacred-bloom-v2',
-    entrance: {
-      engine: 'keyframes', duration: 1.5, easing: 'easeBezier34_156_64_1',
-      keyframes: [
-        { at: 0, opacity: 0, scaleX: 0, scaleY: 1.5, blur: 8 },
-        { at: 0.4, opacity: 0.8, scaleX: 1.2, scaleY: 0.9, blur: 2 },
-        { at: 1, opacity: 1, scaleX: 1, scaleY: 1, blur: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'holy-ascension', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'holy-ascension-v2',
-    entrance: {
-      engine: 'keyframes', duration: 1.7, easing: 'easeBezier22_1_36_1',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 0.7, translateY: 80, blur: 6, glowIntensity: 0 },
-        { at: 0.6, opacity: 1, scale: 1.04, translateY: -8, blur: 0, glowIntensity: 1.8 },
-        { at: 1, opacity: 1, scale: 1, translateY: 0, blur: 0, glowIntensity: 1 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'temple-rise', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'temple-rise-v2',
-    entrance: {
-      engine: 'keyframes', duration: 1.4, easing: 'easeBezier22_1_36_1',
-      keyframes: [
-        { at: 0, opacity: 0, scaleY: 0.2, translateY: 20 },
-        { at: 0.7, opacity: 1, scaleY: 1.05, translateY: -2 },
-        { at: 1, opacity: 1, scaleY: 1, translateY: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'manna-fall', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'manna-fall-v2',
-    entrance: {
-      engine: 'keyframes', duration: 1.6, easing: 'easeBezier45_0_55_1',
-      keyframes: [
-        { at: 0, opacity: 0, translateY: -120, blur: 4 },
-        { at: 0.8, opacity: 1, translateY: 8, blur: 0 },
-        { at: 0.92, opacity: 1, translateY: -3, blur: 0 },
-        { at: 1, opacity: 1, translateY: 0, blur: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'shofar-call', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'shofar-call-v2',
-    entrance: {
-      engine: 'keyframes', duration: 1, easing: 'easeBezier22_1_36_1',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 1.4, blur: 6, letterSpacing: 0.1 },
-        { at: 1, opacity: 1, scale: 1, blur: 0, letterSpacing: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'crossing-light', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'crossing-light-v2',
-    entrance: {
-      engine: 'keyframes', duration: 1.5, easing: 'easeBezier22_1_36_1',
-      keyframes: [
-        { at: 0, opacity: 0, scaleX: 0, glowIntensity: 0 },
-        { at: 0.4, opacity: 1, scaleX: 1.05, glowIntensity: 2.5 },
-        { at: 1, opacity: 1, scaleX: 1, glowIntensity: 1 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'dove-descent', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'dove-descent-v2',
-    entrance: {
-      engine: 'keyframes', duration: 1.5, easing: 'easeBezier45_0_55_1',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 0.85, translateY: -80, rotate: -5, blur: 3 },
-        { at: 0.7, opacity: 1, scale: 1.03, translateY: 6, rotate: 2, blur: 0 },
-        { at: 1, opacity: 1, scale: 1, translateY: 0, rotate: 0, blur: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'jelly-pop', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'jelly-pop-v2',
-    entrance: {
-      engine: 'keyframes', duration: 0.7, easing: 'linear',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 0, scaleY: 0.3 },
-        { at: 0.4, opacity: 1, scale: 1.2, scaleY: 1.3 },
-        { at: 0.6, opacity: 1, scaleX: 1.1, scaleY: 0.85 },
-        { at: 0.8, opacity: 1, scaleX: 0.95, scaleY: 1.05 },
-        { at: 1, opacity: 1, scaleX: 1, scaleY: 1 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'stamp-impact', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'stamp-impact-v2',
-    entrance: {
-      engine: 'keyframes', duration: 0.5, easing: 'linear',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 2.5, rotate: -8 },
-        { at: 0.5, opacity: 1, scale: 0.9, rotate: 2, blur: 0 },
-        { at: 0.8, opacity: 1, scale: 1.05, rotate: -1 },
-        { at: 1, opacity: 1, scale: 1, rotate: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'rgb-split-in', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'rgb-split-in-v2',
-    entrance: {
-      engine: 'keyframes', duration: 0.9, easing: 'easeBezier22_1_36_1',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 1.05, chromatic: 20 },
-        { at: 0.5, opacity: 1, scale: 1, chromatic: 8 },
-        { at: 1, opacity: 1, scale: 1, chromatic: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'kinetic-slide', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'kinetic-slide-v2',
-    entrance: {
-      engine: 'keyframes', duration: 0.8, easing: 'easeBezier22_1_36_1',
-      keyframes: [
-        { at: 0, opacity: 0, translateX: 200, skewX: 15 },
-        { at: 0.6, opacity: 1, translateX: -10, skewX: -3 },
-        { at: 1, opacity: 1, translateX: 0, skewX: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'instagram-pop', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'instagram-pop-v2',
-    entrance: {
-      engine: 'keyframes', duration: 0.6, easing: 'easeBezier34_156_64_1',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 0.3, rotate: -20 },
-        { at: 1, opacity: 1, scale: 1, rotate: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'squeeze-in', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'squeeze-in-v2',
-    entrance: {
-      engine: 'keyframes', duration: 0.7, easing: 'easeBezier34_156_64_1',
-      keyframes: [
-        { at: 0, opacity: 0, scaleX: 0, scaleY: 3 },
-        { at: 0.6, opacity: 1, scaleX: 1.2, scaleY: 0.7 },
-        { at: 1, opacity: 1, scaleX: 1, scaleY: 1 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'tilt-pop', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'tilt-pop-v2',
-    entrance: {
-      engine: 'keyframes', duration: 0.6, easing: 'easeBezier34_156_64_1',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 0.5, translateY: -20, skewX: 25 },
-        { at: 1, opacity: 1, scale: 1, translateY: 0, skewX: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'flicker-in', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'flicker-in-v2',
-    entrance: {
-      engine: 'keyframes', duration: 0.7, easing: 'linear',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 1 },
-        { at: 0.15, opacity: 0.8, scale: 1 },
-        { at: 0.2, opacity: 0.1, scale: 1 },
-        { at: 0.3, opacity: 0.9, scale: 1 },
-        { at: 0.35, opacity: 0.2, scale: 1 },
-        { at: 0.5, opacity: 1, scale: 1 },
-        { at: 1, opacity: 1, scale: 1 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'mirror-flip', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'mirror-flip-v2',
-    entrance: {
-      engine: 'keyframes', duration: 0.8, easing: 'easeBezier22_1_36_1',
-      keyframes: [
-        { at: 0, opacity: 0, scaleX: -1, blur: 3 },
-        { at: 0.6, opacity: 1, scaleX: 1.05, blur: 0 },
-        { at: 1, opacity: 1, scaleX: 1, blur: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'spring-bounce', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'spring-bounce-v2',
-    entrance: {
-      engine: 'keyframes', duration: 0.9, easing: 'linear',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 0.6, translateY: -100 },
-        { at: 0.5, opacity: 1, scale: 1.1, translateY: 20 },
-        { at: 0.7, opacity: 1, scale: 0.95, translateY: -8 },
-        { at: 0.85, opacity: 1, scale: 1.02, translateY: 3 },
-        { at: 1, opacity: 1, scale: 1, translateY: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'spread-pop', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'spread-pop-v2',
-    entrance: {
-      engine: 'keyframes', duration: 0.7, easing: 'easeBezier22_1_36_1',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 0.8, letterSpacing: -0.3 },
-        { at: 0.6, opacity: 1, scale: 1.02, letterSpacing: 0.05 },
-        { at: 1, opacity: 1, scale: 1, letterSpacing: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'tape-warp', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'tape-warp-v2',
-    entrance: {
-      engine: 'keyframes', duration: 0.7, easing: 'easeBezier22_1_36_1',
-      keyframes: [
-        { at: 0, opacity: 0, scaleX: 1.5, scaleY: 0.1, skewX: 8 },
-        { at: 0.5, opacity: 1, scaleX: 0.95, scaleY: 1.1, skewX: -2 },
-        { at: 1, opacity: 1, scaleX: 1, scaleY: 1, skewX: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'imax-reveal', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'imax-reveal-v2',
-    entrance: {
-      engine: 'keyframes', duration: 2, easing: 'easeBezier22_1_36_1',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 2.5, blur: 30, glowIntensity: 0 },
-        { at: 0.4, opacity: 0.7, scale: 1.4, blur: 8, glowIntensity: 1.5 },
-        { at: 0.8, opacity: 1, scale: 1.02, blur: 0, glowIntensity: 2 },
-        { at: 1, opacity: 1, scale: 1, blur: 0, glowIntensity: 1 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'trailer-darkness', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'trailer-darkness-v2',
-    entrance: {
-      engine: 'keyframes', duration: 2.2, easing: 'easeBezier45_0_55_1',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 0.9, blur: 25 },
-        { at: 0.5, opacity: 0.3, scale: 0.95, blur: 12 },
-        { at: 0.85, opacity: 1, scale: 1.01, blur: 0 },
-        { at: 1, opacity: 1, scale: 1, blur: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'spotlight-on', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'spotlight-on-v2',
-    entrance: {
-      engine: 'keyframes', duration: 1.6, easing: 'easeBezier22_1_36_1',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 1.2, blur: 15, glowIntensity: 0 },
-        { at: 0.6, opacity: 1, scale: 1.03, blur: 0, glowIntensity: 2.5 },
-        { at: 1, opacity: 1, scale: 1, blur: 0, glowIntensity: 1.2 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'pull-focus', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'pull-focus-v2',
-    entrance: {
-      engine: 'keyframes', duration: 1.4, easing: 'easeBezier22_1_36_1',
-      keyframes: [
-        { at: 0, opacity: 0.6, scale: 1.05, blur: 40 },
-        { at: 0.6, opacity: 1, scale: 0.99, blur: 4 },
-        { at: 1, opacity: 1, scale: 1, blur: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'title-drop', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'title-drop-v2',
-    entrance: {
-      engine: 'keyframes', duration: 1.2, easing: 'easeBezier45_0_55_1',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 1.3, translateY: -120, blur: 4 },
-        { at: 0.65, opacity: 1, scale: 0.98, translateY: 15, blur: 0 },
-        { at: 0.85, opacity: 1, scale: 1.01, translateY: -5, blur: 0 },
-        { at: 1, opacity: 1, scale: 1, translateY: 0, blur: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'camera-shake', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'camera-shake-v2',
-    entrance: {
-      engine: 'keyframes', duration: 0.7, easing: 'linear',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 1.4, translateX: 0, translateY: 0 },
-        { at: 0.2, opacity: 1, scale: 1.1, translateX: 12, translateY: -5 },
-        { at: 0.35, opacity: 1, scale: 1.05, translateX: -10, translateY: 4 },
-        { at: 0.5, opacity: 1, scale: 1.02, translateX: 6, translateY: -3 },
-        { at: 0.7, opacity: 1, scale: 1.01, translateX: -3, translateY: 1 },
-        { at: 1, opacity: 1, scale: 1, translateX: 0, translateY: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'lens-flare-in', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'lens-flare-in-v2',
-    entrance: {
-      engine: 'keyframes', duration: 1.5, easing: 'easeBezier22_1_36_1',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 1.1, blur: 6, glowIntensity: 0 },
-        { at: 0.3, opacity: 0.4, scale: 1.05, blur: 3, glowIntensity: 3 },
-        { at: 0.6, opacity: 1, scale: 1.02, blur: 0, glowIntensity: 2 },
-        { at: 1, opacity: 1, scale: 1, blur: 0, glowIntensity: 1 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'noir-fade', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'noir-fade-v2',
-    entrance: {
-      engine: 'keyframes', duration: 2, easing: 'easeBezier45_0_55_1',
-      keyframes: [
-        { at: 0, opacity: 0, translateY: 40, blur: 8, letterSpacing: 0.15 },
-        { at: 0.7, opacity: 1, translateY: 0, blur: 0, letterSpacing: 0.02 },
-        { at: 1, opacity: 1, translateY: 0, blur: 0, letterSpacing: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'epic-zoom', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'epic-zoom-v2',
-    entrance: {
-      engine: 'keyframes', duration: 1.8, easing: 'easeBezier22_1_36_1',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 4, blur: 35 },
-        { at: 0.7, opacity: 1, scale: 1.05, blur: 0 },
-        { at: 1, opacity: 1, scale: 1, blur: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'film-roll', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'film-roll-v2',
-    entrance: {
-      engine: 'keyframes', duration: 1, easing: 'easeBezier22_1_36_1',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 0.7, translateY: 60, rotate: -8 },
-        { at: 0.25, opacity: 0.5, scale: 0.85, translateY: 30, rotate: 5 },
-        { at: 0.5, opacity: 1, scale: 0.95, translateY: 10, rotate: -2 },
-        { at: 1, opacity: 1, scale: 1, translateY: 0, rotate: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'matrix-glitch', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'matrix-glitch-v2',
-    entrance: {
-      engine: 'keyframes', duration: 0.9, easing: 'linear',
-      keyframes: [
-        { at: 0, opacity: 0, scaleY: 0, chromatic: 0 },
-        { at: 0.2, opacity: 0.4, scaleY: 0.3, chromatic: 15 },
-        { at: 0.4, opacity: 0.8, scaleY: 1.05, chromatic: 8 },
-        { at: 0.7, opacity: 1, scaleY: 0.98, chromatic: 3 },
-        { at: 1, opacity: 1, scaleY: 1, chromatic: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'fog-emerge', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'fog-emerge-v2',
-    entrance: {
-      engine: 'keyframes', duration: 2.2, easing: 'easeBezier45_0_55_1',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 1.15, blur: 25, letterSpacing: 0.05 },
-        { at: 0.6, opacity: 0.7, scale: 1.05, blur: 6, letterSpacing: 0.02 },
-        { at: 1, opacity: 1, scale: 1, blur: 0, letterSpacing: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'skate-boom', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'skate-boom-v2',
-    entrance: {
-      engine: 'keyframes', duration: 0.6, easing: 'easeBezier22_1_36_1',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 0.4, rotate: 720, blur: 8 },
-        { at: 0.5, opacity: 1, scale: 1.15, rotate: 10, blur: 0 },
-        { at: 0.8, opacity: 1, scale: 0.95, rotate: -3, blur: 0 },
-        { at: 1, opacity: 1, scale: 1, rotate: 0, blur: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'drop-the-beat', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'drop-the-beat-v2',
-    entrance: {
-      engine: 'keyframes', duration: 0.55, easing: 'linear',
-      keyframes: [
-        { at: 0, opacity: 0, scaleY: 0.4, translateY: -60 },
-        { at: 0.5, opacity: 1, scaleY: 1.3, translateY: 8 },
-        { at: 0.75, opacity: 1, scaleY: 0.9, translateY: -3 },
-        { at: 1, opacity: 1, scaleY: 1, translateY: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'smash-hit', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'smash-hit-v2',
-    entrance: {
-      engine: 'keyframes', duration: 0.5, easing: 'easeBezier22_1_36_1',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 2.2, rotate: -10, blur: 5 },
-        { at: 0.3, opacity: 1, scale: 0.85, rotate: 3, blur: 0 },
-        { at: 0.5, opacity: 1, scale: 1.1, rotate: -1, blur: 0 },
-        { at: 0.7, opacity: 1, scale: 0.97, rotate: 1, blur: 0 },
-        { at: 0.85, opacity: 1, scale: 1.02, rotate: 0, blur: 0 },
-        { at: 1, opacity: 1, scale: 1, rotate: 0, blur: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'rocket-launch', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'rocket-launch-v2',
-    entrance: {
-      engine: 'keyframes', duration: 0.7, easing: 'easeBezier22_1_36_1',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 0.4, translateY: 150, blur: 12, skewY: -5 },
-        { at: 0.6, opacity: 1, scale: 1.05, translateY: -12, blur: 0, skewY: 2 },
-        { at: 1, opacity: 1, scale: 1, translateY: 0, blur: 0, skewY: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'pinball-bounce', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'pinball-bounce-v2',
-    entrance: {
-      engine: 'keyframes', duration: 0.9, easing: 'linear',
-      keyframes: [
-        { at: 0, opacity: 0, translateX: -80, translateY: -50 },
-        { at: 0.25, opacity: 1, translateX: 30, translateY: 20 },
-        { at: 0.45, opacity: 1, translateX: -15, translateY: -8 },
-        { at: 0.65, opacity: 1, translateX: 8, translateY: 4 },
-        { at: 0.85, opacity: 1, translateX: -3, translateY: -1 },
-        { at: 1, opacity: 1, translateX: 0, translateY: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'graffiti-spray', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'graffiti-spray-v2',
-    entrance: {
-      engine: 'keyframes', duration: 0.6, easing: 'easeBezier22_1_36_1',
-      keyframes: [
-        { at: 0, opacity: 0, scaleX: 0, scaleY: 0.3, blur: 5, skewX: -30 },
-        { at: 0.5, opacity: 1, scaleX: 1.1, scaleY: 1.05, blur: 0, skewX: 5 },
-        { at: 1, opacity: 1, scaleX: 1, scaleY: 1, blur: 0, skewX: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'turbo-zoom', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'turbo-zoom-v2',
-    entrance: {
-      engine: 'keyframes', duration: 0.4, easing: 'easeBezier22_1_36_1',
-      keyframes: [
-        { at: 0, opacity: 0, scaleX: 0.2, scaleY: 1.5, blur: 8 },
-        { at: 0.4, opacity: 1, scaleX: 1.3, scaleY: 0.9, blur: 0 },
-        { at: 0.7, opacity: 1, scaleX: 0.92, scaleY: 1.04, blur: 0 },
-        { at: 1, opacity: 1, scaleX: 1, scaleY: 1, blur: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'beat-pulse', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'beat-pulse-v2',
-    entrance: {
-      engine: 'keyframes', duration: 0.8, easing: 'linear',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 0.7, glowIntensity: 0 },
-        { at: 0.25, opacity: 1, scale: 1.15, glowIntensity: 2.5 },
-        { at: 0.5, opacity: 1, scale: 0.92, glowIntensity: 1 },
-        { at: 0.75, opacity: 1, scale: 1.08, glowIntensity: 2 },
-        { at: 1, opacity: 1, scale: 1, glowIntensity: 1 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'street-tag', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'street-tag-v2',
-    entrance: {
-      engine: 'keyframes', duration: 0.5, easing: 'easeBezier34_156_64_1',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 0.5, rotate: -15, skewX: 12 },
-        { at: 1, opacity: 1, scale: 1, rotate: 0, skewX: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'comic-pow', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'comic-pow-v2',
-    entrance: {
-      engine: 'keyframes', duration: 0.5, easing: 'easeBezier22_1_36_1',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 1.8, rotate: 5, splitX: 20 },
-        { at: 0.4, opacity: 1, scale: 0.85, rotate: -3, splitX: 4 },
-        { at: 0.7, opacity: 1, scale: 1.08, rotate: 1, splitX: 0 },
-        { at: 1, opacity: 1, scale: 1, rotate: 0, splitX: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'spin-toss', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'spin-toss-v2',
-    entrance: {
-      engine: 'keyframes', duration: 0.8, easing: 'easeBezier22_1_36_1',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 0.3, translateY: -40, rotate: -360 },
-        { at: 0.6, opacity: 1, scale: 1.1, translateY: 5, rotate: 15 },
-        { at: 1, opacity: 1, scale: 1, translateY: 0, rotate: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'urban-stomp', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'urban-stomp-v2',
-    entrance: {
-      engine: 'keyframes', duration: 0.6, easing: 'linear',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 0, translateY: -60 },
-        { at: 0.4, opacity: 1, scaleX: 1.3, scaleY: 0.6, translateY: 10 },
-        { at: 0.6, opacity: 1, scaleX: 0.9, scaleY: 1.15, translateY: -3 },
-        { at: 0.8, opacity: 1, scaleX: 1.04, scaleY: 0.96, translateY: 1 },
-        { at: 1, opacity: 1, scaleX: 1, scaleY: 1, translateY: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'electric-zap', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'electric-zap-v2',
-    entrance: {
-      engine: 'keyframes', duration: 0.5, easing: 'linear',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 1, translateX: -8, chromatic: 0 },
-        { at: 0.1, opacity: 0.5, scale: 1.1, translateX: 8, chromatic: 8 },
-        { at: 0.2, opacity: 1, scale: 0.9, translateX: -5, chromatic: 6 },
-        { at: 0.4, opacity: 1, scale: 1.05, translateX: 3, chromatic: 3 },
-        { at: 0.7, opacity: 1, scale: 0.98, translateX: -1, chromatic: 1 },
-        { at: 1, opacity: 1, scale: 1, translateX: 0, chromatic: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'youth-anthem', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'youth-anthem-v2',
-    entrance: {
-      engine: 'keyframes', duration: 0.8, easing: 'easeBezier34_156_64_1',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 0.5, translateY: 30, rotate: -8 },
-        { at: 0.6, opacity: 1, scale: 1.12, translateY: -8, rotate: 4 },
-        { at: 1, opacity: 1, scale: 1, translateY: 0, rotate: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'silk-drape', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'silk-drape-v2',
-    entrance: {
-      engine: 'keyframes', duration: 1.5, easing: 'easeBezier22_1_36_1',
-      keyframes: [
-        { at: 0, opacity: 0, scaleY: 0, translateY: -20 },
-        { at: 0.5, opacity: 0.7, scaleY: 1.05, translateY: 4 },
-        { at: 1, opacity: 1, scaleY: 1, translateY: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'velvet-rise', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'velvet-rise-v2',
-    entrance: {
-      engine: 'keyframes', duration: 1.5, easing: 'easeBezier22_1_36_1',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 0.96, translateY: 25, blur: 3, glowIntensity: 0 },
-        { at: 0.7, opacity: 1, scale: 1.01, translateY: -2, blur: 0, glowIntensity: 1.3 },
-        { at: 1, opacity: 1, scale: 1, translateY: 0, blur: 0, glowIntensity: 1 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'parisian-fade', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'parisian-fade-v2',
-    entrance: {
-      engine: 'keyframes', duration: 1.6, easing: 'easeBezier45_0_55_1',
-      keyframes: [
-        { at: 0, opacity: 0, translateY: 20, letterSpacing: 0.3 },
-        { at: 0.8, opacity: 1, translateY: 0, letterSpacing: 0.02 },
-        { at: 1, opacity: 1, translateY: 0, letterSpacing: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'champagne-pop', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'champagne-pop-v2',
-    entrance: {
-      engine: 'keyframes', duration: 1.2, easing: 'easeBezier34_156_64_1',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 0.8, glowIntensity: 0 },
-        { at: 0.4, opacity: 0.9, scale: 1.08, glowIntensity: 2.2 },
-        { at: 0.7, opacity: 1, scale: 0.97, glowIntensity: 1.4 },
-        { at: 1, opacity: 1, scale: 1, glowIntensity: 1 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'editorial-hold', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'editorial-hold-v2',
-    entrance: {
-      engine: 'keyframes', duration: 1.8, easing: 'easeBezier45_0_55_1',
-      keyframes: [
-        { at: 0, opacity: 0, translateY: 10, letterSpacing: 0.08 },
-        { at: 1, opacity: 1, translateY: 0, letterSpacing: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'platinum-glow', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'platinum-glow-v2',
-    entrance: {
-      engine: 'keyframes', duration: 1.6, easing: 'easeBezier22_1_36_1',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 1.06, blur: 6, glowIntensity: 0 },
-        { at: 0.5, opacity: 0.85, scale: 1.02, blur: 1, glowIntensity: 2 },
-        { at: 1, opacity: 1, scale: 1, blur: 0, glowIntensity: 1.2 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'whisper-elegant', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'whisper-elegant-v2',
-    entrance: {
-      engine: 'keyframes', duration: 1.8, easing: 'easeBezier45_0_55_1',
-      keyframes: [
-        { at: 0, opacity: 0, translateX: -25, blur: 4, letterSpacing: 0.05 },
-        { at: 0.7, opacity: 1, translateX: 2, blur: 0, letterSpacing: 0.01 },
-        { at: 1, opacity: 1, translateX: 0, blur: 0, letterSpacing: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'gala-arrival', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'gala-arrival-v2',
-    entrance: {
-      engine: 'keyframes', duration: 1.7, easing: 'easeBezier22_1_36_1',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 1.1, blur: 8, letterSpacing: 0.06, glowIntensity: 0 },
-        { at: 0.6, opacity: 1, scale: 1.01, blur: 0, letterSpacing: 0.01, glowIntensity: 2 },
-        { at: 1, opacity: 1, scale: 1, blur: 0, letterSpacing: 0, glowIntensity: 1 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'glitch-out', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'glitch-out-v2',
-    exit: {
-      engine: 'keyframes', duration: 0.6, easing: 'linear',
-      keyframes: [
-        { at: 0, opacity: 1, translateX: 0, chromatic: 0 },
-        { at: 0.2, opacity: 0.9, translateX: 10, chromatic: 8 },
-        { at: 0.4, opacity: 0.6, translateX: -8, chromatic: 12 },
-        { at: 0.7, opacity: 0.3, translateX: 5, chromatic: 6 },
-        { at: 1, opacity: 0, translateX: 0, chromatic: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'imax-out', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'imax-out-v2',
-    exit: {
-      engine: 'keyframes', duration: 1.5, easing: 'easeBezier55_0_55_2',
-      keyframes: [
-        { at: 0, opacity: 1, scale: 1, blur: 0 },
-        { at: 1, opacity: 0, scale: 2.5, blur: 25 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'jelly-deflate', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'jelly-deflate-v2',
-    exit: {
-      engine: 'keyframes', duration: 0.7, easing: 'easeBezier34_156_64_1',
-      keyframes: [
-        { at: 0, opacity: 1, scaleX: 1, scaleY: 1 },
-        { at: 0.4, opacity: 0.9, scaleX: 1.2, scaleY: 0.6 },
-        { at: 0.7, opacity: 0.5, scaleX: 0.7, scaleY: 1.1 },
-        { at: 1, opacity: 0, scaleX: 0, scaleY: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'kinetic-slide-out', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'kinetic-slide-out-v2',
-    exit: {
-      engine: 'keyframes', duration: 0.6, easing: 'easeBezier55_0_55_2',
-      keyframes: [
-        { at: 0, opacity: 1, translateX: 0, skewX: 0 },
-        { at: 1, opacity: 0, translateX: 200, skewX: 15 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'spotlight-off', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'spotlight-off-v2',
-    exit: {
-      engine: 'keyframes', duration: 1.3, easing: 'easeBezier55_0_55_2',
-      keyframes: [
-        { at: 0, opacity: 1, scale: 1, blur: 0, glowIntensity: 1 },
-        { at: 0.5, opacity: 0.6, scale: 1.04, blur: 5, glowIntensity: 2.5 },
-        { at: 1, opacity: 0, scale: 1.2, blur: 20, glowIntensity: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'sacred-vanish', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'sacred-vanish-v2',
-    exit: {
-      engine: 'keyframes', duration: 1.4, easing: 'easeBezier45_0_55_1',
-      keyframes: [
-        { at: 0, opacity: 1, scale: 1, blur: 0, glowIntensity: 1 },
-        { at: 0.4, opacity: 0.9, scale: 1.05, blur: 2, glowIntensity: 2 },
-        { at: 1, opacity: 0, scale: 1.15, blur: 18, glowIntensity: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'spin-out', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'spin-out-v2',
-    exit: {
-      engine: 'keyframes', duration: 0.7, easing: 'easeBezier55_0_55_2',
-      keyframes: [
-        { at: 0, opacity: 1, scale: 1, rotate: 0, blur: 0 },
-        { at: 1, opacity: 0, scale: 0.3, rotate: 360, blur: 8 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'tilt-fall', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'tilt-fall-v2',
-    exit: {
-      engine: 'keyframes', duration: 0.8, easing: 'easeBezier55_0_55_2',
-      keyframes: [
-        { at: 0, opacity: 1, translateY: 0, rotate: 0, skewX: 0 },
-        { at: 0.5, opacity: 0.8, translateY: 20, rotate: 12, skewX: 8 },
-        { at: 1, opacity: 0, translateY: 100, rotate: 30, skewX: 20 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'rgb-split-out', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'rgb-split-out-v2',
-    exit: {
-      engine: 'keyframes', duration: 0.8, easing: 'easeBezier55_0_55_2',
-      keyframes: [
-        { at: 0, opacity: 1, scale: 1, chromatic: 0 },
-        { at: 0.5, opacity: 0.8, scale: 1.04, chromatic: 12 },
-        { at: 1, opacity: 0, scale: 1.1, chromatic: 25 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'collapse-implode', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'collapse-implode-v2',
-    exit: {
-      engine: 'keyframes', duration: 0.6, easing: 'easeBezier55_0_55_2',
-      keyframes: [
-        { at: 0, opacity: 1, scale: 1, rotate: 0, blur: 0 },
-        { at: 0.7, opacity: 0.5, scale: 0.4, rotate: 60, blur: 4 },
-        { at: 1, opacity: 0, scale: 0, rotate: 180, blur: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'whisper-fade-out', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'whisper-fade-out-v2',
-    exit: {
-      engine: 'keyframes', duration: 1.4, easing: 'easeBezier45_0_55_1',
-      keyframes: [
-        { at: 0, opacity: 1, translateX: 0, blur: 0, letterSpacing: 0 },
-        { at: 1, opacity: 0, translateX: 30, blur: 3, letterSpacing: 0.08 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'depth-vanish', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'depth-vanish-v2',
-    exit: {
-      engine: 'keyframes', duration: 1, easing: 'easeBezier55_0_55_2',
-      keyframes: [
-        { at: 0, opacity: 1, scale: 1, blur: 0 },
-        { at: 1, opacity: 0, scale: 0.3, blur: 15 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'velvet-recede', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'velvet-recede-v2',
-    exit: {
-      engine: 'keyframes', duration: 1.2, easing: 'easeBezier45_0_55_1',
-      keyframes: [
-        { at: 0, opacity: 1, scale: 1, translateY: 0, glowIntensity: 1 },
-        { at: 0.4, opacity: 0.9, scale: 0.99, translateY: -3, glowIntensity: 1.5 },
-        { at: 1, opacity: 0, scale: 0.95, translateY: -20, glowIntensity: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'breath-of-life', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'breath-of-life-v2',
-    entrance: {
-      engine: 'keyframes', duration: 1.8, easing: 'easeBezier16_1_3_1',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 0.85, blur: 12 },
-        { at: 0.5, opacity: 0.7, scale: 0.98, blur: 4 },
-        { at: 1, opacity: 1, scale: 1, blur: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'sacred-fade', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'sacred-fade-v2',
-    entrance: {
-      engine: 'keyframes', duration: 1.6, easing: 'easeBezier65_0_35_1',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 1.04, blur: 6, glowIntensity: 0 },
-        { at: 1, opacity: 1, scale: 1, blur: 0, glowIntensity: 1.2 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'descending-grace', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'descending-grace-v2',
-    entrance: {
-      engine: 'keyframes', duration: 1.7, easing: 'easeBezier16_1_3_1',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 0.92, translateY: -50, blur: 8 },
-        { at: 0.6, opacity: 0.7, scale: 1.01, translateY: 4, blur: 2 },
-        { at: 1, opacity: 1, scale: 1, translateY: 0, blur: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'rising-to-heaven', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'rising-to-heaven-v2',
-    exit: {
-      engine: 'keyframes', duration: 1.6, easing: 'easeBezier55_0_45_1',
-      keyframes: [
-        { at: 0, opacity: 1, scale: 1, translateY: 0, glowIntensity: 1 },
-        { at: 0.4, opacity: 0.85, scale: 1.02, translateY: -8, glowIntensity: 1.5 },
-        { at: 1, opacity: 0, scale: 1.08, translateY: -40, glowIntensity: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'sacred-dissolve', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'sacred-dissolve-v2',
-    exit: {
-      engine: 'keyframes', duration: 1.5, easing: 'easeBezier45_0_55_1',
-      keyframes: [
-        { at: 0, opacity: 1, scale: 1, blur: 0, glowIntensity: 1.2 },
-        { at: 1, opacity: 0, scale: 1.06, blur: 8, glowIntensity: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'whispered-farewell', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'whispered-farewell-v2',
-    exit: {
-      engine: 'keyframes', duration: 1.9, easing: 'easeBezier65_0_35_1',
-      keyframes: [
-        { at: 0, opacity: 1, scale: 1, blur: 0 },
-        { at: 0.7, opacity: 0.4, scale: 1.02, blur: 3 },
-        { at: 1, opacity: 0, scale: 1.04, blur: 6 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'tender-arrival', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'tender-arrival-v2',
-    entrance: {
-      engine: 'keyframes', duration: 1.5, easing: 'easeBezier16_1_3_1',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 0.97, translateY: 8, blur: 2 },
-        { at: 1, opacity: 1, scale: 1, translateY: 0, blur: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'heart-opening', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'heart-opening-v2',
-    entrance: {
-      engine: 'keyframes', duration: 1.8, easing: 'easeBezier22_1_36_1',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 0.7, blur: 10 },
-        { at: 0.5, opacity: 0.6, scale: 0.95, blur: 3 },
-        { at: 1, opacity: 1, scale: 1, blur: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'vulnerable-reveal', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'vulnerable-reveal-v2',
-    entrance: {
-      engine: 'keyframes', duration: 2, easing: 'easeBezier65_0_35_1',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 1.08, blur: 5 },
-        { at: 0.5, opacity: 0.5, scale: 1.04, blur: 2 },
-        { at: 1, opacity: 1, scale: 1, blur: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'gentle-confession', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'gentle-confession-v2',
-    entrance: {
-      engine: 'keyframes', duration: 1.6, easing: 'easeBezier45_0_55_1',
-      keyframes: [
-        { at: 0, opacity: 0, translateY: 15, blur: 4 },
-        { at: 0.6, opacity: 0.7, translateY: 3, blur: 1 },
-        { at: 1, opacity: 1, translateY: 0, blur: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'ethereal-drift', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'ethereal-drift-v2',
-    entrance: {
-      engine: 'keyframes', duration: 2.2, easing: 'easeBezier22_1_36_1',
-      keyframes: [
-        { at: 0, opacity: 0, translateX: -15, blur: 10 },
-        { at: 0.5, opacity: 0.5, translateX: -3, blur: 4 },
-        { at: 1, opacity: 1, translateX: 0, blur: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'mist-form', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'mist-form-v2',
-    entrance: {
-      engine: 'keyframes', duration: 2, easing: 'easeBezier45_0_55_1',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 1.05, blur: 14 },
-        { at: 0.5, opacity: 0.4, scale: 1.02, blur: 6 },
-        { at: 1, opacity: 1, scale: 1, blur: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'mist-dissolve', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'mist-dissolve-v2',
-    exit: {
-      engine: 'keyframes', duration: 1.8, easing: 'easeBezier45_0_55_1',
-      keyframes: [
-        { at: 0, opacity: 1, scale: 1, blur: 0 },
-        { at: 1, opacity: 0, scale: 1.04, blur: 12 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'fade-into-air', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'fade-into-air-v2',
-    exit: {
-      engine: 'keyframes', duration: 2, easing: 'easeBezier16_1_3_1',
-      keyframes: [
-        { at: 0, opacity: 1, scale: 1, blur: 0 },
-        { at: 0.5, opacity: 0.5, scale: 1.02, blur: 4 },
-        { at: 1, opacity: 0, scale: 1.06, blur: 10 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'shock-arrival', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'shock-arrival-v2',
-    entrance: {
-      engine: 'keyframes', duration: 0.7, easing: 'easeBezier34_156_64_1',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 0.3, blur: 8 },
-        { at: 0.3, opacity: 1, scale: 1.15, blur: 2 },
-        { at: 1, opacity: 1, scale: 1, blur: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'power-burst', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'power-burst-v2',
-    entrance: {
-      engine: 'keyframes', duration: 0.8, easing: 'easeBezier22_1_36_1',
-      keyframes: [
-        { at: 0, opacity: 0, scale: 0, blur: 10, glowIntensity: 0 },
-        { at: 0.25, opacity: 0.95, scale: 1.2, blur: 2, glowIntensity: 2 },
-        { at: 0.5, opacity: 1, scale: 0.96, blur: 0, glowIntensity: 1.3 },
-        { at: 1, opacity: 1, scale: 1, blur: 0, glowIntensity: 1 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'thunder-out', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'thunder-out-v2',
-    exit: {
-      engine: 'keyframes', duration: 0.6, easing: 'easeBezier55_0_45_1',
-      keyframes: [
-        { at: 0, opacity: 1, scale: 1, blur: 0 },
-        { at: 0.5, opacity: 0.5, scale: 1.15, blur: 4 },
-        { at: 1, opacity: 0, scale: 1.3, blur: 10 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'shake-out', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'shake-out-v2',
-    exit: {
-      engine: 'keyframes', duration: 1, easing: 'easeBezier45_0_55_1',
-      keyframes: [
-        { at: 0, opacity: 1, translateX: 0, blur: 0 },
-        { at: 0.2, opacity: 1, translateX: -6, blur: 1 },
-        { at: 0.35, opacity: 0.9, translateX: 6, blur: 1 },
-        { at: 0.5, opacity: 0.7, translateX: -4, blur: 2 },
-        { at: 0.75, opacity: 0.4, translateX: 2, blur: 4 },
-        { at: 1, opacity: 0, translateX: 0, blur: 8 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'pixel-out', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'pixel-out-v2',
-    exit: {
-      engine: 'keyframes', duration: 0.7, easing: 'easeBezier55_0_45_1',
-      keyframes: [
-        { at: 0, opacity: 1, scale: 1, blur: 0 },
-        { at: 0.5, opacity: 0.6, scale: 1.04, blur: 1 },
-        { at: 1, opacity: 0, scale: 1.08, blur: 3 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'swift-exit', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'swift-exit-v2',
-    exit: {
-      engine: 'keyframes', duration: 0.4, easing: 'easeBezier55_0_100_45',
-      keyframes: [
-        { at: 0, opacity: 1, scale: 1, translateX: 0 },
-        { at: 1, opacity: 0, scale: 0.9, translateX: 50 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'clean-vanish', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'clean-vanish-v2',
-    exit: {
-      engine: 'keyframes', duration: 0.55, easing: 'easeBezier45_0_55_1',
-      keyframes: [
-        { at: 0, opacity: 1, scale: 1, blur: 0 },
-        { at: 0.7, opacity: 0.3, scale: 0.96, blur: 1 },
-        { at: 1, opacity: 0, scale: 0.92, blur: 2 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'theatrical-exit', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'theatrical-exit-v2',
-    exit: {
-      engine: 'keyframes', duration: 1.3, easing: 'easeBezier22_1_36_1',
-      keyframes: [
-        { at: 0, opacity: 1, scale: 1, translateY: 0 },
-        { at: 0.4, opacity: 0.9, scale: 1.03, translateY: -5 },
-        { at: 1, opacity: 0, scale: 0.95, translateY: -30 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'epilogue-fade', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'epilogue-fade-v2',
-    exit: {
-      engine: 'keyframes', duration: 1.8, easing: 'easeBezier65_0_35_1',
-      keyframes: [
-        { at: 0, opacity: 1, scale: 1, blur: 0 },
-        { at: 0.6, opacity: 0.6, scale: 1.01, blur: 1 },
-        { at: 1, opacity: 0, scale: 1.02, blur: 4 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'credit-roll', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'credit-roll-v2',
-    exit: {
-      engine: 'keyframes', duration: 1.5, easing: 'easeBezier45_0_55_1',
-      keyframes: [
-        { at: 0, opacity: 1, translateY: 0, blur: 0 },
-        { at: 0.5, opacity: 0.7, translateY: -15, blur: 1 },
-        { at: 1, opacity: 0, translateY: -50, blur: 3 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'loop-drift', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'loop-drift-v2',
-    loop: {
-      engine: 'keyframes', duration: 6, easing: 'easeBezier45_0_55_1',
-      keyframes: [
-        { at: 0, translateX: 0, translateY: 0 },
-        { at: 0.25, translateX: 3, translateY: -2 },
-        { at: 0.5, translateX: 0, translateY: -4 },
-        { at: 0.75, translateX: -3, translateY: -2 },
-        { at: 1, translateX: 0, translateY: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'loop-glow-pulse', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'loop-glow-pulse-v2',
-    loop: {
-      engine: 'keyframes', duration: 2.5, easing: 'easeBezier45_0_55_1',
-      keyframes: [
-        { at: 0, glowIntensity: 1 },
-        { at: 0.5, glowIntensity: 1.6 },
-        { at: 1, glowIntensity: 1 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'loop-sway', migração automática Etapa 5 (validada: paridade numérica)
-    id: 'loop-sway-v2',
-    loop: {
-      engine: 'keyframes', duration: 5, easing: 'easeBezier45_0_55_1',
-      keyframes: [
-        { at: 0, rotate: 0 },
-        { at: 0.25, rotate: 0.5 },
-        { at: 0.5, rotate: 0 },
-        { at: 0.75, rotate: -0.5 },
-        { at: 1, rotate: 0 },
-      ],
-    },
   });
 
   return { stanzas };
@@ -41107,22 +39230,12 @@ window.WM_ANIM_ENGINE = (function () {
       ],
     },
   });
-  registerRecipe({ // = 'glory-rise' (Slide Up), index.html ~linha 9366
-    id: 'slide-up-in-v2',
-    entrance: {
-      engine: 'keyframes', duration: 1.2, easing: 'easeBezier22_1_36_1', // bezier real; = cubic-bezier(0.22,1,0.36,1) original
-      keyframes: [
-        { at: 0, opacity: 0, translateY: 40, scale: 0.9 },
-        { at: 1, opacity: 1, translateY: 0, scale: 1 },
-      ],
-    },
-  });
 
   // SAÍDAS
   registerRecipe({ // = 'slide-away-up' (Slide Out), index.html ~linha 9736
     id: 'slide-out-v2',
     exit: {
-      engine: 'keyframes', duration: 0.7, easing: 'easeInCubic', // = cubic-bezier(0.55,0,0.55,0.2) original
+      engine: 'keyframes', duration: 0.7, easing: 'easeBezier55_0_55_2', // bezier real; = cubic-bezier(0.55,0,0.55,0.2) original
       keyframes: [
         { at: 0, opacity: 1, translateY: 0, blur: 0 },
         { at: 1, opacity: 0, translateY: -40, blur: 4 },
@@ -41132,7 +39245,7 @@ window.WM_ANIM_ENGINE = (function () {
   registerRecipe({ // = 'dissolve' (Blur Out), index.html ~linha 9658
     id: 'blur-out-v2',
     exit: {
-      engine: 'keyframes', duration: 1.2, easing: 'easeInCubic', // = cubic-bezier(0.55,0,0.55,0.2) original
+      engine: 'keyframes', duration: 1.2, easing: 'easeBezier55_0_55_2', // bezier real; = cubic-bezier(0.55,0,0.55,0.2) original
       keyframes: [
         { at: 0, opacity: 1, scale: 1, blur: 0 },
         { at: 1, opacity: 0, scale: 1.1, blur: 20 },
@@ -41142,7 +39255,7 @@ window.WM_ANIM_ENGINE = (function () {
   registerRecipe({ // = 'darken-out' (Scale Down), index.html ~linha 9775
     id: 'scale-down-out-v2',
     exit: {
-      engine: 'keyframes', duration: 1.1, easing: 'easeInCubic', // = cubic-bezier(0.55,0,0.55,0.2) original
+      engine: 'keyframes', duration: 1.1, easing: 'easeBezier55_0_55_2', // bezier real; = cubic-bezier(0.55,0,0.55,0.2) original
       keyframes: [
         { at: 0, opacity: 1, scale: 1 },
         { at: 1, opacity: 0, scale: 0.95 },
@@ -41154,22 +39267,11 @@ window.WM_ANIM_ENGINE = (function () {
   registerRecipe({ // = 'loop-breath' (Breathing), index.html ~linha 10873
     id: 'breathing-loop-v2',
     loop: {
-      engine: 'keyframes', duration: 4.0, easing: 'easeInOut',
+      engine: 'keyframes', duration: 4.0, easing: 'easeBezier45_0_55_1', // bezier real; = cubic-bezier(0.45,0,0.55,1) original
       keyframes: [
         { at: 0, scale: 1 },
         { at: 0.5, scale: 1.025 },
         { at: 1, scale: 1 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'loop-float' (Floating), index.html ~linha 10897
-    id: 'floating-loop-v2',
-    loop: {
-      engine: 'keyframes', duration: 3.5, easing: 'easeInOut',
-      keyframes: [
-        { at: 0, translateY: 0 },
-        { at: 0.5, translateY: -6 },
-        { at: 1, translateY: 0 },
       ],
     },
   });
@@ -41250,10 +39352,1622 @@ window.WM_ANIM_ENGINE = (function () {
     mode: 'word',
     stagger: 0.08,
     entrance: {
-      engine: 'keyframes', duration: 0.5, easing: 'easeOutQuint',
+      engine: 'keyframes', duration: 0.5, easing: 'easeBezier22_1_36_1', // bezier real; = cubic-bezier(0.22,1,0.36,1) original
       keyframes: [
         { at: 0, opacity: 0, translateY: 16, blur: 4 },
         { at: 1, opacity: 1, translateY: 0, blur: 0 },
+      ],
+    },
+  });
+
+  // Etapa 5 — lote automático: 158 animações geradas direto de
+  // ANIMATIONS_V2 por um conversor (não escritas à mão uma por uma).
+  // Todas com paridade numérica 100% confirmada contra o motor antigo
+  // (50.085 comparações, easing bezier real). Ainda NÃO estão na
+  // whitelist de produção (WM_ENGINE_V2_ACTIVE_IDS) — só registradas e
+  // validadas; ativação em produção é feita aos poucos, id por id.
+  // -------------------------------------------------------------------
+  registerRecipe({ // = 'sem-animacao', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'sem-animacao-v2',
+    entrance: {
+      engine: 'keyframes', duration: 0.01, easing: 'linear',
+      keyframes: [
+        { at: 0, opacity: 1 },
+        { at: 1, opacity: 1 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'fade-in-soft', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'fade-in-soft-v2',
+    entrance: {
+      engine: 'keyframes', duration: 1.1, easing: 'easeBezier22_1_36_1',
+      keyframes: [
+        { at: 0, opacity: 0, translateY: 12, blur: 6 },
+        { at: 1, opacity: 1, translateY: 0, blur: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'feather-drop', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'feather-drop-v2',
+    entrance: {
+      engine: 'keyframes', duration: 1.5, easing: 'easeBezier45_0_55_1',
+      keyframes: [
+        { at: 0, opacity: 0, translateY: -30 },
+        { at: 1, opacity: 1, translateY: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'fade-down-elegant', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'fade-down-elegant-v2',
+    entrance: {
+      engine: 'keyframes', duration: 1, easing: 'easeBezier22_1_36_1',
+      keyframes: [
+        { at: 0, opacity: 0, translateY: -40 },
+        { at: 1, opacity: 1, translateY: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'silk-flow', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'silk-flow-v2',
+    entrance: {
+      engine: 'keyframes', duration: 1.1, easing: 'easeBezier22_1_36_1',
+      keyframes: [
+        { at: 0, opacity: 0, translateX: -60 },
+        { at: 1, opacity: 1, translateX: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'graceful-arc', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'graceful-arc-v2',
+    entrance: {
+      engine: 'keyframes', duration: 1.2, easing: 'easeBezier22_1_36_1',
+      keyframes: [
+        { at: 0, opacity: 0, translateX: 40, translateY: -20 },
+        { at: 0.5, opacity: 0.5, translateX: 20, translateY: -10 },
+        { at: 1, opacity: 1, translateX: 0, translateY: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'cascade-down', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'cascade-down-v2',
+    entrance: {
+      engine: 'keyframes', duration: 1.1, easing: 'easeBezier22_1_36_1',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 0.9, translateY: -50 },
+        { at: 1, opacity: 1, scale: 1, translateY: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'blur-reveal', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'blur-reveal-v2',
+    entrance: {
+      engine: 'keyframes', duration: 1.3, easing: 'easeBezier22_1_36_1',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 1.08, blur: 20 },
+        { at: 1, opacity: 1, scale: 1, blur: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'film-fade', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'film-fade-v2',
+    entrance: {
+      engine: 'keyframes', duration: 1.8, easing: 'easeBezier45_0_55_1',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 0.96, blur: 3 },
+        { at: 1, opacity: 1, scale: 1, blur: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'maquina-escrever', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'maquina-escrever-v2',
+    entrance: {
+      engine: 'keyframes', duration: 1.2, easing: 'linear',
+      keyframes: [
+        { at: 0, opacity: 0 },
+        { at: 1, opacity: 1 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'depth-emerge', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'depth-emerge-v2',
+    entrance: {
+      engine: 'keyframes', duration: 1.3, easing: 'easeBezier22_1_36_1',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 0.6, blur: 12 },
+        { at: 1, opacity: 1, scale: 1, blur: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'focus-pull', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'focus-pull-v2',
+    entrance: {
+      engine: 'keyframes', duration: 1.4, easing: 'easeBezier22_1_36_1',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 1.15, blur: 30 },
+        { at: 1, opacity: 1, scale: 1, blur: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'horizon-rise', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'horizon-rise-v2',
+    entrance: {
+      engine: 'keyframes', duration: 1.5, easing: 'easeBezier22_1_36_1',
+      keyframes: [
+        { at: 0, opacity: 0, translateY: 80, blur: 6 },
+        { at: 1, opacity: 1, translateY: 0, blur: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'divine-light', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'divine-light-v2',
+    entrance: {
+      engine: 'keyframes', duration: 1.3, easing: 'easeBezier22_1_36_1',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 1.1, translateY: -40 },
+        { at: 1, opacity: 1, scale: 1, translateY: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'heaven-descent', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'heaven-descent-v2',
+    entrance: {
+      engine: 'keyframes', duration: 1.6, easing: 'easeBezier22_1_36_1',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 1.15, translateY: -100, blur: 8 },
+        { at: 1, opacity: 1, scale: 1, translateY: 0, blur: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'glory-flash', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'glory-flash-v2',
+    entrance: {
+      engine: 'keyframes', duration: 0.8, easing: 'easeBezier22_1_36_1',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 0.7 },
+        { at: 1, opacity: 1, scale: 1 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'sacred-pulse', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'sacred-pulse-v2',
+    entrance: {
+      engine: 'keyframes', duration: 1, easing: 'linear',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 1.2 },
+        { at: 0.5, opacity: 1, scale: 0.95 },
+        { at: 1, opacity: 1, scale: 1 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'slide-in-left', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'slide-in-left-v2',
+    entrance: {
+      engine: 'keyframes', duration: 0.9, easing: 'easeBezier22_1_36_1',
+      keyframes: [
+        { at: 0, opacity: 0, translateX: -80, blur: 4 },
+        { at: 1, opacity: 1, translateX: 0, blur: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'slide-in-right', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'slide-in-right-v2',
+    entrance: {
+      engine: 'keyframes', duration: 0.9, easing: 'easeBezier22_1_36_1',
+      keyframes: [
+        { at: 0, opacity: 0, translateX: 80, blur: 4 },
+        { at: 1, opacity: 1, translateX: 0, blur: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'snap-in', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'snap-in-v2',
+    entrance: {
+      engine: 'keyframes', duration: 0.35, easing: 'easeBezier22_1_36_1',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 1.4, blur: 15 },
+        { at: 1, opacity: 1, scale: 1, blur: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'mask-up', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'mask-up-v2',
+    entrance: {
+      engine: 'keyframes', duration: 1, easing: 'easeBezier22_1_36_1',
+      keyframes: [
+        { at: 0, opacity: 0, translateY: 20 },
+        { at: 1, opacity: 1, translateY: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'mask-down', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'mask-down-v2',
+    entrance: {
+      engine: 'keyframes', duration: 1, easing: 'easeBezier22_1_36_1',
+      keyframes: [
+        { at: 0, opacity: 0, translateY: -20 },
+        { at: 1, opacity: 1, translateY: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'zoom-in-power', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'zoom-in-power-v2',
+    entrance: {
+      engine: 'keyframes', duration: 0.8, easing: 'easeBezier34_156_64_1',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 0.3, blur: 8 },
+        { at: 1, opacity: 1, scale: 1, blur: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'pop-burst', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'pop-burst-v2',
+    entrance: {
+      engine: 'keyframes', duration: 0.5, easing: 'easeBezier34_156_64_1',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 0 },
+        { at: 1, opacity: 1, scale: 1 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'rotate-in', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'rotate-in-v2',
+    entrance: {
+      engine: 'keyframes', duration: 0.9, easing: 'easeBezier34_156_64_1',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 0.85, translateY: 20, rotate: -15 },
+        { at: 1, opacity: 1, scale: 1, translateY: 0, rotate: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'spring-in', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'spring-in-v2',
+    entrance: {
+      engine: 'keyframes', duration: 0.9, easing: 'easeBezier34_156_64_1',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 0.4, translateY: -40 },
+        { at: 1, opacity: 1, scale: 1, translateY: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'wiggle-in', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'wiggle-in-v2',
+    entrance: {
+      engine: 'keyframes', duration: 0.8, easing: 'linear',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 0.8, rotate: -10 },
+        { at: 0.5, opacity: 1, scale: 1.05, rotate: 5 },
+        { at: 1, opacity: 1, scale: 1, rotate: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'dramatic-rise', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'dramatic-rise-v2',
+    entrance: {
+      engine: 'keyframes', duration: 1.5, easing: 'easeBezier22_1_36_1',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 0.7, translateY: 120, blur: 15 },
+        { at: 1, opacity: 1, scale: 1, translateY: 0, blur: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'gold-reveal', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'gold-reveal-v2',
+    entrance: {
+      engine: 'keyframes', duration: 1.4, easing: 'easeBezier22_1_36_1',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 1.1, blur: 8 },
+        { at: 1, opacity: 1, scale: 1, blur: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'luxury-fade', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'luxury-fade-v2',
+    entrance: {
+      engine: 'keyframes', duration: 1.6, easing: 'easeBezier45_0_55_1',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 0.97, translateY: 30 },
+        { at: 1, opacity: 1, scale: 1, translateY: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'royal-entrance', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'royal-entrance-v2',
+    entrance: {
+      engine: 'keyframes', duration: 1.8, easing: 'easeBezier22_1_36_1',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 1.05, translateY: -50, blur: 4 },
+        { at: 1, opacity: 1, scale: 1, translateY: 0, blur: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'tender-rise', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'tender-rise-v2',
+    entrance: {
+      engine: 'keyframes', duration: 1.3, easing: 'easeBezier22_1_36_1',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 0.95, translateY: 25 },
+        { at: 1, opacity: 1, scale: 1, translateY: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'heart-pulse', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'heart-pulse-v2',
+    entrance: {
+      engine: 'keyframes', duration: 1.1, easing: 'linear',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 0.9 },
+        { at: 0.5, opacity: 1, scale: 1.08 },
+        { at: 1, opacity: 1, scale: 1 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'soul-rise', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'soul-rise-v2',
+    entrance: {
+      engine: 'keyframes', duration: 1.5, easing: 'easeBezier45_0_55_1',
+      keyframes: [
+        { at: 0, opacity: 0, translateY: 50, blur: 5 },
+        { at: 1, opacity: 1, translateY: 0, blur: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'gentle-embrace', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'gentle-embrace-v2',
+    entrance: {
+      engine: 'keyframes', duration: 1.3, easing: 'easeBezier22_1_36_1',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 1.05 },
+        { at: 1, opacity: 1, scale: 1 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'mist-arrive', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'mist-arrive-v2',
+    entrance: {
+      engine: 'keyframes', duration: 1.8, easing: 'easeBezier45_0_55_1',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 1.08, blur: 18 },
+        { at: 1, opacity: 1, scale: 1, blur: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'tide-in', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'tide-in-v2',
+    entrance: {
+      engine: 'keyframes', duration: 1.8, easing: 'easeBezier45_0_55_1',
+      keyframes: [
+        { at: 0, opacity: 0, translateX: -40, blur: 6 },
+        { at: 1, opacity: 1, translateX: 0, blur: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'glow-emerge', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'glow-emerge-v2',
+    entrance: {
+      engine: 'keyframes', duration: 1.7, easing: 'easeBezier22_1_36_1',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 0.93, blur: 8 },
+        { at: 1, opacity: 1, scale: 1, blur: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'fade-out-soft', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'fade-out-soft-v2',
+    exit: {
+      engine: 'keyframes', duration: 0.9, easing: 'easeBezier55_0_55_2',
+      keyframes: [
+        { at: 0, opacity: 1, translateY: 0, blur: 0 },
+        { at: 1, opacity: 0, translateY: -12, blur: 6 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'zoom-out-soft', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'zoom-out-soft-v2',
+    exit: {
+      engine: 'keyframes', duration: 0.8, easing: 'easeBezier55_0_55_2',
+      keyframes: [
+        { at: 0, opacity: 1, scale: 1, blur: 0 },
+        { at: 1, opacity: 0, scale: 0.7, blur: 8 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'mist-away', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'mist-away-v2',
+    exit: {
+      engine: 'keyframes', duration: 1.6, easing: 'linear',
+      keyframes: [
+        { at: 0, opacity: 1, scale: 1, blur: 0 },
+        { at: 1, opacity: 0, scale: 1.15, blur: 30 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'fade-out-elegant', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'fade-out-elegant-v2',
+    exit: {
+      engine: 'keyframes', duration: 1, easing: 'easeBezier55_0_55_2',
+      keyframes: [
+        { at: 0, opacity: 1, translateY: 0 },
+        { at: 1, opacity: 0, translateY: -20 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'gentle-vanish', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'gentle-vanish-v2',
+    exit: {
+      engine: 'keyframes', duration: 1.2, easing: 'easeBezier45_0_55_1',
+      keyframes: [
+        { at: 0, opacity: 1, translateY: 0, blur: 0 },
+        { at: 1, opacity: 0, translateY: 10, blur: 2 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'depth-recede', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'depth-recede-v2',
+    exit: {
+      engine: 'keyframes', duration: 1, easing: 'easeBezier55_0_55_2',
+      keyframes: [
+        { at: 0, opacity: 1, scale: 1, blur: 0 },
+        { at: 1, opacity: 0, scale: 0.5, blur: 10 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'slide-away-left', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'slide-away-left-v2',
+    exit: {
+      engine: 'keyframes', duration: 0.7, easing: 'easeBezier55_0_55_2',
+      keyframes: [
+        { at: 0, opacity: 1, translateX: 0, blur: 0 },
+        { at: 1, opacity: 0, translateX: -60, blur: 4 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'slide-away-right', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'slide-away-right-v2',
+    exit: {
+      engine: 'keyframes', duration: 0.7, easing: 'easeBezier55_0_55_2',
+      keyframes: [
+        { at: 0, opacity: 1, translateX: 0, blur: 0 },
+        { at: 1, opacity: 0, translateX: 60, blur: 4 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'slide-away-down', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'slide-away-down-v2',
+    exit: {
+      engine: 'keyframes', duration: 0.7, easing: 'easeBezier55_0_55_2',
+      keyframes: [
+        { at: 0, opacity: 1, translateY: 0, blur: 0 },
+        { at: 1, opacity: 0, translateY: 40, blur: 4 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'motion-blur-exit', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'motion-blur-exit-v2',
+    exit: {
+      engine: 'keyframes', duration: 0.8, easing: 'easeBezier55_0_55_2',
+      keyframes: [
+        { at: 0, opacity: 1, translateX: 0, blur: 0 },
+        { at: 1, opacity: 0, translateX: 60, blur: 14 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'long-fade-out', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'long-fade-out-v2',
+    exit: {
+      engine: 'keyframes', duration: 2, easing: 'easeBezier45_0_55_1',
+      keyframes: [
+        { at: 0, opacity: 1, translateY: 0 },
+        { at: 1, opacity: 0, translateY: -20 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'collapse-out', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'collapse-out-v2',
+    exit: {
+      engine: 'keyframes', duration: 0.7, easing: 'easeBezier55_0_55_2',
+      keyframes: [
+        { at: 0, opacity: 1, scale: 1, rotate: 0 },
+        { at: 1, opacity: 0, scale: 0, rotate: -180 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'shatter-exit', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'shatter-exit-v2',
+    exit: {
+      engine: 'keyframes', duration: 0.6, easing: 'easeBezier55_0_55_2',
+      keyframes: [
+        { at: 0, opacity: 1, scale: 1, blur: 0 },
+        { at: 1, opacity: 0, scale: 1.4, blur: 8 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'flash-out', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'flash-out-v2',
+    exit: {
+      engine: 'keyframes', duration: 0.4, easing: 'easeBezier22_1_36_1',
+      keyframes: [
+        { at: 0, opacity: 1, scale: 1 },
+        { at: 0.3, opacity: 1, scale: 1.3 },
+        { at: 1, opacity: 0, scale: 1.5 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'dramatic-fall', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'dramatic-fall-v2',
+    exit: {
+      engine: 'keyframes', duration: 0.9, easing: 'easeBezier55_0_55_2',
+      keyframes: [
+        { at: 0, opacity: 1, scale: 1, translateY: 0, blur: 0 },
+        { at: 1, opacity: 0, scale: 0.8, translateY: 80, blur: 10 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'resurrection', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'resurrection-v2',
+    entrance: {
+      engine: 'keyframes', duration: 1.6, easing: 'linear',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 0.6, blur: 12, glowIntensity: 0 },
+        { at: 0.5, opacity: 0.7, scale: 1.08, blur: 4, glowIntensity: 2.5 },
+        { at: 0.75, opacity: 1, scale: 0.96, blur: 1, glowIntensity: 1.8 },
+        { at: 1, opacity: 1, scale: 1, blur: 0, glowIntensity: 1.2 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'eternal-glory', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'eternal-glory-v2',
+    entrance: {
+      engine: 'keyframes', duration: 1.8, easing: 'easeBezier22_1_36_1',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 1.1, translateY: -60, blur: 8, glowIntensity: 0 },
+        { at: 0.6, opacity: 1, scale: 0.98, translateY: 5, blur: 0, glowIntensity: 2 },
+        { at: 1, opacity: 1, scale: 1, translateY: 0, blur: 0, glowIntensity: 1.5 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'living-spirit', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'living-spirit-v2',
+    entrance: {
+      engine: 'keyframes', duration: 2.2, easing: 'linear',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 0.98, blur: 6 },
+        { at: 0.3, opacity: 0.7, scale: 1.02, blur: 2 },
+        { at: 0.6, opacity: 1, scale: 0.99, blur: 0 },
+        { at: 0.85, opacity: 1, scale: 1.01, blur: 0 },
+        { at: 1, opacity: 1, scale: 1, blur: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'faith-wind', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'faith-wind-v2',
+    entrance: {
+      engine: 'keyframes', duration: 1.3, easing: 'easeBezier22_1_36_1',
+      keyframes: [
+        { at: 0, opacity: 0, translateX: -50, translateY: -20, rotate: -8, blur: 5 },
+        { at: 0.7, opacity: 1, translateX: 5, translateY: 0, rotate: 1, blur: 0 },
+        { at: 1, opacity: 1, translateX: 0, translateY: 0, rotate: 0, blur: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'burning-heart', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'burning-heart-v2',
+    entrance: {
+      engine: 'keyframes', duration: 1.4, easing: 'linear',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 0.85, glowIntensity: 0 },
+        { at: 0.3, opacity: 1, scale: 1.12, glowIntensity: 2.5 },
+        { at: 0.5, opacity: 1, scale: 0.95, glowIntensity: 1.5 },
+        { at: 0.7, opacity: 1, scale: 1.04, glowIntensity: 2 },
+        { at: 1, opacity: 1, scale: 1, glowIntensity: 1 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'sacred-bloom', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'sacred-bloom-v2',
+    entrance: {
+      engine: 'keyframes', duration: 1.5, easing: 'easeBezier34_156_64_1',
+      keyframes: [
+        { at: 0, opacity: 0, scaleX: 0, scaleY: 1.5, blur: 8 },
+        { at: 0.4, opacity: 0.8, scaleX: 1.2, scaleY: 0.9, blur: 2 },
+        { at: 1, opacity: 1, scaleX: 1, scaleY: 1, blur: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'holy-ascension', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'holy-ascension-v2',
+    entrance: {
+      engine: 'keyframes', duration: 1.7, easing: 'easeBezier22_1_36_1',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 0.7, translateY: 80, blur: 6, glowIntensity: 0 },
+        { at: 0.6, opacity: 1, scale: 1.04, translateY: -8, blur: 0, glowIntensity: 1.8 },
+        { at: 1, opacity: 1, scale: 1, translateY: 0, blur: 0, glowIntensity: 1 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'temple-rise', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'temple-rise-v2',
+    entrance: {
+      engine: 'keyframes', duration: 1.4, easing: 'easeBezier22_1_36_1',
+      keyframes: [
+        { at: 0, opacity: 0, scaleY: 0.2, translateY: 20 },
+        { at: 0.7, opacity: 1, scaleY: 1.05, translateY: -2 },
+        { at: 1, opacity: 1, scaleY: 1, translateY: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'manna-fall', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'manna-fall-v2',
+    entrance: {
+      engine: 'keyframes', duration: 1.6, easing: 'easeBezier45_0_55_1',
+      keyframes: [
+        { at: 0, opacity: 0, translateY: -120, blur: 4 },
+        { at: 0.8, opacity: 1, translateY: 8, blur: 0 },
+        { at: 0.92, opacity: 1, translateY: -3, blur: 0 },
+        { at: 1, opacity: 1, translateY: 0, blur: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'shofar-call', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'shofar-call-v2',
+    entrance: {
+      engine: 'keyframes', duration: 1, easing: 'easeBezier22_1_36_1',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 1.4, blur: 6, letterSpacing: 0.1 },
+        { at: 1, opacity: 1, scale: 1, blur: 0, letterSpacing: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'crossing-light', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'crossing-light-v2',
+    entrance: {
+      engine: 'keyframes', duration: 1.5, easing: 'easeBezier22_1_36_1',
+      keyframes: [
+        { at: 0, opacity: 0, scaleX: 0, glowIntensity: 0 },
+        { at: 0.4, opacity: 1, scaleX: 1.05, glowIntensity: 2.5 },
+        { at: 1, opacity: 1, scaleX: 1, glowIntensity: 1 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'dove-descent', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'dove-descent-v2',
+    entrance: {
+      engine: 'keyframes', duration: 1.5, easing: 'easeBezier45_0_55_1',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 0.85, translateY: -80, rotate: -5, blur: 3 },
+        { at: 0.7, opacity: 1, scale: 1.03, translateY: 6, rotate: 2, blur: 0 },
+        { at: 1, opacity: 1, scale: 1, translateY: 0, rotate: 0, blur: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'jelly-pop', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'jelly-pop-v2',
+    entrance: {
+      engine: 'keyframes', duration: 0.7, easing: 'linear',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 0, scaleY: 0.3 },
+        { at: 0.4, opacity: 1, scale: 1.2, scaleY: 1.3 },
+        { at: 0.6, opacity: 1, scaleX: 1.1, scaleY: 0.85 },
+        { at: 0.8, opacity: 1, scaleX: 0.95, scaleY: 1.05 },
+        { at: 1, opacity: 1, scaleX: 1, scaleY: 1 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'stamp-impact', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'stamp-impact-v2',
+    entrance: {
+      engine: 'keyframes', duration: 0.5, easing: 'linear',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 2.5, rotate: -8 },
+        { at: 0.5, opacity: 1, scale: 0.9, rotate: 2, blur: 0 },
+        { at: 0.8, opacity: 1, scale: 1.05, rotate: -1 },
+        { at: 1, opacity: 1, scale: 1, rotate: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'rgb-split-in', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'rgb-split-in-v2',
+    entrance: {
+      engine: 'keyframes', duration: 0.9, easing: 'easeBezier22_1_36_1',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 1.05, chromatic: 20 },
+        { at: 0.5, opacity: 1, scale: 1, chromatic: 8 },
+        { at: 1, opacity: 1, scale: 1, chromatic: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'kinetic-slide', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'kinetic-slide-v2',
+    entrance: {
+      engine: 'keyframes', duration: 0.8, easing: 'easeBezier22_1_36_1',
+      keyframes: [
+        { at: 0, opacity: 0, translateX: 200, skewX: 15 },
+        { at: 0.6, opacity: 1, translateX: -10, skewX: -3 },
+        { at: 1, opacity: 1, translateX: 0, skewX: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'instagram-pop', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'instagram-pop-v2',
+    entrance: {
+      engine: 'keyframes', duration: 0.6, easing: 'easeBezier34_156_64_1',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 0.3, rotate: -20 },
+        { at: 1, opacity: 1, scale: 1, rotate: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'squeeze-in', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'squeeze-in-v2',
+    entrance: {
+      engine: 'keyframes', duration: 0.7, easing: 'easeBezier34_156_64_1',
+      keyframes: [
+        { at: 0, opacity: 0, scaleX: 0, scaleY: 3 },
+        { at: 0.6, opacity: 1, scaleX: 1.2, scaleY: 0.7 },
+        { at: 1, opacity: 1, scaleX: 1, scaleY: 1 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'tilt-pop', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'tilt-pop-v2',
+    entrance: {
+      engine: 'keyframes', duration: 0.6, easing: 'easeBezier34_156_64_1',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 0.5, translateY: -20, skewX: 25 },
+        { at: 1, opacity: 1, scale: 1, translateY: 0, skewX: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'flicker-in', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'flicker-in-v2',
+    entrance: {
+      engine: 'keyframes', duration: 0.7, easing: 'linear',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 1 },
+        { at: 0.15, opacity: 0.8, scale: 1 },
+        { at: 0.2, opacity: 0.1, scale: 1 },
+        { at: 0.3, opacity: 0.9, scale: 1 },
+        { at: 0.35, opacity: 0.2, scale: 1 },
+        { at: 0.5, opacity: 1, scale: 1 },
+        { at: 1, opacity: 1, scale: 1 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'mirror-flip', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'mirror-flip-v2',
+    entrance: {
+      engine: 'keyframes', duration: 0.8, easing: 'easeBezier22_1_36_1',
+      keyframes: [
+        { at: 0, opacity: 0, scaleX: -1, blur: 3 },
+        { at: 0.6, opacity: 1, scaleX: 1.05, blur: 0 },
+        { at: 1, opacity: 1, scaleX: 1, blur: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'spring-bounce', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'spring-bounce-v2',
+    entrance: {
+      engine: 'keyframes', duration: 0.9, easing: 'linear',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 0.6, translateY: -100 },
+        { at: 0.5, opacity: 1, scale: 1.1, translateY: 20 },
+        { at: 0.7, opacity: 1, scale: 0.95, translateY: -8 },
+        { at: 0.85, opacity: 1, scale: 1.02, translateY: 3 },
+        { at: 1, opacity: 1, scale: 1, translateY: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'spread-pop', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'spread-pop-v2',
+    entrance: {
+      engine: 'keyframes', duration: 0.7, easing: 'easeBezier22_1_36_1',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 0.8, letterSpacing: -0.3 },
+        { at: 0.6, opacity: 1, scale: 1.02, letterSpacing: 0.05 },
+        { at: 1, opacity: 1, scale: 1, letterSpacing: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'tape-warp', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'tape-warp-v2',
+    entrance: {
+      engine: 'keyframes', duration: 0.7, easing: 'easeBezier22_1_36_1',
+      keyframes: [
+        { at: 0, opacity: 0, scaleX: 1.5, scaleY: 0.1, skewX: 8 },
+        { at: 0.5, opacity: 1, scaleX: 0.95, scaleY: 1.1, skewX: -2 },
+        { at: 1, opacity: 1, scaleX: 1, scaleY: 1, skewX: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'imax-reveal', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'imax-reveal-v2',
+    entrance: {
+      engine: 'keyframes', duration: 2, easing: 'easeBezier22_1_36_1',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 2.5, blur: 30, glowIntensity: 0 },
+        { at: 0.4, opacity: 0.7, scale: 1.4, blur: 8, glowIntensity: 1.5 },
+        { at: 0.8, opacity: 1, scale: 1.02, blur: 0, glowIntensity: 2 },
+        { at: 1, opacity: 1, scale: 1, blur: 0, glowIntensity: 1 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'trailer-darkness', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'trailer-darkness-v2',
+    entrance: {
+      engine: 'keyframes', duration: 2.2, easing: 'easeBezier45_0_55_1',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 0.9, blur: 25 },
+        { at: 0.5, opacity: 0.3, scale: 0.95, blur: 12 },
+        { at: 0.85, opacity: 1, scale: 1.01, blur: 0 },
+        { at: 1, opacity: 1, scale: 1, blur: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'spotlight-on', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'spotlight-on-v2',
+    entrance: {
+      engine: 'keyframes', duration: 1.6, easing: 'easeBezier22_1_36_1',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 1.2, blur: 15, glowIntensity: 0 },
+        { at: 0.6, opacity: 1, scale: 1.03, blur: 0, glowIntensity: 2.5 },
+        { at: 1, opacity: 1, scale: 1, blur: 0, glowIntensity: 1.2 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'pull-focus', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'pull-focus-v2',
+    entrance: {
+      engine: 'keyframes', duration: 1.4, easing: 'easeBezier22_1_36_1',
+      keyframes: [
+        { at: 0, opacity: 0.6, scale: 1.05, blur: 40 },
+        { at: 0.6, opacity: 1, scale: 0.99, blur: 4 },
+        { at: 1, opacity: 1, scale: 1, blur: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'title-drop', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'title-drop-v2',
+    entrance: {
+      engine: 'keyframes', duration: 1.2, easing: 'easeBezier45_0_55_1',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 1.3, translateY: -120, blur: 4 },
+        { at: 0.65, opacity: 1, scale: 0.98, translateY: 15, blur: 0 },
+        { at: 0.85, opacity: 1, scale: 1.01, translateY: -5, blur: 0 },
+        { at: 1, opacity: 1, scale: 1, translateY: 0, blur: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'camera-shake', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'camera-shake-v2',
+    entrance: {
+      engine: 'keyframes', duration: 0.7, easing: 'linear',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 1.4, translateX: 0, translateY: 0 },
+        { at: 0.2, opacity: 1, scale: 1.1, translateX: 12, translateY: -5 },
+        { at: 0.35, opacity: 1, scale: 1.05, translateX: -10, translateY: 4 },
+        { at: 0.5, opacity: 1, scale: 1.02, translateX: 6, translateY: -3 },
+        { at: 0.7, opacity: 1, scale: 1.01, translateX: -3, translateY: 1 },
+        { at: 1, opacity: 1, scale: 1, translateX: 0, translateY: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'lens-flare-in', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'lens-flare-in-v2',
+    entrance: {
+      engine: 'keyframes', duration: 1.5, easing: 'easeBezier22_1_36_1',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 1.1, blur: 6, glowIntensity: 0 },
+        { at: 0.3, opacity: 0.4, scale: 1.05, blur: 3, glowIntensity: 3 },
+        { at: 0.6, opacity: 1, scale: 1.02, blur: 0, glowIntensity: 2 },
+        { at: 1, opacity: 1, scale: 1, blur: 0, glowIntensity: 1 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'noir-fade', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'noir-fade-v2',
+    entrance: {
+      engine: 'keyframes', duration: 2, easing: 'easeBezier45_0_55_1',
+      keyframes: [
+        { at: 0, opacity: 0, translateY: 40, blur: 8, letterSpacing: 0.15 },
+        { at: 0.7, opacity: 1, translateY: 0, blur: 0, letterSpacing: 0.02 },
+        { at: 1, opacity: 1, translateY: 0, blur: 0, letterSpacing: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'epic-zoom', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'epic-zoom-v2',
+    entrance: {
+      engine: 'keyframes', duration: 1.8, easing: 'easeBezier22_1_36_1',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 4, blur: 35 },
+        { at: 0.7, opacity: 1, scale: 1.05, blur: 0 },
+        { at: 1, opacity: 1, scale: 1, blur: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'film-roll', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'film-roll-v2',
+    entrance: {
+      engine: 'keyframes', duration: 1, easing: 'easeBezier22_1_36_1',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 0.7, translateY: 60, rotate: -8 },
+        { at: 0.25, opacity: 0.5, scale: 0.85, translateY: 30, rotate: 5 },
+        { at: 0.5, opacity: 1, scale: 0.95, translateY: 10, rotate: -2 },
+        { at: 1, opacity: 1, scale: 1, translateY: 0, rotate: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'matrix-glitch', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'matrix-glitch-v2',
+    entrance: {
+      engine: 'keyframes', duration: 0.9, easing: 'linear',
+      keyframes: [
+        { at: 0, opacity: 0, scaleY: 0, chromatic: 0 },
+        { at: 0.2, opacity: 0.4, scaleY: 0.3, chromatic: 15 },
+        { at: 0.4, opacity: 0.8, scaleY: 1.05, chromatic: 8 },
+        { at: 0.7, opacity: 1, scaleY: 0.98, chromatic: 3 },
+        { at: 1, opacity: 1, scaleY: 1, chromatic: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'fog-emerge', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'fog-emerge-v2',
+    entrance: {
+      engine: 'keyframes', duration: 2.2, easing: 'easeBezier45_0_55_1',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 1.15, blur: 25, letterSpacing: 0.05 },
+        { at: 0.6, opacity: 0.7, scale: 1.05, blur: 6, letterSpacing: 0.02 },
+        { at: 1, opacity: 1, scale: 1, blur: 0, letterSpacing: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'skate-boom', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'skate-boom-v2',
+    entrance: {
+      engine: 'keyframes', duration: 0.6, easing: 'easeBezier22_1_36_1',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 0.4, rotate: 720, blur: 8 },
+        { at: 0.5, opacity: 1, scale: 1.15, rotate: 10, blur: 0 },
+        { at: 0.8, opacity: 1, scale: 0.95, rotate: -3, blur: 0 },
+        { at: 1, opacity: 1, scale: 1, rotate: 0, blur: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'drop-the-beat', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'drop-the-beat-v2',
+    entrance: {
+      engine: 'keyframes', duration: 0.55, easing: 'linear',
+      keyframes: [
+        { at: 0, opacity: 0, scaleY: 0.4, translateY: -60 },
+        { at: 0.5, opacity: 1, scaleY: 1.3, translateY: 8 },
+        { at: 0.75, opacity: 1, scaleY: 0.9, translateY: -3 },
+        { at: 1, opacity: 1, scaleY: 1, translateY: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'smash-hit', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'smash-hit-v2',
+    entrance: {
+      engine: 'keyframes', duration: 0.5, easing: 'easeBezier22_1_36_1',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 2.2, rotate: -10, blur: 5 },
+        { at: 0.3, opacity: 1, scale: 0.85, rotate: 3, blur: 0 },
+        { at: 0.5, opacity: 1, scale: 1.1, rotate: -1, blur: 0 },
+        { at: 0.7, opacity: 1, scale: 0.97, rotate: 1, blur: 0 },
+        { at: 0.85, opacity: 1, scale: 1.02, rotate: 0, blur: 0 },
+        { at: 1, opacity: 1, scale: 1, rotate: 0, blur: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'rocket-launch', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'rocket-launch-v2',
+    entrance: {
+      engine: 'keyframes', duration: 0.7, easing: 'easeBezier22_1_36_1',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 0.4, translateY: 150, blur: 12, skewY: -5 },
+        { at: 0.6, opacity: 1, scale: 1.05, translateY: -12, blur: 0, skewY: 2 },
+        { at: 1, opacity: 1, scale: 1, translateY: 0, blur: 0, skewY: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'pinball-bounce', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'pinball-bounce-v2',
+    entrance: {
+      engine: 'keyframes', duration: 0.9, easing: 'linear',
+      keyframes: [
+        { at: 0, opacity: 0, translateX: -80, translateY: -50 },
+        { at: 0.25, opacity: 1, translateX: 30, translateY: 20 },
+        { at: 0.45, opacity: 1, translateX: -15, translateY: -8 },
+        { at: 0.65, opacity: 1, translateX: 8, translateY: 4 },
+        { at: 0.85, opacity: 1, translateX: -3, translateY: -1 },
+        { at: 1, opacity: 1, translateX: 0, translateY: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'graffiti-spray', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'graffiti-spray-v2',
+    entrance: {
+      engine: 'keyframes', duration: 0.6, easing: 'easeBezier22_1_36_1',
+      keyframes: [
+        { at: 0, opacity: 0, scaleX: 0, scaleY: 0.3, blur: 5, skewX: -30 },
+        { at: 0.5, opacity: 1, scaleX: 1.1, scaleY: 1.05, blur: 0, skewX: 5 },
+        { at: 1, opacity: 1, scaleX: 1, scaleY: 1, blur: 0, skewX: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'turbo-zoom', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'turbo-zoom-v2',
+    entrance: {
+      engine: 'keyframes', duration: 0.4, easing: 'easeBezier22_1_36_1',
+      keyframes: [
+        { at: 0, opacity: 0, scaleX: 0.2, scaleY: 1.5, blur: 8 },
+        { at: 0.4, opacity: 1, scaleX: 1.3, scaleY: 0.9, blur: 0 },
+        { at: 0.7, opacity: 1, scaleX: 0.92, scaleY: 1.04, blur: 0 },
+        { at: 1, opacity: 1, scaleX: 1, scaleY: 1, blur: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'beat-pulse', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'beat-pulse-v2',
+    entrance: {
+      engine: 'keyframes', duration: 0.8, easing: 'linear',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 0.7, glowIntensity: 0 },
+        { at: 0.25, opacity: 1, scale: 1.15, glowIntensity: 2.5 },
+        { at: 0.5, opacity: 1, scale: 0.92, glowIntensity: 1 },
+        { at: 0.75, opacity: 1, scale: 1.08, glowIntensity: 2 },
+        { at: 1, opacity: 1, scale: 1, glowIntensity: 1 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'street-tag', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'street-tag-v2',
+    entrance: {
+      engine: 'keyframes', duration: 0.5, easing: 'easeBezier34_156_64_1',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 0.5, rotate: -15, skewX: 12 },
+        { at: 1, opacity: 1, scale: 1, rotate: 0, skewX: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'comic-pow', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'comic-pow-v2',
+    entrance: {
+      engine: 'keyframes', duration: 0.5, easing: 'easeBezier22_1_36_1',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 1.8, rotate: 5, splitX: 20 },
+        { at: 0.4, opacity: 1, scale: 0.85, rotate: -3, splitX: 4 },
+        { at: 0.7, opacity: 1, scale: 1.08, rotate: 1, splitX: 0 },
+        { at: 1, opacity: 1, scale: 1, rotate: 0, splitX: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'spin-toss', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'spin-toss-v2',
+    entrance: {
+      engine: 'keyframes', duration: 0.8, easing: 'easeBezier22_1_36_1',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 0.3, translateY: -40, rotate: -360 },
+        { at: 0.6, opacity: 1, scale: 1.1, translateY: 5, rotate: 15 },
+        { at: 1, opacity: 1, scale: 1, translateY: 0, rotate: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'urban-stomp', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'urban-stomp-v2',
+    entrance: {
+      engine: 'keyframes', duration: 0.6, easing: 'linear',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 0, translateY: -60 },
+        { at: 0.4, opacity: 1, scaleX: 1.3, scaleY: 0.6, translateY: 10 },
+        { at: 0.6, opacity: 1, scaleX: 0.9, scaleY: 1.15, translateY: -3 },
+        { at: 0.8, opacity: 1, scaleX: 1.04, scaleY: 0.96, translateY: 1 },
+        { at: 1, opacity: 1, scaleX: 1, scaleY: 1, translateY: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'electric-zap', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'electric-zap-v2',
+    entrance: {
+      engine: 'keyframes', duration: 0.5, easing: 'linear',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 1, translateX: -8, chromatic: 0 },
+        { at: 0.1, opacity: 0.5, scale: 1.1, translateX: 8, chromatic: 8 },
+        { at: 0.2, opacity: 1, scale: 0.9, translateX: -5, chromatic: 6 },
+        { at: 0.4, opacity: 1, scale: 1.05, translateX: 3, chromatic: 3 },
+        { at: 0.7, opacity: 1, scale: 0.98, translateX: -1, chromatic: 1 },
+        { at: 1, opacity: 1, scale: 1, translateX: 0, chromatic: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'youth-anthem', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'youth-anthem-v2',
+    entrance: {
+      engine: 'keyframes', duration: 0.8, easing: 'easeBezier34_156_64_1',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 0.5, translateY: 30, rotate: -8 },
+        { at: 0.6, opacity: 1, scale: 1.12, translateY: -8, rotate: 4 },
+        { at: 1, opacity: 1, scale: 1, translateY: 0, rotate: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'silk-drape', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'silk-drape-v2',
+    entrance: {
+      engine: 'keyframes', duration: 1.5, easing: 'easeBezier22_1_36_1',
+      keyframes: [
+        { at: 0, opacity: 0, scaleY: 0, translateY: -20 },
+        { at: 0.5, opacity: 0.7, scaleY: 1.05, translateY: 4 },
+        { at: 1, opacity: 1, scaleY: 1, translateY: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'velvet-rise', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'velvet-rise-v2',
+    entrance: {
+      engine: 'keyframes', duration: 1.5, easing: 'easeBezier22_1_36_1',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 0.96, translateY: 25, blur: 3, glowIntensity: 0 },
+        { at: 0.7, opacity: 1, scale: 1.01, translateY: -2, blur: 0, glowIntensity: 1.3 },
+        { at: 1, opacity: 1, scale: 1, translateY: 0, blur: 0, glowIntensity: 1 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'parisian-fade', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'parisian-fade-v2',
+    entrance: {
+      engine: 'keyframes', duration: 1.6, easing: 'easeBezier45_0_55_1',
+      keyframes: [
+        { at: 0, opacity: 0, translateY: 20, letterSpacing: 0.3 },
+        { at: 0.8, opacity: 1, translateY: 0, letterSpacing: 0.02 },
+        { at: 1, opacity: 1, translateY: 0, letterSpacing: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'champagne-pop', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'champagne-pop-v2',
+    entrance: {
+      engine: 'keyframes', duration: 1.2, easing: 'easeBezier34_156_64_1',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 0.8, glowIntensity: 0 },
+        { at: 0.4, opacity: 0.9, scale: 1.08, glowIntensity: 2.2 },
+        { at: 0.7, opacity: 1, scale: 0.97, glowIntensity: 1.4 },
+        { at: 1, opacity: 1, scale: 1, glowIntensity: 1 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'editorial-hold', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'editorial-hold-v2',
+    entrance: {
+      engine: 'keyframes', duration: 1.8, easing: 'easeBezier45_0_55_1',
+      keyframes: [
+        { at: 0, opacity: 0, translateY: 10, letterSpacing: 0.08 },
+        { at: 1, opacity: 1, translateY: 0, letterSpacing: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'platinum-glow', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'platinum-glow-v2',
+    entrance: {
+      engine: 'keyframes', duration: 1.6, easing: 'easeBezier22_1_36_1',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 1.06, blur: 6, glowIntensity: 0 },
+        { at: 0.5, opacity: 0.85, scale: 1.02, blur: 1, glowIntensity: 2 },
+        { at: 1, opacity: 1, scale: 1, blur: 0, glowIntensity: 1.2 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'whisper-elegant', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'whisper-elegant-v2',
+    entrance: {
+      engine: 'keyframes', duration: 1.8, easing: 'easeBezier45_0_55_1',
+      keyframes: [
+        { at: 0, opacity: 0, translateX: -25, blur: 4, letterSpacing: 0.05 },
+        { at: 0.7, opacity: 1, translateX: 2, blur: 0, letterSpacing: 0.01 },
+        { at: 1, opacity: 1, translateX: 0, blur: 0, letterSpacing: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'gala-arrival', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'gala-arrival-v2',
+    entrance: {
+      engine: 'keyframes', duration: 1.7, easing: 'easeBezier22_1_36_1',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 1.1, blur: 8, letterSpacing: 0.06, glowIntensity: 0 },
+        { at: 0.6, opacity: 1, scale: 1.01, blur: 0, letterSpacing: 0.01, glowIntensity: 2 },
+        { at: 1, opacity: 1, scale: 1, blur: 0, letterSpacing: 0, glowIntensity: 1 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'glitch-out', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'glitch-out-v2',
+    exit: {
+      engine: 'keyframes', duration: 0.6, easing: 'linear',
+      keyframes: [
+        { at: 0, opacity: 1, translateX: 0, chromatic: 0 },
+        { at: 0.2, opacity: 0.9, translateX: 10, chromatic: 8 },
+        { at: 0.4, opacity: 0.6, translateX: -8, chromatic: 12 },
+        { at: 0.7, opacity: 0.3, translateX: 5, chromatic: 6 },
+        { at: 1, opacity: 0, translateX: 0, chromatic: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'imax-out', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'imax-out-v2',
+    exit: {
+      engine: 'keyframes', duration: 1.5, easing: 'easeBezier55_0_55_2',
+      keyframes: [
+        { at: 0, opacity: 1, scale: 1, blur: 0 },
+        { at: 1, opacity: 0, scale: 2.5, blur: 25 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'jelly-deflate', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'jelly-deflate-v2',
+    exit: {
+      engine: 'keyframes', duration: 0.7, easing: 'easeBezier34_156_64_1',
+      keyframes: [
+        { at: 0, opacity: 1, scaleX: 1, scaleY: 1 },
+        { at: 0.4, opacity: 0.9, scaleX: 1.2, scaleY: 0.6 },
+        { at: 0.7, opacity: 0.5, scaleX: 0.7, scaleY: 1.1 },
+        { at: 1, opacity: 0, scaleX: 0, scaleY: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'kinetic-slide-out', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'kinetic-slide-out-v2',
+    exit: {
+      engine: 'keyframes', duration: 0.6, easing: 'easeBezier55_0_55_2',
+      keyframes: [
+        { at: 0, opacity: 1, translateX: 0, skewX: 0 },
+        { at: 1, opacity: 0, translateX: 200, skewX: 15 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'spotlight-off', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'spotlight-off-v2',
+    exit: {
+      engine: 'keyframes', duration: 1.3, easing: 'easeBezier55_0_55_2',
+      keyframes: [
+        { at: 0, opacity: 1, scale: 1, blur: 0, glowIntensity: 1 },
+        { at: 0.5, opacity: 0.6, scale: 1.04, blur: 5, glowIntensity: 2.5 },
+        { at: 1, opacity: 0, scale: 1.2, blur: 20, glowIntensity: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'sacred-vanish', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'sacred-vanish-v2',
+    exit: {
+      engine: 'keyframes', duration: 1.4, easing: 'easeBezier45_0_55_1',
+      keyframes: [
+        { at: 0, opacity: 1, scale: 1, blur: 0, glowIntensity: 1 },
+        { at: 0.4, opacity: 0.9, scale: 1.05, blur: 2, glowIntensity: 2 },
+        { at: 1, opacity: 0, scale: 1.15, blur: 18, glowIntensity: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'spin-out', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'spin-out-v2',
+    exit: {
+      engine: 'keyframes', duration: 0.7, easing: 'easeBezier55_0_55_2',
+      keyframes: [
+        { at: 0, opacity: 1, scale: 1, rotate: 0, blur: 0 },
+        { at: 1, opacity: 0, scale: 0.3, rotate: 360, blur: 8 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'tilt-fall', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'tilt-fall-v2',
+    exit: {
+      engine: 'keyframes', duration: 0.8, easing: 'easeBezier55_0_55_2',
+      keyframes: [
+        { at: 0, opacity: 1, translateY: 0, rotate: 0, skewX: 0 },
+        { at: 0.5, opacity: 0.8, translateY: 20, rotate: 12, skewX: 8 },
+        { at: 1, opacity: 0, translateY: 100, rotate: 30, skewX: 20 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'rgb-split-out', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'rgb-split-out-v2',
+    exit: {
+      engine: 'keyframes', duration: 0.8, easing: 'easeBezier55_0_55_2',
+      keyframes: [
+        { at: 0, opacity: 1, scale: 1, chromatic: 0 },
+        { at: 0.5, opacity: 0.8, scale: 1.04, chromatic: 12 },
+        { at: 1, opacity: 0, scale: 1.1, chromatic: 25 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'collapse-implode', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'collapse-implode-v2',
+    exit: {
+      engine: 'keyframes', duration: 0.6, easing: 'easeBezier55_0_55_2',
+      keyframes: [
+        { at: 0, opacity: 1, scale: 1, rotate: 0, blur: 0 },
+        { at: 0.7, opacity: 0.5, scale: 0.4, rotate: 60, blur: 4 },
+        { at: 1, opacity: 0, scale: 0, rotate: 180, blur: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'whisper-fade-out', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'whisper-fade-out-v2',
+    exit: {
+      engine: 'keyframes', duration: 1.4, easing: 'easeBezier45_0_55_1',
+      keyframes: [
+        { at: 0, opacity: 1, translateX: 0, blur: 0, letterSpacing: 0 },
+        { at: 1, opacity: 0, translateX: 30, blur: 3, letterSpacing: 0.08 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'depth-vanish', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'depth-vanish-v2',
+    exit: {
+      engine: 'keyframes', duration: 1, easing: 'easeBezier55_0_55_2',
+      keyframes: [
+        { at: 0, opacity: 1, scale: 1, blur: 0 },
+        { at: 1, opacity: 0, scale: 0.3, blur: 15 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'velvet-recede', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'velvet-recede-v2',
+    exit: {
+      engine: 'keyframes', duration: 1.2, easing: 'easeBezier45_0_55_1',
+      keyframes: [
+        { at: 0, opacity: 1, scale: 1, translateY: 0, glowIntensity: 1 },
+        { at: 0.4, opacity: 0.9, scale: 0.99, translateY: -3, glowIntensity: 1.5 },
+        { at: 1, opacity: 0, scale: 0.95, translateY: -20, glowIntensity: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'breath-of-life', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'breath-of-life-v2',
+    entrance: {
+      engine: 'keyframes', duration: 1.8, easing: 'easeBezier16_1_3_1',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 0.85, blur: 12 },
+        { at: 0.5, opacity: 0.7, scale: 0.98, blur: 4 },
+        { at: 1, opacity: 1, scale: 1, blur: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'sacred-fade', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'sacred-fade-v2',
+    entrance: {
+      engine: 'keyframes', duration: 1.6, easing: 'easeBezier65_0_35_1',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 1.04, blur: 6, glowIntensity: 0 },
+        { at: 1, opacity: 1, scale: 1, blur: 0, glowIntensity: 1.2 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'descending-grace', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'descending-grace-v2',
+    entrance: {
+      engine: 'keyframes', duration: 1.7, easing: 'easeBezier16_1_3_1',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 0.92, translateY: -50, blur: 8 },
+        { at: 0.6, opacity: 0.7, scale: 1.01, translateY: 4, blur: 2 },
+        { at: 1, opacity: 1, scale: 1, translateY: 0, blur: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'rising-to-heaven', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'rising-to-heaven-v2',
+    exit: {
+      engine: 'keyframes', duration: 1.6, easing: 'easeBezier55_0_45_1',
+      keyframes: [
+        { at: 0, opacity: 1, scale: 1, translateY: 0, glowIntensity: 1 },
+        { at: 0.4, opacity: 0.85, scale: 1.02, translateY: -8, glowIntensity: 1.5 },
+        { at: 1, opacity: 0, scale: 1.08, translateY: -40, glowIntensity: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'sacred-dissolve', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'sacred-dissolve-v2',
+    exit: {
+      engine: 'keyframes', duration: 1.5, easing: 'easeBezier45_0_55_1',
+      keyframes: [
+        { at: 0, opacity: 1, scale: 1, blur: 0, glowIntensity: 1.2 },
+        { at: 1, opacity: 0, scale: 1.06, blur: 8, glowIntensity: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'whispered-farewell', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'whispered-farewell-v2',
+    exit: {
+      engine: 'keyframes', duration: 1.9, easing: 'easeBezier65_0_35_1',
+      keyframes: [
+        { at: 0, opacity: 1, scale: 1, blur: 0 },
+        { at: 0.7, opacity: 0.4, scale: 1.02, blur: 3 },
+        { at: 1, opacity: 0, scale: 1.04, blur: 6 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'tender-arrival', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'tender-arrival-v2',
+    entrance: {
+      engine: 'keyframes', duration: 1.5, easing: 'easeBezier16_1_3_1',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 0.97, translateY: 8, blur: 2 },
+        { at: 1, opacity: 1, scale: 1, translateY: 0, blur: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'heart-opening', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'heart-opening-v2',
+    entrance: {
+      engine: 'keyframes', duration: 1.8, easing: 'easeBezier22_1_36_1',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 0.7, blur: 10 },
+        { at: 0.5, opacity: 0.6, scale: 0.95, blur: 3 },
+        { at: 1, opacity: 1, scale: 1, blur: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'vulnerable-reveal', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'vulnerable-reveal-v2',
+    entrance: {
+      engine: 'keyframes', duration: 2, easing: 'easeBezier65_0_35_1',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 1.08, blur: 5 },
+        { at: 0.5, opacity: 0.5, scale: 1.04, blur: 2 },
+        { at: 1, opacity: 1, scale: 1, blur: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'gentle-confession', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'gentle-confession-v2',
+    entrance: {
+      engine: 'keyframes', duration: 1.6, easing: 'easeBezier45_0_55_1',
+      keyframes: [
+        { at: 0, opacity: 0, translateY: 15, blur: 4 },
+        { at: 0.6, opacity: 0.7, translateY: 3, blur: 1 },
+        { at: 1, opacity: 1, translateY: 0, blur: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'mist-form', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'mist-form-v2',
+    entrance: {
+      engine: 'keyframes', duration: 2, easing: 'easeBezier45_0_55_1',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 1.05, blur: 14 },
+        { at: 0.5, opacity: 0.4, scale: 1.02, blur: 6 },
+        { at: 1, opacity: 1, scale: 1, blur: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'mist-dissolve', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'mist-dissolve-v2',
+    exit: {
+      engine: 'keyframes', duration: 1.8, easing: 'easeBezier45_0_55_1',
+      keyframes: [
+        { at: 0, opacity: 1, scale: 1, blur: 0 },
+        { at: 1, opacity: 0, scale: 1.04, blur: 12 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'fade-into-air', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'fade-into-air-v2',
+    exit: {
+      engine: 'keyframes', duration: 2, easing: 'easeBezier16_1_3_1',
+      keyframes: [
+        { at: 0, opacity: 1, scale: 1, blur: 0 },
+        { at: 0.5, opacity: 0.5, scale: 1.02, blur: 4 },
+        { at: 1, opacity: 0, scale: 1.06, blur: 10 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'shock-arrival', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'shock-arrival-v2',
+    entrance: {
+      engine: 'keyframes', duration: 0.7, easing: 'easeBezier34_156_64_1',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 0.3, blur: 8 },
+        { at: 0.3, opacity: 1, scale: 1.15, blur: 2 },
+        { at: 1, opacity: 1, scale: 1, blur: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'power-burst', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'power-burst-v2',
+    entrance: {
+      engine: 'keyframes', duration: 0.8, easing: 'easeBezier22_1_36_1',
+      keyframes: [
+        { at: 0, opacity: 0, scale: 0, blur: 10, glowIntensity: 0 },
+        { at: 0.25, opacity: 0.95, scale: 1.2, blur: 2, glowIntensity: 2 },
+        { at: 0.5, opacity: 1, scale: 0.96, blur: 0, glowIntensity: 1.3 },
+        { at: 1, opacity: 1, scale: 1, blur: 0, glowIntensity: 1 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'thunder-out', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'thunder-out-v2',
+    exit: {
+      engine: 'keyframes', duration: 0.6, easing: 'easeBezier55_0_45_1',
+      keyframes: [
+        { at: 0, opacity: 1, scale: 1, blur: 0 },
+        { at: 0.5, opacity: 0.5, scale: 1.15, blur: 4 },
+        { at: 1, opacity: 0, scale: 1.3, blur: 10 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'shake-out', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'shake-out-v2',
+    exit: {
+      engine: 'keyframes', duration: 1, easing: 'easeBezier45_0_55_1',
+      keyframes: [
+        { at: 0, opacity: 1, translateX: 0, blur: 0 },
+        { at: 0.2, opacity: 1, translateX: -6, blur: 1 },
+        { at: 0.35, opacity: 0.9, translateX: 6, blur: 1 },
+        { at: 0.5, opacity: 0.7, translateX: -4, blur: 2 },
+        { at: 0.75, opacity: 0.4, translateX: 2, blur: 4 },
+        { at: 1, opacity: 0, translateX: 0, blur: 8 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'pixel-out', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'pixel-out-v2',
+    exit: {
+      engine: 'keyframes', duration: 0.7, easing: 'easeBezier55_0_45_1',
+      keyframes: [
+        { at: 0, opacity: 1, scale: 1, blur: 0 },
+        { at: 0.5, opacity: 0.6, scale: 1.04, blur: 1 },
+        { at: 1, opacity: 0, scale: 1.08, blur: 3 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'swift-exit', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'swift-exit-v2',
+    exit: {
+      engine: 'keyframes', duration: 0.4, easing: 'easeBezier55_0_100_45',
+      keyframes: [
+        { at: 0, opacity: 1, scale: 1, translateX: 0 },
+        { at: 1, opacity: 0, scale: 0.9, translateX: 50 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'clean-vanish', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'clean-vanish-v2',
+    exit: {
+      engine: 'keyframes', duration: 0.55, easing: 'easeBezier45_0_55_1',
+      keyframes: [
+        { at: 0, opacity: 1, scale: 1, blur: 0 },
+        { at: 0.7, opacity: 0.3, scale: 0.96, blur: 1 },
+        { at: 1, opacity: 0, scale: 0.92, blur: 2 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'theatrical-exit', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'theatrical-exit-v2',
+    exit: {
+      engine: 'keyframes', duration: 1.3, easing: 'easeBezier22_1_36_1',
+      keyframes: [
+        { at: 0, opacity: 1, scale: 1, translateY: 0 },
+        { at: 0.4, opacity: 0.9, scale: 1.03, translateY: -5 },
+        { at: 1, opacity: 0, scale: 0.95, translateY: -30 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'credit-roll', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'credit-roll-v2',
+    exit: {
+      engine: 'keyframes', duration: 1.5, easing: 'easeBezier45_0_55_1',
+      keyframes: [
+        { at: 0, opacity: 1, translateY: 0, blur: 0 },
+        { at: 0.5, opacity: 0.7, translateY: -15, blur: 1 },
+        { at: 1, opacity: 0, translateY: -50, blur: 3 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'loop-glow-pulse', migração automática Etapa 5 (validada: paridade numérica)
+    id: 'loop-glow-pulse-v2',
+    loop: {
+      engine: 'keyframes', duration: 2.5, easing: 'easeBezier45_0_55_1',
+      keyframes: [
+        { at: 0, glowIntensity: 1 },
+        { at: 0.5, glowIntensity: 1.6 },
+        { at: 1, glowIntensity: 1 },
       ],
     },
   });
@@ -41298,19 +41012,69 @@ window.WM_ENGINE_V2_ACTIVE_IDS = new Set([
   'cinematic-reveal', // primeira animação real migrada, prova de conceito
   'punch-in',         // Etapa 5: paridade validada (147 checks, 0 divergências,
                        // incluindo o caso de 3 keyframes)
-  'glory-rise',        // Etapa 5: paridade validada
-  // Etapa 5, lote 2 — 2 entradas + 2 saídas correspondentes, pra testar
-  // fade simples de cada lado (paridade validada no lote automático):
-  'fade-in-soft', 'whisper-in', 'fade-out-soft', 'whisper-out',
+  // 'glory-rise' foi removida do app inteiro — visualmente quase idêntica
+  // ao Punch, na avaliação do usuário. Ver ANIMATIONS_V2.
+  // Etapa 5, lote 2 — fade simples de entrada/saída (paridade validada no
+  // lote automático). 'whisper-in'/'whisper-out' foram removidos do app
+  // inteiro (eram redundantes com estes) — ver ANIMATIONS_V2.
+  'fade-in-soft', 'fade-out-soft',
+  // Etapa 5, lote 3 — diversidade de estilo/categoria (biblioteca já
+  // limpa de duplicatas): energético c/ overshoot, holy, saída soft, loop.
+  'zoom-in-power', 'divine-light', 'zoom-out-soft', 'loop-breath',
+  // Etapa 5, lote 4 — 30 animações, validadas em lote (23.370 checks, 0
+  // divergências), diversidade de categoria/estilo (20 entradas, 9 saídas,
+  // 1 loop). Nesse lote também corrigi 4 receitas antigas (Etapa 3) que
+  // ainda usavam aproximação de easing em vez da bezier real: slide-out-v2,
+  // blur-out-v2, scale-down-out-v2, breathing-loop-v2 (esta já estava em
+  // produção — corrigida agora), e word-reveal-v2.
+  'feather-drop', 'blur-reveal', 'horizon-rise', 'slide-in-right',
+  'rotate-in', 'gold-reveal', 'soul-rise', 'resurrection', 'sacred-bloom',
+  'crossing-light', 'instagram-pop', 'spring-bounce', 'spotlight-on',
+  'noir-fade', 'drop-the-beat', 'turbo-zoom', 'urban-stomp',
+  'champagne-pop', 'breath-of-life', 'vulnerable-reveal', 'dissolve',
+  'depth-recede', 'slide-away-down', 'collapse-out', 'imax-out',
+  'sacred-vanish', 'whisper-fade-out', 'sacred-dissolve', 'thunder-out',
+  'loop-glow-pulse',
 ]);
 window.WM_ENGINE_V2_ID_MAP = {
   'cinematic-reveal': 'cinematic-reveal-v2',
   'punch-in': 'punch-in-v2',
-  'glory-rise': 'slide-up-in-v2',
   'fade-in-soft': 'fade-in-soft-v2',
-  'whisper-in': 'whisper-in-v2',
   'fade-out-soft': 'fade-out-soft-v2',
-  'whisper-out': 'whisper-out-v2',
+  'zoom-in-power': 'zoom-in-power-v2',
+  'divine-light': 'divine-light-v2',
+  'zoom-out-soft': 'zoom-out-soft-v2',
+  'loop-breath': 'breathing-loop-v2',
+  'feather-drop': 'feather-drop-v2',
+  'blur-reveal': 'blur-reveal-v2',
+  'horizon-rise': 'horizon-rise-v2',
+  'slide-in-right': 'slide-in-right-v2',
+  'rotate-in': 'rotate-in-v2',
+  'gold-reveal': 'gold-reveal-v2',
+  'soul-rise': 'soul-rise-v2',
+  'resurrection': 'resurrection-v2',
+  'sacred-bloom': 'sacred-bloom-v2',
+  'crossing-light': 'crossing-light-v2',
+  'instagram-pop': 'instagram-pop-v2',
+  'spring-bounce': 'spring-bounce-v2',
+  'spotlight-on': 'spotlight-on-v2',
+  'noir-fade': 'noir-fade-v2',
+  'drop-the-beat': 'drop-the-beat-v2',
+  'turbo-zoom': 'turbo-zoom-v2',
+  'urban-stomp': 'urban-stomp-v2',
+  'champagne-pop': 'champagne-pop-v2',
+  'breath-of-life': 'breath-of-life-v2',
+  'vulnerable-reveal': 'vulnerable-reveal-v2',
+  'dissolve': 'blur-out-v2',
+  'depth-recede': 'depth-recede-v2',
+  'slide-away-down': 'slide-away-down-v2',
+  'collapse-out': 'collapse-out-v2',
+  'imax-out': 'imax-out-v2',
+  'sacred-vanish': 'sacred-vanish-v2',
+  'whisper-fade-out': 'whisper-fade-out-v2',
+  'sacred-dissolve': 'sacred-dissolve-v2',
+  'thunder-out': 'thunder-out-v2',
+  'loop-glow-pulse': 'loop-glow-pulse-v2',
 };
 
 function wmSampleAnimState(anim, progress) {
