@@ -33886,6 +33886,17 @@ function initEditor() {
       if (ac.duration !== undefined) { $('#duration').value = Math.round(ac.duration * 10); $('#duration-val').textContent = `${ac.duration.toFixed(1)}s`; }
       if (ac.stagger !== undefined) { $('#stagger').value = Math.round(ac.stagger * 100); $('#stagger-val').textContent = `${ac.stagger.toFixed(2)}s`; }
       if (ac.entrance) updateCurrentAnimDisplay(ac.entrance);
+      // transição entre estrofes — BUG CORRIGIDO: o menu (aba Transições)
+      // nunca era sincronizado ao abrir um projeto, então podia mostrar um
+      // valor diferente do que estava realmente configurado (engine.animConfig
+      // já vinha certo, só o <select> na tela ficava desatualizado).
+      if (ac.transition !== undefined) { const tt = $('#transition-type'); if (tt) tt.value = ac.transition; }
+      if (ac.transitionDuration !== undefined) {
+        const td = $('#transition-duration');
+        if (td) { td.value = Math.round(ac.transitionDuration * 10); }
+        const tdVal = $('#transition-duration-val');
+        if (tdVal) tdVal.textContent = `${ac.transitionDuration.toFixed(1)}s`;
+      }
     }
 
     // background
