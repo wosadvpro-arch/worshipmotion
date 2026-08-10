@@ -17641,7 +17641,7 @@ const CanvasRenderer = {
         // da palavra (elapsedMs - delayMs).
         if (entrance && entrance.isolatedEngine === 'maquina-escrever' && window.WM_MAQUINA_SIM) {
           if (elapsedMs >= delayMs) {
-            this._drawWordIsolatedMaquina(ctx, word, entrance, slide.style, elapsedMs - delayMs);
+            this._drawWordIsolatedMaquina(ctx, word, entrance, slide.style, elapsedMs - delayMs, wordOverrides);
           }
           return;
         }
@@ -18792,12 +18792,15 @@ const CanvasRenderer = {
    * (isto é, elapsedMsGlobal - delayMs) — igual ao _playIsolatedPerWord
    * do preview, que reinicia o RAF em t=0 pra cada palavra.
    */
-  _drawWordIsolatedMaquina(ctx, word, entrance, style, elapsedMs) {
+  _drawWordIsolatedMaquina(ctx, word, entrance, style, elapsedMs, wordOverrides) {
     const SIM = window.WM_MAQUINA_SIM;
     if (!SIM || elapsedMs < 0) return;
     const cfg = entrance.physicsCfg || {};
-    const text = this._applyTransform(
-      word.text, (style && style.textTransform) || 'none');
+    // BUG CORRIGIDO (mesmo caso de _drawSlideIsolatedMaquina): usava só o
+    // textTransform global do slide, ignorando override de caixa na
+    // própria palavra — causava "ESSE?" no export quando o editor
+    // mostrava "Esse?" pra uma palavra com override.
+    const text = this._wordText(word, style && style.textTransform, wordOverrides || {});
     if (!text || !text.trim()) return;
 
     if (word.font) {
