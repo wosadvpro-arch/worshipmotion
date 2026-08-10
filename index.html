@@ -38995,6 +38995,63 @@ window.WM_ANIM_ENGINE = (function () {
     },
   };
 
+  // ---------------------------------------------------------------------
+  // makeCubicBezier — resolve uma curva cubic-bezier(x1,y1,x2,y2) de
+  // verdade (mesmo algoritmo que os navegadores usam: Newton-Raphson com
+  // fallback de bisseção), em vez das aproximações polinomiais acima.
+  //
+  // Motivo: o motor antigo (applyEasing(), index.html ~linha 10966)
+  // aproxima cubic-bezier(0.22, 1, 0.36, 1) — usada por ~90% dos presets
+  // — pela curva easeOutQuint. Essa aproximação é mais lenta no início
+  // do que a bezier real, causando a divergência preview-vs-export
+  // relatada no Cinematográfico (2025-08: início "mais embaixo" no
+  // export do que no preview no mesmo instante).
+  //
+  // ESCOPO: aplicado só ao 'cinematic-reveal-v2' (única animação real
+  // migrada até agora), via easing 'easeCinematicBezier' abaixo. Não
+  // altera easeOutQuint nem nenhum outro preset — os outros ~169
+  // continuam pelo motor antigo, com a aproximação de sempre.
+  // ---------------------------------------------------------------------
+  function makeCubicBezier(mX1, mY1, mX2, mY2) {
+    if (mX1 === mY1 && mX2 === mY2) return t => t; // linear
+    const A = (a1, a2) => 1.0 - 3.0 * a2 + 3.0 * a1;
+    const B = (a1, a2) => 3.0 * a2 - 6.0 * a1;
+    const C = (a1) => 3.0 * a1;
+    const calcBezier = (t, a1, a2) => ((A(a1, a2) * t + B(a1, a2)) * t + C(a1)) * t;
+    const getSlope = (t, a1, a2) => 3.0 * A(a1, a2) * t * t + 2.0 * B(a1, a2) * t + C(a1);
+
+    function getTForX(x) {
+      let t = x;
+      // Newton-Raphson (rápido; converge em poucas iterações pra curvas
+      // monótonas como esta)
+      for (let i = 0; i < 8; i++) {
+        const slope = getSlope(t, mX1, mX2);
+        if (Math.abs(slope) < 1e-6) break;
+        const dx = calcBezier(t, mX1, mX2) - x;
+        if (Math.abs(dx) < 1e-7) return t;
+        t -= dx / slope;
+      }
+      // Fallback: bisseção (garante convergência mesmo se Newton divergir)
+      let lo = 0, hi = 1;
+      t = x;
+      for (let i = 0; i < 20; i++) {
+        const cx = calcBezier(t, mX1, mX2);
+        if (Math.abs(cx - x) < 1e-7) return t;
+        if (cx < x) lo = t; else hi = t;
+        t = (lo + hi) / 2;
+      }
+      return t;
+    }
+
+    return (x) => {
+      if (x <= 0) return 0;
+      if (x >= 1) return 1;
+      return calcBezier(getTForX(x), mY1, mY2);
+    };
+  }
+
+  EASINGS.easeCinematicBezier = makeCubicBezier(0.22, 1, 0.36, 1);
+
   const DEFAULT_STATE = Object.freeze({
     opacity: 1, scale: 1, scaleX: 1, scaleY: 1,
     translateX: 0, translateY: 0, rotate: 0, blur: 0,
@@ -39241,7 +39298,11 @@ window.WM_ANIM_ENGINE = (function () {
     entrance: {
       engine: 'keyframes',
       duration: 1.4,
-      easing: 'easeOutQuint', // idêntico ao cubic-bezier(0.22,1,0.36,1) original
+      // Curva bezier real (não a aproximação easeOutQuint) — corrige a
+      // divergência de timing entre preview (DOM, bezier nativa do
+      // navegador) e export (que antes usava a aproximação). Ver
+      // makeCubicBezier() acima. Escopo: só esta animação.
+      easing: 'easeCinematicBezier',
       keyframes: [
         { at: 0, opacity: 0, translateY: 60, scale: 0.92, blur: 10 },
         { at: 1, opacity: 1, translateY: 0, scale: 1, blur: 0 },
