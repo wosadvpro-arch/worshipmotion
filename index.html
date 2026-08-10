@@ -17492,11 +17492,17 @@ const CanvasRenderer = {
       ctx.translate(_cx.x, _cx.y);
       // Etapa 6 — transição entre cenas: replica o playFull() do preview,
       // que anima só o TEXTO entrando (o fundo troca na hora, sem fade,
-      // igual sempre foi). Só o crossfade está implementado por enquanto;
-      // os outros tipos (slide-*/zoom-*) ainda caem em 'cut' (sem efeito)
-      // até serem migrados também.
-      const transProgress = this._sceneTransitionProgress(slide, elapsedMs);
-      if (transProgress < 1) ctx.globalAlpha = transProgress;
+      // igual sempre foi). Os 7 tipos (crossfade/slide-*/zoom-*) usam a
+      // mesma bezier real do preview (0.22,1,0.36,1).
+      const t = this._sceneTransitionState(slide, elapsedMs, _cx.w, _cx.h);
+      if (t.alpha < 1) ctx.globalAlpha = t.alpha;
+      if (t.translateX || t.translateY) ctx.translate(t.translateX, t.translateY);
+      if (t.scale !== 1) {
+        const ccx = _cx.w / 2, ccy = _cx.h / 2;
+        ctx.translate(ccx, ccy);
+        ctx.scale(t.scale, t.scale);
+        ctx.translate(-ccx, -ccy);
+      }
       this._drawSlideTexto(ctx, slide, elapsedMs, _cx.w, _cx.h);
     } finally {
       ctx.restore();
@@ -17504,18 +17510,43 @@ const CanvasRenderer = {
   },
 
   /**
-   * Progresso (0..1) da transição de ENTRADA da cena atual. 1 = sem
-   * transição ativa (ou já terminou) → desenha o texto normal, opaco.
-   * < 1 → ainda dentro da janela de transição, aplicar como alpha.
+   * Estado (alpha/translate/scale) da transição de ENTRADA da cena atual,
+   * pra aplicar no texto (o fundo não participa — troca na hora, igual ao
+   * preview). Neutro (sem efeito) fora da janela de transição.
    *
    * Só o primeiro slide do vídeo NUNCA transiciona (não tem de onde vir).
+   * 'cut' ou tipo desconhecido também não tem efeito.
    */
-  _sceneTransitionProgress(slide, elapsedMs) {
-    if (!slide || slide.stanzaIdx === 0) return 1;
-    if (slide.transition !== 'crossfade') return 1; // outros tipos: TODO
+  _sceneTransitionState(slide, elapsedMs, boxW, boxH) {
+    const neutral = { alpha: 1, translateX: 0, translateY: 0, scale: 1 };
+    if (!slide || slide.stanzaIdx === 0) return neutral;
+    // deslocamento em px (mesmos valores do CSS wm-transition-*, que foram
+    // pensados pro tamanho do preview — escala pela largura da caixa de
+    // design pra ficar proporcional em qualquer resolução de export)
+    const scaleUnit = (boxW || 1080) / 1080;
+    const SPECS = {
+      'crossfade':   {},
+      'slide-left':  { fromX: 40 * scaleUnit },
+      'slide-right': { fromX: -40 * scaleUnit },
+      'slide-up':    { fromY: 40 * scaleUnit },
+      'slide-down':  { fromY: -40 * scaleUnit },
+      'zoom-in':     { fromScale: 0.92 },
+      'zoom-out':    { fromScale: 1.08 },
+    };
+    const spec = SPECS[slide.transition];
+    if (!spec) return neutral; // 'cut' ou tipo desconhecido
     const durMs = (slide.transitionDuration || 0.5) * 1000;
-    if (durMs <= 0) return 1;
-    return Math.max(0, Math.min(1, elapsedMs / durMs));
+    if (durMs <= 0 || elapsedMs >= durMs) return neutral;
+    const linear = Math.max(0, Math.min(1, elapsedMs / durMs));
+    const easeFn = (window.WM_ANIM_ENGINE && window.WM_ANIM_ENGINE.EASINGS
+      && window.WM_ANIM_ENGINE.EASINGS.easeBezier22_1_36_1) || (t => t);
+    const eased = easeFn(linear);
+    return {
+      alpha: eased,
+      translateX: spec.fromX != null ? spec.fromX * (1 - eased) : 0,
+      translateY: spec.fromY != null ? spec.fromY * (1 - eased) : 0,
+      scale: spec.fromScale != null ? spec.fromScale + (1 - spec.fromScale) * eased : 1,
+    };
   },
 
   /**
@@ -17816,7 +17847,7 @@ const CanvasRenderer = {
     // Etapa 6 — transição de cena: enquanto o crossfade ainda está rodando
     // (alpha do texto mudando frame a frame), o slide NÃO é estático —
     // senão o export congelaria no meio do fade.
-    if (this._sceneTransitionProgress(slide, elapsedMs) < 1) return false;
+    if (this._sceneTransitionState(slide, elapsedMs).alpha < 1) return false;
 
     const entrance = window.WM_ANIM_V2?.byId(anim.entranceId);
     const exit = window.WM_ANIM_V2?.byId(anim.exitId);
