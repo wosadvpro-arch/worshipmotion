@@ -17830,9 +17830,11 @@ const CanvasRenderer = {
         }
 
         // Interpola estados (palavra inteira — caminho normal)
-        const entState = window.WM_ANIM_V2.interpolateKeyframes(entrance, entProgress);
+        // Etapa 4: passa pela ponte wmSampleAnimState() — desvia pro motor novo
+        // só se entrance/exit.id estiver na whitelist WM_ENGINE_V2_ACTIVE_IDS.
+        const entState = wmSampleAnimState(entrance, entProgress);
         const exitState = exitProgress > 0
-          ? window.WM_ANIM_V2.interpolateKeyframes(exit, exitProgress)
+          ? wmSampleAnimState(exit, exitProgress)
           : null;
 
         // Combina entrada + saída
@@ -19092,7 +19094,7 @@ const CanvasRenderer = {
     // Cor do texto (sem mix de emphasis no char-by-char por simplicidade)
     const baseColor = wordStyleOverride?.color || style?.color || '#ffffff';
     const exitState = exit && exitProgress > 0
-      ? window.WM_ANIM_V2.interpolateKeyframes(exit, exitProgress)
+      ? wmSampleAnimState(exit, exitProgress)
       : null;
 
     const charStaggerMs = charStagger * 1000;
@@ -19110,7 +19112,7 @@ const CanvasRenderer = {
       else charEntProgress = (elapsedMs - charDelayMs) / entDurMs;
 
       // Interpola estado deste char
-      const charEntState = window.WM_ANIM_V2.interpolateKeyframes(entrance, charEntProgress);
+      const charEntState = wmSampleAnimState(entrance, charEntProgress);
       let charState = exitState
         ? this._combineStates(charEntState, exitState)
         : charEntState;
@@ -39443,6 +39445,57 @@ window.WM_ANIM_ENGINE = (function () {
     EASINGS, DEFAULT_STATE,
   };
 })();
+
+/**
+ * ============================================================
+ * ETAPA 4 — Ligar o motor novo na produção real (export).
+ * ============================================================
+ * PONTE entre o motor antigo (interpolateKeyframes) e o novo
+ * (WM_ANIM_ENGINE.sampleAnimation). Substitui as 4 chamadas reais de
+ * interpolateKeyframes() no export (_drawSlideTexto/_drawWordCharByChar)
+ * por wmSampleAnimState() — que só desvia pro motor novo quando o id da
+ * animação está na whitelist abaixo; qualquer outro id continua indo
+ * 100% pelo caminho antigo, inalterado.
+ *
+ * Por que só o export, não o preview: o preview não chama
+ * interpolateKeyframes em tempo real — ele gera @keyframes CSS de verdade
+ * a partir do MESMO ANIMATIONS_V2 e deixa o navegador interpolar. Como os
+ * valores de 'cinematic-reveal-v2' são cópia fiel (bit a bit) do preset
+ * antigo, o preview já é idêntico sem precisar de nenhuma mudança — só o
+ * export precisava da ponte, porque é o único lugar que calcula o estado
+ * quadro a quadro em JavaScript.
+ *
+ * Reversão: esvaziar WM_ENGINE_V2_ACTIVE_IDS (ou remover este bloco)
+ * volta 100% pro comportamento antigo, sem deixar rastro.
+ */
+window.WM_ENGINE_V2_ACTIVE_IDS = new Set([
+  'cinematic-reveal', // primeira animação real migrada, prova de conceito
+]);
+window.WM_ENGINE_V2_ID_MAP = {
+  'cinematic-reveal': 'cinematic-reveal-v2',
+};
+
+function wmSampleAnimState(anim, progress) {
+  if (anim && window.WM_ANIM_ENGINE && window.WM_ENGINE_V2_ACTIVE_IDS.has(anim.id)) {
+    const v2Id = window.WM_ENGINE_V2_ID_MAP[anim.id];
+    const recipe = v2Id && window.WM_ANIM_ENGINE.RECIPES[v2Id];
+    const spec = anim.category === 'exit' ? (recipe && recipe.exit) : (recipe && recipe.entrance);
+    if (spec) {
+      const durMs = spec.duration * 1000;
+      const p = Math.max(0, Math.min(1, progress));
+      const elapsedMs = p * durMs;
+      const timing = anim.category === 'exit'
+        ? { elapsedMs, entranceDelayMs: 0, entranceDurEndMs: 0, exitStartMs: 0 }
+        : { elapsedMs, entranceDelayMs: 0, entranceDurEndMs: durMs, exitStartMs: null };
+      const state = window.WM_ANIM_ENGINE.sampleAnimation(recipe, timing);
+      // Completa os campos que o motor antigo sempre devolvia e o novo
+      // ainda não tem (origem de rotação/escala) — mantém o "formato" 100%
+      // compatível com o que o resto do export já espera receber.
+      return { ...state, originX: 0.5, originY: 0.5 };
+    }
+  }
+  return window.WM_ANIM_V2.interpolateKeyframes(anim, progress);
+}
 </script>
 
 <!-- ============================================================
