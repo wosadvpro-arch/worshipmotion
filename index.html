@@ -38941,6 +38941,33 @@ if (typeof window === 'undefined') { global.window = {}; }
 // no index.html — lá `window` já existe de verdade).
 if (typeof window === 'undefined') { global.window = {}; }
 
+/**
+ * WM_ANIM_ENGINE — Motor de Animações Nativo (v2), Etapa 1 + 2 da proposta.
+ *
+ * IMPORTANTE: este módulo é 100% ADITIVO. Não modifica, substitui nem
+ * depende de ANIMATIONS_V2 / interpolateKeyframes / WMAnimate /
+ * CanvasRenderer já existentes. Roda em paralelo, atrás do id
+ * 'cinematic-reveal-v2' (prova de conceito), enquanto o sistema atual
+ * continua sendo o que está em produção.
+ *
+ * Convenção de valores (igual ao sistema atual, pra manter familiaridade):
+ *   opacity: 0..1
+ *   scale / scaleX / scaleY: multiplicador (1 = 100%)
+ *   translateX / translateY: pixels
+ *   rotate / skewX / skewY: graus
+ *   blur: pixels
+ *   glowIntensity: 0..N (px de drop-shadow)
+ *   chromatic: 0..N (px de deslocamento RGB)
+ *   letterSpacing: pixels
+ *
+ * Contrato central (item 8 da proposta): UMA função pura calcula o
+ * estado em qualquer instante t. Preview e export chamam a MESMA função —
+ * a única diferença é o adaptador que aplica o resultado (DOM vs Canvas).
+ */
+// Shim mínimo pra rodar em Node.js durante o teste de paridade (não entra
+// no index.html — lá `window` já existe de verdade).
+if (typeof window === 'undefined') { global.window = {}; }
+
 window.WM_ANIM_ENGINE = (function () {
   'use strict';
 
@@ -39136,7 +39163,13 @@ window.WM_ANIM_ENGINE = (function () {
 
     const f = [];
     if (state.blur > 0.001) f.push(`blur(${state.blur}px)`);
-    if (state.glowIntensity > 0.001) f.push(`drop-shadow(0 0 ${state.glowIntensity}px currentColor)`);
+    // CORREÇÃO: DOM usava glowIntensity direto em px (0,6-1,8px — quase
+    // invisível) enquanto o Canvas multiplicava por 12 (7-22px — halo
+    // largo, causava a sobreposição visual entre palavras próximas no
+    // Word Reveal). Unificado: os dois agora usam a mesma escala (×6),
+    // um brilho visível mas sem espalhar tanto a ponto de invadir a
+    // palavra vizinha num layout apertado.
+    if (state.glowIntensity > 0.001) f.push(`drop-shadow(0 0 ${state.glowIntensity * 6}px currentColor)`);
     el.style.filter = f.join(' ');
     if (state.letterSpacing) el.style.letterSpacing = `${state.letterSpacing}px`;
   }
@@ -39171,7 +39204,7 @@ window.WM_ANIM_ENGINE = (function () {
     // um limiar bem baixo, garantindo sumiço total como as outras colunas.
     if (state.glowIntensity > 0.001 && state.opacity > 0.02) {
       ctx.shadowColor = ctx.fillStyle;
-      ctx.shadowBlur = state.glowIntensity * 12 * state.opacity; // mesma escala visual do drop-shadow do DOM
+      ctx.shadowBlur = state.glowIntensity * 6 * state.opacity; // mesma escala do DOM (×6) agora
     }
     // NOTA: chromatic (RGB split) ainda não está implementado no adaptador
     // de canvas — precisa de 2-3 passes de fillText deslocados/coloridos,
