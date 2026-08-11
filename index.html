@@ -7177,6 +7177,16 @@ Digno de toda honra"></textarea>
             <span data-i18n="an.applyAll">Aplicar esta animação em todos os slides</span>
           </button>
         </div>
+
+        <div class="panel-section">
+          <div class="panel-section-title">Cenas Prontas</div>
+          <button class="btn btn-secondary btn-sm" id="btn-scene-kinetic-bowl-deep" style="width:100%;">
+            Kinetic Bowl Deep (título · 2 linhas)
+          </button>
+          <div style="font-size:10px; color:var(--text-tertiary); margin-top:6px;">
+            Aplica na estrofe atual. Precisa ter exatamente 2 linhas de texto.
+          </div>
+        </div>
       </div>
 
       <div class="panel-content" data-panel-content="transitions" style="display:none;">
@@ -10803,6 +10813,32 @@ const ANIMATIONS_V2 = [
       { at: 0,   glowIntensity: 1.0 },
       { at: 0.5, glowIntensity: 1.6 },
       { at: 1,   glowIntensity: 1.0 },
+    ],
+  },// ============================================================
+  // CENAS PRONTAS — Kinetic Bowl Deep (título de 2 linhas, inspirado em
+  // referência do usuário). Entradas "de fallback" no formato antigo —
+  // a versão precisa (3 keyframes, scaleX/scaleY independentes) vive no
+  // motor novo, ligada via a ponte de sempre (WM_ENGINE_V2_ACTIVE_IDS).
+  // Não pensadas pra aparecer soltas no menu normal — usadas pela função
+  // applyKineticBowlDeepScene() que aplica as duas de uma vez numa
+  // estrofe de exatamente 2 linhas.
+  {
+    id: 'kinetic-bowl-deep-primary',
+    name: 'Kinetic Bowl — Linha Superior',
+    category: 'entrance', style: 'modern', hidden: true,
+    duration: 0.65, easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
+    keyframes: [
+      { at: 0, opacity: 1, translateY: 90, scale: 0.7, letterSpacing: 25 },
+      { at: 1, opacity: 1, translateY: 0,  scale: 1,   letterSpacing: 0 },
+    ],
+  },{
+    id: 'kinetic-bowl-deep-secondary',
+    name: 'Kinetic Bowl — Linha Inferior',
+    category: 'entrance', style: 'modern', hidden: true,
+    duration: 0.34, easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
+    keyframes: [
+      { at: 0, opacity: 1, translateY: 35, scale: 0.2, letterSpacing: 42 },
+      { at: 1, opacity: 1, translateY: 0,  scale: 1,   letterSpacing: 0 },
     ],
   },
 ];
@@ -21106,6 +21142,58 @@ class RenderEngineV2 {
   }
 
   /**
+   * Cena pronta "Kinetic Bowl Deep" — título de 2 linhas, baseada em
+   * referência do usuário (efeito 1.mp4). Aplica uma receita diferente em
+   * cada linha (não é a mesma animação com atraso): a linha de cima usa
+   * 'kinetic-bowl-deep-primary', a de baixo 'kinetic-bowl-deep-secondary',
+   * com a linha de baixo começando 640ms depois do início da estrofe.
+   *
+   * Exige exatamente 2 linhas na estrofe (por design — ver decisão do
+   * usuário; não tenta se adaptar a mais linhas).
+   *
+   * Retorna { ok: true } ou { ok: false, error: '<motivo>' }.
+   */
+  applyKineticBowlDeepScene(stanzaId) {
+    if (!this.parsed || !this.parsed.stanzas) {
+      return { ok: false, error: 'Nenhum projeto carregado.' };
+    }
+    const stanza = this.parsed.stanzas.find(s => s.id === stanzaId);
+    if (!stanza) return { ok: false, error: 'Estrofe não encontrada.' };
+    const lines = stanza.lines || [];
+    if (lines.length !== 2) {
+      return { ok: false, error: `Essa cena precisa de exatamente 2 linhas nessa estrofe (encontrei ${lines.length}).` };
+    }
+    const words1 = lines[0].words || [];
+    const words2 = lines[1].words || [];
+    if (!words1.length || !words2.length) {
+      return { ok: false, error: 'As duas linhas precisam ter pelo menos uma palavra cada.' };
+    }
+
+    const WORD_STAGGER_SEC = 0.09;   // 90ms — igual à referência
+    const LINE2_BASE_DELAY_SEC = 0.64; // 640ms — igual à referência
+
+    words1.forEach(w => {
+      this.setWordOverride(w.id, { entrance: 'kinetic-bowl-deep-primary', delay: 0 });
+    });
+
+    // A fórmula de delay nativa já soma (globalIdx * stagger). Como o
+    // globalIdx da linha 2 continua contando de onde a linha 1 parou, o
+    // que falta pra cada palavra da linha 2 chegar em "640ms + índice
+    // local * 90ms" é uma constante igual pra todas elas (o termo
+    // "índice local * 90ms" já vem de graça do globalIdx contínuo).
+    const extraDelaySec = Math.max(0, LINE2_BASE_DELAY_SEC - (words1.length * WORD_STAGGER_SEC));
+    words2.forEach(w => {
+      this.setWordOverride(w.id, { entrance: 'kinetic-bowl-deep-secondary', delay: extraDelaySec });
+    });
+
+    // Só nessa estrofe (não mexe na config global): granularidade palavra
+    // + stagger 90ms, igual à referência.
+    this.setSceneOverride(stanzaId, { target: 'word', stagger: WORD_STAGGER_SEC });
+
+    return { ok: true };
+  }
+
+  /**
    * Pega config efetiva pra um stanza (global + override).
    * Retorna { entrance, exit, background, stanzaDuration, style, target, stagger }
    */
@@ -28755,6 +28843,22 @@ function initEditor() {
     // Feedback rápido no botão.
     const b = document.getElementById('btn-anim-aplicar-todos');
     if (b) { const t = b.innerHTML; b.innerHTML = '✓ Aplicado em todos os slides'; setTimeout(() => { b.innerHTML = t; }, 1600); }
+  });
+
+  // ============ CENAS PRONTAS ============
+  $('#btn-scene-kinetic-bowl-deep')?.addEventListener('click', () => {
+    const st = engine.parsed?.stanzas?.[engine.currentStanzaIndex];
+    if (!st) { showToast('Nenhuma estrofe selecionada.'); return; }
+    const result = engine.applyKineticBowlDeepScene(st.id);
+    if (!result.ok) {
+      showToast(result.error);
+      return;
+    }
+    markDirty('cena: kinetic bowl deep');
+    if (typeof engine.playFull === 'function') engine.playFull();
+    showToast('Cena aplicada — teste no preview.');
+    const b = document.getElementById('btn-scene-kinetic-bowl-deep');
+    if (b) { const t = b.innerHTML; b.innerHTML = '✓ Aplicada'; setTimeout(() => { b.innerHTML = t; }, 1600); }
   });
 
   // ============ FAVORITOS (animações e fontes) ============
@@ -41088,6 +41192,43 @@ window.WM_ANIM_ENGINE = (function () {
       ],
     },
   });
+  // ---------------------------------------------------------------------
+  // Kinetic Bowl Deep — cena de título de 2 linhas, baseada em referência
+  // do usuário (efeito 1.mp4 / .prproj do Premiere). Duas receitas
+  // separadas (não a mesma animação com atraso): a de cima ("primary")
+  // tem um aperto mais suave; a de baixo ("secondary") estica de quase
+  // zero, mais dramática. O "estouro" de escala (overshoot) é feito via
+  // keyframe do meio (igual ao punch-in), não por easing de mola — assim
+  // dá pra usar UM SÓ easing suave (sem overshoot) pro resto das
+  // propriedades (translateY/letterSpacing), que na referência não
+  // saltam, só desaceleram.
+  //
+  // Valores de px são uma calibração aproximada dos valores normalizados
+  // (0..1, fração da altura de tela) do JSON de referência — o próprio
+  // JSON já avisa que são reconstrução visual, não medição exata. Fácil
+  // de ajustar depois (só mudar os números abaixo).
+  registerRecipe({ // = 'kinetic-bowl-deep-primary'
+    id: 'kinetic-bowl-deep-primary-v2',
+    entrance: {
+      engine: 'keyframes', duration: 0.65, easing: 'easeBezier22_1_36_1',
+      keyframes: [
+        { at: 0,    opacity: 1, translateY: 90, scaleX: 0.88, scaleY: 0.55, letterSpacing: 25 },
+        { at: 0.62, opacity: 1, translateY: 5,  scaleX: 1.015, scaleY: 1.04, letterSpacing: 2 },
+        { at: 1,    opacity: 1, translateY: 0,  scaleX: 1,     scaleY: 1,    letterSpacing: 0 },
+      ],
+    },
+  });
+  registerRecipe({ // = 'kinetic-bowl-deep-secondary'
+    id: 'kinetic-bowl-deep-secondary-v2',
+    entrance: {
+      engine: 'keyframes', duration: 0.34, easing: 'easeBezier22_1_36_1',
+      keyframes: [
+        { at: 0,   opacity: 1, translateY: 35, scaleX: 0.10, scaleY: 0.35, letterSpacing: 42 },
+        { at: 0.7, opacity: 1, translateY: 3,  scaleX: 0.92, scaleY: 1.04, letterSpacing: 3 },
+        { at: 1,   opacity: 1, translateY: 0,  scaleX: 1,    scaleY: 1,    letterSpacing: 0 },
+      ],
+    },
+  });
   registerRecipe({ // = 'loop-glow-pulse', migração automática Etapa 5 (validada: paridade numérica)
     id: 'loop-glow-pulse-v2',
     loop: {
@@ -41202,6 +41343,8 @@ window.WM_ENGINE_V2_ACTIVE_IDS = new Set([
   // Etapa 5, lote 8 (typewriters) — migração manual (charStagger), 2.295
   // checks, 0 divergências, incluindo o caso de 4 keyframes do Forte.
   'typewriter-blur', 'typewriter-blur-fast', 'typewriter-blur-strong',
+  // Cena pronta "Kinetic Bowl Deep" (título de 2 linhas)
+  'kinetic-bowl-deep-primary', 'kinetic-bowl-deep-secondary',
 ]);
 window.WM_ENGINE_V2_ID_MAP = {
   'cinematic-reveal': 'cinematic-reveal-v2',
@@ -41354,6 +41497,8 @@ window.WM_ENGINE_V2_ID_MAP = {
   'typewriter-blur': 'typewriter-blur-v2',
   'typewriter-blur-fast': 'typewriter-blur-fast-v2',
   'typewriter-blur-strong': 'typewriter-blur-strong-v2',
+  'kinetic-bowl-deep-primary': 'kinetic-bowl-deep-primary-v2',
+  'kinetic-bowl-deep-secondary': 'kinetic-bowl-deep-secondary-v2',
 };
 
 function wmSampleAnimState(anim, progress) {
