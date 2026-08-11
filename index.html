@@ -7183,6 +7183,9 @@ Digno de toda honra"></textarea>
           <button class="btn btn-secondary btn-sm" id="btn-scene-kinetic-bowl-deep" style="width:100%;">
             Kinetic Bowl Deep (título · 2 linhas)
           </button>
+          <button class="btn btn-secondary btn-sm" id="btn-scene-put-off-hotted" style="width:100%; margin-top:6px;">
+            Vertical Stretch (título · 2 linhas)
+          </button>
           <div style="font-size:10px; color:var(--text-tertiary); margin-top:6px;">
             Aplica na estrofe atual. Precisa ter exatamente 2 linhas de texto.
           </div>
@@ -21253,6 +21256,125 @@ class RenderEngineV2 {
   }
 
   /**
+   * Cena pronta "PUT OFF HOTTED" (Vertical Stretch / Word Pop) — extraída
+   * de WorshipMotion_EFEITO_2_JSON_COMPLETO_CLAUDE.json. Estrutura
+   * diferente da Kinetic Bowl Deep: a linha 1 anima como GRUPO (mesma
+   * receita em todas as palavras simultaneamente); a linha 2 tem
+   * palavras independentes que entram uma a uma E reposicionam o grupo
+   * inteiro (recentralizam) quando uma nova entra — usando display:none
+   * antes da entrada, não só opacity, pra sair de vez do fluxo.
+   *
+   * LIMITAÇÃO CONHECIDA (avisando em vez de aproximar em silêncio,
+   * como pedido): o reflow dinâmico da linha 2 funciona de graça no
+   * PREVIEW (o navegador recentraliza sozinho via display:none + texto
+   * centralizado). No EXPORT, o layout de cada estrofe é calculado UMA
+   * VEZ só (cacheado por estrofe, não por frame) — recalcular isso a
+   * cada frame conforme quais palavras já entraram é uma extensão de
+   * arquitetura maior, que não implementei ainda. No export de hoje,
+   * cada palavra da linha 2 aparece/some no instante certo, mas a
+   * recentralização horizontal dinâmica entre elas ainda não está lá.
+   */
+  applyPutOffHottedScene(stanzaId) {
+    if (!this.parsed || !this.parsed.stanzas) {
+      return { ok: false, error: 'Nenhum projeto carregado.' };
+    }
+    const stanza = this.parsed.stanzas.find(s => s.id === stanzaId);
+    if (!stanza) return { ok: false, error: 'Estrofe não encontrada.' };
+    const lines = stanza.lines || [];
+    if (lines.length !== 2) {
+      return { ok: false, error: `Essa cena precisa de exatamente 2 linhas nessa estrofe (encontrei ${lines.length}).` };
+    }
+    const words1 = lines[0].words || [];
+    const words2 = lines[1].words || [];
+    if (!words1.length || !words2.length) {
+      return { ok: false, error: 'As duas linhas precisam ter pelo menos uma palavra cada.' };
+    }
+    const data = window.WM_PUT_OFF_HOTTED_RATIO_DATA;
+    if (!data) return { ok: false, error: 'Dados da cena não carregados.' };
+
+    // Tipografia: mesmo cálculo de effectiveFontSize da Kinetic Bowl Deep
+    // (nunca altera fonte/peso/tamanho, só lê o que já está configurado).
+    const sceneCfg = typeof this.getSceneConfig === 'function' ? this.getSceneConfig(stanzaId) : null;
+    const s = (sceneCfg && sceneCfg.style) ? sceneCfg.style : this.style;
+    let refHeight = 0, refWidth = 0;
+    const cont = this.canvas && (this.canvas.closest('.editor-canvas') || this.canvas);
+    if (cont) {
+      const cr = cont.getBoundingClientRect();
+      refHeight = cr.height || cont.clientHeight || 0;
+      refWidth = cr.width || cont.clientWidth || 0;
+    }
+    let effectiveFontSize = s.fontSize;
+    if (refHeight > 0) {
+      let refAltura16x9 = refHeight;
+      if (refWidth > 0 && typeof window.WM_CAIXA_DESIGN === 'function') {
+        refAltura16x9 = window.WM_CAIXA_DESIGN(refWidth, refHeight).h;
+      }
+      effectiveFontSize = s.fontSize * (refAltura16x9 / 600);
+    }
+    const fontWeight = s.fontWeight || 400;
+    const fontStyle = s.fontStyle || 'normal';
+    const fontFamily = s.fontFamily || 'Inter';
+    const fontCss = `${fontStyle} ${fontWeight} ${effectiveFontSize}px "${fontFamily}", sans-serif`;
+
+    const styleTag = document.getElementById('wm-anim-keyframes');
+    const engine = window.WM_ANIM_ENGINE;
+
+    const registerDynamic = (idSuffix, keyframes, durationSec) => {
+      const dynId = `wm-put-off-hotted-${idSuffix}`;
+      const oldFormatAnim = {
+        id: dynId, name: dynId, category: 'entrance', style: 'modern', hidden: true,
+        duration: 1, easing: 'linear', keyframes,
+      };
+      const existingIdx = window.WM_ANIM_V2.ANIMATIONS.findIndex(a => a.id === dynId);
+      if (existingIdx >= 0) window.WM_ANIM_V2.ANIMATIONS.splice(existingIdx, 1, oldFormatAnim);
+      else window.WM_ANIM_V2.ANIMATIONS.push(oldFormatAnim);
+      if (styleTag) styleTag.textContent += this._generateKeyframeCSS(oldFormatAnim);
+
+      engine.registerRecipe({ id: `${dynId}-v2`, entrance: { duration: 1, easing: 'linear', engine: 'keyframes', keyframes } });
+      window.WM_ENGINE_V2_ACTIVE_IDS.add(dynId);
+      window.WM_ENGINE_V2_ID_MAP[dynId] = `${dynId}-v2`;
+      return dynId;
+    };
+
+    // LINHA 1: altura real medida numa amostra do texto da linha (junta
+    // as palavras — a receita de grupo usa a altura do BLOCO, não de
+    // uma palavra só).
+    const line1Sample = words1.map(w => w.text).join(' ');
+    const line1HeightPx = engine.measureTextHeight(fontCss, line1Sample);
+    const line1Keyframes = engine.buildRatioKeyframes(data.line1Points, line1HeightPx, effectiveFontSize);
+    const line1DynId = registerDynamic('line1-group', line1Keyframes, 1);
+    const LINE1_DURATION_SEC = 2.56; // 2560ms, igual ao total medido (entrada + loop lento)
+    words1.forEach((w) => {
+      this.setWordOverride(w.id, { entrance: line1DynId, delay: 0, durationScale: LINE1_DURATION_SEC });
+    });
+
+    // LINHA 2: cada palavra tem sua própria role (generaliza pra mais/
+    // menos de 7 palavras reusando a role mais próxima, igual à Kinetic
+    // Bowl Deep). display:none antes da entrada é o que faz o reflow
+    // acontecer sozinho no preview.
+    words2.forEach((w, i) => {
+      const role = data.line2Roles[Math.min(i, data.line2Roles.length - 1)];
+      const heightPx = engine.measureTextHeight(fontCss, w.text);
+      const rawPoints = [
+        { at: 0,      opacity: 0, translateYRatio: role.translateYRatio, scaleX: 1, scaleY: role.scaleYInitial, display: 'none' },
+        { at: 0.0005, opacity: 1, translateYRatio: role.translateYRatio, scaleX: 1, scaleY: role.scaleYInitial, display: 'inline-block' },
+        { at: 1,      opacity: 1, translateYRatio: 0, scaleX: 1, scaleY: 1, display: 'inline-block' },
+      ];
+      const keyframes = engine.buildRatioKeyframes(rawPoints, heightPx, effectiveFontSize);
+      const dynId = registerDynamic(`line2-w${w.id}`, keyframes, 1);
+      this.setWordOverride(w.id, {
+        entrance: dynId,
+        delay: role.entryMs / 1000,
+        durationScale: role.durationMs / 1000,
+      });
+    });
+
+    this.setSceneOverride(stanzaId, { target: 'word', stagger: 0 });
+
+    return { ok: true };
+  }
+
+  /**
    * Pega config efetiva pra um stanza (global + override).
    * Retorna { entrance, exit, background, stanzaDuration, style, target, stagger }
    */
@@ -21399,6 +21521,17 @@ class RenderEngineV2 {
         // letter-spacing (em)
         if (kf.letterSpacing !== undefined) {
           extraProps.push(`letter-spacing: ${kf.letterSpacing}em`);
+        }
+
+        // display (discreto — CSS troca no instante exato do keyframe,
+        // sem interpolação). Usado pela cena "PUT OFF HOTTED": remove a
+        // palavra do FLUXO de layout antes da entrada dela (não só
+        // opacity:0), pra que o texto centralizado já visível reflua
+        // (recentralize) sozinho quando ela entra — via o próprio
+        // alinhamento centralizado do navegador, sem código de layout
+        // extra.
+        if (kf.display !== undefined) {
+          extraProps.push(`display: ${kf.display}`);
         }
 
         // Chromatic (RGB split via text-shadow tripla)
@@ -28932,6 +29065,21 @@ function initEditor() {
     if (typeof engine.playFull === 'function') engine.playFull();
     showToast('Cena aplicada — teste no preview.');
     const b = document.getElementById('btn-scene-kinetic-bowl-deep');
+    if (b) { const t = b.innerHTML; b.innerHTML = '✓ Aplicada'; setTimeout(() => { b.innerHTML = t; }, 1600); }
+  });
+
+  $('#btn-scene-put-off-hotted')?.addEventListener('click', () => {
+    const st = engine.parsed?.stanzas?.[engine.currentStanzaIndex];
+    if (!st) { showToast('Nenhuma estrofe selecionada.'); return; }
+    const result = engine.applyPutOffHottedScene(st.id);
+    if (!result.ok) {
+      showToast(result.error);
+      return;
+    }
+    markDirty('cena: vertical stretch');
+    if (typeof engine.playFull === 'function') engine.playFull();
+    showToast('Cena aplicada — teste no preview.');
+    const b = document.getElementById('btn-scene-put-off-hotted');
     if (b) { const t = b.innerHTML; b.innerHTML = '✓ Aplicada'; setTimeout(() => { b.innerHTML = t; }, 1600); }
   });
 
@@ -39124,6 +39272,65 @@ if (typeof window === 'undefined') { global.window = {}; }
    WM_ANIM_ENGINE.measureTextHeight() e
    WM_ANIM_ENGINE.buildKineticBowlDeepKeyframes().
    ============================================================ */
+
+/* ============================================================
+   DADOS — Efeito 2 "PUT OFF HOTTED" (Vertical Stretch / Word Pop)
+   ============================================================
+   Extraídos de WorshipMotion_EFEITO_2_JSON_COMPLETO_CLAUDE.json, sem
+   nenhum valor alterado — reformatados como PROPORÇÃO (razão sobre a
+   altura renderizada de referência), igual à Kinetic Bowl Deep, pra
+   funcionar com qualquer fonte/peso/tamanho escolhido no editor.
+
+   LINHA 1 ("PUT OFF HOTTED" no vídeo): anima como GRUPO — a MESMA
+   receita é aplicada a TODAS as palavras da linha 1 simultaneamente
+   (delay=0 pra todas), criando o efeito de "a linha inteira estica e
+   assenta junto". Padrão "hold então salto" (a linha fica parada numa
+   escala por alguns frames, depois salta pra próxima) — codificado com
+   pares de keyframes bem próximos (técnica igual à usada no Efeito 1).
+
+   LINHA 2 ("DO NOT PUT IS ON THE MAP." no vídeo): cada palavra é uma
+   role independente que aparece de baixo pra cima com estica vertical
+   exagerada, assenta rápido (~40-80ms). Diferente do Efeito 1: aqui a
+   remoção de layout (display:none) antes da entrada é OBRIGATÓRIA, não
+   só opacity — é isso que faz as palavras já visíveis reposicionarem
+   sozinhas (recentralizar) quando uma nova palavra entra, usando o
+   próprio fluxo de texto centralizado do navegador, sem código extra
+   de layout.
+   ============================================================ */
+window.WM_PUT_OFF_HOTTED_RATIO_DATA = {
+  hRefLine1: 376,
+  hRefLine2: 288,
+  line1Points: [
+    { at: 0.0, opacity: 0, translateYRatio: 0.6117021276595744, translateXRatio: 0.0026595744680851063, scaleX: 0.3619, scaleY: 0.383 },
+    { at: 0.0, opacity: 1, translateYRatio: 0.6117021276595744, translateXRatio: 0.0026595744680851063, scaleX: 0.3619, scaleY: 0.383 },
+    { at: 0.09374, opacity: 1, translateYRatio: 0.6117021276595744, translateXRatio: 0.0026595744680851063, scaleX: 0.3619, scaleY: 0.383 },
+    { at: 0.09375, opacity: 1, translateYRatio: 0.6356382978723404, translateXRatio: -0.0425531914893617, scaleX: 0.855, scaleY: 1.3138 },
+    { at: 0.14062, opacity: 1, translateYRatio: 0.6356382978723404, translateXRatio: -0.0425531914893617, scaleX: 0.855, scaleY: 1.3138 },
+    { at: 0.14062, opacity: 1, translateYRatio: 0.4507978723404255, translateXRatio: -0.05053191489361702, scaleX: 0.9575, scaleY: 1.5399 },
+    { at: 0.20312, opacity: 1, translateYRatio: 0.4507978723404255, translateXRatio: -0.05053191489361702, scaleX: 0.9575, scaleY: 1.5399 },
+    { at: 0.20312, opacity: 1, translateYRatio: -0.20212765957446807, translateXRatio: 0.041223404255319146, scaleX: 1.0694, scaleY: 2.3191 },
+    { at: 0.24999, opacity: 1, translateYRatio: -0.20212765957446807, translateXRatio: 0.041223404255319146, scaleX: 1.0694, scaleY: 2.3191 },
+    { at: 0.25, opacity: 1, translateYRatio: -0.13164893617021275, translateXRatio: 0.026595744680851064, scaleX: 1.0237, scaleY: 1.7899 },
+    { at: 0.29687, opacity: 1, translateYRatio: -0.13164893617021275, translateXRatio: 0.026595744680851064, scaleX: 1.0237, scaleY: 1.7899 },
+    { at: 0.29688, opacity: 1, translateYRatio: 0.0, translateXRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+    { at: 0.45312, opacity: 1, translateYRatio: -0.00399, translateXRatio: -0.00133, scaleX: 1.008, scaleY: 1.008 },
+    { at: 0.60938, opacity: 1, translateYRatio: -0.00931, translateXRatio: -0.00133, scaleX: 1.0157, scaleY: 1.0133 },
+    { at: 0.76562, opacity: 1, translateYRatio: -0.01596, translateXRatio: 0.0, scaleX: 1.0237, scaleY: 1.0213 },
+    { at: 0.92188, opacity: 1, translateYRatio: -0.02128, translateXRatio: 0.0, scaleX: 1.0321, scaleY: 1.0319 },
+    { at: 1.0, opacity: 1, translateYRatio: -0.02261, translateXRatio: 0.0, scaleX: 1.0363, scaleY: 1.0346 },
+  ],
+  line2TotalDurationMs: 2560,
+  line2Roles: [
+    { entryMs: 920, durationMs: 80.0, translateYRatio: 0.2326, scaleYInitial: 1.0764 },
+    { entryMs: 1000, durationMs: 40.0, translateYRatio: 1.0243, scaleYInitial: 1.4306 },
+    { entryMs: 1320, durationMs: 40.0, translateYRatio: 2.2656, scaleYInitial: 1.1215 },
+    { entryMs: 1520, durationMs: 40.0, translateYRatio: 0.75, scaleYInitial: 1.3194 },
+    { entryMs: 2000, durationMs: 40.0, translateYRatio: -0.0208, scaleYInitial: 0.9792 },
+    { entryMs: 2200, durationMs: 40.0, translateYRatio: -0.0208, scaleYInitial: 0.9514 },
+    { entryMs: 2400, durationMs: 40.0, translateYRatio: 1.8212, scaleYInitial: 1.7465 },
+  ],
+};
+
 window.WM_KINETIC_BOWL_DEEP_RATIO_DATA = {
   word1: {
     hRef: 389,
@@ -41534,9 +41741,17 @@ window.WM_ANIM_ENGINE = (function () {
         scaleX: p.scaleX,
         scaleY: p.scaleY,
       };
+      if (p.translateXRatio !== undefined) {
+        out.translateX = p.translateXRatio * actualHeightPx;
+      }
       if (p.trackingRatio !== undefined) {
         const trackingPx = p.trackingRatio * actualHeightPx;
         out.letterSpacing = actualFontSizePx > 0 ? trackingPx / actualFontSizePx : 0;
+      }
+      // display não precisa conversão (é discreto, não uma medida) —
+      // só repassa se veio definido no ponto de entrada.
+      if (p.display !== undefined) {
+        out.display = p.display;
       }
       return out;
     });
