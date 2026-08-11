@@ -21178,38 +21178,18 @@ class RenderEngineV2 {
     const fontFamily = s.fontFamily || 'Inter';
     const fontCss = `${fontStyle} ${fontWeight} ${effectiveFontSize}px "${fontFamily}", sans-serif`;
 
-    const styleTag = document.getElementById('wm-anim-keyframes');
     const engine = window.WM_ANIM_ENGINE;
 
     // Registra (ou reaproveita, se já existir com a MESMA fonte/peso/
     // texto) uma receita dinâmica pra uma palavra — mede a altura real
     // renderizada NAQUELE texto/fonte, converte a proporção da
-    // especificação pra pixel/em preservando o deslocamento visual, e
-    // registra nos 3 lugares de sempre (ANIMATIONS_V2 pro preview, CSS
-    // manual pro preview já ter os @keyframes, motor novo + whitelist
-    // pro export).
+    // especificação pra pixel/em preservando o deslocamento visual.
     const registerDynamic = (roleKey, word, hasTracking) => {
       const data = ratioData[roleKey];
       const actualHeightPx = engine.measureTextHeight(fontCss, word.text);
       const dynId = `kinetic-bowl-deep-${roleKey}-dyn-${word.id}`;
-
       const keyframes = engine.buildRatioKeyframes(data.points, actualHeightPx, effectiveFontSize);
-      const oldFormatAnim = {
-        id: dynId, name: dynId, category: 'entrance', style: 'modern', hidden: true,
-        duration: 1, easing: 'linear', keyframes,
-      };
-      // Old-format (preview): substitui se já existir (fonte/tamanho podem
-      // ter mudado desde a última aplicação da cena nessa mesma palavra).
-      const existingIdx = window.WM_ANIM_V2.ANIMATIONS.findIndex(a => a.id === dynId);
-      if (existingIdx >= 0) window.WM_ANIM_V2.ANIMATIONS.splice(existingIdx, 1, oldFormatAnim);
-      else window.WM_ANIM_V2.ANIMATIONS.push(oldFormatAnim);
-      if (styleTag) styleTag.textContent += this._generateKeyframeCSS(oldFormatAnim);
-
-      // Motor novo (export): mesma receita precisa.
-      engine.registerRecipe({ id: `${dynId}-v2`, entrance: { duration: 1, easing: 'linear', engine: 'keyframes', keyframes } });
-      window.WM_ENGINE_V2_ACTIVE_IDS.add(dynId);
-      window.WM_ENGINE_V2_ID_MAP[dynId] = `${dynId}-v2`;
-
+      this._registerDynamicSceneRecipe(dynId, keyframes);
       return dynId;
     };
 
@@ -21316,23 +21296,11 @@ class RenderEngineV2 {
     const fontFamily = s.fontFamily || 'Inter';
     const fontCss = `${fontStyle} ${fontWeight} ${effectiveFontSize}px "${fontFamily}", sans-serif`;
 
-    const styleTag = document.getElementById('wm-anim-keyframes');
     const engine = window.WM_ANIM_ENGINE;
 
-    const registerDynamic = (idSuffix, keyframes, durationSec) => {
+    const registerDynamic = (idSuffix, keyframes) => {
       const dynId = `wm-put-off-hotted-${idSuffix}`;
-      const oldFormatAnim = {
-        id: dynId, name: dynId, category: 'entrance', style: 'modern', hidden: true,
-        duration: 1, easing: 'linear', keyframes,
-      };
-      const existingIdx = window.WM_ANIM_V2.ANIMATIONS.findIndex(a => a.id === dynId);
-      if (existingIdx >= 0) window.WM_ANIM_V2.ANIMATIONS.splice(existingIdx, 1, oldFormatAnim);
-      else window.WM_ANIM_V2.ANIMATIONS.push(oldFormatAnim);
-      if (styleTag) styleTag.textContent += this._generateKeyframeCSS(oldFormatAnim);
-
-      engine.registerRecipe({ id: `${dynId}-v2`, entrance: { duration: 1, easing: 'linear', engine: 'keyframes', keyframes } });
-      window.WM_ENGINE_V2_ACTIVE_IDS.add(dynId);
-      window.WM_ENGINE_V2_ID_MAP[dynId] = `${dynId}-v2`;
+      this._registerDynamicSceneRecipe(dynId, keyframes);
       return dynId;
     };
 
@@ -21343,7 +21311,7 @@ class RenderEngineV2 {
     const line1HeightPx = engine.measureTextHeight(fontCss, line1Sample);
     const line1Keyframes = engine.buildRatioKeyframes(data.line1Points, line1HeightPx, effectiveFontSize);
     const line1DynId = registerDynamic('line1-group', line1Keyframes, 1);
-    const LINE1_DURATION_SEC = 2.6; // 2600ms, corrigido no patch (entrada + loop lento)
+    const LINE1_DURATION_SEC = 2.56; // 2560ms, revertido pra timing original (V3)
     words1.forEach((w) => {
       this.setWordOverride(w.id, { entrance: line1DynId, delay: 0, durationScale: LINE1_DURATION_SEC });
     });
@@ -21453,6 +21421,60 @@ class RenderEngineV2 {
 
     styleEl.textContent = css;
     document.head.appendChild(styleEl);
+  }
+
+  /**
+   * Registra uma receita de animação DINÂMICA (gerada em tempo de
+   * aplicação de cena, ex: Kinetic Bowl Deep / Vertical Stretch) nos 3
+   * lugares de sempre — preview (ANIMATIONS_V2 + CSS), motor novo
+   * (export) + whitelist.
+   *
+   * BUG REAL CORRIGIDO (causava os travamentos relatados): antes, cada
+   * chamada fazia `styleTag.textContent += novoCss` — só ACRESCENTAVA
+   * CSS, nunca removia o antigo, mesmo reaplicando a MESMA cena na
+   * MESMA palavra. A cada clique em "aplicar cena", a folha de estilos
+   * crescia (~10KB por aplicação, sem limite) — depois de várias
+   * reaplicações (comum durante edição normal, já que reparsear a letra
+   * gera IDs de palavra novos e os antigos ficam órfãos pra sempre), o
+   * navegador tinha que lidar com uma folha de estilos gigante,
+   * causando o travamento.
+   *
+   * Correção: mantém um Map (id → CSS daquele id) numa folha de
+   * estilos SEPARADA, dedicada só a receitas dinâmicas. Reaplicar o
+   * MESMO id SUBSTITUI a entrada no Map (não duplica), e a folha é
+   * reconstruída só a partir do Map — nunca cresce além do que está
+   * realmente em uso.
+   */
+  _registerDynamicSceneRecipe(dynId, keyframes) {
+    const engine = window.WM_ANIM_ENGINE;
+    const oldFormatAnim = {
+      id: dynId, name: dynId, category: 'entrance', style: 'modern', hidden: true,
+      duration: 1, easing: 'linear', keyframes,
+    };
+
+    // Preview (formato antigo): substitui se já existir.
+    const existingIdx = window.WM_ANIM_V2.ANIMATIONS.findIndex(a => a.id === dynId);
+    if (existingIdx >= 0) window.WM_ANIM_V2.ANIMATIONS.splice(existingIdx, 1, oldFormatAnim);
+    else window.WM_ANIM_V2.ANIMATIONS.push(oldFormatAnim);
+
+    // CSS: guarda no Map (substitui, não acrescenta) e reconstroi só a
+    // folha DINÂMICA a partir dele — a folha estática original nunca é
+    // tocada aqui.
+    if (!window.WM_DYNAMIC_ANIM_CSS_MAP) window.WM_DYNAMIC_ANIM_CSS_MAP = new Map();
+    window.WM_DYNAMIC_ANIM_CSS_MAP.set(dynId, this._generateKeyframeCSS(oldFormatAnim));
+    let dynStyleTag = document.getElementById('wm-anim-keyframes-dynamic');
+    if (!dynStyleTag) {
+      dynStyleTag = document.createElement('style');
+      dynStyleTag.id = 'wm-anim-keyframes-dynamic';
+      document.head.appendChild(dynStyleTag);
+    }
+    dynStyleTag.textContent = Array.from(window.WM_DYNAMIC_ANIM_CSS_MAP.values()).join('\n');
+
+    // Motor novo (export): registerRecipe/Set/objeto já substituem por
+    // chave sozinhos — sem crescimento, nada a corrigir aqui.
+    engine.registerRecipe({ id: `${dynId}-v2`, entrance: { duration: 1, easing: 'linear', engine: 'keyframes', keyframes } });
+    window.WM_ENGINE_V2_ACTIVE_IDS.add(dynId);
+    window.WM_ENGINE_V2_ID_MAP[dynId] = `${dynId}-v2`;
   }
 
   /**
@@ -39320,38 +39342,64 @@ if (typeof window === 'undefined') { global.window = {}; }
    exagerada. display:none antes da entrada faz o reflow acontecer
    sozinho no preview (fluxo de texto centralizado nativo).
    ============================================================ */
+
+/* ============================================================
+   DADOS — Efeito 2 "PUT OFF HOTTED" (Vertical Stretch / Word Pop)
+   ============================================================
+   Extraídos de WorshipMotion_EFEITO_2_JSON_COMPLETO_CLAUDE.json.
+   REVERTIDO conforme WorshipMotion_EFEITO_2_V3_PERFORMANCE_FIDELIDADE.json
+   (V3): a "correção" de timing aplicada no patch anterior (V2) foi
+   desfeita — a V3 confirma que os tempos ORIGINAIS (frame1=0ms,
+   entrada da linha 2 em 920/1000/1320/1520/2000/2200/2400ms) são os
+   corretos. Nenhum valor de escala/posição mudou, só o tempo voltou
+   ao original.
+
+   LINHA 1 ("PUT OFF HOTTED" no vídeo): grupo único — MESMA receita
+   aplicada a TODAS as palavras da linha simultaneamente (delay=0 pra
+   todas, sem stagger). BUG REAL CORRIGIDO no export (mantido desta
+   correção): a fórmula `anim.stagger || 0.06` tratava stagger=0
+   (explícito) como "não definido" e usava 60ms escondido.
+
+   LINHA 2 ("DO NOT PUT IS ON THE MAP." no vídeo): cada palavra é uma
+   role independente que aparece de baixo com estica vertical
+   exagerada. display:none antes da entrada faz o reflow acontecer
+   sozinho no preview (fluxo de texto centralizado nativo) — sem
+   recalcular layout a cada frame, é o próprio motor de layout do
+   navegador que só refaz quando o DOM muda (entrada de uma palavra),
+   não a cada frame.
+   ============================================================ */
 window.WM_PUT_OFF_HOTTED_RATIO_DATA = {
   hRefLine1: 376,
   hRefLine2: 288,
   line1Points: [
-    { at: 0.0, opacity: 0, translateYRatio: 0.6117, translateXRatio: 0.0027, scaleX: 0.3619, scaleY: 0.383 },
-    { at: 0.01538, opacity: 1, translateYRatio: 0.6117, translateXRatio: 0.0027, scaleX: 0.3619, scaleY: 0.383 },
-    { at: 0.12307, opacity: 1, translateYRatio: 0.6117, translateXRatio: 0.0027, scaleX: 0.3619, scaleY: 0.383 },
-    { at: 0.12308, opacity: 1, translateYRatio: 0.6356, translateXRatio: -0.0426, scaleX: 0.855, scaleY: 1.3138 },
-    { at: 0.15384, opacity: 1, translateYRatio: 0.6356, translateXRatio: -0.0426, scaleX: 0.855, scaleY: 1.3138 },
-    { at: 0.15385, opacity: 1, translateYRatio: 0.4508, translateXRatio: -0.0505, scaleX: 0.9575, scaleY: 1.5399 },
-    { at: 0.21538, opacity: 1, translateYRatio: 0.4508, translateXRatio: -0.0505, scaleX: 0.9575, scaleY: 1.5399 },
-    { at: 0.21538, opacity: 1, translateYRatio: -0.2021, translateXRatio: 0.0412, scaleX: 1.0694, scaleY: 2.3191 },
-    { at: 0.26153, opacity: 1, translateYRatio: -0.2021, translateXRatio: 0.0412, scaleX: 1.0694, scaleY: 2.3191 },
-    { at: 0.26154, opacity: 1, translateYRatio: -0.1316, translateXRatio: 0.0266, scaleX: 1.0237, scaleY: 1.7899 },
-    { at: 0.30768, opacity: 1, translateYRatio: -0.1316, translateXRatio: 0.0266, scaleX: 1.0237, scaleY: 1.7899 },
-    { at: 0.30769, opacity: 1, translateYRatio: 0.0, translateXRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-    { at: 0.46154, opacity: 1, translateYRatio: -0.00399, translateXRatio: -0.00133, scaleX: 1.008, scaleY: 1.008 },
-    { at: 0.61538, opacity: 1, translateYRatio: -0.00931, translateXRatio: -0.00133, scaleX: 1.0157, scaleY: 1.0133 },
-    { at: 0.76923, opacity: 1, translateYRatio: -0.01596, translateXRatio: 0.0, scaleX: 1.0237, scaleY: 1.0213 },
-    { at: 0.92308, opacity: 1, translateYRatio: -0.02128, translateXRatio: 0.0, scaleX: 1.0321, scaleY: 1.0319 },
+    { at: 0.0, opacity: 0, translateYRatio: 0.6117021276595744, translateXRatio: 0.0026595744680851063, scaleX: 0.3619, scaleY: 0.383 },
+    { at: 0.0, opacity: 1, translateYRatio: 0.6117021276595744, translateXRatio: 0.0026595744680851063, scaleX: 0.3619, scaleY: 0.383 },
+    { at: 0.09374, opacity: 1, translateYRatio: 0.6117021276595744, translateXRatio: 0.0026595744680851063, scaleX: 0.3619, scaleY: 0.383 },
+    { at: 0.09375, opacity: 1, translateYRatio: 0.6356382978723404, translateXRatio: -0.0425531914893617, scaleX: 0.855, scaleY: 1.3138 },
+    { at: 0.14062, opacity: 1, translateYRatio: 0.6356382978723404, translateXRatio: -0.0425531914893617, scaleX: 0.855, scaleY: 1.3138 },
+    { at: 0.14062, opacity: 1, translateYRatio: 0.4507978723404255, translateXRatio: -0.05053191489361702, scaleX: 0.9575, scaleY: 1.5399 },
+    { at: 0.20312, opacity: 1, translateYRatio: 0.4507978723404255, translateXRatio: -0.05053191489361702, scaleX: 0.9575, scaleY: 1.5399 },
+    { at: 0.20312, opacity: 1, translateYRatio: -0.20212765957446807, translateXRatio: 0.041223404255319146, scaleX: 1.0694, scaleY: 2.3191 },
+    { at: 0.24999, opacity: 1, translateYRatio: -0.20212765957446807, translateXRatio: 0.041223404255319146, scaleX: 1.0694, scaleY: 2.3191 },
+    { at: 0.25, opacity: 1, translateYRatio: -0.13164893617021275, translateXRatio: 0.026595744680851064, scaleX: 1.0237, scaleY: 1.7899 },
+    { at: 0.29687, opacity: 1, translateYRatio: -0.13164893617021275, translateXRatio: 0.026595744680851064, scaleX: 1.0237, scaleY: 1.7899 },
+    { at: 0.29688, opacity: 1, translateYRatio: 0.0, translateXRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+    { at: 0.45312, opacity: 1, translateYRatio: -0.00399, translateXRatio: -0.00133, scaleX: 1.008, scaleY: 1.008 },
+    { at: 0.60938, opacity: 1, translateYRatio: -0.00931, translateXRatio: -0.00133, scaleX: 1.0157, scaleY: 1.0133 },
+    { at: 0.76562, opacity: 1, translateYRatio: -0.01596, translateXRatio: 0.0, scaleX: 1.0237, scaleY: 1.0213 },
+    { at: 0.92188, opacity: 1, translateYRatio: -0.02128, translateXRatio: 0.0, scaleX: 1.0321, scaleY: 1.0319 },
     { at: 1.0, opacity: 1, translateYRatio: -0.02261, translateXRatio: 0.0, scaleX: 1.0363, scaleY: 1.0346 },
   ],
-  line1TotalDurationMs: 2600,
-  line2TotalDurationMs: 2600,
+  line1TotalDurationMs: 2560,
+  line2TotalDurationMs: 2560,
   line2Roles: [
-    { entryMs: 960, durationMs: 80.0, translateYRatio: 0.2326, scaleYInitial: 1.0764 },
-    { entryMs: 1040, durationMs: 40.0, translateYRatio: 1.0243, scaleYInitial: 1.4306 },
-    { entryMs: 1360, durationMs: 40.0, translateYRatio: 2.2656, scaleYInitial: 1.1215 },
+    { entryMs: 920, durationMs: 80.0, translateYRatio: 0.2326, scaleYInitial: 1.0764 },
+    { entryMs: 1000, durationMs: 40.0, translateYRatio: 1.0243, scaleYInitial: 1.4306 },
+    { entryMs: 1320, durationMs: 40.0, translateYRatio: 2.2656, scaleYInitial: 1.1215 },
     { entryMs: 1520, durationMs: 40.0, translateYRatio: 0.75, scaleYInitial: 1.3194 },
-    { entryMs: 1840, durationMs: 40.0, translateYRatio: -0.0208, scaleYInitial: 0.9792 },
-    { entryMs: 2040, durationMs: 40.0, translateYRatio: -0.0208, scaleYInitial: 0.9514 },
-    { entryMs: 2360, durationMs: 40.0, translateYRatio: 1.8212, scaleYInitial: 1.7465 },
+    { entryMs: 2000, durationMs: 40.0, translateYRatio: -0.0208, scaleYInitial: 0.9792 },
+    { entryMs: 2200, durationMs: 40.0, translateYRatio: -0.0208, scaleYInitial: 0.9514 },
+    { entryMs: 2400, durationMs: 40.0, translateYRatio: 1.8212, scaleYInitial: 1.7465 },
   ],
 };
 
