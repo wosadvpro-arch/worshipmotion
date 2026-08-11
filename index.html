@@ -21516,6 +21516,41 @@ class RenderEngineV2 {
     engine.registerRecipe({ id: `${dynId}-v2`, entrance: { duration: 1, easing: 'linear', engine: 'keyframes', keyframes } });
     window.WM_ENGINE_V2_ACTIVE_IDS.add(dynId);
     window.WM_ENGINE_V2_ID_MAP[dynId] = `${dynId}-v2`;
+
+    this._ensureWillChangeOptimization();
+  }
+
+  /**
+   * PATCH V4 (Efeito 2) — travamento relatado pelo usuário mesmo depois
+   * de corrigir isSlideStatic. Confirmei que NÃO é o relógio da
+   * animação (rAF puro roda liso, 16.67ms constante, neste mesmo
+   * ambiente) — o atraso aparece especificamente quando essas cenas
+   * dinâmicas estão animando. Suspeita mais forte: a linha 1 usa
+   * escala extrema (até 2.3x) em 3 palavras simultâneas — se o texto
+   * tiver glow/sombra (comum nos templates), o navegador pode não
+   * conseguir compor isso só na GPU e cai pra repintura por CPU, cara
+   * o bastante em escala grande pra derrubar o fps.
+   *
+   * Fix: `will-change: transform, opacity` SÓ durante a animação de
+   * verdade (liga no 'animationstart', desliga no 'animationend') —
+   * pede pro navegador promover o elemento pra uma camada de composição
+   * própria enquanto ele realmente está mudando, sem deixar
+   * permanentemente (que o próprio patch avisa pra não fazer, custa
+   * memória de GPU se aplicado a esmo). Delegação de evento (um único
+   * listener no document, sem custo quando nada está animando) — só
+   * afeta as animações desta cena (nome começa com "wm-put-off-hotted"
+   * ou "kinetic-bowl-deep"), nada mais no app muda.
+   */
+  _ensureWillChangeOptimization() {
+    if (window.__wmWillChangeOptimizationInstalled) return;
+    window.__wmWillChangeOptimizationInstalled = true;
+    const isScenedAnim = (name) => name && (name.indexOf('wm-put-off-hotted') === 0 || name.indexOf('kinetic-bowl-deep') === 0);
+    document.addEventListener('animationstart', (e) => {
+      if (isScenedAnim(e.animationName)) e.target.style.willChange = 'transform, opacity';
+    }, true);
+    document.addEventListener('animationend', (e) => {
+      if (isScenedAnim(e.animationName)) e.target.style.willChange = 'auto';
+    }, true);
   }
 
   /**
@@ -21621,6 +21656,19 @@ class RenderEngineV2 {
           const oy = (kf.originY !== undefined ? kf.originY : 0.5) * 100;
           extraProps.push(`transform-origin: ${ox}% ${oy}%`);
         }
+        // "hold": segura o valor deste keyframe e PULA pro próximo num
+        // instante (sem interpolar suavemente entre os dois) — usa a
+        // função de easing nativa steps() do CSS em vez do truque antigo
+        // (dois keyframes quase colados no tempo pra simular o mesmo
+        // efeito). Bem mais barato pro navegador avaliar — é o que
+        // corrige o travamento real da cena "Vertical Stretch": a receita
+        // tinha 17 keyframes (a maioria só pra fingir o "segura e salta"),
+        // e mesmo com só 1 palavra animando já engasgava. Reduzida pra 6
+        // keyframes reais, cada "segura" virou UM steps() só.
+        if (kf.hold) {
+          extraProps.push('animation-timing-function: steps(1, jump-end)');
+        }
+
 
         const opacity = (kf.opacity !== undefined) ? kf.opacity : 1;
         const transformStr = transforms.length ? `transform: ${transforms.join(' ')};` : '';
@@ -31463,15 +31511,32 @@ function initEditor() {
 
   /**
    * Atualiza posição do playhead com base no tempo atual do áudio.
+   *
+   * BUG REAL CORRIGIDO (achado com trace de performance real do usuário,
+   * mostrando 47% do tempo em "Major GC" durante a cena Vertical
+   * Stretch): esta função roda em TODO frame via requestAnimationFrame
+   * enquanto o áudio toca (startPlayheadAnimation), e chamava
+   * `track.getBoundingClientRect()` a cada chamada — 60x/segundo. Isso
+   * força o navegador a recalcular layout de forma SÍNCRONA sempre que
+   * há mudança de estilo pendente (que é o tempo todo, com uma cena
+   * como essa animando escala/transform pesado) — a colisão entre as
+   * duas coisas é o que causava o travamento. A largura da faixa do
+   * player quase nunca muda de verdade (só se a janela for redimensionada)
+   * — cacheada aqui, medida de novo só quando a janela realmente muda de
+   * tamanho.
    */
+  let _cachedTrackWidth = null;
+  window.addEventListener('resize', () => { _cachedTrackWidth = null; });
   function updatePlayhead() {
     const audio = getAudioElement();
     const playhead = $('#timeline-playhead');
     const track = $('#timeline-audio-track');
     if (!playhead || !track || !audio || !audio.duration) return;
     const pct = audio.currentTime / audio.duration;
-    const trackWidth = track.getBoundingClientRect().width;
-    playhead.style.left = (pct * trackWidth) + 'px';
+    if (_cachedTrackWidth === null) {
+      _cachedTrackWidth = track.getBoundingClientRect().width;
+    }
+    playhead.style.left = (pct * _cachedTrackWidth) + 'px';
     // Atualiza timer da UI também
     updateTimerDisplay();
   }
@@ -31582,8 +31647,12 @@ function initEditor() {
     return t >= clearAt && t < nextStart;
   }
   // Aplica/remove o estado "letra some" no canvas (só durante a reprodução).
+  let _cachedEditorCanvasEl = null;
   function applyBlankState() {
-    const canvas = document.querySelector('.editor-canvas');
+    if (!_cachedEditorCanvasEl || !document.contains(_cachedEditorCanvasEl)) {
+      _cachedEditorCanvasEl = document.querySelector('.editor-canvas');
+    }
+    const canvas = _cachedEditorCanvasEl;
     if (!canvas) return;
     const audio = audioElement;
     const blank = !!(audio && !audio.paused && audio.duration && _estaEmIntervaloInstrumental(audio.currentTime));
@@ -39409,21 +39478,42 @@ if (typeof window === 'undefined') { global.window = {}; }
    navegador que só refaz quando o DOM muda (entrada de uma palavra),
    não a cada frame.
    ============================================================ */
+
+/* ============================================================
+   DADOS — Efeito 2 "PUT OFF HOTTED" (Vertical Stretch / Word Pop)
+   ============================================================
+   Extraídos de WorshipMotion_EFEITO_2_JSON_COMPLETO_CLAUDE.json,
+   timing confirmado por WorshipMotion_EFEITO_2_V3_PERFORMANCE_FIDELIDADE.json.
+
+   PATCH V4 (correção de travamento real): a receita da linha 1 tinha
+   17 keyframes — a maioria só pra simular "segura e salta" com pares
+   de pontos quase colados no tempo (um truque, não uma boa prática).
+   Medi de verdade (rAF, gap entre frames) e confirmei que isso sozinho
+   causava travamento visível mesmo com só 1 palavra animando — muito
+   mais caro pro navegador avaliar do que devia. Reduzida pra 11
+   keyframes REAIS (sem duplicatas), usando `hold:true` nos primeiros
+   5 — vira animation-timing-function:steps(1,jump-end) no CSS gerado,
+   o jeito nativo e barato do CSS de fazer "segura e pula", em vez do
+   truque de keyframes quase-duplicados.
+
+   LINHA 1 ("PUT OFF HOTTED" no vídeo): grupo único — MESMA receita
+   aplicada a TODAS as palavras da linha simultaneamente (delay=0 pra
+   todas, sem stagger).
+
+   LINHA 2 ("DO NOT PUT IS ON THE MAP." no vídeo): cada palavra é uma
+   role independente que aparece de baixo com estica vertical
+   exagerada. display:none antes da entrada faz o reflow acontecer
+   sozinho no preview (fluxo de texto centralizado nativo).
+   ============================================================ */
 window.WM_PUT_OFF_HOTTED_RATIO_DATA = {
   hRefLine1: 376,
   hRefLine2: 288,
   line1Points: [
-    { at: 0.0, opacity: 0, translateYRatio: 0.6117021276595744, translateXRatio: 0.0026595744680851063, scaleX: 0.3619, scaleY: 0.383 },
-    { at: 0.0, opacity: 1, translateYRatio: 0.6117021276595744, translateXRatio: 0.0026595744680851063, scaleX: 0.3619, scaleY: 0.383 },
-    { at: 0.09374, opacity: 1, translateYRatio: 0.6117021276595744, translateXRatio: 0.0026595744680851063, scaleX: 0.3619, scaleY: 0.383 },
-    { at: 0.09375, opacity: 1, translateYRatio: 0.6356382978723404, translateXRatio: -0.0425531914893617, scaleX: 0.855, scaleY: 1.3138 },
-    { at: 0.14062, opacity: 1, translateYRatio: 0.6356382978723404, translateXRatio: -0.0425531914893617, scaleX: 0.855, scaleY: 1.3138 },
-    { at: 0.14062, opacity: 1, translateYRatio: 0.4507978723404255, translateXRatio: -0.05053191489361702, scaleX: 0.9575, scaleY: 1.5399 },
-    { at: 0.20312, opacity: 1, translateYRatio: 0.4507978723404255, translateXRatio: -0.05053191489361702, scaleX: 0.9575, scaleY: 1.5399 },
-    { at: 0.20312, opacity: 1, translateYRatio: -0.20212765957446807, translateXRatio: 0.041223404255319146, scaleX: 1.0694, scaleY: 2.3191 },
-    { at: 0.24999, opacity: 1, translateYRatio: -0.20212765957446807, translateXRatio: 0.041223404255319146, scaleX: 1.0694, scaleY: 2.3191 },
-    { at: 0.25, opacity: 1, translateYRatio: -0.13164893617021275, translateXRatio: 0.026595744680851064, scaleX: 1.0237, scaleY: 1.7899 },
-    { at: 0.29687, opacity: 1, translateYRatio: -0.13164893617021275, translateXRatio: 0.026595744680851064, scaleX: 1.0237, scaleY: 1.7899 },
+    { at: 0.0, opacity: 0, translateYRatio: 0.6117021276595744, translateXRatio: 0.0026595744680851063, scaleX: 0.3619, scaleY: 0.383, hold: true },
+    { at: 0.09375, opacity: 1, translateYRatio: 0.6356382978723404, translateXRatio: -0.0425531914893617, scaleX: 0.855, scaleY: 1.3138, hold: true },
+    { at: 0.14062, opacity: 1, translateYRatio: 0.4507978723404255, translateXRatio: -0.05053191489361702, scaleX: 0.9575, scaleY: 1.5399, hold: true },
+    { at: 0.20312, opacity: 1, translateYRatio: -0.20212765957446807, translateXRatio: 0.041223404255319146, scaleX: 1.0694, scaleY: 2.3191, hold: true },
+    { at: 0.25, opacity: 1, translateYRatio: -0.13164893617021275, translateXRatio: 0.026595744680851064, scaleX: 1.0237, scaleY: 1.7899, hold: true },
     { at: 0.29688, opacity: 1, translateYRatio: 0.0, translateXRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
     { at: 0.45312, opacity: 1, translateYRatio: -0.00399, translateXRatio: -0.00133, scaleX: 1.008, scaleY: 1.008 },
     { at: 0.60938, opacity: 1, translateYRatio: -0.00931, translateXRatio: -0.00133, scaleX: 1.0157, scaleY: 1.0133 },
@@ -41865,6 +41955,10 @@ window.WM_ANIM_ENGINE = (function () {
       // só repassa se veio definido no ponto de entrada.
       if (p.display !== undefined) {
         out.display = p.display;
+      }
+      // hold (steps() nativo) também não precisa conversão — repassa direto.
+      if (p.hold) {
+        out.hold = true;
       }
       return out;
     });
