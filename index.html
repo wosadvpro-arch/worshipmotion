@@ -17892,20 +17892,45 @@ const CanvasRenderer = {
     // frames novos) ANTES da animação da palavra realmente terminar, e ela
     // saía cortada ou nem chegava a aparecer no vídeo. Agora usamos a MAIOR
     // duração entre a padrão e todas as animações individuais por palavra.
+    //
+    // PATCH V4 (Efeito 2) — BUG REAL CORRIGIDO: esse cálculo lia só
+    // `woEnt.duration`, ignorando `wo.durationScale` (o multiplicador que
+    // dá a duração REAL — cenas como "Kinetic Bowl Deep"/"Vertical
+    // Stretch" usam receitas com duration:1 normalizado, com a duração
+    // de verdade vindo do durationScale, ex: 2.56 pra 2560ms). Também
+    // ignorava `wo.delay` (atraso explícito por palavra), considerando só
+    // `stagger × índice` — que é 0 nessas cenas, já que elas não usam
+    // stagger nativo. Resultado: o export achava que a animação tinha
+    // acabado bem antes do tempo real, e a otimização de "pular frame
+    // estático" congelava/pulava frames no meio da animação — era a
+    // causa do travamento relatado.
     let entDur = entrance ? entrance.duration * 1000 : 0;
+    // Fim real de CADA palavra (atraso + duração DELA, não misturado com
+    // o atraso/duração de outra palavra) — mais preciso que só somar o
+    // maior atraso com a maior duração separadamente (que dava uma conta
+    // exagerada demais quando a palavra mais atrasada não é a de maior
+    // duração, como no Efeito 2: a palavra final da linha 2 atrasa até
+    // 2400ms mas dura só ~40ms, enquanto a linha 1 dura 2560ms mas não
+    // atrasa nada — somar os dois piores dava >5s, desligando a
+    // otimização de pular frame estático por completo).
+    let maxWordFinishMs = 0;
     if (slide.wordOverrides) {
       Object.keys(slide.wordOverrides).forEach(wid => {
         const wo = slide.wordOverrides[wid];
         const woEnt = wo && wo.entrance
           ? window.WM_ANIM_V2?.byId(wo.entrance)
           : null;
+        const delayMs = (wo && typeof wo.delay === 'number') ? wo.delay * 1000 : 0;
         if (woEnt) {
           // Isoladas (motor próprio) já são cobertas pelo "return false"
           // acima quando são a padrão da estrofe; por segurança, se uma
           // palavra usa uma isolada como override, também nunca é estática.
           if (woEnt.isolatedEngine || woEnt.charStagger) { entDur = Infinity; return; }
-          const woDur = woEnt.duration * 1000;
+          const scale = (wo && typeof wo.durationScale === 'number') ? wo.durationScale : 1;
+          const woDur = woEnt.duration * 1000 * scale;
           if (woDur > entDur) entDur = woDur;
+          const finishMs = delayMs + woDur;
+          if (finishMs > maxWordFinishMs) maxWordFinishMs = finishMs;
         }
       });
     }
@@ -17937,7 +17962,12 @@ const CanvasRenderer = {
         atrasoEntradaMs = Math.max(maxStaggerDelay, lastMs - firstMs);
       }
     }
-    const entradaTerminaMs = atrasoEntradaMs + entDur + colorTransitionMs;
+    // Usa o MENOR entre a conta antiga (atraso+duração separados, que
+    // ainda cobre o caso legado de stagger por índice) e a conta nova
+    // por palavra (mais precisa quando há overrides com delay+duration
+    // próprios) — sempre pegando o MAIOR valor real medido entre as
+    // duas abordagens, nunca menos do que qualquer uma delas sozinha.
+    const entradaTerminaMs = Math.max(atrasoEntradaMs + entDur, maxWordFinishMs) + colorTransitionMs;
 
     // Tempo em que a SAÍDA começa
     const exitDur = exit ? exit.duration * 1000 : 0;
@@ -21338,6 +21368,17 @@ class RenderEngineV2 {
     });
 
     this.setSceneOverride(stanzaId, { target: 'word', stagger: 0 });
+
+    // PATCH V4, correção 01 (crítica): a linha 2 quebrava em duas linhas
+    // quando o texto era mais longo — o CSS padrão (white-space:normal)
+    // deixa o navegador quebrar sozinho quando a largura das palavras
+    // (no tamanho FINAL, já que transform não afeta a caixa de layout)
+    // excede o container. Reaproveita o mecanismo que já existe no app
+    // pra "linha fixa por template" (força white-space:nowrap nas linhas
+    // dessa estrofe) em vez de inventar um novo — é exatamente o
+    // comportamento pedido: nunca quebrar linha, sempre horizontal.
+    this.templateAppliedSchema = this.templateAppliedSchema || {};
+    this.templateAppliedSchema[stanzaId] = true;
 
     return { ok: true };
   }
