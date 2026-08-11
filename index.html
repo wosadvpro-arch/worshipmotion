@@ -10814,139 +10814,6 @@ const ANIMATIONS_V2 = [
       { at: 0.5, glowIntensity: 1.6 },
       { at: 1,   glowIntensity: 1.0 },
     ],
-  },// ============================================================
-  // CENAS PRONTAS — Kinetic Bowl Deep (título de 2 linhas). O preview lê
-  // os keyframes DAQUI diretamente (via _generateKeyframeCSS) — não do
-  // motor novo.
-  //
-  // RECONSTRUÍDO a partir da especificação completa fornecida pelo
-  // usuário (WorshipMotion_Efeito_1_TEMPLATE_COMPLETO.json) — medições
-  // reais, frame a frame (25fps/1360ms), extraídas diretamente do
-  // vídeo de referência. NENHUM valor abaixo foi estimado ou suavizado
-  // por mim — são os pontos medidos convertidos de 4K (3840x2160) pra
-  // 1080p-equivalente (÷2) e reamostrados como fração de tempo.
-  //
-  // Achado principal da especificação (diferente do que eu tinha
-  // implementado antes): CADA PALAVRA TEM SUA PRÓPRIA CURVA ÚNICA — não
-  // é uma receita compartilhada com atraso. As 4 palavras vermelhas não
-  // têm o salto final de escala (só a palavra branca tem). O
-  // rastreamento (tracking) da palavra final é medido em PIXELS reais
-  // (gap entre letras), não scaleX — convertido aqui pra "em" usando uma
-  // fonte de referência de 120px (única suposição não medida, necessária
-  // porque o motor só aceita letterSpacing em em, e o JSON não define
-  // tamanho de fonte de propósito — isso é responsabilidade do editor).
-  //
-  // Não pensadas pra aparecer soltas no menu normal — usadas pela
-  // função applyKineticBowlDeepScene(), que atribui cada palavra da
-  // estrofe à role certa (1ª palavra → word1, ..., palavra da 2ª linha
-  // → final). Delay=0 pra todas as palavras vermelhas (o escalonamento
-  // já está embutido nos próprios keyframes de cada uma); a palavra
-  // final tem delay=0.64s (era isso que estava certo desde o início).
-  {
-    id: 'kinetic-bowl-deep-word1',
-    name: 'Kinetic Bowl — Palavra 1',
-    category: 'entrance', style: 'modern', hidden: true,
-    duration: 1, easing: 'linear',
-    keyframes: [
-      { at: 0.0000, opacity: 1, translateY: 177.25, scaleX: 0.4627, scaleY: 0.4627 },
-      { at: 0.0294, opacity: 1, translateY: 129.25, scaleX: 0.4627, scaleY: 0.4627 },
-      { at: 0.0588, opacity: 1, translateY: 99.00, scaleX: 0.4602, scaleY: 0.4602 },
-      { at: 0.0882, opacity: 1, translateY: 78.25, scaleX: 0.4627, scaleY: 0.4627 },
-      { at: 0.1176, opacity: 1, translateY: 64.25, scaleX: 0.4627, scaleY: 0.4627 },
-      { at: 0.1471, opacity: 1, translateY: 56.25, scaleX: 0.4627, scaleY: 0.4627 },
-      { at: 0.1765, opacity: 1, translateY: 8.25, scaleX: 0.9255, scaleY: 0.9255 },
-      { at: 0.2059, opacity: 1, translateY: 7.25, scaleX: 0.9255, scaleY: 0.9255 },
-      { at: 0.2353, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000 },
-      { at: 1.0000, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000 },
-    ],
-  },{
-    id: 'kinetic-bowl-deep-word2',
-    name: 'Kinetic Bowl — Palavra 2',
-    category: 'entrance', style: 'modern', hidden: true,
-    duration: 1, easing: 'linear',
-    keyframes: [
-      { at: 0.0000, opacity: 1, translateY: 330.50, scaleX: 0.4635, scaleY: 0.4635 },
-      { at: 0.0294, opacity: 1, translateY: 330.50, scaleX: 0.4635, scaleY: 0.4635 },
-      { at: 0.0588, opacity: 1, translateY: 207.00, scaleX: 0.4583, scaleY: 0.4583 },
-      { at: 0.0882, opacity: 1, translateY: 146.50, scaleX: 0.4635, scaleY: 0.4635 },
-      { at: 0.1176, opacity: 1, translateY: 109.75, scaleX: 0.4609, scaleY: 0.4609 },
-      { at: 0.1471, opacity: 1, translateY: 85.50, scaleX: 0.4635, scaleY: 0.4635 },
-      { at: 0.1765, opacity: 1, translateY: 69.00, scaleX: 0.4583, scaleY: 0.4583 },
-      { at: 0.2059, opacity: 1, translateY: 58.50, scaleX: 0.4635, scaleY: 0.4635 },
-      { at: 0.2353, opacity: 1, translateY: 17.00, scaleX: 0.8438, scaleY: 0.8438 },
-      { at: 0.2647, opacity: 1, translateY: 14.75, scaleX: 0.8464, scaleY: 0.8464 },
-      { at: 0.2941, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000 },
-      { at: 1.0000, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000 },
-    ],
-  },{
-    id: 'kinetic-bowl-deep-word3',
-    name: 'Kinetic Bowl — Palavra 3',
-    category: 'entrance', style: 'modern', hidden: true,
-    duration: 1, easing: 'linear',
-    keyframes: [
-      { at: 0.0000, opacity: 1, translateY: 331.25, scaleX: 0.4627, scaleY: 0.4627 },
-      { at: 0.0294, opacity: 1, translateY: 331.25, scaleX: 0.4627, scaleY: 0.4627 },
-      { at: 0.0588, opacity: 1, translateY: 331.25, scaleX: 0.4627, scaleY: 0.4627 },
-      { at: 0.0882, opacity: 1, translateY: 245.25, scaleX: 0.4627, scaleY: 0.4627 },
-      { at: 0.1176, opacity: 1, translateY: 166.25, scaleX: 0.4627, scaleY: 0.4627 },
-      { at: 0.1471, opacity: 1, translateY: 122.50, scaleX: 0.4602, scaleY: 0.4602 },
-      { at: 0.1765, opacity: 1, translateY: 94.25, scaleX: 0.4627, scaleY: 0.4627 },
-      { at: 0.2059, opacity: 1, translateY: 75.25, scaleX: 0.4627, scaleY: 0.4627 },
-      { at: 0.2353, opacity: 1, translateY: 62.25, scaleX: 0.4627, scaleY: 0.4627 },
-      { at: 0.2647, opacity: 1, translateY: 55.25, scaleX: 0.4627, scaleY: 0.4627 },
-      { at: 0.2941, opacity: 1, translateY: 22.25, scaleX: 0.7712, scaleY: 0.7712 },
-      { at: 0.3235, opacity: 1, translateY: 22.25, scaleX: 0.7712, scaleY: 0.7712 },
-      { at: 0.3529, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000 },
-      { at: 1.0000, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000 },
-    ],
-  },{
-    id: 'kinetic-bowl-deep-word4',
-    name: 'Kinetic Bowl — Palavra 4',
-    category: 'entrance', style: 'modern', hidden: true,
-    duration: 1, easing: 'linear',
-    keyframes: [
-      { at: 0.0000, opacity: 1, translateY: 331.00, scaleX: 0.4603, scaleY: 0.4603 },
-      { at: 0.0294, opacity: 1, translateY: 331.00, scaleX: 0.4603, scaleY: 0.4603 },
-      { at: 0.0588, opacity: 1, translateY: 331.00, scaleX: 0.4603, scaleY: 0.4603 },
-      { at: 0.0882, opacity: 1, translateY: 331.00, scaleX: 0.4603, scaleY: 0.4603 },
-      { at: 0.1176, opacity: 1, translateY: 191.00, scaleX: 0.4603, scaleY: 0.4603 },
-      { at: 0.1471, opacity: 1, translateY: 138.00, scaleX: 0.4603, scaleY: 0.4603 },
-      { at: 0.1765, opacity: 1, translateY: 104.00, scaleX: 0.4603, scaleY: 0.4603 },
-      { at: 0.2059, opacity: 1, translateY: 82.00, scaleX: 0.4603, scaleY: 0.4603 },
-      { at: 0.2353, opacity: 1, translateY: 67.00, scaleX: 0.4603, scaleY: 0.4603 },
-      { at: 0.2647, opacity: 1, translateY: 58.00, scaleX: 0.4603, scaleY: 0.4603 },
-      { at: 0.2941, opacity: 1, translateY: 53.00, scaleX: 0.4603, scaleY: 0.4603 },
-      { at: 0.3235, opacity: 1, translateY: 51.00, scaleX: 0.4603, scaleY: 0.4603 },
-      { at: 0.3529, opacity: 1, translateY: 29.25, scaleX: 0.6905, scaleY: 0.6905 },
-      { at: 0.3824, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000 },
-      { at: 1.0000, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000 },
-    ],
-  },{
-    id: 'kinetic-bowl-deep-final',
-    name: 'Kinetic Bowl — Palavra Final',
-    category: 'entrance', style: 'modern', hidden: true,
-    duration: 1, easing: 'linear',
-    keyframes: [
-      { at: 0.0000, opacity: 1, translateY: 155.25, scaleX: 0.3431, scaleY: 0.3431, letterSpacing: 1.5637 },
-      { at: 0.0556, opacity: 1, translateY: 155.25, scaleX: 0.3431, scaleY: 0.3431, letterSpacing: 1.5637 },
-      { at: 0.1111, opacity: 1, translateY: 30.00, scaleX: 0.8731, scaleY: 0.8731, letterSpacing: 1.5637 },
-      { at: 0.1667, opacity: 1, translateY: 30.00, scaleX: 0.8731, scaleY: 0.8731, letterSpacing: 1.5637 },
-      { at: 0.2222, opacity: 1, translateY: 7.00, scaleX: 0.9694, scaleY: 0.9694, letterSpacing: 1.5637 },
-      { at: 0.2778, opacity: 1, translateY: 7.00, scaleX: 0.9694, scaleY: 0.9694, letterSpacing: 1.5637 },
-      { at: 0.3333, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000, letterSpacing: 1.5637 },
-      { at: 0.3889, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000, letterSpacing: 1.3612 },
-      { at: 0.4444, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000, letterSpacing: 0.9696 },
-      { at: 0.5000, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000, letterSpacing: 0.7362 },
-      { at: 0.5556, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000, letterSpacing: 0.6000 },
-      { at: 0.6111, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000, letterSpacing: 0.5096 },
-      { at: 0.6667, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000, letterSpacing: 0.4471 },
-      { at: 0.7222, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000, letterSpacing: 0.4029 },
-      { at: 0.7778, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000, letterSpacing: 0.3750 },
-      { at: 0.8333, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000, letterSpacing: 0.3554 },
-      { at: 0.8889, opacity: 1, translateY: 14.75, scaleX: 1.0999, scaleY: 1.0999, letterSpacing: 0.3821 },
-      { at: 0.9444, opacity: 1, translateY: 14.75, scaleX: 1.0999, scaleY: 1.0999, letterSpacing: 0.3762 },
-      { at: 1.0000, opacity: 1, translateY: 18.25, scaleX: 1.1234, scaleY: 1.1234, letterSpacing: 0.3846 },
-    ],
   },
 ];
 
@@ -21279,46 +21146,89 @@ class RenderEngineV2 {
     if (!words1.length || !words2.length) {
       return { ok: false, error: 'As duas linhas precisam ter pelo menos uma palavra cada.' };
     }
+    const ratioData = window.WM_KINETIC_BOWL_DEEP_RATIO_DATA;
+    if (!ratioData) return { ok: false, error: 'Dados da cena não carregados.' };
 
-    // RECONSTRUÍDO a partir da especificação completa (JSON) enviada pelo
-    // usuário — cada palavra vermelha tem sua PRÓPRIA curva medida (não
-    // uma receita compartilhada com atraso calculado). Isso é diferente
-    // de tudo que eu tinha tentado antes: aqui não tem stagger nem
-    // duração calculada — cada role já embute seu próprio timing exato,
-    // medido diretamente nos 35 frames reais do vídeo de referência.
-    //
+    // TIPOGRAFIA: fonte/peso/tamanho continuam 100% do editor — só
+    // LEMOS o que já está configurado, nunca alteramos. Mesma conta de
+    // effectiveFontSize usada em _applyStyleToStanzaEl (pra bater com o
+    // que realmente é renderizado na tela).
+    const sceneCfg = typeof this.getSceneConfig === 'function' ? this.getSceneConfig(stanzaId) : null;
+    const s = (sceneCfg && sceneCfg.style) ? sceneCfg.style : this.style;
+    let refHeight = 0, refWidth = 0;
+    const cont = this.canvas && (this.canvas.closest('.editor-canvas') || this.canvas);
+    if (cont) {
+      const cr = cont.getBoundingClientRect();
+      refHeight = cr.height || cont.clientHeight || 0;
+      refWidth = cr.width || cont.clientWidth || 0;
+    }
+    let effectiveFontSize = s.fontSize;
+    if (refHeight > 0) {
+      let refAltura16x9 = refHeight;
+      if (refWidth > 0 && typeof window.WM_CAIXA_DESIGN === 'function') {
+        refAltura16x9 = window.WM_CAIXA_DESIGN(refWidth, refHeight).h;
+      }
+      effectiveFontSize = s.fontSize * (refAltura16x9 / 600);
+    }
+    const fontWeight = s.fontWeight || 400;
+    const fontStyle = s.fontStyle || 'normal';
+    const fontFamily = s.fontFamily || 'Inter';
+    const fontCss = `${fontStyle} ${fontWeight} ${effectiveFontSize}px "${fontFamily}", sans-serif`;
+
+    const styleTag = document.getElementById('wm-anim-keyframes');
+    const engine = window.WM_ANIM_ENGINE;
+
+    // Registra (ou reaproveita, se já existir com a MESMA fonte/peso/
+    // texto) uma receita dinâmica pra uma palavra — mede a altura real
+    // renderizada NAQUELE texto/fonte, converte a proporção da
+    // especificação pra pixel/em preservando o deslocamento visual, e
+    // registra nos 3 lugares de sempre (ANIMATIONS_V2 pro preview, CSS
+    // manual pro preview já ter os @keyframes, motor novo + whitelist
+    // pro export).
+    const registerDynamic = (roleKey, word, hasTracking) => {
+      const data = ratioData[roleKey];
+      const actualHeightPx = engine.measureTextHeight(fontCss, word.text);
+      const dynId = `kinetic-bowl-deep-${roleKey}-dyn-${word.id}`;
+
+      const keyframes = engine.buildRatioKeyframes(data.points, actualHeightPx, effectiveFontSize);
+      const oldFormatAnim = {
+        id: dynId, name: dynId, category: 'entrance', style: 'modern', hidden: true,
+        duration: 1, easing: 'linear', keyframes,
+      };
+      // Old-format (preview): substitui se já existir (fonte/tamanho podem
+      // ter mudado desde a última aplicação da cena nessa mesma palavra).
+      const existingIdx = window.WM_ANIM_V2.ANIMATIONS.findIndex(a => a.id === dynId);
+      if (existingIdx >= 0) window.WM_ANIM_V2.ANIMATIONS.splice(existingIdx, 1, oldFormatAnim);
+      else window.WM_ANIM_V2.ANIMATIONS.push(oldFormatAnim);
+      if (styleTag) styleTag.textContent += this._generateKeyframeCSS(oldFormatAnim);
+
+      // Motor novo (export): mesma receita precisa.
+      engine.registerRecipe({ id: `${dynId}-v2`, entrance: { duration: 1, easing: 'linear', engine: 'keyframes', keyframes } });
+      window.WM_ENGINE_V2_ACTIVE_IDS.add(dynId);
+      window.WM_ENGINE_V2_ID_MAP[dynId] = `${dynId}-v2`;
+
+      return dynId;
+    };
+
     // Duração real: 1.36s pras 4 palavras vermelhas (recipe normalizado
-    // 0-1 × durationScale=1.36). A palavra final ("branca") começa aos
-    // 640ms e dura 0.72s própria (0.64s de atraso + 1×0.72 de duração).
-    const RED_ROLE_IDS = [
-      'kinetic-bowl-deep-word1',
-      'kinetic-bowl-deep-word2',
-      'kinetic-bowl-deep-word3',
-      'kinetic-bowl-deep-word4',
-    ];
+    // 0-1 × durationScale=1.36, medido no JSON: frame35=1360ms). A
+    // palavra final começa aos 640ms e dura 0.72s própria.
+    const RED_ROLE_KEYS = ['word1', 'word2', 'word3', 'word4'];
     const RED_DURATION_SEC = 1.36;
     const FINAL_DELAY_SEC = 0.64;
     const FINAL_DURATION_SEC = 0.72;
 
     // Regra de generalização do JSON pra quando a linha 1 tem MAIS ou
-    // MENOS de 4 palavras: reusa a curva da role mais próxima (extend
-    // stagger pattern) — não é o comportamento medido, é uma extensão
-    // razoável pra não travar em textos diferentes do de referência.
+    // MENOS de 4 palavras: reusa a curva da role mais próxima.
     words1.forEach((w, i) => {
-      const roleId = RED_ROLE_IDS[Math.min(i, RED_ROLE_IDS.length - 1)];
-      this.setWordOverride(w.id, {
-        entrance: roleId,
-        delay: 0,
-        durationScale: RED_DURATION_SEC,
-      });
+      const roleKey = RED_ROLE_KEYS[Math.min(i, RED_ROLE_KEYS.length - 1)];
+      const dynId = registerDynamic(roleKey, w, false);
+      this.setWordOverride(w.id, { entrance: dynId, delay: 0, durationScale: RED_DURATION_SEC });
     });
 
     words2.forEach((w) => {
-      this.setWordOverride(w.id, {
-        entrance: 'kinetic-bowl-deep-final',
-        delay: FINAL_DELAY_SEC,
-        durationScale: FINAL_DURATION_SEC,
-      });
+      const dynId = registerDynamic('final', w, true);
+      this.setWordOverride(w.id, { entrance: dynId, delay: FINAL_DELAY_SEC, durationScale: FINAL_DURATION_SEC });
     });
 
     // Só nessa estrofe (não mexe na config global): granularidade
@@ -39177,6 +39087,217 @@ if (typeof window === 'undefined') { global.window = {}; }
 // no index.html — lá `window` já existe de verdade).
 if (typeof window === 'undefined') { global.window = {}; }
 
+/* ============================================================
+   DADOS DE PROPORÇÃO — Cena "Kinetic Bowl Deep"
+   ============================================================
+   Extraídos diretamente da especificação enviada pelo usuário
+   (WorshipMotion_EFEITO_1_JSON_COMPLETO_COM_TIPOGRAFIA.json), SEM
+   nenhum valor alterado — só reformatados como PROPORÇÃO em vez de
+   pixel absoluto:
+
+     translateYRatio = (y_medido_no_frame - y_final) / alturaRenderizadaDeReferencia
+     trackingRatio   = letterSpacingPx_medido / alturaRenderizadaDeReferencia
+
+   "alturaRenderizadaDeReferencia" é a altura real (em px, no vídeo 4K
+   de referência) que CADA palavra tinha no estado assentado (escala
+   1.0) — vem de referenceFinalBBox.h do JSON pras 4 palavras vermelhas,
+   e do primeiro frame com scale=1.0 pra palavra final.
+
+   Essas proporções são convertidas de volta pra pixel/em em tempo de
+   aplicação da cena (função applyKineticBowlDeepScene), usando a altura
+   REAL renderizada da palavra na fonte/peso/tamanho que o usuário
+   escolheu no editor — não um valor fixo. Isso preserva matematicamente
+   o deslocamento visual do JSON em qualquer fonte/tamanho/peso. Ver
+   WM_ANIM_ENGINE.measureTextHeight() e
+   WM_ANIM_ENGINE.buildKineticBowlDeepKeyframes().
+   ============================================================ */
+window.WM_KINETIC_BOWL_DEEP_RATIO_DATA = {
+  word1: {
+    hRef: 389,  // altura renderizada de referência (4K), usada só pra formar a razão
+    points: [
+      { at: 0.0, opacity: 1, translateYRatio: 0.91131, scaleX: 0.4627, scaleY: 0.4627 },
+      { at: 0.0294, opacity: 1, translateYRatio: 0.66452, scaleX: 0.4627, scaleY: 0.4627 },
+      { at: 0.0588, opacity: 1, translateYRatio: 0.509, scaleX: 0.4602, scaleY: 0.4602 },
+      { at: 0.0882, opacity: 1, translateYRatio: 0.40231, scaleX: 0.4627, scaleY: 0.4627 },
+      { at: 0.1176, opacity: 1, translateYRatio: 0.33033, scaleX: 0.4627, scaleY: 0.4627 },
+      { at: 0.1471, opacity: 1, translateYRatio: 0.2892, scaleX: 0.4627, scaleY: 0.4627 },
+      { at: 0.1765, opacity: 1, translateYRatio: 0.04242, scaleX: 0.9255, scaleY: 0.9255 },
+      { at: 0.2059, opacity: 1, translateYRatio: 0.03728, scaleX: 0.9255, scaleY: 0.9255 },
+      { at: 0.2353, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.2647, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.2941, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.3235, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.3529, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.3824, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.4118, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.4412, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.4706, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.5, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.5294, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.5588, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.5882, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.6176, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.6471, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.6765, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.7059, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.7353, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.7647, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.7941, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.8235, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.8529, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.8824, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.9118, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.9412, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.9706, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 1.0, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+    ],
+  },
+  word2: {
+    hRef: 384,  // altura renderizada de referência (4K), usada só pra formar a razão
+    points: [
+      { at: 0.0, opacity: 1, translateYRatio: 1.72135, scaleX: 0.4635, scaleY: 0.4635 },
+      { at: 0.0294, opacity: 1, translateYRatio: 1.72135, scaleX: 0.4635, scaleY: 0.4635 },
+      { at: 0.0588, opacity: 1, translateYRatio: 1.07812, scaleX: 0.4583, scaleY: 0.4583 },
+      { at: 0.0882, opacity: 1, translateYRatio: 0.76302, scaleX: 0.4635, scaleY: 0.4635 },
+      { at: 0.1176, opacity: 1, translateYRatio: 0.57161, scaleX: 0.4609, scaleY: 0.4609 },
+      { at: 0.1471, opacity: 1, translateYRatio: 0.44531, scaleX: 0.4635, scaleY: 0.4635 },
+      { at: 0.1765, opacity: 1, translateYRatio: 0.35938, scaleX: 0.4583, scaleY: 0.4583 },
+      { at: 0.2059, opacity: 1, translateYRatio: 0.30469, scaleX: 0.4635, scaleY: 0.4635 },
+      { at: 0.2353, opacity: 1, translateYRatio: 0.08854, scaleX: 0.8438, scaleY: 0.8438 },
+      { at: 0.2647, opacity: 1, translateYRatio: 0.07682, scaleX: 0.8464, scaleY: 0.8464 },
+      { at: 0.2941, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.3235, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.3529, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.3824, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.4118, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.4412, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.4706, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.5, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.5294, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.5588, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.5882, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.6176, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.6471, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.6765, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.7059, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.7353, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.7647, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.7941, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.8235, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.8529, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.8824, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.9118, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.9412, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.9706, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 1.0, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+    ],
+  },
+  word3: {
+    hRef: 389,  // altura renderizada de referência (4K), usada só pra formar a razão
+    points: [
+      { at: 0.0, opacity: 1, translateYRatio: 1.70308, scaleX: 0.4627, scaleY: 0.4627 },
+      { at: 0.0294, opacity: 1, translateYRatio: 1.70308, scaleX: 0.4627, scaleY: 0.4627 },
+      { at: 0.0588, opacity: 1, translateYRatio: 1.70308, scaleX: 0.4627, scaleY: 0.4627 },
+      { at: 0.0882, opacity: 1, translateYRatio: 1.26093, scaleX: 0.4627, scaleY: 0.4627 },
+      { at: 0.1176, opacity: 1, translateYRatio: 0.85476, scaleX: 0.4627, scaleY: 0.4627 },
+      { at: 0.1471, opacity: 1, translateYRatio: 0.62982, scaleX: 0.4602, scaleY: 0.4602 },
+      { at: 0.1765, opacity: 1, translateYRatio: 0.48458, scaleX: 0.4627, scaleY: 0.4627 },
+      { at: 0.2059, opacity: 1, translateYRatio: 0.38689, scaleX: 0.4627, scaleY: 0.4627 },
+      { at: 0.2353, opacity: 1, translateYRatio: 0.32005, scaleX: 0.4627, scaleY: 0.4627 },
+      { at: 0.2647, opacity: 1, translateYRatio: 0.28406, scaleX: 0.4627, scaleY: 0.4627 },
+      { at: 0.2941, opacity: 1, translateYRatio: 0.1144, scaleX: 0.7712, scaleY: 0.7712 },
+      { at: 0.3235, opacity: 1, translateYRatio: 0.1144, scaleX: 0.7712, scaleY: 0.7712 },
+      { at: 0.3529, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.3824, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.4118, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.4412, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.4706, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.5, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.5294, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.5588, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.5882, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.6176, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.6471, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.6765, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.7059, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.7353, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.7647, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.7941, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.8235, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.8529, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.8824, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.9118, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.9412, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.9706, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 1.0, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+    ],
+  },
+  word4: {
+    hRef: 378,  // altura renderizada de referência (4K), usada só pra formar a razão
+    points: [
+      { at: 0.0, opacity: 1, translateYRatio: 1.75132, scaleX: 0.4603, scaleY: 0.4603 },
+      { at: 0.0294, opacity: 1, translateYRatio: 1.75132, scaleX: 0.4603, scaleY: 0.4603 },
+      { at: 0.0588, opacity: 1, translateYRatio: 1.75132, scaleX: 0.4603, scaleY: 0.4603 },
+      { at: 0.0882, opacity: 1, translateYRatio: 1.75132, scaleX: 0.4603, scaleY: 0.4603 },
+      { at: 0.1176, opacity: 1, translateYRatio: 1.01058, scaleX: 0.4603, scaleY: 0.4603 },
+      { at: 0.1471, opacity: 1, translateYRatio: 0.73016, scaleX: 0.4603, scaleY: 0.4603 },
+      { at: 0.1765, opacity: 1, translateYRatio: 0.55026, scaleX: 0.4603, scaleY: 0.4603 },
+      { at: 0.2059, opacity: 1, translateYRatio: 0.43386, scaleX: 0.4603, scaleY: 0.4603 },
+      { at: 0.2353, opacity: 1, translateYRatio: 0.3545, scaleX: 0.4603, scaleY: 0.4603 },
+      { at: 0.2647, opacity: 1, translateYRatio: 0.30688, scaleX: 0.4603, scaleY: 0.4603 },
+      { at: 0.2941, opacity: 1, translateYRatio: 0.28042, scaleX: 0.4603, scaleY: 0.4603 },
+      { at: 0.3235, opacity: 1, translateYRatio: 0.26984, scaleX: 0.4603, scaleY: 0.4603 },
+      { at: 0.3529, opacity: 1, translateYRatio: 0.15476, scaleX: 0.6905, scaleY: 0.6905 },
+      { at: 0.3824, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.4118, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.4412, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.4706, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.5, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.5294, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.5588, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.5882, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.6176, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.6471, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.6765, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.7059, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.7353, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.7647, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.7941, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.8235, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.8529, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.8824, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.9118, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.9412, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 0.9706, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+      { at: 1.0, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+    ],
+  },
+  final: {
+    hRef: 851.0,  // altura renderizada de referência (4K), usada só pra formar a razão
+    points: [
+      { at: 0.4706, opacity: 1, translateYRatio: 0.32197, scaleX: 0.3431, scaleY: 0.3431, trackingRatio: 0.44101 },
+      { at: 0.5, opacity: 1, translateYRatio: 0.32197, scaleX: 0.3431, scaleY: 0.3431, trackingRatio: 0.44101 },
+      { at: 0.5294, opacity: 1, translateYRatio: 0.02761, scaleX: 0.8731, scaleY: 0.8731, trackingRatio: 0.44101 },
+      { at: 0.5588, opacity: 1, translateYRatio: 0.02761, scaleX: 0.8731, scaleY: 0.8731, trackingRatio: 0.44101 },
+      { at: 0.5882, opacity: 1, translateYRatio: -0.02644, scaleX: 0.9694, scaleY: 0.9694, trackingRatio: 0.44101 },
+      { at: 0.6176, opacity: 1, translateYRatio: -0.02644, scaleX: 0.9694, scaleY: 0.9694, trackingRatio: 0.44101 },
+      { at: 0.6471, opacity: 1, translateYRatio: -0.04289, scaleX: 1.0, scaleY: 1.0, trackingRatio: 0.44101 },
+      { at: 0.6765, opacity: 1, translateYRatio: -0.03942, scaleX: 1.01, scaleY: 1.01, trackingRatio: 0.3839 },
+      { at: 0.7059, opacity: 1, translateYRatio: -0.03596, scaleX: 1.02, scaleY: 1.02, trackingRatio: 0.27344 },
+      { at: 0.7353, opacity: 1, translateYRatio: -0.03249, scaleX: 1.03, scaleY: 1.03, trackingRatio: 0.20764 },
+      { at: 0.7647, opacity: 1, translateYRatio: -0.02902, scaleX: 1.04, scaleY: 1.04, trackingRatio: 0.16921 },
+      { at: 0.7941, opacity: 1, translateYRatio: -0.02556, scaleX: 1.0499, scaleY: 1.0499, trackingRatio: 0.14371 },
+      { at: 0.8235, opacity: 1, translateYRatio: -0.02209, scaleX: 1.0599, scaleY: 1.0599, trackingRatio: 0.12609 },
+      { at: 0.8529, opacity: 1, translateYRatio: -0.01863, scaleX: 1.0699, scaleY: 1.0699, trackingRatio: 0.11363 },
+      { at: 0.8824, opacity: 1, translateYRatio: -0.01516, scaleX: 1.0799, scaleY: 1.0799, trackingRatio: 0.10576 },
+      { at: 0.9118, opacity: 1, translateYRatio: -0.01169, scaleX: 1.0899, scaleY: 1.0899, trackingRatio: 0.10024 },
+      { at: 0.9412, opacity: 1, translateYRatio: -0.00823, scaleX: 1.0999, scaleY: 1.0999, trackingRatio: 0.10776 },
+      { at: 0.9706, opacity: 1, translateYRatio: -0.00823, scaleX: 1.0999, scaleY: 1.0999, trackingRatio: 0.10611 },
+      { at: 1.0, opacity: 1, translateYRatio: 0.0, scaleX: 1.1234, scaleY: 1.1234, trackingRatio: 0.10846 },
+    ],
+  },
+};
+
 window.WM_ANIM_ENGINE = (function () {
   'use strict';
 
@@ -41343,126 +41464,6 @@ window.WM_ANIM_ENGINE = (function () {
       ],
     },
   });
-  // ---------------------------------------------------------------------
-  // Kinetic Bowl Deep — reconstruído a partir da especificação completa
-  // (WorshipMotion_Efeito_1_TEMPLATE_COMPLETO.json). Mesmos números
-  // exatos do fallback em ANIMATIONS_V2 (ver comentário completo lá) —
-  // sincronizado pro export bater com o preview.
-  registerRecipe({
-    id: 'kinetic-bowl-deep-word1-v2',
-    entrance: {
-      duration: 1, easing: 'linear',
-      engine: 'keyframes',
-      keyframes: [
-        { at: 0.0000, opacity: 1, translateY: 177.25, scaleX: 0.4627, scaleY: 0.4627 },
-        { at: 0.0294, opacity: 1, translateY: 129.25, scaleX: 0.4627, scaleY: 0.4627 },
-        { at: 0.0588, opacity: 1, translateY: 99.00, scaleX: 0.4602, scaleY: 0.4602 },
-        { at: 0.0882, opacity: 1, translateY: 78.25, scaleX: 0.4627, scaleY: 0.4627 },
-        { at: 0.1176, opacity: 1, translateY: 64.25, scaleX: 0.4627, scaleY: 0.4627 },
-        { at: 0.1471, opacity: 1, translateY: 56.25, scaleX: 0.4627, scaleY: 0.4627 },
-        { at: 0.1765, opacity: 1, translateY: 8.25, scaleX: 0.9255, scaleY: 0.9255 },
-        { at: 0.2059, opacity: 1, translateY: 7.25, scaleX: 0.9255, scaleY: 0.9255 },
-        { at: 0.2353, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000 },
-        { at: 1.0000, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000 },
-      ],
-    },
-  });
-  registerRecipe({
-    id: 'kinetic-bowl-deep-word2-v2',
-    entrance: {
-      duration: 1, easing: 'linear',
-      engine: 'keyframes',
-      keyframes: [
-        { at: 0.0000, opacity: 1, translateY: 330.50, scaleX: 0.4635, scaleY: 0.4635 },
-        { at: 0.0294, opacity: 1, translateY: 330.50, scaleX: 0.4635, scaleY: 0.4635 },
-        { at: 0.0588, opacity: 1, translateY: 207.00, scaleX: 0.4583, scaleY: 0.4583 },
-        { at: 0.0882, opacity: 1, translateY: 146.50, scaleX: 0.4635, scaleY: 0.4635 },
-        { at: 0.1176, opacity: 1, translateY: 109.75, scaleX: 0.4609, scaleY: 0.4609 },
-        { at: 0.1471, opacity: 1, translateY: 85.50, scaleX: 0.4635, scaleY: 0.4635 },
-        { at: 0.1765, opacity: 1, translateY: 69.00, scaleX: 0.4583, scaleY: 0.4583 },
-        { at: 0.2059, opacity: 1, translateY: 58.50, scaleX: 0.4635, scaleY: 0.4635 },
-        { at: 0.2353, opacity: 1, translateY: 17.00, scaleX: 0.8438, scaleY: 0.8438 },
-        { at: 0.2647, opacity: 1, translateY: 14.75, scaleX: 0.8464, scaleY: 0.8464 },
-        { at: 0.2941, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000 },
-        { at: 1.0000, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000 },
-      ],
-    },
-  });
-  registerRecipe({
-    id: 'kinetic-bowl-deep-word3-v2',
-    entrance: {
-      duration: 1, easing: 'linear',
-      engine: 'keyframes',
-      keyframes: [
-        { at: 0.0000, opacity: 1, translateY: 331.25, scaleX: 0.4627, scaleY: 0.4627 },
-        { at: 0.0294, opacity: 1, translateY: 331.25, scaleX: 0.4627, scaleY: 0.4627 },
-        { at: 0.0588, opacity: 1, translateY: 331.25, scaleX: 0.4627, scaleY: 0.4627 },
-        { at: 0.0882, opacity: 1, translateY: 245.25, scaleX: 0.4627, scaleY: 0.4627 },
-        { at: 0.1176, opacity: 1, translateY: 166.25, scaleX: 0.4627, scaleY: 0.4627 },
-        { at: 0.1471, opacity: 1, translateY: 122.50, scaleX: 0.4602, scaleY: 0.4602 },
-        { at: 0.1765, opacity: 1, translateY: 94.25, scaleX: 0.4627, scaleY: 0.4627 },
-        { at: 0.2059, opacity: 1, translateY: 75.25, scaleX: 0.4627, scaleY: 0.4627 },
-        { at: 0.2353, opacity: 1, translateY: 62.25, scaleX: 0.4627, scaleY: 0.4627 },
-        { at: 0.2647, opacity: 1, translateY: 55.25, scaleX: 0.4627, scaleY: 0.4627 },
-        { at: 0.2941, opacity: 1, translateY: 22.25, scaleX: 0.7712, scaleY: 0.7712 },
-        { at: 0.3235, opacity: 1, translateY: 22.25, scaleX: 0.7712, scaleY: 0.7712 },
-        { at: 0.3529, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000 },
-        { at: 1.0000, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000 },
-      ],
-    },
-  });
-  registerRecipe({
-    id: 'kinetic-bowl-deep-word4-v2',
-    entrance: {
-      duration: 1, easing: 'linear',
-      engine: 'keyframes',
-      keyframes: [
-        { at: 0.0000, opacity: 1, translateY: 331.00, scaleX: 0.4603, scaleY: 0.4603 },
-        { at: 0.0294, opacity: 1, translateY: 331.00, scaleX: 0.4603, scaleY: 0.4603 },
-        { at: 0.0588, opacity: 1, translateY: 331.00, scaleX: 0.4603, scaleY: 0.4603 },
-        { at: 0.0882, opacity: 1, translateY: 331.00, scaleX: 0.4603, scaleY: 0.4603 },
-        { at: 0.1176, opacity: 1, translateY: 191.00, scaleX: 0.4603, scaleY: 0.4603 },
-        { at: 0.1471, opacity: 1, translateY: 138.00, scaleX: 0.4603, scaleY: 0.4603 },
-        { at: 0.1765, opacity: 1, translateY: 104.00, scaleX: 0.4603, scaleY: 0.4603 },
-        { at: 0.2059, opacity: 1, translateY: 82.00, scaleX: 0.4603, scaleY: 0.4603 },
-        { at: 0.2353, opacity: 1, translateY: 67.00, scaleX: 0.4603, scaleY: 0.4603 },
-        { at: 0.2647, opacity: 1, translateY: 58.00, scaleX: 0.4603, scaleY: 0.4603 },
-        { at: 0.2941, opacity: 1, translateY: 53.00, scaleX: 0.4603, scaleY: 0.4603 },
-        { at: 0.3235, opacity: 1, translateY: 51.00, scaleX: 0.4603, scaleY: 0.4603 },
-        { at: 0.3529, opacity: 1, translateY: 29.25, scaleX: 0.6905, scaleY: 0.6905 },
-        { at: 0.3824, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000 },
-        { at: 1.0000, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000 },
-      ],
-    },
-  });
-  registerRecipe({
-    id: 'kinetic-bowl-deep-final-v2',
-    entrance: {
-      duration: 1, easing: 'linear',
-      engine: 'keyframes',
-      keyframes: [
-        { at: 0.0000, opacity: 1, translateY: 155.25, scaleX: 0.3431, scaleY: 0.3431, letterSpacing: 1.5637 },
-        { at: 0.0556, opacity: 1, translateY: 155.25, scaleX: 0.3431, scaleY: 0.3431, letterSpacing: 1.5637 },
-        { at: 0.1111, opacity: 1, translateY: 30.00, scaleX: 0.8731, scaleY: 0.8731, letterSpacing: 1.5637 },
-        { at: 0.1667, opacity: 1, translateY: 30.00, scaleX: 0.8731, scaleY: 0.8731, letterSpacing: 1.5637 },
-        { at: 0.2222, opacity: 1, translateY: 7.00, scaleX: 0.9694, scaleY: 0.9694, letterSpacing: 1.5637 },
-        { at: 0.2778, opacity: 1, translateY: 7.00, scaleX: 0.9694, scaleY: 0.9694, letterSpacing: 1.5637 },
-        { at: 0.3333, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000, letterSpacing: 1.5637 },
-        { at: 0.3889, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000, letterSpacing: 1.3612 },
-        { at: 0.4444, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000, letterSpacing: 0.9696 },
-        { at: 0.5000, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000, letterSpacing: 0.7362 },
-        { at: 0.5556, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000, letterSpacing: 0.6000 },
-        { at: 0.6111, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000, letterSpacing: 0.5096 },
-        { at: 0.6667, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000, letterSpacing: 0.4471 },
-        { at: 0.7222, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000, letterSpacing: 0.4029 },
-        { at: 0.7778, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000, letterSpacing: 0.3750 },
-        { at: 0.8333, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000, letterSpacing: 0.3554 },
-        { at: 0.8889, opacity: 1, translateY: 14.75, scaleX: 1.0999, scaleY: 1.0999, letterSpacing: 0.3821 },
-        { at: 0.9444, opacity: 1, translateY: 14.75, scaleX: 1.0999, scaleY: 1.0999, letterSpacing: 0.3762 },
-        { at: 1.0000, opacity: 1, translateY: 18.25, scaleX: 1.1234, scaleY: 1.1234, letterSpacing: 0.3846 },
-      ],
-    },
-  });
   registerRecipe({ // = 'loop-glow-pulse', migração automática Etapa 5 (validada: paridade numérica)
     id: 'loop-glow-pulse-v2',
     loop: {
@@ -41475,6 +41476,53 @@ window.WM_ANIM_ENGINE = (function () {
     },
   });
 
+  /**
+   * Mede a altura real renderizada de um texto numa fonte específica —
+   * usa um canvas 2D fora de tela (não afeta o DOM). Serve pra converter
+   * proporções (medidas numa referência) de volta pra pixel, usando a
+   * fonte/peso/tamanho REAIS que o usuário escolheu, em vez de um valor
+   * fixo — é o que preserva o deslocamento visual do template em
+   * qualquer fonte, peso ou tamanho (condição do usuário: "a conversão
+   * precisa preservar matematicamente o deslocamento especificado").
+   */
+  let _measureCanvas = null;
+  function measureTextHeight(fontCss, text) {
+    if (!_measureCanvas) _measureCanvas = document.createElement('canvas');
+    const ctx = _measureCanvas.getContext('2d');
+    ctx.font = fontCss;
+    const m = ctx.measureText(text || 'M');
+    const asc = m.actualBoundingBoxAscent || 0;
+    const desc = m.actualBoundingBoxDescent || 0;
+    const h = asc + desc;
+    return h > 0 ? h : (parseFloat(fontCss) || 100); // fallback grosseiro se a fonte não carregou ainda
+  }
+
+  /**
+   * Converte uma lista de keyframes em PROPORÇÃO (translateYRatio,
+   * trackingRatio — dimensionless, ratio = deslocamento ÷ altura
+   * renderizada de referência) em keyframes CONCRETOS (translateY em
+   * px, letterSpacing em em), usando a altura REAL renderizada da
+   * palavra (na fonte escolhida pelo usuário) e o tamanho de fonte real
+   * em px. A mesma PROPORÇÃO da referência é preservada matematicamente
+   * — só o pixel final muda conforme a fonte/tamanho.
+   */
+  function buildRatioKeyframes(ratioPoints, actualHeightPx, actualFontSizePx) {
+    return ratioPoints.map(p => {
+      const out = {
+        at: p.at,
+        opacity: p.opacity,
+        translateY: p.translateYRatio * actualHeightPx,
+        scaleX: p.scaleX,
+        scaleY: p.scaleY,
+      };
+      if (p.trackingRatio !== undefined) {
+        const trackingPx = p.trackingRatio * actualHeightPx;
+        out.letterSpacing = actualFontSizePx > 0 ? trackingPx / actualFontSizePx : 0;
+      }
+      return out;
+    });
+  }
+
   return {
     // registro
     registerRecipe, RECIPES,
@@ -41486,6 +41534,8 @@ window.WM_ANIM_ENGINE = (function () {
     applyStateToDOM, applyStateToCanvas,
     // utilitário
     EASINGS, DEFAULT_STATE, BEZIER_STRING_TO_EASING,
+    // Cena "Kinetic Bowl Deep" — conversão proporção→pixel/em
+    measureTextHeight, buildRatioKeyframes,
   };
 })();
 
@@ -41577,10 +41627,9 @@ window.WM_ENGINE_V2_ACTIVE_IDS = new Set([
   // Etapa 5, lote 8 (typewriters) — migração manual (charStagger), 2.295
   // checks, 0 divergências, incluindo o caso de 4 keyframes do Forte.
   'typewriter-blur', 'typewriter-blur-fast', 'typewriter-blur-strong',
-  // Cena pronta "Kinetic Bowl Deep" (título de 2 linhas)
-  'kinetic-bowl-deep-word1', 'kinetic-bowl-deep-word2',
-  'kinetic-bowl-deep-word3', 'kinetic-bowl-deep-word4',
-  'kinetic-bowl-deep-final',
+  // Cena pronta "Kinetic Bowl Deep": NÃO tem ids estáticos aqui — cada
+  // aplicação da cena registra e adiciona seus próprios ids dinâmicos
+  // (um por palavra+fonte) direto em applyKineticBowlDeepScene().
 ]);
 window.WM_ENGINE_V2_ID_MAP = {
   'cinematic-reveal': 'cinematic-reveal-v2',
@@ -41733,11 +41782,6 @@ window.WM_ENGINE_V2_ID_MAP = {
   'typewriter-blur': 'typewriter-blur-v2',
   'typewriter-blur-fast': 'typewriter-blur-fast-v2',
   'typewriter-blur-strong': 'typewriter-blur-strong-v2',
-  'kinetic-bowl-deep-word1': 'kinetic-bowl-deep-word1-v2',
-  'kinetic-bowl-deep-word2': 'kinetic-bowl-deep-word2-v2',
-  'kinetic-bowl-deep-word3': 'kinetic-bowl-deep-word3-v2',
-  'kinetic-bowl-deep-word4': 'kinetic-bowl-deep-word4-v2',
-  'kinetic-bowl-deep-final': 'kinetic-bowl-deep-final-v2',
 };
 
 function wmSampleAnimState(anim, progress) {
