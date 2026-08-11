@@ -2172,7 +2172,7 @@ body.marking-open.marking-collapsed .editor-canvas {
      letra (ver _inkWidthFrac), não pela caixa, então ela não afasta as
      palavras. As caixas podem se sobrepor um pouco — não faz mal, o que
      conta é o espaço entre os glifos. */
-  padding: 0 0.18em;
+  padding: 0 0.45em;
   /* NÃO incluir 'filter' aqui: no WebKit o will-change:filter também criava
      camada que cortava a letra. */
   will-change: transform, opacity;
@@ -2182,7 +2182,7 @@ body.marking-open.marking-collapsed .editor-canvas {
    negativa DESLOCAVA a posição ~0.16em — então a palavra não centralizava na
    linha guia. Excluímos as free daqui. */
 .lyric-word:not(.is-free-positioned) {
-  margin: 0 -0.18em;
+  margin: 0 -0.45em;
 }
 /* Palavra em edição inline (duplo-clique): contorno claro + cursor de
    texto, pra ficar óbvio que está editável ali mesmo. */
@@ -10815,62 +10815,137 @@ const ANIMATIONS_V2 = [
       { at: 1,   glowIntensity: 1.0 },
     ],
   },// ============================================================
-  // CENAS PRONTAS — Kinetic Bowl Deep (título de 2 linhas, inspirado em
-  // referência do usuário). O preview lê os keyframes DAQUI diretamente
-  // (via _generateKeyframeCSS) — não do motor novo.
+  // CENAS PRONTAS — Kinetic Bowl Deep (título de 2 linhas). O preview lê
+  // os keyframes DAQUI diretamente (via _generateKeyframeCSS) — não do
+  // motor novo.
   //
-  // Números MEDIDOS pixel a pixel nos 35 frames reais da referência
-  // (25fps, análise de componentes conectados, não estimativa visual):
-  //  - Linha 1 assenta de verdade aos 400ms (altura do bloco de texto
-  //    vermelho fica constante em 64px de 0.40s a 1.24s).
-  //  - Aos ~1.28s as DUAS linhas dão um pequeno salto final de escala
-  //    (vermelho: 64px→71-72px | branco "DEEP": ~142px→156-158px) — é
-  //    o "finalAdjustment" que o JSON original mencionava e que a
-  //    primeira versão desta cena tinha pulado.
-  //  - "DEEP" (linha 2) começa aos 640ms e assenta aos 880ms (240ms de
-  //    duração própria, não 100ms como antes).
+  // RECONSTRUÍDO a partir da especificação completa fornecida pelo
+  // usuário (WorshipMotion_Efeito_1_TEMPLATE_COMPLETO.json) — medições
+  // reais, frame a frame (25fps/1360ms), extraídas diretamente do
+  // vídeo de referência. NENHUM valor abaixo foi estimado ou suavizado
+  // por mim — são os pontos medidos convertidos de 4K (3840x2160) pra
+  // 1080p-equivalente (÷2) e reamostrados como fração de tempo.
+  //
+  // Achado principal da especificação (diferente do que eu tinha
+  // implementado antes): CADA PALAVRA TEM SUA PRÓPRIA CURVA ÚNICA — não
+  // é uma receita compartilhada com atraso. As 4 palavras vermelhas não
+  // têm o salto final de escala (só a palavra branca tem). O
+  // rastreamento (tracking) da palavra final é medido em PIXELS reais
+  // (gap entre letras), não scaleX — convertido aqui pra "em" usando uma
+  // fonte de referência de 120px (única suposição não medida, necessária
+  // porque o motor só aceita letterSpacing em em, e o JSON não define
+  // tamanho de fonte de propósito — isso é responsabilidade do editor).
+  //
   // Não pensadas pra aparecer soltas no menu normal — usadas pela
-  // função applyKineticBowlDeepScene(), que também aplica um
-  // durationScale por palavra pra todas baterem o salto final no MESMO
-  // instante absoluto (~1.28s), mesmo cada uma começando num atraso
-  // diferente.
+  // função applyKineticBowlDeepScene(), que atribui cada palavra da
+  // estrofe à role certa (1ª palavra → word1, ..., palavra da 2ª linha
+  // → final). Delay=0 pra todas as palavras vermelhas (o escalonamento
+  // já está embutido nos próprios keyframes de cada uma); a palavra
+  // final tem delay=0.64s (era isso que estava certo desde o início).
   {
-    id: 'kinetic-bowl-deep-primary',
-    name: 'Kinetic Bowl — Linha Superior',
+    id: 'kinetic-bowl-deep-word1',
+    name: 'Kinetic Bowl — Palavra 1',
     category: 'entrance', style: 'modern', hidden: true,
-    // duration de referência = 1.28s (a da 1ª palavra, delay=0). As
-    // outras palavras usam essa MESMA receita com durationScale < 1
-    // (aplicado pela cena) pra encolher a linha do tempo e ainda assim
-    // bater o salto final no mesmo instante.
-    duration: 1.28, easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
+    duration: 1, easing: 'linear',
     keyframes: [
-      { at: 0,     opacity: 1, translateY: 90, scaleX: 0.88,  scaleY: 0.55, letterSpacing: 25   },
-      { at: 0.061, opacity: 1, translateY: 5,  scaleX: 1.015, scaleY: 1.04, letterSpacing: 2    },
-      // letterSpacing não vai até 0: fica um resíduo de 0.25em de propósito.
-      // Sem isso, a caixa de cada palavra encolhe o suficiente pra sobrepor
-      // a palavra vizinha (a folga da caixa — 0.18em — assume que o
-      // desenho da letra tem respiro interno; em fontes bem condensadas
-      // não tem, e as palavras colam). 0.25em cobre essa sobreposição e
-      // ainda deixa uma folga pequena visível — o preço é o rastreamento
-      // final ficar levemente mais aberto que 0 (imperceptível dentro da
-      // palavra, mas evita a fusão entre palavras).
-      { at: 0.10,  opacity: 1, translateY: 0,  scaleX: 1,     scaleY: 1,    letterSpacing: 0    },
-      { at: 0.969, opacity: 1, translateY: 0,  scaleX: 1,     scaleY: 1,    letterSpacing: 0    },
-      { at: 1,     opacity: 1, translateY: -2, scaleX: 1.10,  scaleY: 1.10, letterSpacing: 0    },
+      { at: 0.0000, opacity: 1, translateY: 177.25, scaleX: 0.4627, scaleY: 0.4627 },
+      { at: 0.0294, opacity: 1, translateY: 129.25, scaleX: 0.4627, scaleY: 0.4627 },
+      { at: 0.0588, opacity: 1, translateY: 99.00, scaleX: 0.4602, scaleY: 0.4602 },
+      { at: 0.0882, opacity: 1, translateY: 78.25, scaleX: 0.4627, scaleY: 0.4627 },
+      { at: 0.1176, opacity: 1, translateY: 64.25, scaleX: 0.4627, scaleY: 0.4627 },
+      { at: 0.1471, opacity: 1, translateY: 56.25, scaleX: 0.4627, scaleY: 0.4627 },
+      { at: 0.1765, opacity: 1, translateY: 8.25, scaleX: 0.9255, scaleY: 0.9255 },
+      { at: 0.2059, opacity: 1, translateY: 7.25, scaleX: 0.9255, scaleY: 0.9255 },
+      { at: 0.2353, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000 },
+      { at: 1.0000, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000 },
     ],
   },{
-    id: 'kinetic-bowl-deep-secondary',
-    name: 'Kinetic Bowl — Linha Inferior',
+    id: 'kinetic-bowl-deep-word2',
+    name: 'Kinetic Bowl — Palavra 2',
     category: 'entrance', style: 'modern', hidden: true,
-    // 0.64s = do instante em que "DEEP" começa (640ms) até o salto
-    // final (1.28s absoluto).
-    duration: 0.64, easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
+    duration: 1, easing: 'linear',
     keyframes: [
-      { at: 0,      opacity: 1, translateY: 35, scaleX: 0.10, scaleY: 0.35, letterSpacing: 42   },
-      { at: 0.19,   opacity: 1, translateY: 3,  scaleX: 0.92, scaleY: 1.03, letterSpacing: 3    },
-      { at: 0.375,  opacity: 1, translateY: 0,  scaleX: 1,    scaleY: 1,    letterSpacing: 0    },
-      { at: 0.9375, opacity: 1, translateY: 0,  scaleX: 1,    scaleY: 1,    letterSpacing: 0    },
-      { at: 1,      opacity: 1, translateY: -2, scaleX: 1.10, scaleY: 1.10, letterSpacing: 0    },
+      { at: 0.0000, opacity: 1, translateY: 330.50, scaleX: 0.4635, scaleY: 0.4635 },
+      { at: 0.0294, opacity: 1, translateY: 330.50, scaleX: 0.4635, scaleY: 0.4635 },
+      { at: 0.0588, opacity: 1, translateY: 207.00, scaleX: 0.4583, scaleY: 0.4583 },
+      { at: 0.0882, opacity: 1, translateY: 146.50, scaleX: 0.4635, scaleY: 0.4635 },
+      { at: 0.1176, opacity: 1, translateY: 109.75, scaleX: 0.4609, scaleY: 0.4609 },
+      { at: 0.1471, opacity: 1, translateY: 85.50, scaleX: 0.4635, scaleY: 0.4635 },
+      { at: 0.1765, opacity: 1, translateY: 69.00, scaleX: 0.4583, scaleY: 0.4583 },
+      { at: 0.2059, opacity: 1, translateY: 58.50, scaleX: 0.4635, scaleY: 0.4635 },
+      { at: 0.2353, opacity: 1, translateY: 17.00, scaleX: 0.8438, scaleY: 0.8438 },
+      { at: 0.2647, opacity: 1, translateY: 14.75, scaleX: 0.8464, scaleY: 0.8464 },
+      { at: 0.2941, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000 },
+      { at: 1.0000, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000 },
+    ],
+  },{
+    id: 'kinetic-bowl-deep-word3',
+    name: 'Kinetic Bowl — Palavra 3',
+    category: 'entrance', style: 'modern', hidden: true,
+    duration: 1, easing: 'linear',
+    keyframes: [
+      { at: 0.0000, opacity: 1, translateY: 331.25, scaleX: 0.4627, scaleY: 0.4627 },
+      { at: 0.0294, opacity: 1, translateY: 331.25, scaleX: 0.4627, scaleY: 0.4627 },
+      { at: 0.0588, opacity: 1, translateY: 331.25, scaleX: 0.4627, scaleY: 0.4627 },
+      { at: 0.0882, opacity: 1, translateY: 245.25, scaleX: 0.4627, scaleY: 0.4627 },
+      { at: 0.1176, opacity: 1, translateY: 166.25, scaleX: 0.4627, scaleY: 0.4627 },
+      { at: 0.1471, opacity: 1, translateY: 122.50, scaleX: 0.4602, scaleY: 0.4602 },
+      { at: 0.1765, opacity: 1, translateY: 94.25, scaleX: 0.4627, scaleY: 0.4627 },
+      { at: 0.2059, opacity: 1, translateY: 75.25, scaleX: 0.4627, scaleY: 0.4627 },
+      { at: 0.2353, opacity: 1, translateY: 62.25, scaleX: 0.4627, scaleY: 0.4627 },
+      { at: 0.2647, opacity: 1, translateY: 55.25, scaleX: 0.4627, scaleY: 0.4627 },
+      { at: 0.2941, opacity: 1, translateY: 22.25, scaleX: 0.7712, scaleY: 0.7712 },
+      { at: 0.3235, opacity: 1, translateY: 22.25, scaleX: 0.7712, scaleY: 0.7712 },
+      { at: 0.3529, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000 },
+      { at: 1.0000, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000 },
+    ],
+  },{
+    id: 'kinetic-bowl-deep-word4',
+    name: 'Kinetic Bowl — Palavra 4',
+    category: 'entrance', style: 'modern', hidden: true,
+    duration: 1, easing: 'linear',
+    keyframes: [
+      { at: 0.0000, opacity: 1, translateY: 331.00, scaleX: 0.4603, scaleY: 0.4603 },
+      { at: 0.0294, opacity: 1, translateY: 331.00, scaleX: 0.4603, scaleY: 0.4603 },
+      { at: 0.0588, opacity: 1, translateY: 331.00, scaleX: 0.4603, scaleY: 0.4603 },
+      { at: 0.0882, opacity: 1, translateY: 331.00, scaleX: 0.4603, scaleY: 0.4603 },
+      { at: 0.1176, opacity: 1, translateY: 191.00, scaleX: 0.4603, scaleY: 0.4603 },
+      { at: 0.1471, opacity: 1, translateY: 138.00, scaleX: 0.4603, scaleY: 0.4603 },
+      { at: 0.1765, opacity: 1, translateY: 104.00, scaleX: 0.4603, scaleY: 0.4603 },
+      { at: 0.2059, opacity: 1, translateY: 82.00, scaleX: 0.4603, scaleY: 0.4603 },
+      { at: 0.2353, opacity: 1, translateY: 67.00, scaleX: 0.4603, scaleY: 0.4603 },
+      { at: 0.2647, opacity: 1, translateY: 58.00, scaleX: 0.4603, scaleY: 0.4603 },
+      { at: 0.2941, opacity: 1, translateY: 53.00, scaleX: 0.4603, scaleY: 0.4603 },
+      { at: 0.3235, opacity: 1, translateY: 51.00, scaleX: 0.4603, scaleY: 0.4603 },
+      { at: 0.3529, opacity: 1, translateY: 29.25, scaleX: 0.6905, scaleY: 0.6905 },
+      { at: 0.3824, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000 },
+      { at: 1.0000, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000 },
+    ],
+  },{
+    id: 'kinetic-bowl-deep-final',
+    name: 'Kinetic Bowl — Palavra Final',
+    category: 'entrance', style: 'modern', hidden: true,
+    duration: 1, easing: 'linear',
+    keyframes: [
+      { at: 0.0000, opacity: 1, translateY: 155.25, scaleX: 0.3431, scaleY: 0.3431, letterSpacing: 1.5637 },
+      { at: 0.0556, opacity: 1, translateY: 155.25, scaleX: 0.3431, scaleY: 0.3431, letterSpacing: 1.5637 },
+      { at: 0.1111, opacity: 1, translateY: 30.00, scaleX: 0.8731, scaleY: 0.8731, letterSpacing: 1.5637 },
+      { at: 0.1667, opacity: 1, translateY: 30.00, scaleX: 0.8731, scaleY: 0.8731, letterSpacing: 1.5637 },
+      { at: 0.2222, opacity: 1, translateY: 7.00, scaleX: 0.9694, scaleY: 0.9694, letterSpacing: 1.5637 },
+      { at: 0.2778, opacity: 1, translateY: 7.00, scaleX: 0.9694, scaleY: 0.9694, letterSpacing: 1.5637 },
+      { at: 0.3333, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000, letterSpacing: 1.5637 },
+      { at: 0.3889, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000, letterSpacing: 1.3612 },
+      { at: 0.4444, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000, letterSpacing: 0.9696 },
+      { at: 0.5000, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000, letterSpacing: 0.7362 },
+      { at: 0.5556, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000, letterSpacing: 0.6000 },
+      { at: 0.6111, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000, letterSpacing: 0.5096 },
+      { at: 0.6667, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000, letterSpacing: 0.4471 },
+      { at: 0.7222, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000, letterSpacing: 0.4029 },
+      { at: 0.7778, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000, letterSpacing: 0.3750 },
+      { at: 0.8333, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000, letterSpacing: 0.3554 },
+      { at: 0.8889, opacity: 1, translateY: 14.75, scaleX: 1.0999, scaleY: 1.0999, letterSpacing: 0.3821 },
+      { at: 0.9444, opacity: 1, translateY: 14.75, scaleX: 1.0999, scaleY: 1.0999, letterSpacing: 0.3762 },
+      { at: 1.0000, opacity: 1, translateY: 18.25, scaleX: 1.1234, scaleY: 1.1234, letterSpacing: 0.3846 },
     ],
   },
 ];
@@ -18318,14 +18393,18 @@ const CanvasRenderer = {
         // center do preview centraliza cada linha visual).
         subRows.forEach((rowMetas, sri) => {
           // GAP entre palavras: proporcional ao TAMANHO DA PRÓPRIA palavra
-          // (0.18em), igual ao preview (DOM usa margin-left:0.18em, que é
-          // relativo ao font-size da palavra). Antes usava um espaço (' ')
-          // medido no tamanho-BASE da fonte — numa palavra com escala
-          // grande (template "força"), esse espaço ficava minúsculo perto
-          // da letra gigante e o texto exportado saía colado, mesmo com o
-          // preview certo. Cada gap usa o tamanho da palavra que vem
-          // DEPOIS dele (mesma regra do preview).
-          const gaps = rowMetas.map((m, mi) => mi === 0 ? 0 : 0.18 * m.font.size);
+          // (0.3em — ajustado de 0.18em: fontes bold/condensadas como as
+          // usadas em cenas de impacto têm pouco respiro interno, e 0.18em
+          // não bastava — as letras coladas nas pontas das palavras vizinhas
+          // "comiam" o respiro e colavam visualmente. 0.3em cobre isso com
+          // folga. TEM que ser o MESMO valor do padding em .lyric-word no
+          // CSS (ver comentário lá) — senão preview e export divergem.
+          // Antes usava um espaço (' ') medido no tamanho-BASE da fonte —
+          // numa palavra com escala grande (template "força"), esse espaço
+          // ficava minúsculo perto da letra gigante e o texto exportado
+          // saía colado, mesmo com o preview certo. Cada gap usa o tamanho
+          // da palavra que vem DEPOIS dele (mesma regra do preview).
+          const gaps = rowMetas.map((m, mi) => mi === 0 ? 0 : 0.45 * m.font.size);
           const totalGaps = gaps.reduce((a, b) => a + b, 0);
           const totalLineW = rowMetas.reduce((a, m) => a + m.width, 0) + totalGaps;
           const lineMaxSize = rowMetas.reduce((max, m) => Math.max(max, m.font.size), baseFontSize);
@@ -21201,58 +21280,51 @@ class RenderEngineV2 {
       return { ok: false, error: 'As duas linhas precisam ter pelo menos uma palavra cada.' };
     }
 
-    const WORD_STAGGER_SEC = 0.09;     // 90ms — bate com o cascateamento visto nos frames reais
-    const LINE2_BASE_DELAY_SEC = 0.64; // 640ms — confirmado com frames precisos de 25fps
-    // Instante absoluto (medido nos frames) em que TODAS as palavras dão
-    // o salto final de escala junto — é o fim da duração-base das
-    // receitas (1.28s pra linha 1, que tem delay=0 na primeira palavra).
-    const FINAL_BUMP_ABS_SEC = 1.28;
-    const PRIMARY_BASE_DURATION_SEC = 1.28;  // duração da receita c/ delay=0
-    const SECONDARY_BASE_DURATION_SEC = 0.64;
+    // RECONSTRUÍDO a partir da especificação completa (JSON) enviada pelo
+    // usuário — cada palavra vermelha tem sua PRÓPRIA curva medida (não
+    // uma receita compartilhada com atraso calculado). Isso é diferente
+    // de tudo que eu tinha tentado antes: aqui não tem stagger nem
+    // duração calculada — cada role já embute seu próprio timing exato,
+    // medido diretamente nos 35 frames reais do vídeo de referência.
+    //
+    // Duração real: 1.36s pras 4 palavras vermelhas (recipe normalizado
+    // 0-1 × durationScale=1.36). A palavra final ("branca") começa aos
+    // 640ms e dura 0.72s própria (0.64s de atraso + 1×0.72 de duração).
+    const RED_ROLE_IDS = [
+      'kinetic-bowl-deep-word1',
+      'kinetic-bowl-deep-word2',
+      'kinetic-bowl-deep-word3',
+      'kinetic-bowl-deep-word4',
+    ];
+    const RED_DURATION_SEC = 1.36;
+    const FINAL_DELAY_SEC = 0.64;
+    const FINAL_DURATION_SEC = 0.72;
 
-    // IMPORTANTE (bug real encontrado testando no app de verdade): o motor
-    // ZERA o stagger nativo por índice (word.globalIdx * stagger) sempre
-    // que alguma palavra tem override de entrada — é um comportamento de
-    // propósito do app pra não deixar palavras "sumidas" esperando delay
-    // em outro caso de uso. Isso quer dizer que NÃO dá pra confiar no
-    // stagger automático como eu tinha assumido antes — preciso colocar o
-    // atraso COMPLETO e explícito no `delay` de cada palavra, calculado
-    // aqui, sem esperar nenhuma soma automática do motor.
-    //
-    // DURATIONSCALE: cada palavra começa num atraso diferente, mas todas
-    // precisam bater o "salto final" no MESMO instante absoluto (medido
-    // em ~1.28s). Como a receita tem duração fixa, encolhemos a
-    // linha do tempo de cada palavra (durationScale < 1) proporcional
-    // ao quanto ela começou depois da primeira — assim a MESMA receita
-    // serve pra todas, só "tocada" mais rápido pras que atrasaram mais.
-    //
-    // SÓ MOVIMENTO: por decisão do usuário, essa "cena" aplica apenas a
-    // ANIMAÇÃO (entrance + delay + durationScale) — fonte e background
-    // continuam livres pro usuário escolher/trocar depois, igual a
-    // qualquer outra animação da biblioteca. Nada de style aqui.
+    // Regra de generalização do JSON pra quando a linha 1 tem MAIS ou
+    // MENOS de 4 palavras: reusa a curva da role mais próxima (extend
+    // stagger pattern) — não é o comportamento medido, é uma extensão
+    // razoável pra não travar em textos diferentes do de referência.
     words1.forEach((w, i) => {
-      const delay = i * WORD_STAGGER_SEC;
-      const desiredDuration = Math.max(0.05, FINAL_BUMP_ABS_SEC - delay);
+      const roleId = RED_ROLE_IDS[Math.min(i, RED_ROLE_IDS.length - 1)];
       this.setWordOverride(w.id, {
-        entrance: 'kinetic-bowl-deep-primary',
-        delay,
-        durationScale: desiredDuration / PRIMARY_BASE_DURATION_SEC,
+        entrance: roleId,
+        delay: 0,
+        durationScale: RED_DURATION_SEC,
       });
     });
 
-    words2.forEach((w, i) => {
-      const delay = LINE2_BASE_DELAY_SEC + (i * WORD_STAGGER_SEC);
-      const desiredDuration = Math.max(0.05, FINAL_BUMP_ABS_SEC - delay);
+    words2.forEach((w) => {
       this.setWordOverride(w.id, {
-        entrance: 'kinetic-bowl-deep-secondary',
-        delay,
-        durationScale: desiredDuration / SECONDARY_BASE_DURATION_SEC,
+        entrance: 'kinetic-bowl-deep-final',
+        delay: FINAL_DELAY_SEC,
+        durationScale: FINAL_DURATION_SEC,
       });
     });
 
-    // Só nessa estrofe (não mexe na config global): granularidade palavra
-    // + stagger 90ms, igual à referência.
-    this.setSceneOverride(stanzaId, { target: 'word', stagger: WORD_STAGGER_SEC });
+    // Só nessa estrofe (não mexe na config global): granularidade
+    // palavra — sem stagger nativo (o escalonamento já está embutido em
+    // cada role, não precisa de stagger extra por índice).
+    this.setSceneOverride(stanzaId, { target: 'word', stagger: 0 });
 
     return { ok: true };
   }
@@ -22005,16 +22077,6 @@ class RenderEngineV2 {
           // palavra, o gap escala junto com ela (igual ao reflow usado
           // ao trocar peso/fonte, que também usa 0.18em).
           if (wi > 0) wordEl.style.marginLeft = '0';
-          // BUG REAL CORRIGIDO: só zerar a margem esquerda da palavra
-          // seguinte não bastava — a margem DIREITA negativa da palavra
-          // ANTERIOR nunca era zerada, então ela puxava a próxima palavra
-          // de volta por cima, cancelando o gap (medido: -0.18em de
-          // sobreposição real, palavras colando em fontes condensadas/
-          // pesadas, onde o "respiro" do próprio desenho da letra não é
-          // suficiente pra disfarçar a sobreposição da caixa). Zerando
-          // também a margem DIREITA de toda palavra que não é a última da
-          // linha, os dois lados contribuem o próprio padding pro gap.
-          if (wi < line.words.length - 1) wordEl.style.marginRight = '0';
           lineEl.appendChild(wordEl);
         });
 
@@ -25010,7 +25072,7 @@ function initEditor() {
     // espaço de texto normal — não um respiro exagerado. É o MESMO valor
     // usado em _autoEspacarPalavras (aplicação do template), pra ficar
     // igual ao resultado do Canva nas duas situações.
-    const GAP_EM = 0.18;
+    const GAP_EM = 0.45; // sincronizado com o padding de .lyric-word (ver CSS)
     let _maxFontPx = 0;
     palavras.forEach(p => {
       const fpx = parseFloat(getComputedStyle(p.el).fontSize) || 0;
@@ -35627,7 +35689,7 @@ function initEditor() {
           // e MESMO valor (GAP_EM) usados em _reflowLinhaDaPalavra, pra
           // não "pular" pra um espaçamento diferente quando o usuário
           // mexe em peso/itálico/fonte depois (o que dispara o reflow).
-          const GAP_EM = 0.18;
+          const GAP_EM = 0.45; // sincronizado com o padding de .lyric-word (ver CSS)
           let escalaMax = 1;
           ws.forEach(w => {
             const wo = engine.wordOverrides[w.id];
@@ -41282,43 +41344,122 @@ window.WM_ANIM_ENGINE = (function () {
     },
   });
   // ---------------------------------------------------------------------
-  // Kinetic Bowl Deep — cena de título de 2 linhas, baseada em referência
-  // do usuário (efeito 1.mp4 / .prproj do Premiere). Duas receitas
-  // separadas (não a mesma animação com atraso): a de cima ("primary")
-  // tem um aperto mais suave; a de baixo ("secondary") estica de quase
-  // zero, mais dramática.
-  //
-  // MEDIDO pixel a pixel nos 35 frames reais (25fps) — mesmos números
-  // exatos do fallback em ANIMATIONS_V2 (que é o que o preview realmente
-  // usa). Inclui o "salto final" (finalAdjustment) aos ~1.28s que a
-  // versão anterior desta receita tinha deixado de fora.
-  registerRecipe({ // = 'kinetic-bowl-deep-primary'
-    id: 'kinetic-bowl-deep-primary-v2',
+  // Kinetic Bowl Deep — reconstruído a partir da especificação completa
+  // (WorshipMotion_Efeito_1_TEMPLATE_COMPLETO.json). Mesmos números
+  // exatos do fallback em ANIMATIONS_V2 (ver comentário completo lá) —
+  // sincronizado pro export bater com o preview.
+  registerRecipe({
+    id: 'kinetic-bowl-deep-word1-v2',
     entrance: {
-      duration: 1.28, easing: 'easeBezier22_1_36_1',
+      duration: 1, easing: 'linear',
       engine: 'keyframes',
       keyframes: [
-        { at: 0,     opacity: 1, translateY: 90, scaleX: 0.88,  scaleY: 0.55, letterSpacing: 25   },
-        { at: 0.061, opacity: 1, translateY: 5,  scaleX: 1.015, scaleY: 1.04, letterSpacing: 2    },
-        // 0.25 (não 0) de propósito — evita palavras vizinhas colando
-        // (ver comentário completo na entrada equivalente em ANIMATIONS_V2).
-        { at: 0.10,  opacity: 1, translateY: 0,  scaleX: 1,     scaleY: 1,    letterSpacing: 0    },
-        { at: 0.969, opacity: 1, translateY: 0,  scaleX: 1,     scaleY: 1,    letterSpacing: 0    },
-        { at: 1,     opacity: 1, translateY: -2, scaleX: 1.10,  scaleY: 1.10, letterSpacing: 0    },
+        { at: 0.0000, opacity: 1, translateY: 177.25, scaleX: 0.4627, scaleY: 0.4627 },
+        { at: 0.0294, opacity: 1, translateY: 129.25, scaleX: 0.4627, scaleY: 0.4627 },
+        { at: 0.0588, opacity: 1, translateY: 99.00, scaleX: 0.4602, scaleY: 0.4602 },
+        { at: 0.0882, opacity: 1, translateY: 78.25, scaleX: 0.4627, scaleY: 0.4627 },
+        { at: 0.1176, opacity: 1, translateY: 64.25, scaleX: 0.4627, scaleY: 0.4627 },
+        { at: 0.1471, opacity: 1, translateY: 56.25, scaleX: 0.4627, scaleY: 0.4627 },
+        { at: 0.1765, opacity: 1, translateY: 8.25, scaleX: 0.9255, scaleY: 0.9255 },
+        { at: 0.2059, opacity: 1, translateY: 7.25, scaleX: 0.9255, scaleY: 0.9255 },
+        { at: 0.2353, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000 },
+        { at: 1.0000, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000 },
       ],
     },
   });
-  registerRecipe({ // = 'kinetic-bowl-deep-secondary'
-    id: 'kinetic-bowl-deep-secondary-v2',
+  registerRecipe({
+    id: 'kinetic-bowl-deep-word2-v2',
     entrance: {
-      duration: 0.64, easing: 'easeBezier22_1_36_1',
+      duration: 1, easing: 'linear',
       engine: 'keyframes',
       keyframes: [
-        { at: 0,      opacity: 1, translateY: 35, scaleX: 0.10, scaleY: 0.35, letterSpacing: 42   },
-        { at: 0.19,   opacity: 1, translateY: 3,  scaleX: 0.92, scaleY: 1.03, letterSpacing: 3    },
-        { at: 0.375,  opacity: 1, translateY: 0,  scaleX: 1,    scaleY: 1,    letterSpacing: 0    },
-        { at: 0.9375, opacity: 1, translateY: 0,  scaleX: 1,    scaleY: 1,    letterSpacing: 0    },
-        { at: 1,      opacity: 1, translateY: -2, scaleX: 1.10, scaleY: 1.10, letterSpacing: 0    },
+        { at: 0.0000, opacity: 1, translateY: 330.50, scaleX: 0.4635, scaleY: 0.4635 },
+        { at: 0.0294, opacity: 1, translateY: 330.50, scaleX: 0.4635, scaleY: 0.4635 },
+        { at: 0.0588, opacity: 1, translateY: 207.00, scaleX: 0.4583, scaleY: 0.4583 },
+        { at: 0.0882, opacity: 1, translateY: 146.50, scaleX: 0.4635, scaleY: 0.4635 },
+        { at: 0.1176, opacity: 1, translateY: 109.75, scaleX: 0.4609, scaleY: 0.4609 },
+        { at: 0.1471, opacity: 1, translateY: 85.50, scaleX: 0.4635, scaleY: 0.4635 },
+        { at: 0.1765, opacity: 1, translateY: 69.00, scaleX: 0.4583, scaleY: 0.4583 },
+        { at: 0.2059, opacity: 1, translateY: 58.50, scaleX: 0.4635, scaleY: 0.4635 },
+        { at: 0.2353, opacity: 1, translateY: 17.00, scaleX: 0.8438, scaleY: 0.8438 },
+        { at: 0.2647, opacity: 1, translateY: 14.75, scaleX: 0.8464, scaleY: 0.8464 },
+        { at: 0.2941, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000 },
+        { at: 1.0000, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000 },
+      ],
+    },
+  });
+  registerRecipe({
+    id: 'kinetic-bowl-deep-word3-v2',
+    entrance: {
+      duration: 1, easing: 'linear',
+      engine: 'keyframes',
+      keyframes: [
+        { at: 0.0000, opacity: 1, translateY: 331.25, scaleX: 0.4627, scaleY: 0.4627 },
+        { at: 0.0294, opacity: 1, translateY: 331.25, scaleX: 0.4627, scaleY: 0.4627 },
+        { at: 0.0588, opacity: 1, translateY: 331.25, scaleX: 0.4627, scaleY: 0.4627 },
+        { at: 0.0882, opacity: 1, translateY: 245.25, scaleX: 0.4627, scaleY: 0.4627 },
+        { at: 0.1176, opacity: 1, translateY: 166.25, scaleX: 0.4627, scaleY: 0.4627 },
+        { at: 0.1471, opacity: 1, translateY: 122.50, scaleX: 0.4602, scaleY: 0.4602 },
+        { at: 0.1765, opacity: 1, translateY: 94.25, scaleX: 0.4627, scaleY: 0.4627 },
+        { at: 0.2059, opacity: 1, translateY: 75.25, scaleX: 0.4627, scaleY: 0.4627 },
+        { at: 0.2353, opacity: 1, translateY: 62.25, scaleX: 0.4627, scaleY: 0.4627 },
+        { at: 0.2647, opacity: 1, translateY: 55.25, scaleX: 0.4627, scaleY: 0.4627 },
+        { at: 0.2941, opacity: 1, translateY: 22.25, scaleX: 0.7712, scaleY: 0.7712 },
+        { at: 0.3235, opacity: 1, translateY: 22.25, scaleX: 0.7712, scaleY: 0.7712 },
+        { at: 0.3529, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000 },
+        { at: 1.0000, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000 },
+      ],
+    },
+  });
+  registerRecipe({
+    id: 'kinetic-bowl-deep-word4-v2',
+    entrance: {
+      duration: 1, easing: 'linear',
+      engine: 'keyframes',
+      keyframes: [
+        { at: 0.0000, opacity: 1, translateY: 331.00, scaleX: 0.4603, scaleY: 0.4603 },
+        { at: 0.0294, opacity: 1, translateY: 331.00, scaleX: 0.4603, scaleY: 0.4603 },
+        { at: 0.0588, opacity: 1, translateY: 331.00, scaleX: 0.4603, scaleY: 0.4603 },
+        { at: 0.0882, opacity: 1, translateY: 331.00, scaleX: 0.4603, scaleY: 0.4603 },
+        { at: 0.1176, opacity: 1, translateY: 191.00, scaleX: 0.4603, scaleY: 0.4603 },
+        { at: 0.1471, opacity: 1, translateY: 138.00, scaleX: 0.4603, scaleY: 0.4603 },
+        { at: 0.1765, opacity: 1, translateY: 104.00, scaleX: 0.4603, scaleY: 0.4603 },
+        { at: 0.2059, opacity: 1, translateY: 82.00, scaleX: 0.4603, scaleY: 0.4603 },
+        { at: 0.2353, opacity: 1, translateY: 67.00, scaleX: 0.4603, scaleY: 0.4603 },
+        { at: 0.2647, opacity: 1, translateY: 58.00, scaleX: 0.4603, scaleY: 0.4603 },
+        { at: 0.2941, opacity: 1, translateY: 53.00, scaleX: 0.4603, scaleY: 0.4603 },
+        { at: 0.3235, opacity: 1, translateY: 51.00, scaleX: 0.4603, scaleY: 0.4603 },
+        { at: 0.3529, opacity: 1, translateY: 29.25, scaleX: 0.6905, scaleY: 0.6905 },
+        { at: 0.3824, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000 },
+        { at: 1.0000, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000 },
+      ],
+    },
+  });
+  registerRecipe({
+    id: 'kinetic-bowl-deep-final-v2',
+    entrance: {
+      duration: 1, easing: 'linear',
+      engine: 'keyframes',
+      keyframes: [
+        { at: 0.0000, opacity: 1, translateY: 155.25, scaleX: 0.3431, scaleY: 0.3431, letterSpacing: 1.5637 },
+        { at: 0.0556, opacity: 1, translateY: 155.25, scaleX: 0.3431, scaleY: 0.3431, letterSpacing: 1.5637 },
+        { at: 0.1111, opacity: 1, translateY: 30.00, scaleX: 0.8731, scaleY: 0.8731, letterSpacing: 1.5637 },
+        { at: 0.1667, opacity: 1, translateY: 30.00, scaleX: 0.8731, scaleY: 0.8731, letterSpacing: 1.5637 },
+        { at: 0.2222, opacity: 1, translateY: 7.00, scaleX: 0.9694, scaleY: 0.9694, letterSpacing: 1.5637 },
+        { at: 0.2778, opacity: 1, translateY: 7.00, scaleX: 0.9694, scaleY: 0.9694, letterSpacing: 1.5637 },
+        { at: 0.3333, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000, letterSpacing: 1.5637 },
+        { at: 0.3889, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000, letterSpacing: 1.3612 },
+        { at: 0.4444, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000, letterSpacing: 0.9696 },
+        { at: 0.5000, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000, letterSpacing: 0.7362 },
+        { at: 0.5556, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000, letterSpacing: 0.6000 },
+        { at: 0.6111, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000, letterSpacing: 0.5096 },
+        { at: 0.6667, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000, letterSpacing: 0.4471 },
+        { at: 0.7222, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000, letterSpacing: 0.4029 },
+        { at: 0.7778, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000, letterSpacing: 0.3750 },
+        { at: 0.8333, opacity: 1, translateY: 0.00, scaleX: 1.0000, scaleY: 1.0000, letterSpacing: 0.3554 },
+        { at: 0.8889, opacity: 1, translateY: 14.75, scaleX: 1.0999, scaleY: 1.0999, letterSpacing: 0.3821 },
+        { at: 0.9444, opacity: 1, translateY: 14.75, scaleX: 1.0999, scaleY: 1.0999, letterSpacing: 0.3762 },
+        { at: 1.0000, opacity: 1, translateY: 18.25, scaleX: 1.1234, scaleY: 1.1234, letterSpacing: 0.3846 },
       ],
     },
   });
@@ -41437,7 +41578,9 @@ window.WM_ENGINE_V2_ACTIVE_IDS = new Set([
   // checks, 0 divergências, incluindo o caso de 4 keyframes do Forte.
   'typewriter-blur', 'typewriter-blur-fast', 'typewriter-blur-strong',
   // Cena pronta "Kinetic Bowl Deep" (título de 2 linhas)
-  'kinetic-bowl-deep-primary', 'kinetic-bowl-deep-secondary',
+  'kinetic-bowl-deep-word1', 'kinetic-bowl-deep-word2',
+  'kinetic-bowl-deep-word3', 'kinetic-bowl-deep-word4',
+  'kinetic-bowl-deep-final',
 ]);
 window.WM_ENGINE_V2_ID_MAP = {
   'cinematic-reveal': 'cinematic-reveal-v2',
@@ -41590,8 +41733,11 @@ window.WM_ENGINE_V2_ID_MAP = {
   'typewriter-blur': 'typewriter-blur-v2',
   'typewriter-blur-fast': 'typewriter-blur-fast-v2',
   'typewriter-blur-strong': 'typewriter-blur-strong-v2',
-  'kinetic-bowl-deep-primary': 'kinetic-bowl-deep-primary-v2',
-  'kinetic-bowl-deep-secondary': 'kinetic-bowl-deep-secondary-v2',
+  'kinetic-bowl-deep-word1': 'kinetic-bowl-deep-word1-v2',
+  'kinetic-bowl-deep-word2': 'kinetic-bowl-deep-word2-v2',
+  'kinetic-bowl-deep-word3': 'kinetic-bowl-deep-word3-v2',
+  'kinetic-bowl-deep-word4': 'kinetic-bowl-deep-word4-v2',
+  'kinetic-bowl-deep-final': 'kinetic-bowl-deep-final-v2',
 };
 
 function wmSampleAnimState(anim, progress) {
