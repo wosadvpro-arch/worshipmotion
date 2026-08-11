@@ -17584,7 +17584,7 @@ const CanvasRenderer = {
     const stanzaDur = typeof slide._effectiveStanzaDurMs === 'number'
       ? slide._effectiveStanzaDurMs
       : (anim.stanzaDuration || 5.0) * 1000; // ms
-    const stagger = (anim.stagger || 0.06) * 1000; // ms
+    const stagger = (typeof anim.stagger === 'number' ? anim.stagger : 0.06) * 1000; // ms
     const target = anim.target || 'word';
 
     // Mapa de overrides por palavra (vindo do VideoExporter)
@@ -17877,7 +17877,7 @@ const CanvasRenderer = {
     const stanzaDur = typeof slide._effectiveStanzaDurMs === 'number'
       ? slide._effectiveStanzaDurMs
       : (anim.stanzaDuration || 5.0) * 1000;
-    const stagger = (anim.stagger || 0.06) * 1000;
+    const stagger = (typeof anim.stagger === 'number' ? anim.stagger : 0.06) * 1000;
     const target = anim.target || 'word';
 
     // Tempo em que a ENTRADA de todas as palavras termina.
@@ -21343,7 +21343,7 @@ class RenderEngineV2 {
     const line1HeightPx = engine.measureTextHeight(fontCss, line1Sample);
     const line1Keyframes = engine.buildRatioKeyframes(data.line1Points, line1HeightPx, effectiveFontSize);
     const line1DynId = registerDynamic('line1-group', line1Keyframes, 1);
-    const LINE1_DURATION_SEC = 2.56; // 2560ms, igual ao total medido (entrada + loop lento)
+    const LINE1_DURATION_SEC = 2.6; // 2600ms, corrigido no patch (entrada + loop lento)
     words1.forEach((w) => {
       this.setWordOverride(w.id, { entrance: line1DynId, delay: 0, durationScale: LINE1_DURATION_SEC });
     });
@@ -39297,37 +39297,61 @@ if (typeof window === 'undefined') { global.window = {}; }
    próprio fluxo de texto centralizado do navegador, sem código extra
    de layout.
    ============================================================ */
+
+/* ============================================================
+   DADOS — Efeito 2 "PUT OFF HOTTED" (Vertical Stretch / Word Pop)
+   ============================================================
+   Extraídos de WorshipMotion_EFEITO_2_JSON_COMPLETO_CLAUDE.json,
+   CORRIGIDOS conforme WorshipMotion_EFEITO_2_CORRECAO_V2_CLAUDE.json
+   (patch): tempos de entrada da linha 1 e do cronograma da linha 2
+   ajustados para os valores corrigidos — nenhum valor de escala/
+   posição mudou, só o instante exato de cada um.
+
+   LINHA 1 ("PUT OFF HOTTED" no vídeo): grupo único — MESMA receita
+   aplicada a TODAS as palavras da linha simultaneamente (delay=0 pra
+   todas, sem stagger). BUG REAL CORRIGIDO no export: a fórmula
+   `anim.stagger || 0.06` tratava stagger=0 (explícito) como "não
+   definido" e usava 60ms escondido — por isso a linha 1 aparecia
+   palavra por palavra no vídeo exportado mesmo com a cena pedindo
+   delay=0 pra todas. Trocado pra checar o tipo explicitamente.
+
+   LINHA 2 ("DO NOT PUT IS ON THE MAP." no vídeo): cada palavra é uma
+   role independente que aparece de baixo com estica vertical
+   exagerada. display:none antes da entrada faz o reflow acontecer
+   sozinho no preview (fluxo de texto centralizado nativo).
+   ============================================================ */
 window.WM_PUT_OFF_HOTTED_RATIO_DATA = {
   hRefLine1: 376,
   hRefLine2: 288,
   line1Points: [
-    { at: 0.0, opacity: 0, translateYRatio: 0.6117021276595744, translateXRatio: 0.0026595744680851063, scaleX: 0.3619, scaleY: 0.383 },
-    { at: 0.0, opacity: 1, translateYRatio: 0.6117021276595744, translateXRatio: 0.0026595744680851063, scaleX: 0.3619, scaleY: 0.383 },
-    { at: 0.09374, opacity: 1, translateYRatio: 0.6117021276595744, translateXRatio: 0.0026595744680851063, scaleX: 0.3619, scaleY: 0.383 },
-    { at: 0.09375, opacity: 1, translateYRatio: 0.6356382978723404, translateXRatio: -0.0425531914893617, scaleX: 0.855, scaleY: 1.3138 },
-    { at: 0.14062, opacity: 1, translateYRatio: 0.6356382978723404, translateXRatio: -0.0425531914893617, scaleX: 0.855, scaleY: 1.3138 },
-    { at: 0.14062, opacity: 1, translateYRatio: 0.4507978723404255, translateXRatio: -0.05053191489361702, scaleX: 0.9575, scaleY: 1.5399 },
-    { at: 0.20312, opacity: 1, translateYRatio: 0.4507978723404255, translateXRatio: -0.05053191489361702, scaleX: 0.9575, scaleY: 1.5399 },
-    { at: 0.20312, opacity: 1, translateYRatio: -0.20212765957446807, translateXRatio: 0.041223404255319146, scaleX: 1.0694, scaleY: 2.3191 },
-    { at: 0.24999, opacity: 1, translateYRatio: -0.20212765957446807, translateXRatio: 0.041223404255319146, scaleX: 1.0694, scaleY: 2.3191 },
-    { at: 0.25, opacity: 1, translateYRatio: -0.13164893617021275, translateXRatio: 0.026595744680851064, scaleX: 1.0237, scaleY: 1.7899 },
-    { at: 0.29687, opacity: 1, translateYRatio: -0.13164893617021275, translateXRatio: 0.026595744680851064, scaleX: 1.0237, scaleY: 1.7899 },
-    { at: 0.29688, opacity: 1, translateYRatio: 0.0, translateXRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-    { at: 0.45312, opacity: 1, translateYRatio: -0.00399, translateXRatio: -0.00133, scaleX: 1.008, scaleY: 1.008 },
-    { at: 0.60938, opacity: 1, translateYRatio: -0.00931, translateXRatio: -0.00133, scaleX: 1.0157, scaleY: 1.0133 },
-    { at: 0.76562, opacity: 1, translateYRatio: -0.01596, translateXRatio: 0.0, scaleX: 1.0237, scaleY: 1.0213 },
-    { at: 0.92188, opacity: 1, translateYRatio: -0.02128, translateXRatio: 0.0, scaleX: 1.0321, scaleY: 1.0319 },
+    { at: 0.0, opacity: 0, translateYRatio: 0.6117, translateXRatio: 0.0027, scaleX: 0.3619, scaleY: 0.383 },
+    { at: 0.01538, opacity: 1, translateYRatio: 0.6117, translateXRatio: 0.0027, scaleX: 0.3619, scaleY: 0.383 },
+    { at: 0.12307, opacity: 1, translateYRatio: 0.6117, translateXRatio: 0.0027, scaleX: 0.3619, scaleY: 0.383 },
+    { at: 0.12308, opacity: 1, translateYRatio: 0.6356, translateXRatio: -0.0426, scaleX: 0.855, scaleY: 1.3138 },
+    { at: 0.15384, opacity: 1, translateYRatio: 0.6356, translateXRatio: -0.0426, scaleX: 0.855, scaleY: 1.3138 },
+    { at: 0.15385, opacity: 1, translateYRatio: 0.4508, translateXRatio: -0.0505, scaleX: 0.9575, scaleY: 1.5399 },
+    { at: 0.21538, opacity: 1, translateYRatio: 0.4508, translateXRatio: -0.0505, scaleX: 0.9575, scaleY: 1.5399 },
+    { at: 0.21538, opacity: 1, translateYRatio: -0.2021, translateXRatio: 0.0412, scaleX: 1.0694, scaleY: 2.3191 },
+    { at: 0.26153, opacity: 1, translateYRatio: -0.2021, translateXRatio: 0.0412, scaleX: 1.0694, scaleY: 2.3191 },
+    { at: 0.26154, opacity: 1, translateYRatio: -0.1316, translateXRatio: 0.0266, scaleX: 1.0237, scaleY: 1.7899 },
+    { at: 0.30768, opacity: 1, translateYRatio: -0.1316, translateXRatio: 0.0266, scaleX: 1.0237, scaleY: 1.7899 },
+    { at: 0.30769, opacity: 1, translateYRatio: 0.0, translateXRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
+    { at: 0.46154, opacity: 1, translateYRatio: -0.00399, translateXRatio: -0.00133, scaleX: 1.008, scaleY: 1.008 },
+    { at: 0.61538, opacity: 1, translateYRatio: -0.00931, translateXRatio: -0.00133, scaleX: 1.0157, scaleY: 1.0133 },
+    { at: 0.76923, opacity: 1, translateYRatio: -0.01596, translateXRatio: 0.0, scaleX: 1.0237, scaleY: 1.0213 },
+    { at: 0.92308, opacity: 1, translateYRatio: -0.02128, translateXRatio: 0.0, scaleX: 1.0321, scaleY: 1.0319 },
     { at: 1.0, opacity: 1, translateYRatio: -0.02261, translateXRatio: 0.0, scaleX: 1.0363, scaleY: 1.0346 },
   ],
-  line2TotalDurationMs: 2560,
+  line1TotalDurationMs: 2600,
+  line2TotalDurationMs: 2600,
   line2Roles: [
-    { entryMs: 920, durationMs: 80.0, translateYRatio: 0.2326, scaleYInitial: 1.0764 },
-    { entryMs: 1000, durationMs: 40.0, translateYRatio: 1.0243, scaleYInitial: 1.4306 },
-    { entryMs: 1320, durationMs: 40.0, translateYRatio: 2.2656, scaleYInitial: 1.1215 },
+    { entryMs: 960, durationMs: 80.0, translateYRatio: 0.2326, scaleYInitial: 1.0764 },
+    { entryMs: 1040, durationMs: 40.0, translateYRatio: 1.0243, scaleYInitial: 1.4306 },
+    { entryMs: 1360, durationMs: 40.0, translateYRatio: 2.2656, scaleYInitial: 1.1215 },
     { entryMs: 1520, durationMs: 40.0, translateYRatio: 0.75, scaleYInitial: 1.3194 },
-    { entryMs: 2000, durationMs: 40.0, translateYRatio: -0.0208, scaleYInitial: 0.9792 },
-    { entryMs: 2200, durationMs: 40.0, translateYRatio: -0.0208, scaleYInitial: 0.9514 },
-    { entryMs: 2400, durationMs: 40.0, translateYRatio: 1.8212, scaleYInitial: 1.7465 },
+    { entryMs: 1840, durationMs: 40.0, translateYRatio: -0.0208, scaleYInitial: 0.9792 },
+    { entryMs: 2040, durationMs: 40.0, translateYRatio: -0.0208, scaleYInitial: 0.9514 },
+    { entryMs: 2360, durationMs: 40.0, translateYRatio: 1.8212, scaleYInitial: 1.7465 },
   ],
 };
 
