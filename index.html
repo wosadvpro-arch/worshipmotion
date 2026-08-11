@@ -60,7 +60,7 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,300;1,400;1,600;1,800;1,900&family=Inter:wght@400;500;600;700&family=Sora:wght@400;500;600;700;800&family=Manrope:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,300;1,400;1,600;1,800;1,900&family=Inter:wght@400;500;600;700&family=Sora:wght@400;500;600;700;800&family=Manrope:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&family=Anton&display=swap">
 
   <style>
 /* === tokens.css === */
@@ -10816,29 +10816,34 @@ const ANIMATIONS_V2 = [
     ],
   },// ============================================================
   // CENAS PRONTAS — Kinetic Bowl Deep (título de 2 linhas, inspirado em
-  // referência do usuário). Entradas "de fallback" no formato antigo —
-  // a versão precisa (3 keyframes, scaleX/scaleY independentes) vive no
-  // motor novo, ligada via a ponte de sempre (WM_ENGINE_V2_ACTIVE_IDS).
-  // Não pensadas pra aparecer soltas no menu normal — usadas pela função
-  // applyKineticBowlDeepScene() que aplica as duas de uma vez numa
-  // estrofe de exatamente 2 linhas.
+  // referência do usuário). CORREÇÃO IMPORTANTE: o preview lê os
+  // keyframes DAQUI diretamente (via _generateKeyframeCSS), não do
+  // motor novo — a ponte (WM_ENGINE_V2_ACTIVE_IDS) só é usada no
+  // EXPORT (canvas). Por isso os dados aqui precisam ser EXATAMENTE
+  // os mesmos números calibrados (3 keyframes, scaleX/scaleY
+  // independentes, durações certas) — não um fallback simplificado.
+  // Não pensadas pra aparecer soltas no menu normal — usadas pela
+  // função applyKineticBowlDeepScene() que aplica as duas de uma vez
+  // numa estrofe de exatamente 2 linhas.
   {
     id: 'kinetic-bowl-deep-primary',
     name: 'Kinetic Bowl — Linha Superior',
     category: 'entrance', style: 'modern', hidden: true,
-    duration: 0.65, easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
+    duration: 0.25, easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
     keyframes: [
-      { at: 0, opacity: 1, translateY: 90, scale: 0.7, letterSpacing: 25 },
-      { at: 1, opacity: 1, translateY: 0,  scale: 1,   letterSpacing: 0 },
+      { at: 0,    opacity: 1, translateY: 90, scaleX: 0.88, scaleY: 0.55, letterSpacing: 25 },
+      { at: 0.62, opacity: 1, translateY: 5,  scaleX: 1.015, scaleY: 1.04, letterSpacing: 2 },
+      { at: 1,    opacity: 1, translateY: 0,  scaleX: 1,     scaleY: 1,    letterSpacing: 0 },
     ],
   },{
     id: 'kinetic-bowl-deep-secondary',
     name: 'Kinetic Bowl — Linha Inferior',
     category: 'entrance', style: 'modern', hidden: true,
-    duration: 0.34, easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
+    duration: 0.10, easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
     keyframes: [
-      { at: 0, opacity: 1, translateY: 35, scale: 0.2, letterSpacing: 42 },
-      { at: 1, opacity: 1, translateY: 0,  scale: 1,   letterSpacing: 0 },
+      { at: 0,   opacity: 1, translateY: 35, scaleX: 0.10, scaleY: 0.35, letterSpacing: 42 },
+      { at: 0.7, opacity: 1, translateY: 3,  scaleX: 0.92, scaleY: 1.04, letterSpacing: 3 },
+      { at: 1,   opacity: 1, translateY: 0,  scaleX: 1,    scaleY: 1,    letterSpacing: 0 },
     ],
   },
 ];
@@ -21170,25 +21175,33 @@ class RenderEngineV2 {
     }
 
     const WORD_STAGGER_SEC = 0.09;     // 90ms — bate com o cascateamento visto nos frames reais
-    const LINE2_BASE_DELAY_SEC = 0.64; // 640ms — CONFIRMADO com frames precisos de 25fps: no
-                                        // frame de 0.60s "DEEP" ainda não existe, no de 0.64s já
-                                        // aparece (fina/pequena). O JSON descritivo original
-                                        // estava certo aqui — a estimativa anterior de 500ms
-                                        // veio de uma extração mais grosseira (10fps) sem
-                                        // resolução suficiente pra pegar esse instante certo.
+    const LINE2_BASE_DELAY_SEC = 0.64; // 640ms — confirmado com frames precisos de 25fps
 
-    words1.forEach(w => {
-      this.setWordOverride(w.id, { entrance: 'kinetic-bowl-deep-primary', delay: 0 });
+    // IMPORTANTE (bug real encontrado testando no app de verdade): o motor
+    // ZERA o stagger nativo por índice (word.globalIdx * stagger) sempre
+    // que alguma palavra tem override de entrada — é um comportamento de
+    // propósito do app pra não deixar palavras "sumidas" esperando delay
+    // em outro caso de uso. Isso quer dizer que NÃO dá pra confiar no
+    // stagger automático como eu tinha assumido antes — preciso colocar o
+    // atraso COMPLETO e explícito no `delay` de cada palavra, calculado
+    // aqui, sem esperar nenhuma soma automática do motor.
+    //
+    // SÓ MOVIMENTO: por decisão do usuário, essa "cena" aplica apenas a
+    // ANIMAÇÃO (entrance + delay) — fonte e background continuam livres
+    // pro usuário escolher/trocar depois, igual a qualquer outra animação
+    // da biblioteca. Nada de style aqui de propósito.
+    words1.forEach((w, i) => {
+      this.setWordOverride(w.id, {
+        entrance: 'kinetic-bowl-deep-primary',
+        delay: i * WORD_STAGGER_SEC,
+      });
     });
 
-    // A fórmula de delay nativa já soma (globalIdx * stagger). Como o
-    // globalIdx da linha 2 continua contando de onde a linha 1 parou, o
-    // que falta pra cada palavra da linha 2 chegar em "500ms + índice
-    // local * 90ms" é uma constante igual pra todas elas (o termo
-    // "índice local * 90ms" já vem de graça do globalIdx contínuo).
-    const extraDelaySec = Math.max(0, LINE2_BASE_DELAY_SEC - (words1.length * WORD_STAGGER_SEC));
-    words2.forEach(w => {
-      this.setWordOverride(w.id, { entrance: 'kinetic-bowl-deep-secondary', delay: extraDelaySec });
+    words2.forEach((w, i) => {
+      this.setWordOverride(w.id, {
+        entrance: 'kinetic-bowl-deep-secondary',
+        delay: LINE2_BASE_DELAY_SEC + (i * WORD_STAGGER_SEC),
+      });
     });
 
     // Só nessa estrofe (não mexe na config global): granularidade palavra
@@ -21441,7 +21454,7 @@ class RenderEngineV2 {
       }
     }
 
-    stanzaEl.style.fontFamily = `'${s.fontFamily}', sans-serif`;
+    stanzaEl.style.fontFamily = this._fontFamilyCSS(s.fontFamily);
 
     // === ESCALA DE FONTE IDÊNTICA AO EXPORT ===
     // refHeight: altura FÍSICA do container .editor-canvas.
@@ -21568,6 +21581,21 @@ class RenderEngineV2 {
     return `rgba(${r}, ${g}, ${b}, ${alpha})`;
   }
 
+  /**
+   * Monta a cadeia de font-family em CSS válido. Antes, o app só aceitava
+   * UM nome de fonte (sempre virava `'nome', sans-serif`) — usado pra
+   * cenas como Kinetic Bowl Deep, que pede uma fonte paga (ex: "Heading
+   * Now") com um substituto gratuito visualmente parecido (ex: "Anton")
+   * caso o usuário não tenha a fonte paga instalada/enviada. Aceita tanto
+   * um nome só ("Montserrat") quanto uma lista separada por vírgula
+   * ("Heading Now, Anton") — cada nome vira um item entre aspas na cadeia.
+   */
+  _fontFamilyCSS(nameOrList) {
+    const nomes = String(nameOrList || '').split(',').map(n => n.trim()).filter(Boolean);
+    if (!nomes.length) return 'sans-serif';
+    return nomes.map(n => `'${n}'`).join(', ') + ', sans-serif';
+  }
+
   /* ==================== RENDER DOM ==================== */
 
   renderStanza(index = this.currentStanzaIndex) {
@@ -21642,7 +21670,7 @@ class RenderEngineV2 {
         }
         if (wo.style) {
           const ws = wo.style;
-          if (ws.fontFamily) wordEl.style.fontFamily = `"${ws.fontFamily}", sans-serif`;
+          if (ws.fontFamily) wordEl.style.fontFamily = this._fontFamilyCSS(ws.fontFamily);
           if (ws.fontSizeScale && ws.fontSizeScale !== 1) {
             wordEl.style.fontSize = `${ws.fontSizeScale}em`;
           }
