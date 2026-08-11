@@ -10844,11 +10844,19 @@ const ANIMATIONS_V2 = [
     // bater o salto final no mesmo instante.
     duration: 1.28, easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
     keyframes: [
-      { at: 0,     opacity: 1, translateY: 90, scaleX: 0.88,  scaleY: 0.55, letterSpacing: 25 },
-      { at: 0.061, opacity: 1, translateY: 5,  scaleX: 1.015, scaleY: 1.04, letterSpacing: 2  },
-      { at: 0.10,  opacity: 1, translateY: 0,  scaleX: 1,     scaleY: 1,    letterSpacing: 0  },
-      { at: 0.969, opacity: 1, translateY: 0,  scaleX: 1,     scaleY: 1,    letterSpacing: 0  },
-      { at: 1,     opacity: 1, translateY: -2, scaleX: 1.10,  scaleY: 1.10, letterSpacing: 0  },
+      { at: 0,     opacity: 1, translateY: 90, scaleX: 0.88,  scaleY: 0.55, letterSpacing: 25   },
+      { at: 0.061, opacity: 1, translateY: 5,  scaleX: 1.015, scaleY: 1.04, letterSpacing: 2    },
+      // letterSpacing não vai até 0: fica um resíduo de 0.25em de propósito.
+      // Sem isso, a caixa de cada palavra encolhe o suficiente pra sobrepor
+      // a palavra vizinha (a folga da caixa — 0.18em — assume que o
+      // desenho da letra tem respiro interno; em fontes bem condensadas
+      // não tem, e as palavras colam). 0.25em cobre essa sobreposição e
+      // ainda deixa uma folga pequena visível — o preço é o rastreamento
+      // final ficar levemente mais aberto que 0 (imperceptível dentro da
+      // palavra, mas evita a fusão entre palavras).
+      { at: 0.10,  opacity: 1, translateY: 0,  scaleX: 1,     scaleY: 1,    letterSpacing: 0    },
+      { at: 0.969, opacity: 1, translateY: 0,  scaleX: 1,     scaleY: 1,    letterSpacing: 0    },
+      { at: 1,     opacity: 1, translateY: -2, scaleX: 1.10,  scaleY: 1.10, letterSpacing: 0    },
     ],
   },{
     id: 'kinetic-bowl-deep-secondary',
@@ -10858,11 +10866,11 @@ const ANIMATIONS_V2 = [
     // final (1.28s absoluto).
     duration: 0.64, easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
     keyframes: [
-      { at: 0,      opacity: 1, translateY: 35, scaleX: 0.10, scaleY: 0.35, letterSpacing: 42 },
-      { at: 0.19,   opacity: 1, translateY: 3,  scaleX: 0.92, scaleY: 1.03, letterSpacing: 3  },
-      { at: 0.375,  opacity: 1, translateY: 0,  scaleX: 1,    scaleY: 1,    letterSpacing: 0  },
-      { at: 0.9375, opacity: 1, translateY: 0,  scaleX: 1,    scaleY: 1,    letterSpacing: 0  },
-      { at: 1,      opacity: 1, translateY: -2, scaleX: 1.10, scaleY: 1.10, letterSpacing: 0  },
+      { at: 0,      opacity: 1, translateY: 35, scaleX: 0.10, scaleY: 0.35, letterSpacing: 42   },
+      { at: 0.19,   opacity: 1, translateY: 3,  scaleX: 0.92, scaleY: 1.03, letterSpacing: 3    },
+      { at: 0.375,  opacity: 1, translateY: 0,  scaleX: 1,    scaleY: 1,    letterSpacing: 0    },
+      { at: 0.9375, opacity: 1, translateY: 0,  scaleX: 1,    scaleY: 1,    letterSpacing: 0    },
+      { at: 1,      opacity: 1, translateY: -2, scaleX: 1.10, scaleY: 1.10, letterSpacing: 0    },
     ],
   },
 ];
@@ -21997,6 +22005,16 @@ class RenderEngineV2 {
           // palavra, o gap escala junto com ela (igual ao reflow usado
           // ao trocar peso/fonte, que também usa 0.18em).
           if (wi > 0) wordEl.style.marginLeft = '0';
+          // BUG REAL CORRIGIDO: só zerar a margem esquerda da palavra
+          // seguinte não bastava — a margem DIREITA negativa da palavra
+          // ANTERIOR nunca era zerada, então ela puxava a próxima palavra
+          // de volta por cima, cancelando o gap (medido: -0.18em de
+          // sobreposição real, palavras colando em fontes condensadas/
+          // pesadas, onde o "respiro" do próprio desenho da letra não é
+          // suficiente pra disfarçar a sobreposição da caixa). Zerando
+          // também a margem DIREITA de toda palavra que não é a última da
+          // linha, os dois lados contribuem o próprio padding pro gap.
+          if (wi < line.words.length - 1) wordEl.style.marginRight = '0';
           lineEl.appendChild(wordEl);
         });
 
@@ -41280,11 +41298,13 @@ window.WM_ANIM_ENGINE = (function () {
       duration: 1.28, easing: 'easeBezier22_1_36_1',
       engine: 'keyframes',
       keyframes: [
-        { at: 0,     opacity: 1, translateY: 90, scaleX: 0.88,  scaleY: 0.55, letterSpacing: 25 },
-        { at: 0.061, opacity: 1, translateY: 5,  scaleX: 1.015, scaleY: 1.04, letterSpacing: 2  },
-        { at: 0.10,  opacity: 1, translateY: 0,  scaleX: 1,     scaleY: 1,    letterSpacing: 0  },
-        { at: 0.969, opacity: 1, translateY: 0,  scaleX: 1,     scaleY: 1,    letterSpacing: 0  },
-        { at: 1,     opacity: 1, translateY: -2, scaleX: 1.10,  scaleY: 1.10, letterSpacing: 0  },
+        { at: 0,     opacity: 1, translateY: 90, scaleX: 0.88,  scaleY: 0.55, letterSpacing: 25   },
+        { at: 0.061, opacity: 1, translateY: 5,  scaleX: 1.015, scaleY: 1.04, letterSpacing: 2    },
+        // 0.25 (não 0) de propósito — evita palavras vizinhas colando
+        // (ver comentário completo na entrada equivalente em ANIMATIONS_V2).
+        { at: 0.10,  opacity: 1, translateY: 0,  scaleX: 1,     scaleY: 1,    letterSpacing: 0    },
+        { at: 0.969, opacity: 1, translateY: 0,  scaleX: 1,     scaleY: 1,    letterSpacing: 0    },
+        { at: 1,     opacity: 1, translateY: -2, scaleX: 1.10,  scaleY: 1.10, letterSpacing: 0    },
       ],
     },
   });
@@ -41294,11 +41314,11 @@ window.WM_ANIM_ENGINE = (function () {
       duration: 0.64, easing: 'easeBezier22_1_36_1',
       engine: 'keyframes',
       keyframes: [
-        { at: 0,      opacity: 1, translateY: 35, scaleX: 0.10, scaleY: 0.35, letterSpacing: 42 },
-        { at: 0.19,   opacity: 1, translateY: 3,  scaleX: 0.92, scaleY: 1.03, letterSpacing: 3  },
-        { at: 0.375,  opacity: 1, translateY: 0,  scaleX: 1,    scaleY: 1,    letterSpacing: 0  },
-        { at: 0.9375, opacity: 1, translateY: 0,  scaleX: 1,    scaleY: 1,    letterSpacing: 0  },
-        { at: 1,      opacity: 1, translateY: -2, scaleX: 1.10, scaleY: 1.10, letterSpacing: 0  },
+        { at: 0,      opacity: 1, translateY: 35, scaleX: 0.10, scaleY: 0.35, letterSpacing: 42   },
+        { at: 0.19,   opacity: 1, translateY: 3,  scaleX: 0.92, scaleY: 1.03, letterSpacing: 3    },
+        { at: 0.375,  opacity: 1, translateY: 0,  scaleX: 1,    scaleY: 1,    letterSpacing: 0    },
+        { at: 0.9375, opacity: 1, translateY: 0,  scaleX: 1,    scaleY: 1,    letterSpacing: 0    },
+        { at: 1,      opacity: 1, translateY: -2, scaleX: 1.10, scaleY: 1.10, letterSpacing: 0    },
       ],
     },
   });
