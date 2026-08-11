@@ -21169,8 +21169,12 @@ class RenderEngineV2 {
       return { ok: false, error: 'As duas linhas precisam ter pelo menos uma palavra cada.' };
     }
 
-    const WORD_STAGGER_SEC = 0.09;   // 90ms — igual à referência
-    const LINE2_BASE_DELAY_SEC = 0.64; // 640ms — igual à referência
+    const WORD_STAGGER_SEC = 0.09;     // 90ms — bate com o cascateamento visto nos frames reais
+    const LINE2_BASE_DELAY_SEC = 0.50; // 500ms — recalibrado a partir dos 14 frames reais do
+                                        // Lottie de referência (no frame de 500ms "DEEP" ainda
+                                        // não aparece; no de 600ms já está quase no tamanho
+                                        // final — o JSON descritivo original dizia 640ms, mas
+                                        // os frames mostram que começa um pouco antes)
 
     words1.forEach(w => {
       this.setWordOverride(w.id, { entrance: 'kinetic-bowl-deep-primary', delay: 0 });
@@ -21178,7 +21182,7 @@ class RenderEngineV2 {
 
     // A fórmula de delay nativa já soma (globalIdx * stagger). Como o
     // globalIdx da linha 2 continua contando de onde a linha 1 parou, o
-    // que falta pra cada palavra da linha 2 chegar em "640ms + índice
+    // que falta pra cada palavra da linha 2 chegar em "500ms + índice
     // local * 90ms" é uma constante igual pra todas elas (o termo
     // "índice local * 90ms" já vem de graça do globalIdx contínuo).
     const extraDelaySec = Math.max(0, LINE2_BASE_DELAY_SEC - (words1.length * WORD_STAGGER_SEC));
@@ -41203,14 +41207,17 @@ window.WM_ANIM_ENGINE = (function () {
   // propriedades (translateY/letterSpacing), que na referência não
   // saltam, só desaceleram.
   //
-  // Valores de px são uma calibração aproximada dos valores normalizados
-  // (0..1, fração da altura de tela) do JSON de referência — o próprio
-  // JSON já avisa que são reconstrução visual, não medição exata. Fácil
-  // de ajustar depois (só mudar os números abaixo).
+  // CALIBRADO a partir dos 14 frames reais extraídos do Lottie de
+  // referência (efeito_1.json, 10fps/1.4s) — não só do JSON descritivo.
+  // Achado real: cada palavra da linha 1 assenta sozinha em ~200-250ms
+  // (não 650ms — esse era o tempo do cascateamento inteiro, não de uma
+  // palavra), e a linha 2 ("DEEP") aparece por volta de 500ms (não
+  // 640ms) e assenta em ~150ms (não 340ms) — um "estouro" bem mais
+  // rápido do que o JSON descritivo sugeria.
   registerRecipe({ // = 'kinetic-bowl-deep-primary'
     id: 'kinetic-bowl-deep-primary-v2',
     entrance: {
-      engine: 'keyframes', duration: 0.65, easing: 'easeBezier22_1_36_1',
+      engine: 'keyframes', duration: 0.25, easing: 'easeBezier22_1_36_1',
       keyframes: [
         { at: 0,    opacity: 1, translateY: 90, scaleX: 0.88, scaleY: 0.55, letterSpacing: 25 },
         { at: 0.62, opacity: 1, translateY: 5,  scaleX: 1.015, scaleY: 1.04, letterSpacing: 2 },
@@ -41221,7 +41228,7 @@ window.WM_ANIM_ENGINE = (function () {
   registerRecipe({ // = 'kinetic-bowl-deep-secondary'
     id: 'kinetic-bowl-deep-secondary-v2',
     entrance: {
-      engine: 'keyframes', duration: 0.34, easing: 'easeBezier22_1_36_1',
+      engine: 'keyframes', duration: 0.15, easing: 'easeBezier22_1_36_1',
       keyframes: [
         { at: 0,   opacity: 1, translateY: 35, scaleX: 0.10, scaleY: 0.35, letterSpacing: 42 },
         { at: 0.7, opacity: 1, translateY: 3,  scaleX: 0.92, scaleY: 1.04, letterSpacing: 3 },
