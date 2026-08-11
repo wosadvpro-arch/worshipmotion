@@ -10816,34 +10816,53 @@ const ANIMATIONS_V2 = [
     ],
   },// ============================================================
   // CENAS PRONTAS — Kinetic Bowl Deep (título de 2 linhas, inspirado em
-  // referência do usuário). CORREÇÃO IMPORTANTE: o preview lê os
-  // keyframes DAQUI diretamente (via _generateKeyframeCSS), não do
-  // motor novo — a ponte (WM_ENGINE_V2_ACTIVE_IDS) só é usada no
-  // EXPORT (canvas). Por isso os dados aqui precisam ser EXATAMENTE
-  // os mesmos números calibrados (3 keyframes, scaleX/scaleY
-  // independentes, durações certas) — não um fallback simplificado.
+  // referência do usuário). O preview lê os keyframes DAQUI diretamente
+  // (via _generateKeyframeCSS) — não do motor novo.
+  //
+  // Números MEDIDOS pixel a pixel nos 35 frames reais da referência
+  // (25fps, análise de componentes conectados, não estimativa visual):
+  //  - Linha 1 assenta de verdade aos 400ms (altura do bloco de texto
+  //    vermelho fica constante em 64px de 0.40s a 1.24s).
+  //  - Aos ~1.28s as DUAS linhas dão um pequeno salto final de escala
+  //    (vermelho: 64px→71-72px | branco "DEEP": ~142px→156-158px) — é
+  //    o "finalAdjustment" que o JSON original mencionava e que a
+  //    primeira versão desta cena tinha pulado.
+  //  - "DEEP" (linha 2) começa aos 640ms e assenta aos 880ms (240ms de
+  //    duração própria, não 100ms como antes).
   // Não pensadas pra aparecer soltas no menu normal — usadas pela
-  // função applyKineticBowlDeepScene() que aplica as duas de uma vez
-  // numa estrofe de exatamente 2 linhas.
+  // função applyKineticBowlDeepScene(), que também aplica um
+  // durationScale por palavra pra todas baterem o salto final no MESMO
+  // instante absoluto (~1.28s), mesmo cada uma começando num atraso
+  // diferente.
   {
     id: 'kinetic-bowl-deep-primary',
     name: 'Kinetic Bowl — Linha Superior',
     category: 'entrance', style: 'modern', hidden: true,
-    duration: 0.25, easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
+    // duration de referência = 1.28s (a da 1ª palavra, delay=0). As
+    // outras palavras usam essa MESMA receita com durationScale < 1
+    // (aplicado pela cena) pra encolher a linha do tempo e ainda assim
+    // bater o salto final no mesmo instante.
+    duration: 1.28, easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
     keyframes: [
-      { at: 0,    opacity: 1, translateY: 90, scaleX: 0.88, scaleY: 0.55, letterSpacing: 25 },
-      { at: 0.62, opacity: 1, translateY: 5,  scaleX: 1.015, scaleY: 1.04, letterSpacing: 2 },
-      { at: 1,    opacity: 1, translateY: 0,  scaleX: 1,     scaleY: 1,    letterSpacing: 0 },
+      { at: 0,     opacity: 1, translateY: 90, scaleX: 0.88,  scaleY: 0.55, letterSpacing: 25 },
+      { at: 0.061, opacity: 1, translateY: 5,  scaleX: 1.015, scaleY: 1.04, letterSpacing: 2  },
+      { at: 0.10,  opacity: 1, translateY: 0,  scaleX: 1,     scaleY: 1,    letterSpacing: 0  },
+      { at: 0.969, opacity: 1, translateY: 0,  scaleX: 1,     scaleY: 1,    letterSpacing: 0  },
+      { at: 1,     opacity: 1, translateY: -2, scaleX: 1.10,  scaleY: 1.10, letterSpacing: 0  },
     ],
   },{
     id: 'kinetic-bowl-deep-secondary',
     name: 'Kinetic Bowl — Linha Inferior',
     category: 'entrance', style: 'modern', hidden: true,
-    duration: 0.10, easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
+    // 0.64s = do instante em que "DEEP" começa (640ms) até o salto
+    // final (1.28s absoluto).
+    duration: 0.64, easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
     keyframes: [
-      { at: 0,   opacity: 1, translateY: 35, scaleX: 0.10, scaleY: 0.35, letterSpacing: 42 },
-      { at: 0.7, opacity: 1, translateY: 3,  scaleX: 0.92, scaleY: 1.04, letterSpacing: 3 },
-      { at: 1,   opacity: 1, translateY: 0,  scaleX: 1,    scaleY: 1,    letterSpacing: 0 },
+      { at: 0,      opacity: 1, translateY: 35, scaleX: 0.10, scaleY: 0.35, letterSpacing: 42 },
+      { at: 0.19,   opacity: 1, translateY: 3,  scaleX: 0.92, scaleY: 1.03, letterSpacing: 3  },
+      { at: 0.375,  opacity: 1, translateY: 0,  scaleX: 1,    scaleY: 1,    letterSpacing: 0  },
+      { at: 0.9375, opacity: 1, translateY: 0,  scaleX: 1,    scaleY: 1,    letterSpacing: 0  },
+      { at: 1,      opacity: 1, translateY: -2, scaleX: 1.10, scaleY: 1.10, letterSpacing: 0  },
     ],
   },
 ];
@@ -21176,6 +21195,12 @@ class RenderEngineV2 {
 
     const WORD_STAGGER_SEC = 0.09;     // 90ms — bate com o cascateamento visto nos frames reais
     const LINE2_BASE_DELAY_SEC = 0.64; // 640ms — confirmado com frames precisos de 25fps
+    // Instante absoluto (medido nos frames) em que TODAS as palavras dão
+    // o salto final de escala junto — é o fim da duração-base das
+    // receitas (1.28s pra linha 1, que tem delay=0 na primeira palavra).
+    const FINAL_BUMP_ABS_SEC = 1.28;
+    const PRIMARY_BASE_DURATION_SEC = 1.28;  // duração da receita c/ delay=0
+    const SECONDARY_BASE_DURATION_SEC = 0.64;
 
     // IMPORTANTE (bug real encontrado testando no app de verdade): o motor
     // ZERA o stagger nativo por índice (word.globalIdx * stagger) sempre
@@ -21186,21 +21211,34 @@ class RenderEngineV2 {
     // atraso COMPLETO e explícito no `delay` de cada palavra, calculado
     // aqui, sem esperar nenhuma soma automática do motor.
     //
+    // DURATIONSCALE: cada palavra começa num atraso diferente, mas todas
+    // precisam bater o "salto final" no MESMO instante absoluto (medido
+    // em ~1.28s). Como a receita tem duração fixa, encolhemos a
+    // linha do tempo de cada palavra (durationScale < 1) proporcional
+    // ao quanto ela começou depois da primeira — assim a MESMA receita
+    // serve pra todas, só "tocada" mais rápido pras que atrasaram mais.
+    //
     // SÓ MOVIMENTO: por decisão do usuário, essa "cena" aplica apenas a
-    // ANIMAÇÃO (entrance + delay) — fonte e background continuam livres
-    // pro usuário escolher/trocar depois, igual a qualquer outra animação
-    // da biblioteca. Nada de style aqui de propósito.
+    // ANIMAÇÃO (entrance + delay + durationScale) — fonte e background
+    // continuam livres pro usuário escolher/trocar depois, igual a
+    // qualquer outra animação da biblioteca. Nada de style aqui.
     words1.forEach((w, i) => {
+      const delay = i * WORD_STAGGER_SEC;
+      const desiredDuration = Math.max(0.05, FINAL_BUMP_ABS_SEC - delay);
       this.setWordOverride(w.id, {
         entrance: 'kinetic-bowl-deep-primary',
-        delay: i * WORD_STAGGER_SEC,
+        delay,
+        durationScale: desiredDuration / PRIMARY_BASE_DURATION_SEC,
       });
     });
 
     words2.forEach((w, i) => {
+      const delay = LINE2_BASE_DELAY_SEC + (i * WORD_STAGGER_SEC);
+      const desiredDuration = Math.max(0.05, FINAL_BUMP_ABS_SEC - delay);
       this.setWordOverride(w.id, {
         entrance: 'kinetic-bowl-deep-secondary',
-        delay: LINE2_BASE_DELAY_SEC + (i * WORD_STAGGER_SEC),
+        delay,
+        durationScale: desiredDuration / SECONDARY_BASE_DURATION_SEC,
       });
     });
 
@@ -41230,40 +41268,37 @@ window.WM_ANIM_ENGINE = (function () {
   // do usuário (efeito 1.mp4 / .prproj do Premiere). Duas receitas
   // separadas (não a mesma animação com atraso): a de cima ("primary")
   // tem um aperto mais suave; a de baixo ("secondary") estica de quase
-  // zero, mais dramática. O "estouro" de escala (overshoot) é feito via
-  // keyframe do meio (igual ao punch-in), não por easing de mola — assim
-  // dá pra usar UM SÓ easing suave (sem overshoot) pro resto das
-  // propriedades (translateY/letterSpacing), que na referência não
-  // saltam, só desaceleram.
+  // zero, mais dramática.
   //
-  // CALIBRADO a partir dos 14 frames reais extraídos do Lottie de
-  // referência (efeito_1.json, 10fps/1.4s) — não só do JSON descritivo.
-  // Achado real: cada palavra da linha 1 assenta sozinha em ~200-250ms
-  // (não 650ms — esse era o tempo do cascateamento inteiro, não de uma
-  // palavra), e a linha 2 ("DEEP") aparece por volta de 500ms (não
-  // 640ms) e assenta em ~150ms (não 340ms) — um "estouro" bem mais
-  // rápido do que o JSON descritivo sugeria.
+  // MEDIDO pixel a pixel nos 35 frames reais (25fps) — mesmos números
+  // exatos do fallback em ANIMATIONS_V2 (que é o que o preview realmente
+  // usa). Inclui o "salto final" (finalAdjustment) aos ~1.28s que a
+  // versão anterior desta receita tinha deixado de fora.
   registerRecipe({ // = 'kinetic-bowl-deep-primary'
     id: 'kinetic-bowl-deep-primary-v2',
     entrance: {
-      engine: 'keyframes', duration: 0.25, easing: 'easeBezier22_1_36_1',
+      duration: 1.28, easing: 'easeBezier22_1_36_1',
+      engine: 'keyframes',
       keyframes: [
-        { at: 0,    opacity: 1, translateY: 90, scaleX: 0.88, scaleY: 0.55, letterSpacing: 25 },
-        { at: 0.62, opacity: 1, translateY: 5,  scaleX: 1.015, scaleY: 1.04, letterSpacing: 2 },
-        { at: 1,    opacity: 1, translateY: 0,  scaleX: 1,     scaleY: 1,    letterSpacing: 0 },
+        { at: 0,     opacity: 1, translateY: 90, scaleX: 0.88,  scaleY: 0.55, letterSpacing: 25 },
+        { at: 0.061, opacity: 1, translateY: 5,  scaleX: 1.015, scaleY: 1.04, letterSpacing: 2  },
+        { at: 0.10,  opacity: 1, translateY: 0,  scaleX: 1,     scaleY: 1,    letterSpacing: 0  },
+        { at: 0.969, opacity: 1, translateY: 0,  scaleX: 1,     scaleY: 1,    letterSpacing: 0  },
+        { at: 1,     opacity: 1, translateY: -2, scaleX: 1.10,  scaleY: 1.10, letterSpacing: 0  },
       ],
     },
   });
   registerRecipe({ // = 'kinetic-bowl-deep-secondary'
     id: 'kinetic-bowl-deep-secondary-v2',
     entrance: {
-      // 0.10s: frames precisos (25fps) mostram DEEP quase no tamanho final
-      // já em ~80-100ms depois de aparecer (frame 0.64s→0.72s).
-      engine: 'keyframes', duration: 0.10, easing: 'easeBezier22_1_36_1',
+      duration: 0.64, easing: 'easeBezier22_1_36_1',
+      engine: 'keyframes',
       keyframes: [
-        { at: 0,   opacity: 1, translateY: 35, scaleX: 0.10, scaleY: 0.35, letterSpacing: 42 },
-        { at: 0.7, opacity: 1, translateY: 3,  scaleX: 0.92, scaleY: 1.04, letterSpacing: 3 },
-        { at: 1,   opacity: 1, translateY: 0,  scaleX: 1,    scaleY: 1,    letterSpacing: 0 },
+        { at: 0,      opacity: 1, translateY: 35, scaleX: 0.10, scaleY: 0.35, letterSpacing: 42 },
+        { at: 0.19,   opacity: 1, translateY: 3,  scaleX: 0.92, scaleY: 1.03, letterSpacing: 3  },
+        { at: 0.375,  opacity: 1, translateY: 0,  scaleX: 1,    scaleY: 1,    letterSpacing: 0  },
+        { at: 0.9375, opacity: 1, translateY: 0,  scaleX: 1,    scaleY: 1,    letterSpacing: 0  },
+        { at: 1,      opacity: 1, translateY: -2, scaleX: 1.10, scaleY: 1.10, letterSpacing: 0  },
       ],
     },
   });
