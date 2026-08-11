@@ -21170,11 +21170,12 @@ class RenderEngineV2 {
     }
 
     const WORD_STAGGER_SEC = 0.09;     // 90ms — bate com o cascateamento visto nos frames reais
-    const LINE2_BASE_DELAY_SEC = 0.50; // 500ms — recalibrado a partir dos 14 frames reais do
-                                        // Lottie de referência (no frame de 500ms "DEEP" ainda
-                                        // não aparece; no de 600ms já está quase no tamanho
-                                        // final — o JSON descritivo original dizia 640ms, mas
-                                        // os frames mostram que começa um pouco antes)
+    const LINE2_BASE_DELAY_SEC = 0.64; // 640ms — CONFIRMADO com frames precisos de 25fps: no
+                                        // frame de 0.60s "DEEP" ainda não existe, no de 0.64s já
+                                        // aparece (fina/pequena). O JSON descritivo original
+                                        // estava certo aqui — a estimativa anterior de 500ms
+                                        // veio de uma extração mais grosseira (10fps) sem
+                                        // resolução suficiente pra pegar esse instante certo.
 
     words1.forEach(w => {
       this.setWordOverride(w.id, { entrance: 'kinetic-bowl-deep-primary', delay: 0 });
@@ -41228,7 +41229,9 @@ window.WM_ANIM_ENGINE = (function () {
   registerRecipe({ // = 'kinetic-bowl-deep-secondary'
     id: 'kinetic-bowl-deep-secondary-v2',
     entrance: {
-      engine: 'keyframes', duration: 0.15, easing: 'easeBezier22_1_36_1',
+      // 0.10s: frames precisos (25fps) mostram DEEP quase no tamanho final
+      // já em ~80-100ms depois de aparecer (frame 0.64s→0.72s).
+      engine: 'keyframes', duration: 0.10, easing: 'easeBezier22_1_36_1',
       keyframes: [
         { at: 0,   opacity: 1, translateY: 35, scaleX: 0.10, scaleY: 0.35, letterSpacing: 42 },
         { at: 0.7, opacity: 1, translateY: 3,  scaleX: 0.92, scaleY: 1.04, letterSpacing: 3 },
