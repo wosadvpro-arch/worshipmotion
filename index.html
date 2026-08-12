@@ -13849,6 +13849,83 @@ const TEMPLATES = [
       },
     },
   },
+  {
+    id: 'tpl-oficial-strech-mspgar1t',
+    name: 'Strech',
+    description: 'Composição moderno para 2 linhas.',
+    tags: ['2 linhas', 'Moderno', 'Pro Plus'],
+    isOfficial: true,
+    isPremium: true,
+    requiredPlan: 'pro_plus',
+    isActive: true,
+    accent: '#8b5cf6',
+    config: {
+      style: {},
+      animConfig: {},
+      aspect: '16:9',
+      parsed: {
+        stanzas: [
+          {
+            id: 'stz_l1p15al',
+            label: 'Estrofe 1',
+            lines: [
+              {
+                id: 'ln_mynhnrw',
+                words: [
+                  { id: 'w_yn461ac', text: 'PRIMEIRA', chars: [{id:'ch_vglwn27',text:'T'},{id:'ch_a0i24gp',text:'E'},{id:'ch_ru2pfxp',text:'X'},{id:'ch_c7zd843',text:'T'},{id:'ch_uk7hwwo',text:'O'}], emphasized: false },
+                  { id: 'w_2yxemo5', text: 'LINHA', chars: [{id:'ch_k32up7s',text:'T'},{id:'ch_0gmbku3',text:'E'},{id:'ch_nmwhuii',text:'X'},{id:'ch_cf3j2tk',text:'T'},{id:'ch_w17g7s5',text:'O'}], emphasized: false },
+                  { id: 'w_xgui2gb', text: 'LINHA', chars: [{id:'ch_w7sjyje',text:'T'},{id:'ch_fyruvp5',text:'E'},{id:'ch_s384zkl',text:'X'},{id:'ch_xjthhzf',text:'T'},{id:'ch_wiuaj2q',text:'O'}], emphasized: false },
+                ],
+              },
+              {
+                id: 'ln_hs2q6ti',
+                words: [
+                  { id: 'w_4q91j2j', text: 'SEGUNDA', chars: [{id:'ch_90ohcmu',text:'T'},{id:'ch_0pm97lg',text:'E'},{id:'ch_zp24hrk',text:'X'},{id:'ch_5ybj75u',text:'T'},{id:'ch_mmcmcie',text:'O'}], emphasized: false },
+                  { id: 'w_1k1a8vy', text: 'LINHA', chars: [{id:'ch_k73sq2z',text:'t'},{id:'ch_33b1g5j',text:'e'},{id:'ch_zrqhubu',text:'x'},{id:'ch_5aoq8od',text:'t'},{id:'ch_qed8vev',text:'o'}], emphasized: false },
+                  { id: 'w_w408zlz', text: 'LINHA', chars: [{id:'ch_p22od94',text:'t'},{id:'ch_gtcs754',text:'e'},{id:'ch_smfh5n5',text:'x'},{id:'ch_zv9d7hq',text:'t'},{id:'ch_g1fuw8t',text:'o'}], emphasized: false },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+      wordOverrides: {
+        w_yn461ac: {
+          entrance: 'wm-put-off-hotted-line1-group', delay: 0, durationScale: 2.56,
+          position: { x: 0.28496052823012485, y: 0.42471393266021396 },
+          style: { fontFamily: 'Heading Now Trial', fontSizeScale: 1.412 },
+        },
+        w_2yxemo5: {
+          entrance: 'wm-put-off-hotted-line1-group', delay: 0, durationScale: 2.56,
+          position: { x: 0.5000000000000002, y: 0.42471393266021396 },
+          style: { fontFamily: 'Heading Now Trial', fontSizeScale: 1.412 },
+        },
+        w_xgui2gb: {
+          entrance: 'wm-put-off-hotted-line1-group', delay: 0, durationScale: 2.56,
+          position: { x: 0.7150394717698753, y: 0.42471393266021396 },
+          style: { fontFamily: 'Heading Now Trial', fontSizeScale: 1.412 },
+        },
+        w_4q91j2j: {
+          entrance: 'wm-put-off-hotted-line2-ww_4q91j2j', delay: 0.92, durationScale: 0.08,
+          position: { x: 0.30822544282811676, y: 0.5716727129266048 },
+          style: { fontFamily: 'Heading Pro Trial', fontSizeScale: 1.412 },
+        },
+        w_1k1a8vy: {
+          entrance: 'wm-put-off-hotted-line2-ww_1k1a8vy', delay: 1, durationScale: 0.04,
+          position: { x: 0.5000001025111755, y: 0.5716727129266048 },
+          style: { fontFamily: 'Heading Pro Trial', fontSizeScale: 1.412 },
+        },
+        w_w408zlz: {
+          entrance: 'wm-put-off-hotted-line2-ww_w408zlz', delay: 1.32, durationScale: 0.04,
+          position: { x: 0.6917747621942342, y: 0.5716727129266048 },
+          style: { fontFamily: 'Heading Pro Trial', fontSizeScale: 1.412 },
+        },
+      },
+      sceneOverrides: {
+        stz_l1p15al: { target: 'word', stagger: 0 },
+      },
+    },
+  },
   // ====== TEMPLATES DO USUÁRIO (1 linha / 1 estrofe) ======
   // Templates criados pelo usuário e marcados como definitivos.
   // Cada um preserva parsed (IDs estáveis), wordOverrides (posições e
