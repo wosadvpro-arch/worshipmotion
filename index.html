@@ -7156,8 +7156,11 @@ Digno de toda honra"></textarea>
           <button class="btn btn-secondary btn-sm" id="btn-scene-put-off-hotted" style="width:100%; margin-top:6px;">
             Vertical Stretch (título · 2 linhas)
           </button>
+          <button class="btn btn-secondary btn-sm" id="btn-scene-three-line-build" style="width:100%; margin-top:6px;">
+            Three-Line Build (3 linhas)
+          </button>
           <div style="font-size:10px; color:var(--text-tertiary); margin-top:6px;">
-            Aplica na estrofe atual. Precisa ter exatamente 2 linhas de texto.
+            Aplica na estrofe atual. Cada cena precisa do número certo de linhas de texto.
           </div>
         </div>
 
@@ -21526,6 +21529,96 @@ class RenderEngineV2 {
   }
 
   /**
+   * Cena pronta "Three-Line Lyric Build" — extraída de
+   * WorshipMotion_EFEITO_3_JSON_COMPLETO.json. Exige 3 linhas. Cada
+   * palavra de cada linha revela no seu próprio instante (tempos
+   * medidos na referência), com display:none antes da entrada — mesmo
+   * mecanismo já validado na Vertical Stretch (reflow/centralização
+   * de graça, via fluxo nativo do navegador).
+   *
+   * SIMPLIFICAÇÃO DECLARADA: a referência revela ALGUMAS palavras
+   * letra por letra (não implementado aqui — ver comentário completo
+   * em WM_THREE_LINE_BUILD_DATA). Aqui é palavra por palavra, usando o
+   * instante em que a palavra fica completa na referência.
+   */
+  applyThreeLineLyricBuildScene(stanzaId) {
+    if (!this.parsed || !this.parsed.stanzas) {
+      return { ok: false, error: 'Nenhum projeto carregado.' };
+    }
+    const stanza = this.parsed.stanzas.find(s => s.id === stanzaId);
+    if (!stanza) return { ok: false, error: 'Estrofe não encontrada.' };
+    const lines = stanza.lines || [];
+    if (lines.length !== 3) {
+      return { ok: false, error: `Essa cena precisa de exatamente 3 linhas nessa estrofe (encontrei ${lines.length}).` };
+    }
+    for (const ln of lines) {
+      if (!ln.words || !ln.words.length) {
+        return { ok: false, error: 'Todas as 3 linhas precisam ter pelo menos uma palavra.' };
+      }
+    }
+    const data = window.WM_THREE_LINE_BUILD_DATA;
+    if (!data) return { ok: false, error: 'Dados da cena não carregados.' };
+
+    const sceneCfg = typeof this.getSceneConfig === 'function' ? this.getSceneConfig(stanzaId) : null;
+    const s = (sceneCfg && sceneCfg.style) ? sceneCfg.style : this.style;
+    let refHeight = 0, refWidth = 0;
+    const cont = this.canvas && (this.canvas.closest('.editor-canvas') || this.canvas);
+    if (cont) {
+      const cr = cont.getBoundingClientRect();
+      refHeight = cr.height || cont.clientHeight || 0;
+      refWidth = cr.width || cont.clientWidth || 0;
+    }
+    let effectiveFontSize = s.fontSize;
+    if (refHeight > 0) {
+      let refAltura16x9 = refHeight;
+      if (refWidth > 0 && typeof window.WM_CAIXA_DESIGN === 'function') {
+        refAltura16x9 = window.WM_CAIXA_DESIGN(refWidth, refHeight).h;
+      }
+      effectiveFontSize = s.fontSize * (refAltura16x9 / 600);
+    }
+    const fontWeight = s.fontWeight || 400;
+    const fontStyle = s.fontStyle || 'normal';
+    const fontFamily = s.fontFamily || 'Inter';
+    const fontCss = `${fontStyle} ${fontWeight} ${effectiveFontSize}px "${fontFamily}", sans-serif`;
+    const engine = window.WM_ANIM_ENGINE;
+
+    const lineKeys = ['line1', 'line2', 'line3'];
+    lines.forEach((ln, li) => {
+      const lineData = data[lineKeys[li]];
+      const words = ln.words;
+      words.forEach((w, wi) => {
+        const entryMs = lineData.entriesMs[Math.min(wi, lineData.entriesMs.length - 1)];
+        const heightPx = engine.measureTextHeight(fontCss, w.text);
+        const rawPoints = [
+          { at: 0,      opacity: 0, translateYRatio: 0.12, scaleX: 0.5, scaleY: 0.5, display: 'none' },
+          { at: 0.0008, opacity: 1, translateYRatio: 0.12, scaleX: 0.5, scaleY: 0.5, display: 'inline-block' },
+          { at: 0.55,   opacity: 1, translateYRatio: 0.02, scaleX: 1.04, scaleY: 1.04, display: 'inline-block' },
+          { at: 1,      opacity: 1, translateYRatio: 0,    scaleX: 1,    scaleY: 1,   display: 'inline-block' },
+        ];
+        const keyframes = engine.buildRatioKeyframes(rawPoints, heightPx, effectiveFontSize);
+        const dynId = `wm-three-line-build-l${li}-w${w.id}`;
+        this._registerDynamicSceneRecipe(dynId, keyframes);
+        // Duração CURTA e FIXA pro "pulo e assenta" (180ms) — não o tempo
+        // que falta até o fim da cena. O fill-mode 'both' já segura o
+        // último keyframe (assentado) sozinho depois que a animação da
+        // palavra termina, então não precisa esticar a duração pra isso.
+        const POP_DURATION_SEC = 0.18;
+        this.setWordOverride(w.id, {
+          entrance: dynId,
+          delay: entryMs / 1000,
+          durationScale: POP_DURATION_SEC,
+        });
+      });
+    });
+
+    this.setSceneOverride(stanzaId, { target: 'word', stagger: 0 });
+    this.templateAppliedSchema = this.templateAppliedSchema || {};
+    this.templateAppliedSchema[stanzaId] = true;
+
+    return { ok: true };
+  }
+
+  /**
    * Pega config efetiva pra um stanza (global + override).
    * Retorna { entrance, exit, background, stanzaDuration, style, target, stagger }
    */
@@ -29333,6 +29426,21 @@ function initEditor() {
     if (typeof engine.playFull === 'function') engine.playFull();
     showToast('Cena aplicada — teste no preview.');
     const b = document.getElementById('btn-scene-put-off-hotted');
+    if (b) { const t = b.innerHTML; b.innerHTML = '✓ Aplicada'; setTimeout(() => { b.innerHTML = t; }, 1600); }
+  });
+
+  $('#btn-scene-three-line-build')?.addEventListener('click', () => {
+    const st = engine.parsed?.stanzas?.[engine.currentStanzaIndex];
+    if (!st) { showToast('Nenhuma estrofe selecionada.'); return; }
+    const result = engine.applyThreeLineLyricBuildScene(st.id);
+    if (!result.ok) {
+      showToast(result.error);
+      return;
+    }
+    markDirty('cena: three-line build');
+    if (typeof engine.playFull === 'function') engine.playFull();
+    showToast('Cena aplicada — teste no preview.');
+    const b = document.getElementById('btn-scene-three-line-build');
     if (b) { const t = b.innerHTML; b.innerHTML = '✓ Aplicada'; setTimeout(() => { b.innerHTML = t; }, 1600); }
   });
 
@@ -39774,6 +39882,42 @@ if (typeof window === 'undefined') { global.window = {}; }
    exagerada. display:none antes da entrada faz o reflow acontecer
    sozinho no preview (fluxo de texto centralizado nativo).
    ============================================================ */
+
+/* ============================================================
+   DADOS — Efeito 3 "Three-Line Lyric Build"
+   ============================================================
+   Extraídos de WorshipMotion_EFEITO_3_JSON_COMPLETO.json — 3 linhas
+   independentes, cada palavra revela em seu próprio instante (medido
+   a partir do crescimento real da largura do texto ao longo dos 86
+   frames de referência).
+
+   SIMPLIFICAÇÃO DECLARADA (não é aproximação silenciosa — avisando):
+   a referência tem trechos que revelam LETRA POR LETRA (ex: "EVEN",
+   partes de "THE PLACE..."), não só palavra por palavra. Implementei
+   PALAVRA POR PALAVRA (reaproveitando o mesmo mecanismo já validado
+   da Vertical Stretch — display:none progressivo + centralização
+   nativa), não letra por letra — isso exigiria uma infraestrutura
+   nova (personagens com display:none individual) que não deu tempo
+   de testar com o mesmo rigor nesta rodada. O tempo de entrada de
+   cada PALAVRA usa o instante em que ela fica COMPLETA na referência
+   (a última letra dela), preservando o ritmo geral da construção.
+   ============================================================ */
+window.WM_THREE_LINE_BUILD_DATA = {
+  totalDurationMs: 3400,
+  line1: {
+    hRef: 444,
+    entriesMs: [524, 1205, 1698, 3360],
+  },
+  line2: {
+    hRef: 528,
+    entriesMs: [1609, 2088, 2100, 2134, 2680, 3360],
+  },
+  line3: {
+    hRef: 554,
+    entriesMs: [2924, 2950, 3360],
+  },
+};
+
 window.WM_PUT_OFF_HOTTED_RATIO_DATA = {
   hRefLine1: 376,
   hRefLine2: 288,
