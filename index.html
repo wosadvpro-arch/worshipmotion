@@ -13784,6 +13784,71 @@ window.WM_LOCAL_FONTS = {
    ============================================================ */
 
 const TEMPLATES = [
+  {
+    id: 'tpl-oficial-kinect-bowl-mspdp0t6',
+    name: 'Kinect Bowl',
+    description: 'Composição moderno para 2 linhas.',
+    tags: ['2 linhas', 'Moderno', 'Pro Plus'],
+    isOfficial: true,
+    isPremium: true,
+    requiredPlan: 'pro_plus',
+    isActive: true,
+    accent: '#8b5cf6',
+    config: {
+      style: {},
+      animConfig: {},
+      aspect: '16:9',
+      parsed: {
+        stanzas: [
+          {
+            id: 'stz_77syit1',
+            label: 'Estrofe 1',
+            lines: [
+              {
+                id: 'ln_uxheikt',
+                words: [
+                  { id: 'w_refk9yl', text: 'PRIMEIRA', chars: [{id:'ch_ophgjtg',text:'T'},{id:'ch_ov1jftt',text:'E'},{id:'ch_alhal4g',text:'X'},{id:'ch_kyuc69p',text:'T'},{id:'ch_d3rle5w',text:'O'}], emphasized: false },
+                  { id: 'w_ucc14nn', text: 'LINHA', chars: [{id:'ch_e8n8svl',text:'T'},{id:'ch_iqrteda',text:'E'},{id:'ch_e2yk8gk',text:'X'},{id:'ch_gak551r',text:'T'},{id:'ch_1klara8',text:'O'}], emphasized: false },
+                  { id: 'w_z8nlxaw', text: 'LINHA', chars: [{id:'ch_qben7wq',text:'T'},{id:'ch_22709e2',text:'E'},{id:'ch_hcitezl',text:'X'},{id:'ch_ektg6dl',text:'T'},{id:'ch_6r89bnr',text:'O'}], emphasized: false },
+                ],
+              },
+              {
+                id: 'ln_7qpccpy',
+                words: [
+                  { id: 'w_52klmiy', text: 'SEGUNDA', chars: [{id:'ch_emm5zxf',text:'T'},{id:'ch_0o6zrq0',text:'E'},{id:'ch_h4nj16e',text:'X'},{id:'ch_f1hphz7',text:'T'},{id:'ch_n0te8z9',text:'O'}], emphasized: false },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+      wordOverrides: {
+        w_refk9yl: {
+          entrance: 'kinetic-bowl-deep-word1-dyn-w_refk9yl', delay: 0, durationScale: 1.36,
+          position: { x: 0.32387624877005367, y: 0.35957340632701656 },
+          style: { fontFamily: 'Heading Pro Trial', fontSizeScale: 1.314 },
+        },
+        w_ucc14nn: {
+          entrance: 'kinetic-bowl-deep-word2-dyn-w_ucc14nn', delay: 0.08, durationScale: 1.28,
+          position: { x: 0.499986104165582, y: 0.35957340632701656 },
+          style: { fontFamily: 'Heading Pro Trial', fontSizeScale: 1.314 },
+        },
+        w_z8nlxaw: {
+          entrance: 'kinetic-bowl-deep-word3-dyn-w_z8nlxaw', delay: 0.12, durationScale: 1.24,
+          position: { x: 0.6760961377342738, y: 0.35957340632701656 },
+          style: { fontFamily: 'Heading Pro Trial', fontSizeScale: 1.314 },
+        },
+        w_52klmiy: {
+          entrance: 'kinetic-bowl-deep-final-dyn-w_52klmiy', delay: 0.64, durationScale: 0.72,
+          position: { x: 0.5, y: 0.567522048173503 },
+          style: { fontFamily: 'Heading Now Trial', fontSizeScale: 2.8581418864665284 },
+        },
+      },
+      sceneOverrides: {
+        stz_77syit1: { target: 'word', stagger: 0 },
+      },
+    },
+  },
   // ====== TEMPLATES DO USUÁRIO (1 linha / 1 estrofe) ======
   // Templates criados pelo usuário e marcados como definitivos.
   // Cada um preserva parsed (IDs estáveis), wordOverrides (posições e
@@ -36182,6 +36247,113 @@ function initEditor() {
     return true;
   }
 
+  /**
+   * TEMPLATES DE CENA DINÂMICA (ex: "Kinetic Bowl Deep", "Vertical
+   * Stretch") — o sistema de templates ANTIGO só entende estilo (fonte/
+   * tamanho/cor/posição): a função `_extrairLineSchema` acima nunca lê
+   * o campo `entrance`, então a animação de uma cena dinâmica era
+   * perdida em silêncio ao salvar/aplicar como template. Pior: mesmo no
+   * caminho antigo (fallback), o `entrance` salvo era um id gerado
+   * SÓ NAQUELA sessão (ex: "kinetic-bowl-deep-word1-dyn-w_refk9yl") —
+   * não existe em nenhum lugar permanente do código, então numa sessão
+   * nova esse id simplesmente não existe.
+   *
+   * Em vez de tentar reaproveitar esse id congelado, detectamos QUAL
+   * cena o template usa (pelo prefixo do entrance) e chamamos a função
+   * da cena de novo, do zero, na estrofe de destino — ela mede a fonte
+   * REAL das palavras novas e gera a animação certa, exatamente como
+   * quando o usuário clica no botão "Cena Pronta" manualmente.
+   */
+  const WM_SCENE_TEMPLATE_APPLIERS = {
+    'kinetic-bowl-deep-': 'applyKineticBowlDeepScene',
+    'wm-put-off-hotted-': 'applyPutOffHottedScene',
+  };
+
+  function _extrairSceneKeyDoTemplate(tpl) {
+    const cfg = tpl.config || {};
+    if (!cfg.wordOverrides) return null;
+    for (const wid in cfg.wordOverrides) {
+      const entrance = cfg.wordOverrides[wid]?.entrance;
+      if (!entrance) continue;
+      for (const prefix in WM_SCENE_TEMPLATE_APPLIERS) {
+        if (entrance.indexOf(prefix) === 0) return WM_SCENE_TEMPLATE_APPLIERS[prefix];
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Extrai o estilo (fonte/tamanho) salvo por LINHA e por PALAVRA-DENTRO-
+   * DA-LINHA no template — na ordem de leitura, igual ao resto do
+   * sistema de templates. Retorna array de linhas, cada uma um array de
+   * {fontFamily, fontSizeScale} (um por palavra do template naquela
+   * linha).
+   */
+  function _extrairEstiloPorLinhaEPalavra(tpl) {
+    const cfg = tpl.config || {};
+    if (!cfg.parsed || !cfg.wordOverrides) return [];
+    const linhas = [];
+    cfg.parsed.stanzas?.forEach(st =>
+      st.lines?.forEach(ln => {
+        const estilosDaLinha = [];
+        ln.words?.forEach(w => {
+          const ov = cfg.wordOverrides[w.id];
+          estilosDaLinha.push({
+            fontFamily: ov?.style?.fontFamily,
+            fontSizeScale: ov?.style?.fontSizeScale,
+          });
+        });
+        if (estilosDaLinha.length) linhas.push(estilosDaLinha);
+      })
+    );
+    return linhas;
+  }
+
+  /**
+   * Aplica um template DE CENA DINÂMICA numa estrofe: reestrutura as
+   * linhas (reaproveitando _distribuirEmLinhas, igual ao modo
+   * adaptável comum), chama a função da cena de novo (gera a animação
+   * fresca pras palavras REAIS desta estrofe) e por cima aplica a
+   * fonte/tamanho salvos no template, por linha e por posição da
+   * palavra dentro da linha — com a mesma regra de generalização das
+   * próprias cenas (menos/mais palavras reusa o estilo mais próximo).
+   */
+  function _aplicarTemplateDeCena(stanza, sceneApplierName, estiloPorLinha) {
+    if (!stanza || typeof engine[sceneApplierName] !== 'function') return false;
+    const numLinhas = estiloPorLinha.length || 2;
+    const linhasPalavras = _distribuirEmLinhas(stanza, numLinhas);
+    if (linhasPalavras.length < 2) return false;
+
+    const novasLines = linhasPalavras.map((palavras, li) => ({
+      id: (stanza.lines[li]?.id) || ('ln_scene_' + stanza.id + '_' + li + '_' + Date.now()),
+      words: palavras,
+      label: null,
+    }));
+    stanza.lines = novasLines;
+
+    const resultado = engine[sceneApplierName](stanza.id);
+    if (!resultado || !resultado.ok) return false;
+
+    // Estilo por cima — não mexe em entrance/delay/durationScale que a
+    // cena acabou de configurar, só acrescenta fontFamily/fontSizeScale.
+    novasLines.forEach((linha, li) => {
+      const estilos = estiloPorLinha[Math.min(li, estiloPorLinha.length - 1)] || [];
+      if (!estilos.length) return;
+      linha.words.forEach((w, wi) => {
+        const est = estilos[Math.min(wi, estilos.length - 1)];
+        if (!est) return;
+        const patch = { style: {} };
+        if (est.fontFamily) patch.style.fontFamily = est.fontFamily;
+        if (est.fontSizeScale) patch.style.fontSizeScale = est.fontSizeScale;
+        if (Object.keys(patch.style).length) engine.setWordOverride(w.id, patch);
+      });
+    });
+
+    engine.templateAppliedSchema = engine.templateAppliedSchema || {};
+    engine.templateAppliedSchema[stanza.id] = true;
+    return true;
+  }
+
   function _doApplyTemplateToStanzas(tpl, escopo, targetIndices, templateOverridesSeq) {
     const cfg = tpl.config || {};
     const parsed = engine.parsed;
@@ -36228,6 +36400,26 @@ function initEditor() {
     // Garantir mapas existem
     if (!engine.wordOverrides) engine.wordOverrides = {};
     if (!engine.sceneOverrides) engine.sceneOverrides = {};
+
+    // TEMPLATES DE CENA DINÂMICA: detecta pelo prefixo do entrance salvo
+    // (ver comentário completo em _extrairSceneKeyDoTemplate). Se for um
+    // desses, o caminho é TOTALMENTE diferente do resto desta função —
+    // reaplica a cena de verdade em vez de tentar copiar estilo.
+    const sceneApplierName = _extrairSceneKeyDoTemplate(tpl);
+    if (sceneApplierName) {
+      const estiloPorLinha = _extrairEstiloPorLinhaEPalavra(tpl);
+      let algumaAplicada = false;
+      targetIndices.forEach(stanzaIdx => {
+        const stanza = parsed.stanzas[stanzaIdx];
+        if (!stanza) return;
+        const ok = _aplicarTemplateDeCena(stanza, sceneApplierName, estiloPorLinha);
+        if (ok) algumaAplicada = true;
+      });
+      if (!algumaAplicada && typeof showToast === 'function') {
+        showToast('Essa cena precisa de pelo menos 2 linhas de texto pra aplicar.');
+      }
+      return;
+    }
 
     // Extrai o schema por linha do template (fonte + scale de cada linha).
     // Se conseguir, aplica de forma ADAPTÁVEL (fonte por linha, sem position
