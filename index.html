@@ -7159,6 +7159,9 @@ Digno de toda honra"></textarea>
           <button class="btn btn-secondary btn-sm" id="btn-scene-three-line-build" style="width:100%; margin-top:6px;">
             Three-Line Build (3 linhas)
           </button>
+          <button class="btn btn-secondary btn-sm" id="btn-scene-title-card" style="width:100%; margin-top:6px;">
+            Title Card (título + destaque · 2 linhas)
+          </button>
           <div style="font-size:10px; color:var(--text-tertiary); margin-top:6px;">
             Aplica na estrofe atual. Cada cena precisa do número certo de linhas de texto.
           </div>
@@ -21619,6 +21622,170 @@ class RenderEngineV2 {
   }
 
   /**
+   * Cena pronta "Title Card" — medida AO VIVO a partir do pacote HTML
+   * enviado (não de vídeo): controlei a timeline própria da ferramenta
+   * e medi posição real via getBoundingClientRect a cada 100ms.
+   * Linha 1 = título (N palavras, entram de posições espalhadas,
+   * escalonadas). Linha 2 = 1 palavra de destaque (estouro elástico
+   * com leve rotação, depois respiração lenta). Uma régua vermelha
+   * desenha embaixo do título entre as duas fases.
+   *
+   * LIMITAÇÃO DECLARADA: a referência roda em loop contínuo; aqui a
+   * animação toca as 5 fases uma vez, fiel ao que foi medido, mas não
+   * reinicia sozinha depois — reimplementar o loop exigiria mexer no
+   * mecanismo de iteração da animação, fora do escopo desta rodada.
+   */
+  applyTitleCardScene(stanzaId) {
+    if (!this.parsed || !this.parsed.stanzas) {
+      return { ok: false, error: 'Nenhum projeto carregado.' };
+    }
+    const stanza = this.parsed.stanzas.find(s => s.id === stanzaId);
+    if (!stanza) return { ok: false, error: 'Estrofe não encontrada.' };
+    const lines = stanza.lines || [];
+    if (lines.length !== 2) {
+      return { ok: false, error: `Essa cena precisa de exatamente 2 linhas (encontrei ${lines.length}).` };
+    }
+    const headlineWords = lines[0].words || [];
+    const punchWords = lines[1].words || [];
+    if (!headlineWords.length || punchWords.length !== 1) {
+      return { ok: false, error: 'A linha 1 é o título (1+ palavras); a linha 2 precisa ter exatamente 1 palavra (a de destaque).' };
+    }
+    const data = window.WM_TITLE_CARD_DATA;
+    if (!data) return { ok: false, error: 'Dados da cena não carregados.' };
+
+    const sceneCfg = typeof this.getSceneConfig === 'function' ? this.getSceneConfig(stanzaId) : null;
+    const s = (sceneCfg && sceneCfg.style) ? sceneCfg.style : this.style;
+    let refHeight = 0, refWidth = 0;
+    const cont = this.canvas && (this.canvas.closest('.editor-canvas') || this.canvas);
+    if (cont) {
+      const cr = cont.getBoundingClientRect();
+      refHeight = cr.height || cont.clientHeight || 0;
+      refWidth = cr.width || cont.clientWidth || 0;
+    }
+    let effectiveFontSize = s.fontSize;
+    if (refHeight > 0) {
+      let refAltura16x9 = refHeight;
+      if (refWidth > 0 && typeof window.WM_CAIXA_DESIGN === 'function') {
+        refAltura16x9 = window.WM_CAIXA_DESIGN(refWidth, refHeight).h;
+      }
+      effectiveFontSize = s.fontSize * (refAltura16x9 / 600);
+    }
+    const fontWeight = s.fontWeight || 400;
+    const fontStyle = s.fontStyle || 'normal';
+    const fontFamily = s.fontFamily || 'Inter';
+    const fontCss = `${fontStyle} ${fontWeight} ${effectiveFontSize}px "${fontFamily}", sans-serif`;
+    const engine = window.WM_ANIM_ENGINE;
+
+    // LINHA 1: palavras do título entram de posições espalhadas
+    // (medidas), escalonadas, convergindo pra uma linha só.
+    headlineWords.forEach((w, i) => {
+      const role = data.headlineWords[Math.min(i, data.headlineWords.length - 1)];
+      const heightPx = engine.measureTextHeight(fontCss, w.text);
+      const rawPoints = [
+        { at: 0, opacity: 0, translateXRatio: role.dxRatio, translateYRatio: role.dyRatio, scaleX: 1, scaleY: 1 },
+        { at: 1, opacity: 1, translateXRatio: 0, translateYRatio: 0, scaleX: 1, scaleY: 1 },
+      ];
+      const keyframes = engine.buildRatioKeyframes(rawPoints, heightPx, effectiveFontSize);
+      const dynId = `wm-title-card-head-w${w.id}`;
+      this._registerDynamicSceneRecipe(dynId, keyframes);
+      const durMs = Math.max(200, data.headlineSettleMs - role.entryMs);
+      this.setWordOverride(w.id, {
+        entrance: dynId,
+        delay: role.entryMs / 1000,
+        durationScale: durMs / 1000,
+      });
+    });
+
+    // LINHA 2: palavra de destaque — estouro elástico (escala + leve
+    // rotação) e depois respiração lenta contínua, tudo numa receita
+    // só (0% a 100% cobre da entrada até o fim dos 5s medidos).
+    const punchWord = punchWords[0];
+    const heightPx2 = engine.measureTextHeight(fontCss, punchWord.text);
+    const totalPunchMs = data.totalDurationMs - data.punchStartMs; // janela da propria palavra
+    const t = (ms) => Math.min(1, Math.max(0, (ms - data.punchStartMs) / totalPunchMs));
+    const punchPoints = [
+      { at: 0,                 opacity: 0, scaleX: 0.02, scaleY: 0.02, rotate: 0 },
+      { at: t(2100),           opacity: 0.62, scaleX: 0.42, scaleY: 0.42, rotate: -1.7 },
+      { at: t(2500),           opacity: 1, scaleX: 1.10, scaleY: 1.10, rotate: 0.35 },
+      { at: t(3000),           opacity: 1, scaleX: 1.00, scaleY: 1.00, rotate: 0 },
+      { at: t(3500),           opacity: 1, scaleX: 1.02, scaleY: 1.02, rotate: 0 },
+      { at: t(4025),           opacity: 1, scaleX: 0.98, scaleY: 0.98, rotate: 0 },
+      { at: t(4550),           opacity: 1, scaleX: 1.02, scaleY: 1.02, rotate: 0 },
+      { at: 1,                 opacity: 1, scaleX: 0.986, scaleY: 0.986, rotate: 0 },
+    ];
+    const rawPunch = punchPoints.map(p => ({
+      at: p.at, opacity: p.opacity, translateYRatio: 0,
+      scaleX: p.scaleX, scaleY: p.scaleY, rotate: p.rotate,
+    }));
+    const punchKeyframes = engine.buildRatioKeyframes(rawPunch, heightPx2, effectiveFontSize);
+    // rotate não precisa de conversão de proporção — buildRatioKeyframes
+    // não mexe nele, mas preciso garantir que passou adiante:
+    punchKeyframes.forEach((kf, i) => { kf.rotate = punchPoints[i].rotate; });
+    const punchDynId = `wm-title-card-punch-w${punchWord.id}`;
+    this._registerDynamicSceneRecipe(punchDynId, punchKeyframes);
+    this.setWordOverride(punchWord.id, {
+      entrance: punchDynId,
+      delay: data.punchStartMs / 1000,
+      durationScale: totalPunchMs / 1000,
+    });
+
+    this.setSceneOverride(stanzaId, { target: 'word', stagger: 0 });
+    this.templateAppliedSchema = this.templateAppliedSchema || {};
+    this.templateAppliedSchema[stanzaId] = true;
+
+    // RÉGUA VERMELHA: elemento novo, não é uma "palavra" — insere
+    // diretamente no DOM da linha 1 depois de renderizar, com sua
+    // própria animação de largura (0 → 100%). Reaplica no próximo
+    // playFull() via um observer curto, já que renderStanza() pode
+    // recriar o DOM.
+    this._titleCardRuleConfig = this._titleCardRuleConfig || {};
+    this._titleCardRuleConfig[stanzaId] = {
+      startMs: data.ruleStartMs, endMs: data.ruleEndMs, color: '#ec3013',
+    };
+    this._ensureTitleCardRuleInjector();
+
+    return { ok: true };
+  }
+
+  /**
+   * Observa a estrofe com Title Card aplicado e injeta a régua vermelha
+   * como um elemento próprio (não uma palavra) sempre que a linha 1 for
+   * (re)renderizada — já que o DOM da estrofe pode ser recriado.
+   */
+  _ensureTitleCardRuleInjector() {
+    if (this.__titleCardRuleObserverInstalled) return;
+    this.__titleCardRuleObserverInstalled = true;
+    const engineRef = this;
+    const inject = () => {
+      if (!engineRef._titleCardRuleConfig) return;
+      Object.keys(engineRef._titleCardRuleConfig).forEach(stanzaId => {
+        const cfg = engineRef._titleCardRuleConfig[stanzaId];
+        const lineEl = document.querySelector(`[data-stanza-id="${stanzaId}"] .lyric-line`);
+        if (!lineEl) return;
+        let rule = lineEl.querySelector('.wm-title-card-rule');
+        if (!rule) {
+          rule = document.createElement('div');
+          rule.className = 'wm-title-card-rule';
+          rule.style.cssText = `height:0.08em; background:${cfg.color}; margin-top:0.15em; width:0%;`;
+          lineEl.appendChild(rule);
+        }
+        const dur = Math.max(60, cfg.endMs - cfg.startMs);
+        rule.style.transition = 'none';
+        rule.style.animation = `wm-title-card-rule-grow ${dur / 1000}s linear ${cfg.startMs / 1000}s both`;
+      });
+    };
+    if (!document.getElementById('wm-title-card-rule-style')) {
+      const styleEl = document.createElement('style');
+      styleEl.id = 'wm-title-card-rule-style';
+      styleEl.textContent = '@keyframes wm-title-card-rule-grow { from { width: 0%; } to { width: 100%; } }';
+      document.head.appendChild(styleEl);
+    }
+    const observer = new MutationObserver(() => inject());
+    if (this.canvas) observer.observe(this.canvas, { childList: true, subtree: true });
+    inject();
+  }
+
+  /**
    * Pega config efetiva pra um stanza (global + override).
    * Retorna { entrance, exit, background, stanzaDuration, style, target, stagger }
    */
@@ -29441,6 +29608,21 @@ function initEditor() {
     if (typeof engine.playFull === 'function') engine.playFull();
     showToast('Cena aplicada — teste no preview.');
     const b = document.getElementById('btn-scene-three-line-build');
+    if (b) { const t = b.innerHTML; b.innerHTML = '✓ Aplicada'; setTimeout(() => { b.innerHTML = t; }, 1600); }
+  });
+
+  $('#btn-scene-title-card')?.addEventListener('click', () => {
+    const st = engine.parsed?.stanzas?.[engine.currentStanzaIndex];
+    if (!st) { showToast('Nenhuma estrofe selecionada.'); return; }
+    const result = engine.applyTitleCardScene(st.id);
+    if (!result.ok) {
+      showToast(result.error);
+      return;
+    }
+    markDirty('cena: title card');
+    if (typeof engine.playFull === 'function') engine.playFull();
+    showToast('Cena aplicada — teste no preview.');
+    const b = document.getElementById('btn-scene-title-card');
     if (b) { const t = b.innerHTML; b.innerHTML = '✓ Aplicada'; setTimeout(() => { b.innerHTML = t; }, 1600); }
   });
 
@@ -39884,37 +40066,73 @@ if (typeof window === 'undefined') { global.window = {}; }
    ============================================================ */
 
 /* ============================================================
-   DADOS — Efeito 3 "Three-Line Lyric Build"
+   DADOS — Efeito 3 "Three-Line Lyric Build" (word-based)
    ============================================================
-   Extraídos de WorshipMotion_EFEITO_3_JSON_COMPLETO.json — 3 linhas
-   independentes, cada palavra revela em seu próprio instante (medido
-   a partir do crescimento real da largura do texto ao longo dos 86
-   frames de referência).
+   Corrigido com WorshipMotion_EFEITO_3_JSON_CORRIGIDO_WORD_BASED.json
+   — substitui a estimativa por interpolação de largura da rodada
+   anterior por tempos de entrada REAIS medidos por palavra (o JSON
+   original tratava cada LINHA como uma layer só; essa correção usa
+   13 layers, uma por PALAVRA, com o frame de entrada observado
+   diretamente no raster — muito mais preciso: por exemplo "YOU'RE" e
+   "DON'T" entram JUNTAS aos 200ms (a estimativa anterior achava que
+   "DON'T" só entrava aos 1205ms).
 
-   SIMPLIFICAÇÃO DECLARADA (não é aproximação silenciosa — avisando):
-   a referência tem trechos que revelam LETRA POR LETRA (ex: "EVEN",
-   partes de "THE PLACE..."), não só palavra por palavra. Implementei
-   PALAVRA POR PALAVRA (reaproveitando o mesmo mecanismo já validado
-   da Vertical Stretch — display:none progressivo + centralização
-   nativa), não letra por letra — isso exigiria uma infraestrutura
-   nova (personagens com display:none individual) que não deu tempo
-   de testar com o mesmo rigor nesta rodada. O tempo de entrada de
-   cada PALAVRA usa o instante em que ela fica COMPLETA na referência
-   (a última letra dela), preservando o ritmo geral da construção.
+   Continua palavra por palavra (não letra por letra) — essa correção
+   não trouxe dados de sub-palavra, então a simplificação já avisada
+   antes continua valendo.
    ============================================================ */
+
+/* ============================================================
+   DADOS — Efeito 4 "Title Card" (headline + palavra de destaque + loop)
+   ============================================================
+   Medidos AO VIVO (não de vídeo) — renderizei o pacote HTML enviado
+   num navegador de verdade, controlei a timeline pelo scrubber da
+   própria ferramenta, e medi posição/escala real via
+   getBoundingClientRect em cada palavra, a cada 100ms, ao longo dos
+   5 segundos completos (loop).
+
+   Estrutura: linha 1 = título (várias palavras, entrada escalonada
+   de posições espalhadas), régua vermelha desenha embaixo, linha 2 =
+   1 palavra de destaque com "estouro elástico" (leve rotação +
+   overshoot de escala) e depois uma respiração lenta contínua.
+
+   LIMITAÇÃO DECLARADA: a amostragem foi a cada 100ms (não every-frame
+   como os efeitos baseados em vídeo) — os deslocamentos iniciais de
+   cada palavra são uma aproximação razoável da posição real de
+   partida, não o pixel exato do instante zero.
+   ============================================================ */
+window.WM_TITLE_CARD_DATA = {
+  hRefHeadline: 27.352,
+  headlineWords: [
+    { dxRatio: -0.974, dyRatio: -0.316, entryMs: 0 },
+    { dxRatio: 1.494,  dyRatio: 0.330,  entryMs: 350 },
+    { dxRatio: -0.659, dyRatio: 0.508,  entryMs: 650 },
+    { dxRatio: 2.062,  dyRatio: -0.537, entryMs: 900 },
+  ],
+  headlineSettleMs: 1300,
+  ruleStartMs: 1600,
+  ruleEndMs: 2000,
+  punchStartMs: 2000,
+  punchOvershootMs: 2500,
+  punchSettleMs: 3000,
+  breathingPeriodMs: 1050,
+  breathingAmplitude: 0.02,
+  totalDurationMs: 5000,
+};
+
 window.WM_THREE_LINE_BUILD_DATA = {
   totalDurationMs: 3400,
   line1: {
     hRef: 444,
-    entriesMs: [524, 1205, 1698, 3360],
+    entriesMs: [200, 200, 920, 1280],
   },
   line2: {
     hRef: 528,
-    entriesMs: [1609, 2088, 2100, 2134, 2680, 3360],
+    entriesMs: [1400, 1640, 2120, 2120, 2120, 2160],
   },
   line3: {
     hRef: 554,
-    entriesMs: [2924, 2950, 3360],
+    entriesMs: [2960, 3000, 3000],
   },
 };
 
