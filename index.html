@@ -39950,6 +39950,66 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
    * Com exatamente 7 palavras, a fileira calculada bate igual à
    * original (fidelidade pixel a pixel validada antes).
    */
+  /**
+   * Mede uma amostra FIXA e abrangente do alfabeto (não depende do
+   * texto do usuário) pra obter uma proporção altura-por-tamanho-de-
+   * fonte consistente — usada como referência de escala pras palavras
+   * da linha 2 do Efeito 2, em vez da métrica de CADA palavra
+   * individualmente (que varia de verdade conforme as letras
+   * presentes, causando tamanhos visualmente inconsistentes entre
+   * palavras vizinhas — bug real reportado).
+   */
+  function _efeito2AlturaReferenciaFonte(fontFamily) {
+    _efeito2AlturaReferenciaFonte._cache = _efeito2AlturaReferenciaFonte._cache || {};
+    const cache = _efeito2AlturaReferenciaFonte._cache;
+    if (fontFamily in cache) return cache[fontFamily];
+    const c = document.createElement('canvas');
+    const g = c.getContext('2d');
+    const size = 700;
+    g.font = `700 ${size}px "${fontFamily}"`;
+    const m = g.measureText('AEIMNORSTUXBCDFGHJKLPQVWYZ0123456789');
+    const asc = m.actualBoundingBoxAscent || size * 0.75;
+    const desc = m.actualBoundingBoxDescent || size * 0.2;
+    cache[fontFamily] = { alturaPx: asc + desc, size };
+    return cache[fontFamily];
+  }
+
+  /**
+   * Renderiza o bitmap de uma palavra JÁ no tamanho de fonte certo pra
+   * que sua altura final bata com `targetHeight` — calculado a partir
+   * da proporção de REFERÊNCIA (não da métrica própria da palavra),
+   * então palavras diferentes ficam com o mesmo tamanho visual mesmo
+   * que suas letras específicas meçam ascendente/descendente um
+   * pouco diferente entre si.
+   */
+  function _efeito2MakeBitmapAtHeight(text, fontFamily, color, targetHeight) {
+    text = (text || '').toUpperCase().trim();
+    if (!text || !targetHeight) return null;
+    const ref = _efeito2AlturaReferenciaFonte(fontFamily);
+    const fontSizePx = (targetHeight / ref.alturaPx) * ref.size;
+    const key = text + '|' + fontFamily + '|' + color + '|' + Math.round(fontSizePx);
+    if (bitmapCache.has(key)) return bitmapCache.get(key);
+    const measureCanvas = document.createElement('canvas');
+    const g = measureCanvas.getContext('2d');
+    g.font = `700 ${fontSizePx}px "${fontFamily}"`;
+    g.textBaseline = 'alphabetic';
+    const m = g.measureText(text);
+    const left = Math.max(0, Math.ceil(m.actualBoundingBoxLeft || 0));
+    const right = Math.ceil(m.actualBoundingBoxRight || m.width);
+    const asc = Math.ceil(m.actualBoundingBoxAscent || fontSizePx * 0.75);
+    const desc = Math.ceil(m.actualBoundingBoxDescent || fontSizePx * 0.2);
+    const c = document.createElement('canvas');
+    c.width = left + right + 4;
+    c.height = asc + desc + 4;
+    const d = c.getContext('2d');
+    d.font = `700 ${fontSizePx}px "${fontFamily}"`;
+    d.textBaseline = 'alphabetic';
+    d.fillStyle = color;
+    d.fillText(text, left + 2, asc + 2);
+    bitmapCache.set(key, c);
+    return c;
+  }
+
   function _renderFrameEfeito2Style(ctx, tpl, texts, frameIdx) {
     const f = tpl.motionData.framesData[frameIdx];
     if (!f) return false;
@@ -39981,18 +40041,20 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
     const GAP_RATIO = 0.29; // espaçamento entre palavras, proporcional à altura (medido na referência: ~42px pra ~145px de altura)
 
     // Pra cada palavra do usuário, decide se já está visível nesse
-    // quadro (usando o timing do slot original correspondente) e, se
-    // sim, mede seu bitmap com escala PROPORCIONAL (sem distorcer).
+    // quadro (usando o timing do slot original correspondente) e
+    // renderiza o bitmap JÁ no tamanho certo (via altura de
+    // referência — ver _efeito2MakeBitmapAtHeight — não precisa de
+    // stretch posterior, o que evita a variação de métrica por
+    // palavra que causava tamanhos inconsistentes entre elas).
     const itens = [];
     for (let i = 0; i < whiteTexts.length; i++) {
       const slotRef = Math.min(i, totalOriginal - 1);
       if (slotRef >= numAtivos) continue; // essa palavra ainda não "chegou" nesse quadro
       const bboxRef = whiteBoxesFrame[slotRef];
       const texto = whiteTexts[i];
-      const img = makeBitmap(texto, stWhite.fontFamily, stWhite.color);
-      if (!img || !img.height) continue;
-      const scale = bboxRef[3] / img.height;
-      itens.push({ img, w: img.width * scale, h: bboxRef[3], y: bboxRef[1] });
+      const img = _efeito2MakeBitmapAtHeight(texto, stWhite.fontFamily, stWhite.color, bboxRef[3]);
+      if (!img) continue;
+      itens.push({ img, w: img.width, h: img.height, y: bboxRef[1] });
     }
     if (!itens.length) return true;
 
