@@ -39799,21 +39799,38 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
 
   /** Desenha o bitmap do texto ESTICADO pra caber exatamente na bbox — sem CSS transform, sem interpolação. */
   /**
-   * Desenha o bitmap do texto esticado na bbox — aceita os DOIS
-   * formatos vistos nos templates frame-exact até agora:
+   * Desenha o bitmap do texto na bbox — aceita os DOIS formatos vistos
+   * nos templates frame-exact até agora:
    *  - 'x1y1x2y2' (Kinetic Scale Stack/Efeito 3): [esquerda,topo,direita,baixo]
    *  - 'xywh' (Efeito 2): [x,y,largura,altura] — width/height JÁ são a
    *    largura/altura, não coordenadas de canto — usar direto, nunca
    *    calcular como x2-x1.
+   *
+   * preserveAspect: quando true, NÃO estica largura e altura de forma
+   * independente (isso distorce/espreme as letras quando a palavra
+   * digitada tem formato bem diferente da palavra original medida
+   * naquela caixa — bug real reportado). Em vez disso, escala o bitmap
+   * mantendo a proporção original (usa a ALTURA da caixa como
+   * referência, já que é uma única linha de texto), ancorado na borda
+   * esquerda — a largura final pode ficar menor ou maior que a da
+   * caixa, mas as letras nunca ficam achatadas/esticadas.
    */
-  function drawStretched(ctx, text, fontFamily, color, bbox, bboxFormat) {
+  function drawStretched(ctx, text, fontFamily, color, bbox, bboxFormat, preserveAspect) {
     if (!bbox || !text) return;
     const img = makeBitmap(text, fontFamily, color);
     if (!img) return;
+    let bx, by, bw, bh;
     if (bboxFormat === 'xywh') {
-      ctx.drawImage(img, bbox[0], bbox[1], bbox[2], bbox[3]);
+      bx = bbox[0]; by = bbox[1]; bw = bbox[2]; bh = bbox[3];
     } else {
-      ctx.drawImage(img, bbox[0], bbox[1], bbox[2] - bbox[0], bbox[3] - bbox[1]);
+      bx = bbox[0]; by = bbox[1]; bw = bbox[2] - bbox[0]; bh = bbox[3] - bbox[1];
+    }
+    if (preserveAspect && img.height > 0) {
+      const scale = bh / img.height;
+      const drawW = img.width * scale;
+      ctx.drawImage(img, bx, by, drawW, bh);
+    } else {
+      ctx.drawImage(img, bx, by, bw, bh);
     }
   }
 
@@ -39936,10 +39953,18 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
     const stWhite = tpl.styles.white;
     const n = Math.min(whiteBoxesFrame.length, whiteTexts.length);
     const shiftX = _efeito2CenterShiftX(tpl, whiteTexts.length);
+    // preserveAspect só entra em ação fora do caso de exatamente 7
+    // palavras (a contagem original) — com 7, manter o esticamento
+    // exato original preserva a fidelidade pixel a pixel já validada
+    // (a proporção pura calculada aqui fica ligeiramente diferente da
+    // largura original da caixa, provavelmente por uma margem/
+    // espaçamento que já vinha embutido na medição original).
+    const totalOriginalBrancas = (tpl.motionData.framesData[tpl.motionData.framesData.length - 1].white || []).length;
+    const preservarProporcao = whiteTexts.length !== totalOriginalBrancas;
     for (let i = 0; i < n; i++) {
       const b = whiteBoxesFrame[i];
       const bboxDeslocado = shiftX ? [b[0] + shiftX, b[1], b[2], b[3]] : b;
-      drawStretched(ctx, whiteTexts[i], stWhite.fontFamily, stWhite.color, bboxDeslocado, 'xywh');
+      drawStretched(ctx, whiteTexts[i], stWhite.fontFamily, stWhite.color, bboxDeslocado, 'xywh', preservarProporcao);
     }
     return true;
   }
