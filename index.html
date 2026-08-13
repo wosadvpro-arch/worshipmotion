@@ -17920,6 +17920,18 @@ const CanvasRenderer = {
       return false;
     }
 
+    // TEMPLATE FRAME-EXACT: essa estrofe não usa wordOverrides/anim
+    // normais — o cálculo abaixo (baseado em delay/duration por
+    // palavra) não sabe nada sobre ela e decidiria "estático" cedo
+    // demais, congelando o export bem no meio da animação (mesma causa
+    // do travamento já corrigido antes pra outras cenas — ver PATCH V4
+    // logo abaixo). Enquanto a duração própria do template não passou,
+    // nunca é estático.
+    if (slide.stanza && slide.stanza.frameExactTemplateId && window.WM_FRAME_EXACT_RENDERER) {
+      const durFE = window.WM_FRAME_EXACT_RENDERER.getDurationMs(slide.stanza.frameExactTemplateId);
+      return elapsedMs >= durFE;
+    }
+
     // Etapa 6 — transição de cena: enquanto o crossfade ainda está rodando
     // (alpha do texto mudando frame a frame), o slide NÃO é estático —
     // senão o export congelaria no meio do fade.
