@@ -7148,25 +7148,6 @@ Digno de toda honra"></textarea>
           </div>
         </div>
 
-        <div class="panel-section" style="border-bottom:1px solid var(--border-color, #333); padding-bottom:12px; margin-bottom:12px;">
-          <div class="panel-section-title">Cenas Prontas</div>
-          <button class="btn btn-secondary btn-sm" id="btn-scene-kinetic-bowl-deep" style="width:100%;">
-            Kinetic Bowl Deep (título · 2 linhas)
-          </button>
-          <button class="btn btn-secondary btn-sm" id="btn-scene-put-off-hotted" style="width:100%; margin-top:6px;">
-            Vertical Stretch (título · 2 linhas)
-          </button>
-          <button class="btn btn-secondary btn-sm" id="btn-scene-three-line-build" style="width:100%; margin-top:6px;">
-            Three-Line Build (3 linhas)
-          </button>
-          <button class="btn btn-secondary btn-sm" id="btn-scene-title-card" style="width:100%; margin-top:6px;">
-            Title Card (título + destaque · 2 linhas)
-          </button>
-          <div style="font-size:10px; color:var(--text-tertiary); margin-top:6px;">
-            Aplica na estrofe atual. Cada cena precisa do número certo de linhas de texto.
-          </div>
-        </div>
-
         <div class="panel-section">
           <div class="panel-section-title" data-i18n="an.category">Categoria</div>
           <div class="anim-category-tabs">
@@ -13791,144 +13772,45 @@ window.WM_LOCAL_FONTS = {
 
 const TEMPLATES = [
   {
-    id: 'tpl-oficial-kinect-bowl-mspdp0t6',
-    name: 'Kinect Bowl',
-    description: 'Composição moderno para 2 linhas.',
-    tags: ['2 linhas', 'Moderno', 'Pro Plus'],
+    id: "tpl-oficial-kinetic-scale-stack-ef3v10",
+    name: "Kinetic Scale Stack",
+    description: "Três linhas empilhadas: as duas primeiras comprimem/expandem como um bloco único, a terceira revela palavra por palavra.",
+    tags: ["3 linhas", "Cinético", "Pro Plus"],
     isOfficial: true,
     isPremium: true,
-    requiredPlan: 'pro_plus',
+    requiredPlan: "pro_plus",
     isActive: true,
-    accent: '#8b5cf6',
+    accent: "#ed0019",
     config: {
       style: {},
       animConfig: {},
       aspect: '16:9',
       parsed: {
         stanzas: [
-          {
-            id: 'stz_77syit1',
-            label: 'Estrofe 1',
-            lines: [
-              {
-                id: 'ln_uxheikt',
-                words: [
-                  { id: 'w_refk9yl', text: 'PRIMEIRA', chars: [{id:'ch_ophgjtg',text:'T'},{id:'ch_ov1jftt',text:'E'},{id:'ch_alhal4g',text:'X'},{id:'ch_kyuc69p',text:'T'},{id:'ch_d3rle5w',text:'O'}], emphasized: false },
-                  { id: 'w_ucc14nn', text: 'LINHA', chars: [{id:'ch_e8n8svl',text:'T'},{id:'ch_iqrteda',text:'E'},{id:'ch_e2yk8gk',text:'X'},{id:'ch_gak551r',text:'T'},{id:'ch_1klara8',text:'O'}], emphasized: false },
-                  { id: 'w_z8nlxaw', text: 'LINHA', chars: [{id:'ch_qben7wq',text:'T'},{id:'ch_22709e2',text:'E'},{id:'ch_hcitezl',text:'X'},{id:'ch_ektg6dl',text:'T'},{id:'ch_6r89bnr',text:'O'}], emphasized: false },
-                ],
-              },
-              {
-                id: 'ln_7qpccpy',
-                words: [
-                  { id: 'w_52klmiy', text: 'SEGUNDA', chars: [{id:'ch_emm5zxf',text:'T'},{id:'ch_0o6zrq0',text:'E'},{id:'ch_h4nj16e',text:'X'},{id:'ch_f1hphz7',text:'T'},{id:'ch_n0te8z9',text:'O'}], emphasized: false },
-                ],
-              },
-            ],
-          },
+          { id: "stz_e2d85qz", label: "Estrofe 1", lines: [
+            { id: "ln_iqw0noj", words: [{ id: "w_7fxu6zx", text: "YOU'RE", chars: [{id:"ch_2hoybr6",text:"Y"}, {id:"ch_4xcsigy",text:"O"}, {id:"ch_2kf6pyy",text:"U"}, {id:"ch_uoxowe4",text:"'"}, {id:"ch_llku9tp",text:"R"}, {id:"ch_415v9hg",text:"E"}], emphasized: false }, { id: "w_4wu66r2", text: "DON'T", chars: [{id:"ch_mrsj7zb",text:"D"}, {id:"ch_dd2i5fi",text:"O"}, {id:"ch_jzmhs8a",text:"N"}, {id:"ch_aantix1",text:"'"}, {id:"ch_33p4192",text:"T"}], emphasized: false }, { id: "w_3i7hpkx", text: "EVEN", chars: [{id:"ch_4tu7x96",text:"E"}, {id:"ch_cm7fe8z",text:"V"}, {id:"ch_qmokadr",text:"E"}, {id:"ch_i5eks34",text:"N"}], emphasized: false }, { id: "w_1osj9ir", text: "KNOW", chars: [{id:"ch_tnsthqy",text:"K"}, {id:"ch_hsv2ibe",text:"N"}, {id:"ch_9l6iqqd",text:"O"}, {id:"ch_ajaux95",text:"W"}], emphasized: false }] },
+            { id: "ln_c5oo68s", words: [{ id: "w_ohqog6k", text: "THE", chars: [{id:"ch_bwhvioj",text:"T"}, {id:"ch_uhh30lu",text:"H"}, {id:"ch_lxxb2hb",text:"E"}], emphasized: false }, { id: "w_6olz0sh", text: "PLACE", chars: [{id:"ch_48e6sk7",text:"P"}, {id:"ch_qpyi4sg",text:"L"}, {id:"ch_23mrova",text:"A"}, {id:"ch_ario1l7",text:"C"}, {id:"ch_xrpdrpu",text:"E"}], emphasized: false }, { id: "w_74iju8r", text: "I", chars: [{id:"ch_fwvwjgd",text:"I"}], emphasized: false }, { id: "w_w3jstvp", text: "HAD", chars: [{id:"ch_w97ob42",text:"H"}, {id:"ch_g9c8xq4",text:"A"}, {id:"ch_705u4fm",text:"D"}], emphasized: false }, { id: "w_thrs2f6", text: "TO", chars: [{id:"ch_vgtpovm",text:"T"}, {id:"ch_7cphxzd",text:"O"}], emphasized: false }, { id: "w_pcukzlv", text: "GO.", chars: [{id:"ch_w2zcgyo",text:"G"}, {id:"ch_x840cys",text:"O"}, {id:"ch_3jy6n2m",text:"."}], emphasized: false }] },
+            { id: "ln_fjm0372", words: [{ id: "w_n5ho351", text: "BE", chars: [{id:"ch_oc5u687",text:"B"}, {id:"ch_sdb9bkr",text:"E"}], emphasized: false }, { id: "w_373r39x", text: "MY", chars: [{id:"ch_eey5659",text:"M"}, {id:"ch_9gcs09i",text:"Y"}], emphasized: false }, { id: "w_xjdmfru", text: "SOUL", chars: [{id:"ch_lnrc5pg",text:"S"}, {id:"ch_sw7bf4e",text:"O"}, {id:"ch_yx6oaia",text:"U"}, {id:"ch_y57txs3",text:"L"}], emphasized: false }] },
+          ] },
         ],
       },
       wordOverrides: {
-        w_refk9yl: {
-          entrance: 'kinetic-bowl-deep-word1-dyn-w_refk9yl', delay: 0, durationScale: 1.36,
-          position: { x: 0.32387624877005367, y: 0.35957340632701656 },
-          style: { fontFamily: 'Heading Pro Trial', fontSizeScale: 1.314 },
-        },
-        w_ucc14nn: {
-          entrance: 'kinetic-bowl-deep-word2-dyn-w_ucc14nn', delay: 0.08, durationScale: 1.28,
-          position: { x: 0.499986104165582, y: 0.35957340632701656 },
-          style: { fontFamily: 'Heading Pro Trial', fontSizeScale: 1.314 },
-        },
-        w_z8nlxaw: {
-          entrance: 'kinetic-bowl-deep-word3-dyn-w_z8nlxaw', delay: 0.12, durationScale: 1.24,
-          position: { x: 0.6760961377342738, y: 0.35957340632701656 },
-          style: { fontFamily: 'Heading Pro Trial', fontSizeScale: 1.314 },
-        },
-        w_52klmiy: {
-          entrance: 'kinetic-bowl-deep-final-dyn-w_52klmiy', delay: 0.64, durationScale: 0.72,
-          position: { x: 0.5, y: 0.567522048173503 },
-          style: { fontFamily: 'Heading Now Trial', fontSizeScale: 2.8581418864665284 },
-        },
+        w_7fxu6zx: { entrance: "wm-kinetic-scale-stack-top-stz_e2d85qz", style: { fontFamily: "Heading Now Trial", fontWeight: 700, fontSizeScale: 1.0 } },
+        w_4wu66r2: { entrance: "wm-kinetic-scale-stack-top-stz_e2d85qz", style: { fontFamily: "Heading Now Trial", fontWeight: 700, fontSizeScale: 1.0 } },
+        w_3i7hpkx: { entrance: "wm-kinetic-scale-stack-top-stz_e2d85qz", style: { fontFamily: "Heading Now Trial", fontWeight: 700, fontSizeScale: 1.0 } },
+        w_1osj9ir: { entrance: "wm-kinetic-scale-stack-top-stz_e2d85qz", style: { fontFamily: "Heading Now Trial", fontWeight: 700, fontSizeScale: 1.0 } },
+        w_ohqog6k: { entrance: "wm-kinetic-scale-stack-red-stz_e2d85qz", style: { fontFamily: "Heading Now Trial", fontWeight: 700, color: "#ed0019", fontSizeScale: 1.0 } },
+        w_6olz0sh: { entrance: "wm-kinetic-scale-stack-red-stz_e2d85qz", style: { fontFamily: "Heading Now Trial", fontWeight: 700, color: "#ed0019", fontSizeScale: 1.0 } },
+        w_74iju8r: { entrance: "wm-kinetic-scale-stack-red-stz_e2d85qz", style: { fontFamily: "Heading Now Trial", fontWeight: 700, color: "#ed0019", fontSizeScale: 1.0 } },
+        w_w3jstvp: { entrance: "wm-kinetic-scale-stack-red-stz_e2d85qz", style: { fontFamily: "Heading Now Trial", fontWeight: 700, color: "#ed0019", fontSizeScale: 1.0 } },
+        w_thrs2f6: { entrance: "wm-kinetic-scale-stack-red-stz_e2d85qz", style: { fontFamily: "Heading Now Trial", fontWeight: 700, color: "#ed0019", fontSizeScale: 1.0 } },
+        w_pcukzlv: { entrance: "wm-kinetic-scale-stack-red-stz_e2d85qz", style: { fontFamily: "Heading Now Trial", fontWeight: 700, color: "#ed0019", fontSizeScale: 1.0 } },
+        w_n5ho351: { entrance: "wm-kinetic-scale-stack-be-ww_n5ho351", style: { fontFamily: "Heading Now Trial", fontWeight: 700, fontSizeScale: 1.0 } },
+        w_373r39x: { entrance: "wm-kinetic-scale-stack-my-ww_373r39x", style: { fontFamily: "Heading Now Trial", fontWeight: 700, fontSizeScale: 1.0 } },
+        w_xjdmfru: { entrance: "wm-kinetic-scale-stack-soul-ww_xjdmfru", style: { fontFamily: "Heading Now Trial", fontWeight: 700, fontSizeScale: 0.95107 } },
       },
       sceneOverrides: {
-        stz_77syit1: { target: 'word', stagger: 0 },
-      },
-    },
-  },
-  {
-    id: 'tpl-oficial-strech-mspgar1t',
-    name: 'Strech',
-    description: 'Composição moderno para 2 linhas.',
-    tags: ['2 linhas', 'Moderno', 'Pro Plus'],
-    isOfficial: true,
-    isPremium: true,
-    requiredPlan: 'pro_plus',
-    isActive: true,
-    accent: '#8b5cf6',
-    config: {
-      style: {},
-      animConfig: {},
-      aspect: '16:9',
-      parsed: {
-        stanzas: [
-          {
-            id: 'stz_l1p15al',
-            label: 'Estrofe 1',
-            lines: [
-              {
-                id: 'ln_mynhnrw',
-                words: [
-                  { id: 'w_yn461ac', text: 'PRIMEIRA', chars: [{id:'ch_vglwn27',text:'T'},{id:'ch_a0i24gp',text:'E'},{id:'ch_ru2pfxp',text:'X'},{id:'ch_c7zd843',text:'T'},{id:'ch_uk7hwwo',text:'O'}], emphasized: false },
-                  { id: 'w_2yxemo5', text: 'LINHA', chars: [{id:'ch_k32up7s',text:'T'},{id:'ch_0gmbku3',text:'E'},{id:'ch_nmwhuii',text:'X'},{id:'ch_cf3j2tk',text:'T'},{id:'ch_w17g7s5',text:'O'}], emphasized: false },
-                  { id: 'w_xgui2gb', text: 'LINHA', chars: [{id:'ch_w7sjyje',text:'T'},{id:'ch_fyruvp5',text:'E'},{id:'ch_s384zkl',text:'X'},{id:'ch_xjthhzf',text:'T'},{id:'ch_wiuaj2q',text:'O'}], emphasized: false },
-                ],
-              },
-              {
-                id: 'ln_hs2q6ti',
-                words: [
-                  { id: 'w_4q91j2j', text: 'SEGUNDA', chars: [{id:'ch_90ohcmu',text:'T'},{id:'ch_0pm97lg',text:'E'},{id:'ch_zp24hrk',text:'X'},{id:'ch_5ybj75u',text:'T'},{id:'ch_mmcmcie',text:'O'}], emphasized: false },
-                  { id: 'w_1k1a8vy', text: 'LINHA', chars: [{id:'ch_k73sq2z',text:'t'},{id:'ch_33b1g5j',text:'e'},{id:'ch_zrqhubu',text:'x'},{id:'ch_5aoq8od',text:'t'},{id:'ch_qed8vev',text:'o'}], emphasized: false },
-                  { id: 'w_w408zlz', text: 'LINHA', chars: [{id:'ch_p22od94',text:'t'},{id:'ch_gtcs754',text:'e'},{id:'ch_smfh5n5',text:'x'},{id:'ch_zv9d7hq',text:'t'},{id:'ch_g1fuw8t',text:'o'}], emphasized: false },
-                ],
-              },
-            ],
-          },
-        ],
-      },
-      wordOverrides: {
-        w_yn461ac: {
-          entrance: 'wm-put-off-hotted-line1-group', delay: 0, durationScale: 2.56,
-          position: { x: 0.28496052823012485, y: 0.42471393266021396 },
-          style: { fontFamily: 'Heading Now Trial', fontSizeScale: 1.412 },
-        },
-        w_2yxemo5: {
-          entrance: 'wm-put-off-hotted-line1-group', delay: 0, durationScale: 2.56,
-          position: { x: 0.5000000000000002, y: 0.42471393266021396 },
-          style: { fontFamily: 'Heading Now Trial', fontSizeScale: 1.412 },
-        },
-        w_xgui2gb: {
-          entrance: 'wm-put-off-hotted-line1-group', delay: 0, durationScale: 2.56,
-          position: { x: 0.7150394717698753, y: 0.42471393266021396 },
-          style: { fontFamily: 'Heading Now Trial', fontSizeScale: 1.412 },
-        },
-        w_4q91j2j: {
-          entrance: 'wm-put-off-hotted-line2-ww_4q91j2j', delay: 0.92, durationScale: 0.08,
-          position: { x: 0.30822544282811676, y: 0.5716727129266048 },
-          style: { fontFamily: 'Heading Pro Trial', fontSizeScale: 1.412 },
-        },
-        w_1k1a8vy: {
-          entrance: 'wm-put-off-hotted-line2-ww_1k1a8vy', delay: 1, durationScale: 0.04,
-          position: { x: 0.5000001025111755, y: 0.5716727129266048 },
-          style: { fontFamily: 'Heading Pro Trial', fontSizeScale: 1.412 },
-        },
-        w_w408zlz: {
-          entrance: 'wm-put-off-hotted-line2-ww_w408zlz', delay: 1.32, durationScale: 0.04,
-          position: { x: 0.6917747621942342, y: 0.5716727129266048 },
-          style: { fontFamily: 'Heading Pro Trial', fontSizeScale: 1.412 },
-        },
-      },
-      sceneOverrides: {
-        stz_l1p15al: { target: 'word', stagger: 0 },
+        stz_e2d85qz: { target: 'word', stagger: 0 },
       },
     },
   },
@@ -21301,599 +21183,6 @@ class RenderEngineV2 {
   }
 
   /**
-   * Cena pronta "Kinetic Bowl Deep" — título de 2 linhas, baseada em
-   * referência do usuário (efeito 1.mp4). Aplica uma receita diferente em
-   * cada linha (não é a mesma animação com atraso): a linha de cima usa
-   * 'kinetic-bowl-deep-primary', a de baixo 'kinetic-bowl-deep-secondary',
-   * com a linha de baixo começando 640ms depois do início da estrofe.
-   *
-   * Exige exatamente 2 linhas na estrofe (por design — ver decisão do
-   * usuário; não tenta se adaptar a mais linhas).
-   *
-   * Retorna { ok: true } ou { ok: false, error: '<motivo>' }.
-   */
-  applyKineticBowlDeepScene(stanzaId) {
-    if (!this.parsed || !this.parsed.stanzas) {
-      return { ok: false, error: 'Nenhum projeto carregado.' };
-    }
-    const stanza = this.parsed.stanzas.find(s => s.id === stanzaId);
-    if (!stanza) return { ok: false, error: 'Estrofe não encontrada.' };
-    const lines = stanza.lines || [];
-    if (lines.length !== 2) {
-      return { ok: false, error: `Essa cena precisa de exatamente 2 linhas nessa estrofe (encontrei ${lines.length}).` };
-    }
-    const words1 = lines[0].words || [];
-    const words2 = lines[1].words || [];
-    if (!words1.length || !words2.length) {
-      return { ok: false, error: 'As duas linhas precisam ter pelo menos uma palavra cada.' };
-    }
-    const ratioData = window.WM_KINETIC_BOWL_DEEP_RATIO_DATA;
-    if (!ratioData) return { ok: false, error: 'Dados da cena não carregados.' };
-
-    // TIPOGRAFIA: fonte/peso/tamanho continuam 100% do editor — só
-    // LEMOS o que já está configurado, nunca alteramos. Mesma conta de
-    // effectiveFontSize usada em _applyStyleToStanzaEl (pra bater com o
-    // que realmente é renderizado na tela).
-    const sceneCfg = typeof this.getSceneConfig === 'function' ? this.getSceneConfig(stanzaId) : null;
-    const s = (sceneCfg && sceneCfg.style) ? sceneCfg.style : this.style;
-    let refHeight = 0, refWidth = 0;
-    const cont = this.canvas && (this.canvas.closest('.editor-canvas') || this.canvas);
-    if (cont) {
-      const cr = cont.getBoundingClientRect();
-      refHeight = cr.height || cont.clientHeight || 0;
-      refWidth = cr.width || cont.clientWidth || 0;
-    }
-    let effectiveFontSize = s.fontSize;
-    if (refHeight > 0) {
-      let refAltura16x9 = refHeight;
-      if (refWidth > 0 && typeof window.WM_CAIXA_DESIGN === 'function') {
-        refAltura16x9 = window.WM_CAIXA_DESIGN(refWidth, refHeight).h;
-      }
-      effectiveFontSize = s.fontSize * (refAltura16x9 / 600);
-    }
-    const fontWeight = s.fontWeight || 400;
-    const fontStyle = s.fontStyle || 'normal';
-    const fontFamily = s.fontFamily || 'Inter';
-    const fontCss = `${fontStyle} ${fontWeight} ${effectiveFontSize}px "${fontFamily}", sans-serif`;
-
-    const engine = window.WM_ANIM_ENGINE;
-
-    // Registra (ou reaproveita, se já existir com a MESMA fonte/peso/
-    // texto) uma receita dinâmica pra uma palavra — mede a altura real
-    // renderizada NAQUELE texto/fonte, converte a proporção da
-    // especificação pra pixel/em preservando o deslocamento visual.
-    const registerDynamic = (roleKey, word, hasTracking) => {
-      const data = ratioData[roleKey];
-      const actualHeightPx = engine.measureTextHeight(fontCss, word.text);
-      const dynId = `kinetic-bowl-deep-${roleKey}-dyn-${word.id}`;
-      const keyframes = engine.buildRatioKeyframes(data.points, actualHeightPx, effectiveFontSize);
-      this._registerDynamicSceneRecipe(dynId, keyframes);
-      return dynId;
-    };
-
-    // CORREÇÃO PRE_ENTRY: cada role agora tem seu PRÓPRIO atraso real em
-    // CSS (não mais delay=0 uniforme com "espera" embutida nos
-    // keyframes) — o atraso vem de ratioData[role].entryMs, igual ao
-    // frame de entrada medido no patch de correção. Isso, combinado com
-    // o keyframe explícito opacity:0 no início de cada receita (ver
-    // extração dos dados), garante que a palavra fica INVISÍVEL de
-    // verdade até o frame de entrada dela — antes ela ficava visível
-    // (só pequena/longe) durante toda a "espera", que era o bug
-    // relatado.
-    const RED_ROLE_KEYS = ['word1', 'word2', 'word3', 'word4'];
-
-    // Regra de generalização do JSON pra quando a linha 1 tem MAIS ou
-    // MENOS de 4 palavras: reusa a curva da role mais próxima.
-    words1.forEach((w, i) => {
-      const roleKey = RED_ROLE_KEYS[Math.min(i, RED_ROLE_KEYS.length - 1)];
-      const dynId = registerDynamic(roleKey, w, false);
-      const data = ratioData[roleKey];
-      this.setWordOverride(w.id, {
-        entrance: dynId,
-        delay: data.entryMs / 1000,
-        durationScale: data.durationMs / 1000,
-      });
-    });
-
-    words2.forEach((w) => {
-      const dynId = registerDynamic('final', w, true);
-      const data = ratioData.final;
-      this.setWordOverride(w.id, {
-        entrance: dynId,
-        delay: data.entryMs / 1000,
-        durationScale: data.durationMs / 1000,
-      });
-    });
-
-    // Só nessa estrofe (não mexe na config global): granularidade
-    // palavra — sem stagger nativo (o escalonamento já está embutido em
-    // cada role, não precisa de stagger extra por índice).
-    this.setSceneOverride(stanzaId, { target: 'word', stagger: 0 });
-
-    return { ok: true };
-  }
-
-  /**
-   * Cena pronta "PUT OFF HOTTED" (Vertical Stretch / Word Pop) — extraída
-   * de WorshipMotion_EFEITO_2_JSON_COMPLETO_CLAUDE.json. Estrutura
-   * diferente da Kinetic Bowl Deep: a linha 1 anima como GRUPO (mesma
-   * receita em todas as palavras simultaneamente); a linha 2 tem
-   * palavras independentes que entram uma a uma E reposicionam o grupo
-   * inteiro (recentralizam) quando uma nova entra — usando display:none
-   * antes da entrada, não só opacity, pra sair de vez do fluxo.
-   *
-   * LIMITAÇÃO CONHECIDA (avisando em vez de aproximar em silêncio,
-   * como pedido): o reflow dinâmico da linha 2 funciona de graça no
-   * PREVIEW (o navegador recentraliza sozinho via display:none + texto
-   * centralizado). No EXPORT, o layout de cada estrofe é calculado UMA
-   * VEZ só (cacheado por estrofe, não por frame) — recalcular isso a
-   * cada frame conforme quais palavras já entraram é uma extensão de
-   * arquitetura maior, que não implementei ainda. No export de hoje,
-   * cada palavra da linha 2 aparece/some no instante certo, mas a
-   * recentralização horizontal dinâmica entre elas ainda não está lá.
-   */
-  applyPutOffHottedScene(stanzaId) {
-    if (!this.parsed || !this.parsed.stanzas) {
-      return { ok: false, error: 'Nenhum projeto carregado.' };
-    }
-    const stanza = this.parsed.stanzas.find(s => s.id === stanzaId);
-    if (!stanza) return { ok: false, error: 'Estrofe não encontrada.' };
-    const lines = stanza.lines || [];
-    if (lines.length !== 2) {
-      return { ok: false, error: `Essa cena precisa de exatamente 2 linhas nessa estrofe (encontrei ${lines.length}).` };
-    }
-    const words1 = lines[0].words || [];
-    const words2 = lines[1].words || [];
-    if (!words1.length || !words2.length) {
-      return { ok: false, error: 'As duas linhas precisam ter pelo menos uma palavra cada.' };
-    }
-    const data = window.WM_PUT_OFF_HOTTED_RATIO_DATA;
-    if (!data) return { ok: false, error: 'Dados da cena não carregados.' };
-
-    // Tipografia: mesmo cálculo de effectiveFontSize da Kinetic Bowl Deep
-    // (nunca altera fonte/peso/tamanho, só lê o que já está configurado).
-    const sceneCfg = typeof this.getSceneConfig === 'function' ? this.getSceneConfig(stanzaId) : null;
-    const s = (sceneCfg && sceneCfg.style) ? sceneCfg.style : this.style;
-    let refHeight = 0, refWidth = 0;
-    const cont = this.canvas && (this.canvas.closest('.editor-canvas') || this.canvas);
-    if (cont) {
-      const cr = cont.getBoundingClientRect();
-      refHeight = cr.height || cont.clientHeight || 0;
-      refWidth = cr.width || cont.clientWidth || 0;
-    }
-    let effectiveFontSize = s.fontSize;
-    if (refHeight > 0) {
-      let refAltura16x9 = refHeight;
-      if (refWidth > 0 && typeof window.WM_CAIXA_DESIGN === 'function') {
-        refAltura16x9 = window.WM_CAIXA_DESIGN(refWidth, refHeight).h;
-      }
-      effectiveFontSize = s.fontSize * (refAltura16x9 / 600);
-    }
-    const fontWeight = s.fontWeight || 400;
-    const fontStyle = s.fontStyle || 'normal';
-    const fontFamily = s.fontFamily || 'Inter';
-    const fontCss = `${fontStyle} ${fontWeight} ${effectiveFontSize}px "${fontFamily}", sans-serif`;
-
-    const engine = window.WM_ANIM_ENGINE;
-
-    const registerDynamic = (idSuffix, keyframes) => {
-      const dynId = `wm-put-off-hotted-${idSuffix}`;
-      this._registerDynamicSceneRecipe(dynId, keyframes);
-      return dynId;
-    };
-
-    // LINHA 1: altura real medida numa amostra do texto da linha (junta
-    // as palavras — a receita de grupo usa a altura do BLOCO, não de
-    // uma palavra só).
-    const line1Sample = words1.map(w => w.text).join(' ');
-    const line1HeightPx = engine.measureTextHeight(fontCss, line1Sample);
-    const line1Keyframes = engine.buildRatioKeyframes(data.line1Points, line1HeightPx, effectiveFontSize);
-    const line1DynId = registerDynamic('line1-group', line1Keyframes, 1);
-    const LINE1_DURATION_SEC = 2.56; // 2560ms, revertido pra timing original (V3)
-    words1.forEach((w) => {
-      this.setWordOverride(w.id, { entrance: line1DynId, delay: 0, durationScale: LINE1_DURATION_SEC });
-    });
-
-    // LINHA 2: cada palavra tem sua própria role (generaliza pra mais/
-    // menos de 7 palavras reusando a role mais próxima, igual à Kinetic
-    // Bowl Deep). display:none antes da entrada é o que faz o reflow
-    // acontecer sozinho no preview.
-    words2.forEach((w, i) => {
-      const role = data.line2Roles[Math.min(i, data.line2Roles.length - 1)];
-      const heightPx = engine.measureTextHeight(fontCss, w.text);
-      const rawPoints = [
-        { at: 0,      opacity: 0, translateYRatio: role.translateYRatio, scaleX: 1, scaleY: role.scaleYInitial, display: 'none' },
-        { at: 0.0005, opacity: 1, translateYRatio: role.translateYRatio, scaleX: 1, scaleY: role.scaleYInitial, display: 'inline-block' },
-        { at: 1,      opacity: 1, translateYRatio: 0, scaleX: 1, scaleY: 1, display: 'inline-block' },
-      ];
-      const keyframes = engine.buildRatioKeyframes(rawPoints, heightPx, effectiveFontSize);
-      const dynId = registerDynamic(`line2-w${w.id}`, keyframes, 1);
-      this.setWordOverride(w.id, {
-        entrance: dynId,
-        delay: role.entryMs / 1000,
-        durationScale: role.durationMs / 1000,
-      });
-    });
-
-    this.setSceneOverride(stanzaId, { target: 'word', stagger: 0 });
-
-    // PATCH V4, correção 01 (crítica): a linha 2 quebrava em duas linhas
-    // quando o texto era mais longo — o CSS padrão (white-space:normal)
-    // deixa o navegador quebrar sozinho quando a largura das palavras
-    // (no tamanho FINAL, já que transform não afeta a caixa de layout)
-    // excede o container. Reaproveita o mecanismo que já existe no app
-    // pra "linha fixa por template" (força white-space:nowrap nas linhas
-    // dessa estrofe) em vez de inventar um novo — é exatamente o
-    // comportamento pedido: nunca quebrar linha, sempre horizontal.
-    this.templateAppliedSchema = this.templateAppliedSchema || {};
-    this.templateAppliedSchema[stanzaId] = true;
-
-    return { ok: true };
-  }
-
-  /**
-   * Cena pronta "Three-Line Lyric Build" — reescrita com dados EXATOS
-   * de EFEITO_3_-_FINALIZADO.zip (motion-data.json, bounding box por
-   * frame, 86 frames/25fps). Substitui a aproximação anterior
-   * (palavra por palavra com tempo interpolado da largura).
-   *
-   * Estrutura real da referência: linha 1 (top) e linha 2 (red) são
-   * cada uma um BLOCO ÚNICO que estica/comprime numa caixa que cresce
-   * — TODAS as palavras da linha compartilham a MESMA receita,
-   * aplicadas juntas (igual à Vertical Stretch). A linha 3 tem 3
-   * elementos INDEPENDENTES (be/my/soul), cada um com sua própria
-   * curva — a 3ª (soul) inclui a correção de escala 92% que o próprio
-   * pacote de referência aplica (README: "Correção cirúrgica do
-   * SOUL"), preservada aqui.
-   */
-  applyThreeLineLyricBuildScene(stanzaId) {
-    if (!this.parsed || !this.parsed.stanzas) {
-      return { ok: false, error: 'Nenhum projeto carregado.' };
-    }
-    const stanza = this.parsed.stanzas.find(s => s.id === stanzaId);
-    if (!stanza) return { ok: false, error: 'Estrofe não encontrada.' };
-    const lines = stanza.lines || [];
-    if (lines.length !== 3) {
-      return { ok: false, error: `Essa cena precisa de exatamente 3 linhas nessa estrofe (encontrei ${lines.length}).` };
-    }
-    for (const ln of lines) {
-      if (!ln.words || !ln.words.length) {
-        return { ok: false, error: 'Todas as 3 linhas precisam ter pelo menos uma palavra.' };
-      }
-    }
-    const data = window.WM_THREE_LINE_BUILD_V10_DATA;
-    if (!data) return { ok: false, error: 'Dados da cena não carregados.' };
-
-    const sceneCfg = typeof this.getSceneConfig === 'function' ? this.getSceneConfig(stanzaId) : null;
-    const s = (sceneCfg && sceneCfg.style) ? sceneCfg.style : this.style;
-    let refHeight = 0, refWidth = 0;
-    const cont = this.canvas && (this.canvas.closest('.editor-canvas') || this.canvas);
-    if (cont) {
-      const cr = cont.getBoundingClientRect();
-      refHeight = cr.height || cont.clientHeight || 0;
-      refWidth = cr.width || cont.clientWidth || 0;
-    }
-    let effectiveFontSize = s.fontSize;
-    if (refHeight > 0) {
-      let refAltura16x9 = refHeight;
-      if (refWidth > 0 && typeof window.WM_CAIXA_DESIGN === 'function') {
-        refAltura16x9 = window.WM_CAIXA_DESIGN(refWidth, refHeight).h;
-      }
-      effectiveFontSize = s.fontSize * (refAltura16x9 / 600);
-    }
-    const fontWeight = s.fontWeight || 400;
-    const fontStyle = s.fontStyle || 'normal';
-    const fontFamily = s.fontFamily || 'Inter';
-    const fontCss = `${fontStyle} ${fontWeight} ${effectiveFontSize}px "${fontFamily}", sans-serif`;
-    const engine = window.WM_ANIM_ENGINE;
-
-    // Constrói os keyframes de um "layer" (grupo ou palavra), incluindo
-    // um keyframe explícito de pré-entrada (opacity:0) no instante 0 e
-    // um "salto" pra opacity:1 logo antes do frame de entrada real —
-    // mesma técnica de PRE_ENTRY já validada nas cenas anteriores.
-    const buildKeyframes = (layerKey, heightPx) => {
-      const layer = data[layerKey];
-      const entryFrac = layer.entryMs / data.totalDurationMs;
-      const first = layer.points[0];
-      const rawPoints = [
-        { at: 0, opacity: 0, translateXRatio: first.tXr, translateYRatio: first.tYr, scaleX: first.scaleX, scaleY: first.scaleY },
-        { at: Math.max(0.0005, entryFrac - 0.0005), opacity: 0, translateXRatio: first.tXr, translateYRatio: first.tYr, scaleX: first.scaleX, scaleY: first.scaleY },
-        { at: entryFrac, opacity: 1, translateXRatio: first.tXr, translateYRatio: first.tYr, scaleX: first.scaleX, scaleY: first.scaleY },
-      ];
-      layer.points.slice(1).forEach(p => {
-        rawPoints.push({ at: p.at, opacity: 1, translateXRatio: p.tXr, translateYRatio: p.tYr, scaleX: p.scaleX, scaleY: p.scaleY });
-      });
-      return engine.buildRatioKeyframes(rawPoints, heightPx, effectiveFontSize);
-    };
-
-    // LINHA 1 (top) e LINHA 2 (red): grupo único — mesma receita
-    // aplicada simultaneamente em todas as palavras da linha (igual à
-    // Vertical Stretch), delay=0 (o tempo de entrada já está embutido
-    // no keyframe de pré-entrada, igual à Kinetic Bowl Deep/PreEntry).
-    [['top', lines[0]], ['red', lines[1]]].forEach(([layerKey, ln]) => {
-      const sampleText = ln.words.map(w => w.text).join(' ');
-      const heightPx = engine.measureTextHeight(fontCss, sampleText);
-      const keyframes = buildKeyframes(layerKey, heightPx);
-      const dynId = `wm-three-line-v10-${layerKey}-${stanzaId}`;
-      this._registerDynamicSceneRecipe(dynId, keyframes);
-      ln.words.forEach(w => {
-        this.setWordOverride(w.id, {
-          entrance: dynId,
-          delay: 0,
-          durationScale: data.totalDurationMs / 1000,
-        });
-      });
-    });
-
-    // LINHA 3: 3 papéis independentes (be/my/soul) — generaliza pra
-    // mais/menos de 3 palavras reusando o papel mais próximo.
-    const line3Roles = ['be', 'my', 'soul'];
-    lines[2].words.forEach((w, wi) => {
-      const layerKey = line3Roles[Math.min(wi, line3Roles.length - 1)];
-      const heightPx = engine.measureTextHeight(fontCss, w.text);
-      const keyframes = buildKeyframes(layerKey, heightPx);
-      const dynId = `wm-three-line-v10-${layerKey}-w${w.id}`;
-      this._registerDynamicSceneRecipe(dynId, keyframes);
-      this.setWordOverride(w.id, {
-        entrance: dynId,
-        delay: 0,
-        durationScale: data.totalDurationMs / 1000,
-      });
-    });
-
-    this.setSceneOverride(stanzaId, { target: 'word', stagger: 0 });
-    this.templateAppliedSchema = this.templateAppliedSchema || {};
-    this.templateAppliedSchema[stanzaId] = true;
-
-    return { ok: true };
-  }
-
-  /**
-   * Cena pronta "Title Card" — medida AO VIVO a partir do pacote HTML
-   * enviado (não de vídeo): controlei a timeline própria da ferramenta
-   * e medi posição real via getBoundingClientRect a cada 100ms.
-   * Linha 1 = título (N palavras, entram de posições espalhadas,
-   * escalonadas). Linha 2 = 1 palavra de destaque (estouro elástico
-   * com leve rotação, depois respiração lenta). Uma régua vermelha
-   * desenha embaixo do título entre as duas fases.
-   *
-   * LIMITAÇÃO DECLARADA: a referência roda em loop contínuo; aqui a
-   * animação toca as 5 fases uma vez, fiel ao que foi medido, mas não
-   * reinicia sozinha depois — reimplementar o loop exigiria mexer no
-   * mecanismo de iteração da animação, fora do escopo desta rodada.
-   */
-  applyTitleCardScene(stanzaId) {
-    if (!this.parsed || !this.parsed.stanzas) {
-      return { ok: false, error: 'Nenhum projeto carregado.' };
-    }
-    const stanza = this.parsed.stanzas.find(s => s.id === stanzaId);
-    if (!stanza) return { ok: false, error: 'Estrofe não encontrada.' };
-    const lines = stanza.lines || [];
-    if (lines.length !== 2) {
-      return { ok: false, error: `Essa cena precisa de exatamente 2 linhas (encontrei ${lines.length}).` };
-    }
-    const headlineWords = lines[0].words || [];
-    const punchWords = lines[1].words || [];
-    if (!headlineWords.length || punchWords.length !== 1) {
-      return { ok: false, error: 'A linha 1 é o título (1+ palavras); a linha 2 precisa ter exatamente 1 palavra (a de destaque).' };
-    }
-    const data = window.WM_TITLE_CARD_DATA;
-    if (!data) return { ok: false, error: 'Dados da cena não carregados.' };
-
-    const sceneCfg = typeof this.getSceneConfig === 'function' ? this.getSceneConfig(stanzaId) : null;
-    const s = (sceneCfg && sceneCfg.style) ? sceneCfg.style : this.style;
-    let refHeight = 0, refWidth = 0;
-    const cont = this.canvas && (this.canvas.closest('.editor-canvas') || this.canvas);
-    if (cont) {
-      const cr = cont.getBoundingClientRect();
-      refHeight = cr.height || cont.clientHeight || 0;
-      refWidth = cr.width || cont.clientWidth || 0;
-    }
-    let effectiveFontSize = s.fontSize;
-    if (refHeight > 0) {
-      let refAltura16x9 = refHeight;
-      if (refWidth > 0 && typeof window.WM_CAIXA_DESIGN === 'function') {
-        refAltura16x9 = window.WM_CAIXA_DESIGN(refWidth, refHeight).h;
-      }
-      effectiveFontSize = s.fontSize * (refAltura16x9 / 600);
-    }
-    const fontWeight = s.fontWeight || 400;
-    const fontStyle = s.fontStyle || 'normal';
-    const fontFamily = s.fontFamily || 'Inter';
-    const fontCss = `${fontStyle} ${fontWeight} ${effectiveFontSize}px "${fontFamily}", sans-serif`;
-    const engine = window.WM_ANIM_ENGINE;
-
-    // LINHA 1: palavras do título entram de posições espalhadas
-    // (medidas), escalonadas, convergindo pra uma linha só.
-    headlineWords.forEach((w, i) => {
-      const role = data.headlineWords[Math.min(i, data.headlineWords.length - 1)];
-      const heightPx = engine.measureTextHeight(fontCss, w.text);
-      const rawPoints = [
-        { at: 0, opacity: 0, translateXRatio: role.dxRatio, translateYRatio: role.dyRatio, scaleX: 1, scaleY: 1 },
-        { at: 1, opacity: 1, translateXRatio: 0, translateYRatio: 0, scaleX: 1, scaleY: 1 },
-      ];
-      const keyframes = engine.buildRatioKeyframes(rawPoints, heightPx, effectiveFontSize);
-      const dynId = `wm-title-card-head-w${w.id}`;
-      this._registerDynamicSceneRecipe(dynId, keyframes);
-      const durMs = Math.max(200, data.headlineSettleMs - role.entryMs);
-      this.setWordOverride(w.id, {
-        entrance: dynId,
-        delay: role.entryMs / 1000,
-        durationScale: durMs / 1000,
-      });
-    });
-
-    // LINHA 2: palavra de destaque — estouro elástico (escala + leve
-    // rotação) e depois respiração lenta contínua, tudo numa receita
-    // só (0% a 100% cobre da entrada até o fim dos 5s medidos).
-    const punchWord = punchWords[0];
-    const heightPx2 = engine.measureTextHeight(fontCss, punchWord.text);
-    const totalPunchMs = data.totalDurationMs - data.punchStartMs; // janela da propria palavra
-    const t = (ms) => Math.min(1, Math.max(0, (ms - data.punchStartMs) / totalPunchMs));
-    const punchPoints = [
-      { at: 0,                 opacity: 0, scaleX: 0.02, scaleY: 0.02, rotate: 0 },
-      { at: t(2100),           opacity: 0.62, scaleX: 0.42, scaleY: 0.42, rotate: -1.7 },
-      { at: t(2500),           opacity: 1, scaleX: 1.10, scaleY: 1.10, rotate: 0.35 },
-      { at: t(3000),           opacity: 1, scaleX: 1.00, scaleY: 1.00, rotate: 0 },
-      { at: t(3500),           opacity: 1, scaleX: 1.02, scaleY: 1.02, rotate: 0 },
-      { at: t(4025),           opacity: 1, scaleX: 0.98, scaleY: 0.98, rotate: 0 },
-      { at: t(4550),           opacity: 1, scaleX: 1.02, scaleY: 1.02, rotate: 0 },
-      { at: 1,                 opacity: 1, scaleX: 0.986, scaleY: 0.986, rotate: 0 },
-    ];
-    const rawPunch = punchPoints.map(p => ({
-      at: p.at, opacity: p.opacity, translateYRatio: 0,
-      scaleX: p.scaleX, scaleY: p.scaleY, rotate: p.rotate,
-    }));
-    const punchKeyframes = engine.buildRatioKeyframes(rawPunch, heightPx2, effectiveFontSize);
-    // rotate não precisa de conversão de proporção — buildRatioKeyframes
-    // não mexe nele, mas preciso garantir que passou adiante:
-    punchKeyframes.forEach((kf, i) => { kf.rotate = punchPoints[i].rotate; });
-    const punchDynId = `wm-title-card-punch-w${punchWord.id}`;
-    this._registerDynamicSceneRecipe(punchDynId, punchKeyframes);
-    this.setWordOverride(punchWord.id, {
-      entrance: punchDynId,
-      delay: data.punchStartMs / 1000,
-      durationScale: totalPunchMs / 1000,
-    });
-
-    this.setSceneOverride(stanzaId, { target: 'word', stagger: 0 });
-    this.templateAppliedSchema = this.templateAppliedSchema || {};
-    this.templateAppliedSchema[stanzaId] = true;
-
-    // RÉGUA VERMELHA: elemento novo, não é uma "palavra" — insere
-    // diretamente no DOM da linha 1 depois de renderizar, com sua
-    // própria animação de largura (0 → 100%). Reaplica no próximo
-    // playFull() via um observer curto, já que renderStanza() pode
-    // recriar o DOM.
-    this._titleCardRuleConfig = this._titleCardRuleConfig || {};
-    this._titleCardRuleConfig[stanzaId] = {
-      startMs: data.ruleStartMs, endMs: data.ruleEndMs, color: '#ec3013',
-    };
-    this._ensureTitleCardRuleInjector();
-
-    return { ok: true };
-  }
-
-  /**
-   * Observa a estrofe com Title Card aplicado e injeta a régua vermelha
-   * como um elemento próprio (não uma palavra) sempre que a linha 1 for
-   * (re)renderizada — já que o DOM da estrofe pode ser recriado.
-   */
-  _ensureTitleCardRuleInjector() {
-    if (this.__titleCardRuleObserverInstalled) return;
-    this.__titleCardRuleObserverInstalled = true;
-    const engineRef = this;
-    const inject = () => {
-      if (!engineRef._titleCardRuleConfig) return;
-      Object.keys(engineRef._titleCardRuleConfig).forEach(stanzaId => {
-        const cfg = engineRef._titleCardRuleConfig[stanzaId];
-        const lineEl = document.querySelector(`[data-stanza-id="${stanzaId}"] .lyric-line`);
-        if (!lineEl) return;
-        let rule = lineEl.querySelector('.wm-title-card-rule');
-        if (!rule) {
-          rule = document.createElement('div');
-          rule.className = 'wm-title-card-rule';
-          rule.style.cssText = `height:0.08em; background:${cfg.color}; margin-top:0.15em; width:0%;`;
-          lineEl.appendChild(rule);
-        }
-        const dur = Math.max(60, cfg.endMs - cfg.startMs);
-        rule.style.transition = 'none';
-        rule.style.animation = `wm-title-card-rule-grow ${dur / 1000}s linear ${cfg.startMs / 1000}s both`;
-      });
-    };
-    if (!document.getElementById('wm-title-card-rule-style')) {
-      const styleEl = document.createElement('style');
-      styleEl.id = 'wm-title-card-rule-style';
-      styleEl.textContent = '@keyframes wm-title-card-rule-grow { from { width: 0%; } to { width: 100%; } }';
-      document.head.appendChild(styleEl);
-    }
-    const observer = new MutationObserver(() => inject());
-    if (this.canvas) observer.observe(this.canvas, { childList: true, subtree: true });
-    inject();
-  }
-
-  /**
-   * Pega config efetiva pra um stanza (global + override).
-   * Retorna { entrance, exit, background, stanzaDuration, style, target, stagger }
-   */
-  getSceneConfig(stanzaId) {
-    const override = this.sceneOverrides[stanzaId] || {};
-    // Procura a estrofe pelo id pra ler stanza.background (background por estrofe)
-    let stanzaBg = null;
-    if (this.parsed && this.parsed.stanzas) {
-      const s = this.parsed.stanzas.find(st => st.id === stanzaId);
-      if (s && s.background) stanzaBg = s.background;
-    }
-    return {
-      entrance:       override.entrance       ?? this.animConfig.entrance,
-      exit:           override.exit           ?? this.animConfig.exit,
-      // Prioridade: stanza.background (por estrofe) → sceneOverride.background → globalBg → brand
-      // NÃO usa window.__currentBg como fallback porque ele rastreia "último aplicado"
-      // (poluído ao navegar entre estrofes) e quebraria estrofes sem bg próprio.
-      background:     stanzaBg
-                       ?? override.background
-                       ?? (typeof window !== 'undefined' ? window.__globalBg : null)
-                       ?? 'brand',
-      stanzaDuration: override.stanzaDuration ?? null, // null = usa global (export)
-      target:         override.target         ?? this.animConfig.target,
-      stagger:        override.stagger        ?? this.animConfig.stagger,
-      style:          { ...this.style, ...(override.style || {}) },
-    };
-  }
-
-  /**
-   * Define um override pra uma estrofe específica.
-   * patch: { entrance?, exit?, background?, stanzaDuration?, ... }
-   */
-  setSceneOverride(stanzaId, patch) {
-    if (!this.sceneOverrides[stanzaId]) this.sceneOverrides[stanzaId] = {};
-    Object.assign(this.sceneOverrides[stanzaId], patch);
-  }
-
-  /**
-   * Remove um override (volta pra config global).
-   */
-  clearSceneOverride(stanzaId, key = null) {
-    if (!this.sceneOverrides[stanzaId]) return;
-    if (key === null) {
-      delete this.sceneOverrides[stanzaId];
-    } else {
-      delete this.sceneOverrides[stanzaId][key];
-    }
-  }
-
-  /* ==================== KEYFRAMES CSS INJECTION ==================== */
-
-  _ensureKeyframesInjected() {
-    if (document.getElementById('wm-anim-keyframes')) return;
-    const lib = window.WM_ANIM_V2;
-    if (!lib) {
-      console.warn('WM_ANIM_V2 não está carregado');
-      return;
-    }
-
-    const styleEl = document.createElement('style');
-    styleEl.id = 'wm-anim-keyframes';
-    let css = '';
-
-    lib.ANIMATIONS.forEach(anim => {
-      css += this._generateKeyframeCSS(anim);
-    });
-
-    // Keyframe especial: transição de cor para palavras emphasized
-    // (0% = cor base, 100% = dourado #d4a857)
-    css += `
-@keyframes wm-emphasis-gold {
-  0%   { color: inherit; }
-  100% { color: #d4a857; }
-}
-`;
-
-    styleEl.textContent = css;
-    document.head.appendChild(styleEl);
-  }
-
-  /**
    * Registra uma receita de animação DINÂMICA (gerada em tempo de
    * aplicação de cena, ex: Kinetic Bowl Deep / Vertical Stretch) nos 3
    * lugares de sempre — preview (ANIMATIONS_V2 + CSS), motor novo
@@ -21980,6 +21269,259 @@ class RenderEngineV2 {
     document.addEventListener('animationend', (e) => {
       if (isScenedAnim(e.animationName)) e.target.style.willChange = 'auto';
     }, true);
+  }
+
+  /**
+   * Cena pronta "Kinetic Scale Stack" — dados EXATOS de
+   * EFEITO_3_-_FINALIZADO.zip (motion-data.json, bounding box por
+   * frame, 86 frames/25fps). 3 linhas empilhadas: linha 1 (top) e
+   * linha 2 (red) são cada uma um BLOCO ÚNICO que estica/comprime
+   * numa caixa que cresce — TODAS as palavras da linha compartilham a
+   * MESMA receita, aplicadas juntas. A linha 3 tem 3 elementos
+   * INDEPENDENTES (be/my/soul), cada um com sua própria curva — a 3ª
+   * (soul) inclui a correção de escala 92% que o próprio pacote de
+   * referência aplica, preservada aqui na altura de referência.
+   *
+   * FIDELIDADE: nenhum valor medido é recalibrado com base no texto
+   * do usuário — a proporção (razão sobre a altura renderizada de
+   * referência) é a mesma pra qualquer texto; só o pixel final muda
+   * conforme a fonte/tamanho escolhidos no editor, preservando o
+   * timing, a duração e a relação entre os elementos exatamente como
+   * medidos.
+   */
+  applyKineticScaleStackScene(stanzaId) {
+    if (!this.parsed || !this.parsed.stanzas) {
+      return { ok: false, error: 'Nenhum projeto carregado.' };
+    }
+    const stanza = this.parsed.stanzas.find(s => s.id === stanzaId);
+    if (!stanza) return { ok: false, error: 'Estrofe não encontrada.' };
+    const lines = stanza.lines || [];
+    if (lines.length !== 3) {
+      return { ok: false, error: `Essa cena precisa de exatamente 3 linhas nessa estrofe (encontrei ${lines.length}).` };
+    }
+    for (const ln of lines) {
+      if (!ln.words || !ln.words.length) {
+        return { ok: false, error: 'Todas as 3 linhas precisam ter pelo menos uma palavra.' };
+      }
+    }
+    const data = window.WM_THREE_LINE_BUILD_V10_DATA;
+    if (!data) return { ok: false, error: 'Dados da cena não carregados.' };
+
+    const sceneCfg = typeof this.getSceneConfig === 'function' ? this.getSceneConfig(stanzaId) : null;
+    const s = (sceneCfg && sceneCfg.style) ? sceneCfg.style : this.style;
+    let refHeight = 0, refWidth = 0;
+    const cont = this.canvas && (this.canvas.closest('.editor-canvas') || this.canvas);
+    if (cont) {
+      const cr = cont.getBoundingClientRect();
+      refHeight = cr.height || cont.clientHeight || 0;
+      refWidth = cr.width || cont.clientWidth || 0;
+    }
+    let effectiveFontSize = s.fontSize;
+    if (refHeight > 0) {
+      let refAltura16x9 = refHeight;
+      if (refWidth > 0 && typeof window.WM_CAIXA_DESIGN === 'function') {
+        refAltura16x9 = window.WM_CAIXA_DESIGN(refWidth, refHeight).h;
+      }
+      effectiveFontSize = s.fontSize * (refAltura16x9 / 600);
+    }
+    const fontWeight = s.fontWeight || 400;
+    const fontStyle = s.fontStyle || 'normal';
+    const fontFamily = s.fontFamily || 'Inter';
+    const fontCss = `${fontStyle} ${fontWeight} ${effectiveFontSize}px "${fontFamily}", sans-serif`;
+    const engine = window.WM_ANIM_ENGINE;
+
+    // Constrói os keyframes de um "layer" (grupo ou palavra), incluindo
+    // um keyframe explícito de pré-entrada (opacity:0) no instante 0 e
+    // um "salto" pra opacity:1 logo antes do frame de entrada real —
+    // PRE_ENTRY, mesma técnica já validada nas cenas anteriores.
+    const buildKeyframes = (layerKey, heightPx) => {
+      const layer = data[layerKey];
+      const entryFrac = layer.entryMs / data.totalDurationMs;
+      const first = layer.points[0];
+      const rawPoints = [
+        { at: 0, opacity: 0, translateXRatio: first.tXr, translateYRatio: first.tYr, scaleX: first.scaleX, scaleY: first.scaleY },
+        { at: Math.max(0.0005, entryFrac - 0.0005), opacity: 0, translateXRatio: first.tXr, translateYRatio: first.tYr, scaleX: first.scaleX, scaleY: first.scaleY },
+        { at: entryFrac, opacity: 1, translateXRatio: first.tXr, translateYRatio: first.tYr, scaleX: first.scaleX, scaleY: first.scaleY },
+      ];
+      layer.points.slice(1).forEach(p => {
+        rawPoints.push({ at: p.at, opacity: 1, translateXRatio: p.tXr, translateYRatio: p.tYr, scaleX: p.scaleX, scaleY: p.scaleY });
+      });
+      return engine.buildRatioKeyframes(rawPoints, heightPx, effectiveFontSize);
+    };
+
+    // LINHA 1 (top) e LINHA 2 (red): a referência estica/comprime a
+    // LINHA INTEIRA como UM BLOCO SÓ (uma imagem/texto só encolhendo
+    // ao redor de um centro comum) — não cada palavra encolhendo no
+    // seu próprio centro. Aplicar a mesma receita em cada PALAVRA
+    // separadamente (como cenas anteriores faziam) fica errado aqui:
+    // cada palavra encolhe sozinha, no lugar dela, e a linha parece
+    // "esparramada" em vez de comprimida — bug real que só apareceu
+    // ao comparar visualmente com a referência, como pedido. Corrigido
+    // aplicando a animação no CONTAINER da linha (todas as palavras
+    // dentro dele escalam juntas, ao redor do mesmo centro).
+    this._kineticScaleStackLines = this._kineticScaleStackLines || {};
+    this._kineticScaleStackLines[stanzaId] = {};
+    [['top', lines[0], 0], ['red', lines[1], 1]].forEach(([layerKey, ln, lineIdx]) => {
+      const sampleText = ln.words.map(w => w.text).join(' ');
+      const heightPx = engine.measureTextHeight(fontCss, sampleText);
+      const keyframes = buildKeyframes(layerKey, heightPx);
+      const dynId = `wm-kinetic-scale-stack-${layerKey}-${stanzaId}`;
+      this._registerDynamicSceneRecipe(dynId, keyframes);
+      this._kineticScaleStackLines[stanzaId][lineIdx] = dynId;
+      // As palavras em si ficam paradas (receita estática, sem
+      // transform) — só precisam existir no DOM; quem anima de
+      // verdade é o container da linha.
+      const staticId = `wm-kinetic-scale-stack-static-${stanzaId}`;
+      const staticKeyframes = [{ at: 0, opacity: 1, translateY: 0, scaleX: 1, scaleY: 1 }, { at: 1, opacity: 1, translateY: 0, scaleX: 1, scaleY: 1 }];
+      this._registerDynamicSceneRecipe(staticId, staticKeyframes);
+      ln.words.forEach(w => {
+        this.setWordOverride(w.id, { entrance: staticId, delay: 0, durationScale: data.totalDurationMs / 1000 });
+      });
+    });
+    this._ensureKineticScaleStackLineInjector();
+
+    // LINHA 3: 3 papéis independentes (be/my/soul) — cada um É um
+    // elemento próprio na referência (não faz parte do bloco único),
+    // então continua com entrada por PALAVRA — generaliza pra mais/
+    // menos de 3 palavras reusando o papel mais próximo.
+    const line3Roles = ['be', 'my', 'soul'];
+    lines[2].words.forEach((w, wi) => {
+      const layerKey = line3Roles[Math.min(wi, line3Roles.length - 1)];
+      const heightPx = engine.measureTextHeight(fontCss, w.text);
+      const keyframes = buildKeyframes(layerKey, heightPx);
+      const dynId = `wm-kinetic-scale-stack-${layerKey}-w${w.id}`;
+      this._registerDynamicSceneRecipe(dynId, keyframes);
+      this.setWordOverride(w.id, {
+        entrance: dynId,
+        delay: 0,
+        durationScale: data.totalDurationMs / 1000,
+      });
+    });
+
+    this.setSceneOverride(stanzaId, { target: 'word', stagger: 0 });
+    this.templateAppliedSchema = this.templateAppliedSchema || {};
+    this.templateAppliedSchema[stanzaId] = true;
+
+    return { ok: true };
+  }
+
+  /**
+   * Aplica a animação de GRUPO (linha 1 e linha 2 da Kinetic Scale
+   * Stack) diretamente no elemento CONTAINER (.lyric-line), não em
+   * cada palavra — é o que faz a linha inteira encolher/crescer como
+   * um bloco só, igual à referência. Reaplica automaticamente quando a
+   * estrofe é (re)renderizada, já que o DOM pode ser recriado.
+   */
+  _ensureKineticScaleStackLineInjector() {
+    if (this.__kineticScaleStackObserverInstalled) return;
+    this.__kineticScaleStackObserverInstalled = true;
+    const engineRef = this;
+    const inject = () => {
+      if (!engineRef._kineticScaleStackLines) return;
+      Object.keys(engineRef._kineticScaleStackLines).forEach(stanzaId => {
+        const porLinha = engineRef._kineticScaleStackLines[stanzaId];
+        const stanzaEl = document.querySelector(`[data-stanza-id="${stanzaId}"]`);
+        if (!stanzaEl) return;
+        const lineEls = stanzaEl.querySelectorAll('.lyric-line');
+        Object.keys(porLinha).forEach(lineIdxStr => {
+          const lineIdx = Number(lineIdxStr);
+          const lineEl = lineEls[lineIdx];
+          const dynId = porLinha[lineIdx];
+          if (!lineEl || !dynId) return;
+          const already = lineEl.style.animationName;
+          const expected = `wm-anim-${dynId}`;
+          if (already !== expected) {
+            const durSec = (window.WM_THREE_LINE_BUILD_V10_DATA?.totalDurationMs || 3400) / 1000;
+            lineEl.style.transformOrigin = '50% 50%';
+            lineEl.style.animation = `${expected} ${durSec}s linear 0s 1 normal both running`;
+          }
+        });
+      });
+    };
+    const observer = new MutationObserver(() => inject());
+    if (this.canvas) observer.observe(this.canvas, { childList: true, subtree: true });
+    inject();
+  }
+
+  /**
+   * Pega config efetiva pra um stanza (global + override).
+   * Retorna { entrance, exit, background, stanzaDuration, style, target, stagger }
+   */
+  getSceneConfig(stanzaId) {
+    const override = this.sceneOverrides[stanzaId] || {};
+    // Procura a estrofe pelo id pra ler stanza.background (background por estrofe)
+    let stanzaBg = null;
+    if (this.parsed && this.parsed.stanzas) {
+      const s = this.parsed.stanzas.find(st => st.id === stanzaId);
+      if (s && s.background) stanzaBg = s.background;
+    }
+    return {
+      entrance:       override.entrance       ?? this.animConfig.entrance,
+      exit:           override.exit           ?? this.animConfig.exit,
+      // Prioridade: stanza.background (por estrofe) → sceneOverride.background → globalBg → brand
+      // NÃO usa window.__currentBg como fallback porque ele rastreia "último aplicado"
+      // (poluído ao navegar entre estrofes) e quebraria estrofes sem bg próprio.
+      background:     stanzaBg
+                       ?? override.background
+                       ?? (typeof window !== 'undefined' ? window.__globalBg : null)
+                       ?? 'brand',
+      stanzaDuration: override.stanzaDuration ?? null, // null = usa global (export)
+      target:         override.target         ?? this.animConfig.target,
+      stagger:        override.stagger        ?? this.animConfig.stagger,
+      style:          { ...this.style, ...(override.style || {}) },
+    };
+  }
+
+  /**
+   * Define um override pra uma estrofe específica.
+   * patch: { entrance?, exit?, background?, stanzaDuration?, ... }
+   */
+  setSceneOverride(stanzaId, patch) {
+    if (!this.sceneOverrides[stanzaId]) this.sceneOverrides[stanzaId] = {};
+    Object.assign(this.sceneOverrides[stanzaId], patch);
+  }
+
+  /**
+   * Remove um override (volta pra config global).
+   */
+  clearSceneOverride(stanzaId, key = null) {
+    if (!this.sceneOverrides[stanzaId]) return;
+    if (key === null) {
+      delete this.sceneOverrides[stanzaId];
+    } else {
+      delete this.sceneOverrides[stanzaId][key];
+    }
+  }
+
+  /* ==================== KEYFRAMES CSS INJECTION ==================== */
+
+  _ensureKeyframesInjected() {
+    if (document.getElementById('wm-anim-keyframes')) return;
+    const lib = window.WM_ANIM_V2;
+    if (!lib) {
+      console.warn('WM_ANIM_V2 não está carregado');
+      return;
+    }
+
+    const styleEl = document.createElement('style');
+    styleEl.id = 'wm-anim-keyframes';
+    let css = '';
+
+    lib.ANIMATIONS.forEach(anim => {
+      css += this._generateKeyframeCSS(anim);
+    });
+
+    // Keyframe especial: transição de cor para palavras emphasized
+    // (0% = cor base, 100% = dourado #d4a857)
+    css += `
+@keyframes wm-emphasis-gold {
+  0%   { color: inherit; }
+  100% { color: #d4a857; }
+}
+`;
+
+    styleEl.textContent = css;
+    document.head.appendChild(styleEl);
   }
 
   /**
@@ -29592,67 +29134,6 @@ function initEditor() {
     if (b) { const t = b.innerHTML; b.innerHTML = '✓ Aplicado em todos os slides'; setTimeout(() => { b.innerHTML = t; }, 1600); }
   });
 
-  // ============ CENAS PRONTAS ============
-  $('#btn-scene-kinetic-bowl-deep')?.addEventListener('click', () => {
-    const st = engine.parsed?.stanzas?.[engine.currentStanzaIndex];
-    if (!st) { showToast('Nenhuma estrofe selecionada.'); return; }
-    const result = engine.applyKineticBowlDeepScene(st.id);
-    if (!result.ok) {
-      showToast(result.error);
-      return;
-    }
-    markDirty('cena: kinetic bowl deep');
-    if (typeof engine.playFull === 'function') engine.playFull();
-    showToast('Cena aplicada — teste no preview.');
-    const b = document.getElementById('btn-scene-kinetic-bowl-deep');
-    if (b) { const t = b.innerHTML; b.innerHTML = '✓ Aplicada'; setTimeout(() => { b.innerHTML = t; }, 1600); }
-  });
-
-  $('#btn-scene-put-off-hotted')?.addEventListener('click', () => {
-    const st = engine.parsed?.stanzas?.[engine.currentStanzaIndex];
-    if (!st) { showToast('Nenhuma estrofe selecionada.'); return; }
-    const result = engine.applyPutOffHottedScene(st.id);
-    if (!result.ok) {
-      showToast(result.error);
-      return;
-    }
-    markDirty('cena: vertical stretch');
-    if (typeof engine.playFull === 'function') engine.playFull();
-    showToast('Cena aplicada — teste no preview.');
-    const b = document.getElementById('btn-scene-put-off-hotted');
-    if (b) { const t = b.innerHTML; b.innerHTML = '✓ Aplicada'; setTimeout(() => { b.innerHTML = t; }, 1600); }
-  });
-
-  $('#btn-scene-three-line-build')?.addEventListener('click', () => {
-    const st = engine.parsed?.stanzas?.[engine.currentStanzaIndex];
-    if (!st) { showToast('Nenhuma estrofe selecionada.'); return; }
-    const result = engine.applyThreeLineLyricBuildScene(st.id);
-    if (!result.ok) {
-      showToast(result.error);
-      return;
-    }
-    markDirty('cena: three-line build');
-    if (typeof engine.playFull === 'function') engine.playFull();
-    showToast('Cena aplicada — teste no preview.');
-    const b = document.getElementById('btn-scene-three-line-build');
-    if (b) { const t = b.innerHTML; b.innerHTML = '✓ Aplicada'; setTimeout(() => { b.innerHTML = t; }, 1600); }
-  });
-
-  $('#btn-scene-title-card')?.addEventListener('click', () => {
-    const st = engine.parsed?.stanzas?.[engine.currentStanzaIndex];
-    if (!st) { showToast('Nenhuma estrofe selecionada.'); return; }
-    const result = engine.applyTitleCardScene(st.id);
-    if (!result.ok) {
-      showToast(result.error);
-      return;
-    }
-    markDirty('cena: title card');
-    if (typeof engine.playFull === 'function') engine.playFull();
-    showToast('Cena aplicada — teste no preview.');
-    const b = document.getElementById('btn-scene-title-card');
-    if (b) { const t = b.innerHTML; b.innerHTML = '✓ Aplicada'; setTimeout(() => { b.innerHTML = t; }, 1600); }
-  });
-
   // ============ FAVORITOS (animações e fontes) ============
   // Persistido em localStorage. Não depende de projeto — é do usuário.
 
@@ -36659,8 +36140,7 @@ function initEditor() {
    * quando o usuário clica no botão "Cena Pronta" manualmente.
    */
   const WM_SCENE_TEMPLATE_APPLIERS = {
-    'kinetic-bowl-deep-': 'applyKineticBowlDeepScene',
-    'wm-put-off-hotted-': 'applyPutOffHottedScene',
+    'wm-kinetic-scale-stack-': 'applyKineticScaleStackScene',
   };
 
   function _extrairSceneKeyDoTemplate(tpl) {
@@ -39966,203 +39446,6 @@ if (typeof window === 'undefined') { global.window = {}; }
 // no index.html — lá `window` já existe de verdade).
 if (typeof window === 'undefined') { global.window = {}; }
 
-/* ============================================================
-   DADOS DE PROPORÇÃO — Cena "Kinetic Bowl Deep"
-   ============================================================
-   Extraídos diretamente da especificação enviada pelo usuário
-   (WorshipMotion_EFEITO_1_JSON_COMPLETO_COM_TIPOGRAFIA.json), SEM
-   nenhum valor alterado — só reformatados como PROPORÇÃO em vez de
-   pixel absoluto:
-
-     translateYRatio = (y_medido_no_frame - y_final) / alturaRenderizadaDeReferencia
-     trackingRatio   = letterSpacingPx_medido / alturaRenderizadaDeReferencia
-
-   "alturaRenderizadaDeReferencia" é a altura real (em px, no vídeo 4K
-   de referência) que CADA palavra tinha no estado assentado (escala
-   1.0) — vem de referenceFinalBBox.h do JSON pras 4 palavras vermelhas,
-   e do primeiro frame com scale=1.0 pra palavra final.
-
-   Essas proporções são convertidas de volta pra pixel/em em tempo de
-   aplicação da cena (função applyKineticBowlDeepScene), usando a altura
-   REAL renderizada da palavra na fonte/peso/tamanho que o usuário
-   escolheu no editor — não um valor fixo. Isso preserva matematicamente
-   o deslocamento visual do JSON em qualquer fonte/tamanho/peso. Ver
-   WM_ANIM_ENGINE.measureTextHeight() e
-   WM_ANIM_ENGINE.buildKineticBowlDeepKeyframes().
-   ============================================================ */
-
-/* ============================================================
-   DADOS — Efeito 2 "PUT OFF HOTTED" (Vertical Stretch / Word Pop)
-   ============================================================
-   Extraídos de WorshipMotion_EFEITO_2_JSON_COMPLETO_CLAUDE.json, sem
-   nenhum valor alterado — reformatados como PROPORÇÃO (razão sobre a
-   altura renderizada de referência), igual à Kinetic Bowl Deep, pra
-   funcionar com qualquer fonte/peso/tamanho escolhido no editor.
-
-   LINHA 1 ("PUT OFF HOTTED" no vídeo): anima como GRUPO — a MESMA
-   receita é aplicada a TODAS as palavras da linha 1 simultaneamente
-   (delay=0 pra todas), criando o efeito de "a linha inteira estica e
-   assenta junto". Padrão "hold então salto" (a linha fica parada numa
-   escala por alguns frames, depois salta pra próxima) — codificado com
-   pares de keyframes bem próximos (técnica igual à usada no Efeito 1).
-
-   LINHA 2 ("DO NOT PUT IS ON THE MAP." no vídeo): cada palavra é uma
-   role independente que aparece de baixo pra cima com estica vertical
-   exagerada, assenta rápido (~40-80ms). Diferente do Efeito 1: aqui a
-   remoção de layout (display:none) antes da entrada é OBRIGATÓRIA, não
-   só opacity — é isso que faz as palavras já visíveis reposicionarem
-   sozinhas (recentralizar) quando uma nova palavra entra, usando o
-   próprio fluxo de texto centralizado do navegador, sem código extra
-   de layout.
-   ============================================================ */
-
-/* ============================================================
-   DADOS — Efeito 2 "PUT OFF HOTTED" (Vertical Stretch / Word Pop)
-   ============================================================
-   Extraídos de WorshipMotion_EFEITO_2_JSON_COMPLETO_CLAUDE.json,
-   CORRIGIDOS conforme WorshipMotion_EFEITO_2_CORRECAO_V2_CLAUDE.json
-   (patch): tempos de entrada da linha 1 e do cronograma da linha 2
-   ajustados para os valores corrigidos — nenhum valor de escala/
-   posição mudou, só o instante exato de cada um.
-
-   LINHA 1 ("PUT OFF HOTTED" no vídeo): grupo único — MESMA receita
-   aplicada a TODAS as palavras da linha simultaneamente (delay=0 pra
-   todas, sem stagger). BUG REAL CORRIGIDO no export: a fórmula
-   `anim.stagger || 0.06` tratava stagger=0 (explícito) como "não
-   definido" e usava 60ms escondido — por isso a linha 1 aparecia
-   palavra por palavra no vídeo exportado mesmo com a cena pedindo
-   delay=0 pra todas. Trocado pra checar o tipo explicitamente.
-
-   LINHA 2 ("DO NOT PUT IS ON THE MAP." no vídeo): cada palavra é uma
-   role independente que aparece de baixo com estica vertical
-   exagerada. display:none antes da entrada faz o reflow acontecer
-   sozinho no preview (fluxo de texto centralizado nativo).
-   ============================================================ */
-
-/* ============================================================
-   DADOS — Efeito 2 "PUT OFF HOTTED" (Vertical Stretch / Word Pop)
-   ============================================================
-   Extraídos de WorshipMotion_EFEITO_2_JSON_COMPLETO_CLAUDE.json.
-   REVERTIDO conforme WorshipMotion_EFEITO_2_V3_PERFORMANCE_FIDELIDADE.json
-   (V3): a "correção" de timing aplicada no patch anterior (V2) foi
-   desfeita — a V3 confirma que os tempos ORIGINAIS (frame1=0ms,
-   entrada da linha 2 em 920/1000/1320/1520/2000/2200/2400ms) são os
-   corretos. Nenhum valor de escala/posição mudou, só o tempo voltou
-   ao original.
-
-   LINHA 1 ("PUT OFF HOTTED" no vídeo): grupo único — MESMA receita
-   aplicada a TODAS as palavras da linha simultaneamente (delay=0 pra
-   todas, sem stagger). BUG REAL CORRIGIDO no export (mantido desta
-   correção): a fórmula `anim.stagger || 0.06` tratava stagger=0
-   (explícito) como "não definido" e usava 60ms escondido.
-
-   LINHA 2 ("DO NOT PUT IS ON THE MAP." no vídeo): cada palavra é uma
-   role independente que aparece de baixo com estica vertical
-   exagerada. display:none antes da entrada faz o reflow acontecer
-   sozinho no preview (fluxo de texto centralizado nativo) — sem
-   recalcular layout a cada frame, é o próprio motor de layout do
-   navegador que só refaz quando o DOM muda (entrada de uma palavra),
-   não a cada frame.
-   ============================================================ */
-
-/* ============================================================
-   DADOS — Efeito 2 "PUT OFF HOTTED" (Vertical Stretch / Word Pop)
-   ============================================================
-   Extraídos de WorshipMotion_EFEITO_2_JSON_COMPLETO_CLAUDE.json,
-   timing confirmado por WorshipMotion_EFEITO_2_V3_PERFORMANCE_FIDELIDADE.json.
-
-   PATCH V4 (correção de travamento real): a receita da linha 1 tinha
-   17 keyframes — a maioria só pra simular "segura e salta" com pares
-   de pontos quase colados no tempo (um truque, não uma boa prática).
-   Medi de verdade (rAF, gap entre frames) e confirmei que isso sozinho
-   causava travamento visível mesmo com só 1 palavra animando — muito
-   mais caro pro navegador avaliar do que devia. Reduzida pra 11
-   keyframes REAIS (sem duplicatas), usando `hold:true` nos primeiros
-   5 — vira animation-timing-function:steps(1,jump-end) no CSS gerado,
-   o jeito nativo e barato do CSS de fazer "segura e pula", em vez do
-   truque de keyframes quase-duplicados.
-
-   LINHA 1 ("PUT OFF HOTTED" no vídeo): grupo único — MESMA receita
-   aplicada a TODAS as palavras da linha simultaneamente (delay=0 pra
-   todas, sem stagger).
-
-   LINHA 2 ("DO NOT PUT IS ON THE MAP." no vídeo): cada palavra é uma
-   role independente que aparece de baixo com estica vertical
-   exagerada. display:none antes da entrada faz o reflow acontecer
-   sozinho no preview (fluxo de texto centralizado nativo).
-   ============================================================ */
-
-/* ============================================================
-   DADOS — Efeito 3 "Three-Line Lyric Build" (word-based)
-   ============================================================
-   Corrigido com WorshipMotion_EFEITO_3_JSON_CORRIGIDO_WORD_BASED.json
-   — substitui a estimativa por interpolação de largura da rodada
-   anterior por tempos de entrada REAIS medidos por palavra (o JSON
-   original tratava cada LINHA como uma layer só; essa correção usa
-   13 layers, uma por PALAVRA, com o frame de entrada observado
-   diretamente no raster — muito mais preciso: por exemplo "YOU'RE" e
-   "DON'T" entram JUNTAS aos 200ms (a estimativa anterior achava que
-   "DON'T" só entrava aos 1205ms).
-
-   Continua palavra por palavra (não letra por letra) — essa correção
-   não trouxe dados de sub-palavra, então a simplificação já avisada
-   antes continua valendo.
-   ============================================================ */
-
-/* ============================================================
-   DADOS — Efeito 4 "Title Card" (headline + palavra de destaque + loop)
-   ============================================================
-   Medidos AO VIVO (não de vídeo) — renderizei o pacote HTML enviado
-   num navegador de verdade, controlei a timeline pelo scrubber da
-   própria ferramenta, e medi posição/escala real via
-   getBoundingClientRect em cada palavra, a cada 100ms, ao longo dos
-   5 segundos completos (loop).
-
-   Estrutura: linha 1 = título (várias palavras, entrada escalonada
-   de posições espalhadas), régua vermelha desenha embaixo, linha 2 =
-   1 palavra de destaque com "estouro elástico" (leve rotação +
-   overshoot de escala) e depois uma respiração lenta contínua.
-
-   LIMITAÇÃO DECLARADA: a amostragem foi a cada 100ms (não every-frame
-   como os efeitos baseados em vídeo) — os deslocamentos iniciais de
-   cada palavra são uma aproximação razoável da posição real de
-   partida, não o pixel exato do instante zero.
-   ============================================================ */
-window.WM_TITLE_CARD_DATA = {
-  hRefHeadline: 27.352,
-  headlineWords: [
-    { dxRatio: -0.974, dyRatio: -0.316, entryMs: 0 },
-    { dxRatio: 1.494,  dyRatio: 0.330,  entryMs: 350 },
-    { dxRatio: -0.659, dyRatio: 0.508,  entryMs: 650 },
-    { dxRatio: 2.062,  dyRatio: -0.537, entryMs: 900 },
-  ],
-  headlineSettleMs: 1300,
-  ruleStartMs: 1600,
-  ruleEndMs: 2000,
-  punchStartMs: 2000,
-  punchOvershootMs: 2500,
-  punchSettleMs: 3000,
-  breathingPeriodMs: 1050,
-  breathingAmplitude: 0.02,
-  totalDurationMs: 5000,
-};
-
-window.WM_THREE_LINE_BUILD_DATA = {
-  totalDurationMs: 3400,
-  line1: {
-    hRef: 444,
-    entriesMs: [200, 200, 920, 1280],
-  },
-  line2: {
-    hRef: 528,
-    entriesMs: [1400, 1640, 2120, 2120, 2120, 2160],
-  },
-  line3: {
-    hRef: 554,
-    entriesMs: [2960, 3000, 3000],
-  },
-};
-
 
 /* ============================================================
    DADOS — Efeito 3 "Three-Line Lyric Build" (V10, dados exatos)
@@ -40372,228 +39655,6 @@ window.WM_THREE_LINE_BUILD_V10_DATA = {
       { at: 0.97647, translateXRatio: -0.24067, translateYRatio: -0.12724, scaleX: 0.84737, scaleY: 0.84574 },
       { at: 0.98824, translateXRatio: 0.0, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
       { at: 1.0, translateXRatio: 0.0, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-    ],
-  },
-};
-
-window.WM_PUT_OFF_HOTTED_RATIO_DATA = {
-  hRefLine1: 376,
-  hRefLine2: 288,
-  line1Points: [
-    { at: 0.0, opacity: 0, translateYRatio: 0.6117021276595744, translateXRatio: 0.0026595744680851063, scaleX: 0.3619, scaleY: 0.383, hold: true },
-    { at: 0.09375, opacity: 1, translateYRatio: 0.6356382978723404, translateXRatio: -0.0425531914893617, scaleX: 0.855, scaleY: 1.3138, hold: true },
-    { at: 0.14062, opacity: 1, translateYRatio: 0.4507978723404255, translateXRatio: -0.05053191489361702, scaleX: 0.9575, scaleY: 1.5399, hold: true },
-    { at: 0.20312, opacity: 1, translateYRatio: -0.20212765957446807, translateXRatio: 0.041223404255319146, scaleX: 1.0694, scaleY: 2.3191, hold: true },
-    { at: 0.25, opacity: 1, translateYRatio: -0.13164893617021275, translateXRatio: 0.026595744680851064, scaleX: 1.0237, scaleY: 1.7899, hold: true },
-    { at: 0.29688, opacity: 1, translateYRatio: 0.0, translateXRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-    { at: 0.45312, opacity: 1, translateYRatio: -0.00399, translateXRatio: -0.00133, scaleX: 1.008, scaleY: 1.008 },
-    { at: 0.60938, opacity: 1, translateYRatio: -0.00931, translateXRatio: -0.00133, scaleX: 1.0157, scaleY: 1.0133 },
-    { at: 0.76562, opacity: 1, translateYRatio: -0.01596, translateXRatio: 0.0, scaleX: 1.0237, scaleY: 1.0213 },
-    { at: 0.92188, opacity: 1, translateYRatio: -0.02128, translateXRatio: 0.0, scaleX: 1.0321, scaleY: 1.0319 },
-    { at: 1.0, opacity: 1, translateYRatio: -0.02261, translateXRatio: 0.0, scaleX: 1.0363, scaleY: 1.0346 },
-  ],
-  line1TotalDurationMs: 2560,
-  line2TotalDurationMs: 2560,
-  line2Roles: [
-    { entryMs: 920, durationMs: 80.0, translateYRatio: 0.2326, scaleYInitial: 1.0764 },
-    { entryMs: 1000, durationMs: 40.0, translateYRatio: 1.0243, scaleYInitial: 1.4306 },
-    { entryMs: 1320, durationMs: 40.0, translateYRatio: 2.2656, scaleYInitial: 1.1215 },
-    { entryMs: 1520, durationMs: 40.0, translateYRatio: 0.75, scaleYInitial: 1.3194 },
-    { entryMs: 2000, durationMs: 40.0, translateYRatio: -0.0208, scaleYInitial: 0.9792 },
-    { entryMs: 2200, durationMs: 40.0, translateYRatio: -0.0208, scaleYInitial: 0.9514 },
-    { entryMs: 2400, durationMs: 40.0, translateYRatio: 1.8212, scaleYInitial: 1.7465 },
-  ],
-};
-
-window.WM_KINETIC_BOWL_DEEP_RATIO_DATA = {
-  word1: {
-    hRef: 389,
-    entryMs: 0,   // frame de entrada (delay real em CSS)
-    durationMs: 1360.0,
-    points: [
-      { at: 0.0, opacity: 0, translateYRatio: 0.9113110539845758, scaleX: 0.4627, scaleY: 0.4627 },
-      { at: 0.0005, opacity: 1, translateYRatio: 0.91131, scaleX: 0.4627, scaleY: 0.4627 },
-      { at: 0.02941, opacity: 1, translateYRatio: 0.66452, scaleX: 0.4627, scaleY: 0.4627 },
-      { at: 0.05882, opacity: 1, translateYRatio: 0.509, scaleX: 0.4602, scaleY: 0.4602 },
-      { at: 0.08824, opacity: 1, translateYRatio: 0.40231, scaleX: 0.4627, scaleY: 0.4627 },
-      { at: 0.11765, opacity: 1, translateYRatio: 0.33033, scaleX: 0.4627, scaleY: 0.4627 },
-      { at: 0.14706, opacity: 1, translateYRatio: 0.2892, scaleX: 0.4627, scaleY: 0.4627 },
-      { at: 0.17647, opacity: 1, translateYRatio: 0.04242, scaleX: 0.9255, scaleY: 0.9255 },
-      { at: 0.20588, opacity: 1, translateYRatio: 0.03728, scaleX: 0.9255, scaleY: 0.9255 },
-      { at: 0.23529, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.26471, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.29412, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.32353, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.35294, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.38235, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.41176, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.44118, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.47059, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.5, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.52941, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.55882, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.58824, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.61765, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.64706, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.67647, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.70588, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.73529, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.76471, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.79412, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.82353, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.85294, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.88235, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.91176, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.94118, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.97059, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 1.0, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-    ],
-  },
-  word2: {
-    hRef: 384,
-    entryMs: 80,   // frame de entrada (delay real em CSS)
-    durationMs: 1280.0,
-    points: [
-      { at: 0.0, opacity: 0, translateYRatio: 1.078125, scaleX: 0.4583, scaleY: 0.4583 },
-      { at: 0.0005, opacity: 1, translateYRatio: 1.07812, scaleX: 0.4583, scaleY: 0.4583 },
-      { at: 0.03125, opacity: 1, translateYRatio: 0.76302, scaleX: 0.4635, scaleY: 0.4635 },
-      { at: 0.0625, opacity: 1, translateYRatio: 0.57161, scaleX: 0.4609, scaleY: 0.4609 },
-      { at: 0.09375, opacity: 1, translateYRatio: 0.44531, scaleX: 0.4635, scaleY: 0.4635 },
-      { at: 0.125, opacity: 1, translateYRatio: 0.35938, scaleX: 0.4583, scaleY: 0.4583 },
-      { at: 0.15625, opacity: 1, translateYRatio: 0.30469, scaleX: 0.4635, scaleY: 0.4635 },
-      { at: 0.1875, opacity: 1, translateYRatio: 0.08854, scaleX: 0.8438, scaleY: 0.8438 },
-      { at: 0.21875, opacity: 1, translateYRatio: 0.07682, scaleX: 0.8464, scaleY: 0.8464 },
-      { at: 0.25, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.28125, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.3125, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.34375, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.375, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.40625, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.4375, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.46875, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.5, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.53125, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.5625, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.59375, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.625, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.65625, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.6875, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.71875, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.75, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.78125, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.8125, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.84375, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.875, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.90625, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.9375, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.96875, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 1.0, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-    ],
-  },
-  word3: {
-    hRef: 389,
-    entryMs: 120,   // frame de entrada (delay real em CSS)
-    durationMs: 1240.0,
-    points: [
-      { at: 0.0, opacity: 0, translateYRatio: 1.2609254498714653, scaleX: 0.4627, scaleY: 0.4627 },
-      { at: 0.0005, opacity: 1, translateYRatio: 1.26093, scaleX: 0.4627, scaleY: 0.4627 },
-      { at: 0.03226, opacity: 1, translateYRatio: 0.85476, scaleX: 0.4627, scaleY: 0.4627 },
-      { at: 0.06452, opacity: 1, translateYRatio: 0.62982, scaleX: 0.4602, scaleY: 0.4602 },
-      { at: 0.09677, opacity: 1, translateYRatio: 0.48458, scaleX: 0.4627, scaleY: 0.4627 },
-      { at: 0.12903, opacity: 1, translateYRatio: 0.38689, scaleX: 0.4627, scaleY: 0.4627 },
-      { at: 0.16129, opacity: 1, translateYRatio: 0.32005, scaleX: 0.4627, scaleY: 0.4627 },
-      { at: 0.19355, opacity: 1, translateYRatio: 0.28406, scaleX: 0.4627, scaleY: 0.4627 },
-      { at: 0.22581, opacity: 1, translateYRatio: 0.1144, scaleX: 0.7712, scaleY: 0.7712 },
-      { at: 0.25806, opacity: 1, translateYRatio: 0.1144, scaleX: 0.7712, scaleY: 0.7712 },
-      { at: 0.29032, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.32258, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.35484, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.3871, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.41935, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.45161, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.48387, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.51613, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.54839, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.58065, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.6129, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.64516, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.67742, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.70968, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.74194, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.77419, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.80645, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.83871, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.87097, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.90323, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.93548, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.96774, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 1.0, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-    ],
-  },
-  word4: {
-    hRef: 378,
-    entryMs: 160,   // frame de entrada (delay real em CSS)
-    durationMs: 1200.0,
-    points: [
-      { at: 0.0, opacity: 0, translateYRatio: 1.0105820105820107, scaleX: 0.4603, scaleY: 0.4603 },
-      { at: 0.0005, opacity: 1, translateYRatio: 1.01058, scaleX: 0.4603, scaleY: 0.4603 },
-      { at: 0.03333, opacity: 1, translateYRatio: 0.73016, scaleX: 0.4603, scaleY: 0.4603 },
-      { at: 0.06667, opacity: 1, translateYRatio: 0.55026, scaleX: 0.4603, scaleY: 0.4603 },
-      { at: 0.1, opacity: 1, translateYRatio: 0.43386, scaleX: 0.4603, scaleY: 0.4603 },
-      { at: 0.13333, opacity: 1, translateYRatio: 0.3545, scaleX: 0.4603, scaleY: 0.4603 },
-      { at: 0.16667, opacity: 1, translateYRatio: 0.30688, scaleX: 0.4603, scaleY: 0.4603 },
-      { at: 0.2, opacity: 1, translateYRatio: 0.28042, scaleX: 0.4603, scaleY: 0.4603 },
-      { at: 0.23333, opacity: 1, translateYRatio: 0.26984, scaleX: 0.4603, scaleY: 0.4603 },
-      { at: 0.26667, opacity: 1, translateYRatio: 0.15476, scaleX: 0.6905, scaleY: 0.6905 },
-      { at: 0.3, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.33333, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.36667, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.4, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.43333, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.46667, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.5, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.53333, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.56667, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.6, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.63333, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.66667, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.7, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.73333, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.76667, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.8, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.83333, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.86667, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.9, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.93333, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 0.96667, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-      { at: 1.0, opacity: 1, translateYRatio: 0.0, scaleX: 1.0, scaleY: 1.0 },
-    ],
-  },
-  final: {
-    hRef: 851.0,
-    entryMs: 640,   // frame de entrada (delay real em CSS)
-    durationMs: 720.0,
-    points: [
-      { at: 0.0, opacity: 0, translateYRatio: 0.3219741480611046, scaleX: 0.3431, scaleY: 0.3431, trackingRatio: 0.4410105757931845 },
-      { at: 0.0005, opacity: 1, translateYRatio: 0.32197, scaleX: 0.3431, scaleY: 0.3431, trackingRatio: 0.44101 },
-      { at: 0.05556, opacity: 1, translateYRatio: 0.32197, scaleX: 0.3431, scaleY: 0.3431, trackingRatio: 0.44101 },
-      { at: 0.11111, opacity: 1, translateYRatio: 0.02761, scaleX: 0.8731, scaleY: 0.8731, trackingRatio: 0.44101 },
-      { at: 0.16667, opacity: 1, translateYRatio: 0.02761, scaleX: 0.8731, scaleY: 0.8731, trackingRatio: 0.44101 },
-      { at: 0.22222, opacity: 1, translateYRatio: -0.02644, scaleX: 0.9694, scaleY: 0.9694, trackingRatio: 0.44101 },
-      { at: 0.27778, opacity: 1, translateYRatio: -0.02644, scaleX: 0.9694, scaleY: 0.9694, trackingRatio: 0.44101 },
-      { at: 0.33333, opacity: 1, translateYRatio: -0.04289, scaleX: 1.0, scaleY: 1.0, trackingRatio: 0.44101 },
-      { at: 0.38889, opacity: 1, translateYRatio: -0.03942, scaleX: 1.00999, scaleY: 1.00999, trackingRatio: 0.3839 },
-      { at: 0.44444, opacity: 1, translateYRatio: -0.03596, scaleX: 1.01998, scaleY: 1.01998, trackingRatio: 0.27344 },
-      { at: 0.5, opacity: 1, translateYRatio: -0.03249, scaleX: 1.02997, scaleY: 1.02997, trackingRatio: 0.20764 },
-      { at: 0.55556, opacity: 1, translateYRatio: -0.02902, scaleX: 1.03996, scaleY: 1.03996, trackingRatio: 0.16921 },
-      { at: 0.61111, opacity: 1, translateYRatio: -0.02556, scaleX: 1.04995, scaleY: 1.04995, trackingRatio: 0.14371 },
-      { at: 0.66667, opacity: 1, translateYRatio: -0.02209, scaleX: 1.05994, scaleY: 1.05994, trackingRatio: 0.12609 },
-      { at: 0.72222, opacity: 1, translateYRatio: -0.01863, scaleX: 1.06993, scaleY: 1.06993, trackingRatio: 0.11363 },
-      { at: 0.77778, opacity: 1, translateYRatio: -0.01516, scaleX: 1.07992, scaleY: 1.07992, trackingRatio: 0.10576 },
-      { at: 0.83333, opacity: 1, translateYRatio: -0.01169, scaleX: 1.08991, scaleY: 1.08991, trackingRatio: 0.10024 },
-      { at: 0.88889, opacity: 1, translateYRatio: -0.00823, scaleX: 1.0999, scaleY: 1.0999, trackingRatio: 0.10776 },
-      { at: 0.94444, opacity: 1, translateYRatio: -0.00823, scaleX: 1.0999, scaleY: 1.0999, trackingRatio: 0.10611 },
-      { at: 1.0, opacity: 1, translateYRatio: 0.0, scaleX: 1.1234, scaleY: 1.1234, trackingRatio: 0.10846 },
     ],
   },
 };
@@ -42782,8 +41843,7 @@ window.WM_ANIM_ENGINE = (function () {
    * proporções (medidas numa referência) de volta pra pixel, usando a
    * fonte/peso/tamanho REAIS que o usuário escolheu, em vez de um valor
    * fixo — é o que preserva o deslocamento visual do template em
-   * qualquer fonte, peso ou tamanho (condição do usuário: "a conversão
-   * precisa preservar matematicamente o deslocamento especificado").
+   * qualquer fonte, peso ou tamanho.
    */
   let _measureCanvas = null;
   function measureTextHeight(fontCss, text) {
@@ -42846,7 +41906,7 @@ window.WM_ANIM_ENGINE = (function () {
     applyStateToDOM, applyStateToCanvas,
     // utilitário
     EASINGS, DEFAULT_STATE, BEZIER_STRING_TO_EASING,
-    // Cena "Kinetic Bowl Deep" — conversão proporção→pixel/em
+    // utilitário pra cenas dinâmicas (proporção→pixel/em)
     measureTextHeight, buildRatioKeyframes,
   };
 })();
@@ -42939,9 +41999,6 @@ window.WM_ENGINE_V2_ACTIVE_IDS = new Set([
   // Etapa 5, lote 8 (typewriters) — migração manual (charStagger), 2.295
   // checks, 0 divergências, incluindo o caso de 4 keyframes do Forte.
   'typewriter-blur', 'typewriter-blur-fast', 'typewriter-blur-strong',
-  // Cena pronta "Kinetic Bowl Deep": NÃO tem ids estáticos aqui — cada
-  // aplicação da cena registra e adiciona seus próprios ids dinâmicos
-  // (um por palavra+fonte) direto em applyKineticBowlDeepScene().
 ]);
 window.WM_ENGINE_V2_ID_MAP = {
   'cinematic-reveal': 'cinematic-reveal-v2',
