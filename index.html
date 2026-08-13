@@ -36278,6 +36278,11 @@ function initEditor() {
       if (alguma && typeof engine.renderStanza === 'function') {
         engine.renderStanza(engine.currentStanzaIndex || 0);
       }
+      // Reproduz automaticamente ao aplicar — sem precisar clicar em
+      // "Reproduzir" toda vez pra ver a animação depois de aplicar.
+      if (alguma && typeof engine.playFrameExact === 'function') {
+        engine.playFrameExact();
+      }
       if (typeof markDirty === 'function') markDirty('template frame-exact aplicado');
       if (!alguma && typeof showToast === 'function') {
         showToast('Essa estrofe precisa de pelo menos 3 linhas de texto pra esse template.');
@@ -39649,23 +39654,32 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
     // — só desenha o texto; o fundo por trás (canvas de export já
     // desenhado, ou o DOM por trás do canvas no preview) fica visível.
 
-    // CORREÇÃO (1 palavra na linha 3): se só "my" tem texto (be e soul
-    // vazios), usa a caixa UNIÃO (be+my+soul, pré-calculada) em vez da
-    // caixa estreita de "my" sozinha — faz a palavra "se ajustar"
-    // preenchendo o espaço igual às linhas 1/2, em vez de ficar pequena.
-    const isSingleWordL3 = !!texts.my && !texts.be && !texts.soul;
-    const bboxMy = isSingleWordL3 ? tpl.singleWordBboxes[frameIdx] : m.my;
+    // CORREÇÃO (linha 3 com quantidade de palavras ≠ 3): desenha o
+    // texto combinado (line3Combined) na caixa UNIÃO (be+my+soul, pré-
+    // calculada quadro a quadro) — faz preencher o espaço igual às
+    // linhas 1/2, em vez de ficar pequeno/mal posicionado em papéis
+    // individuais que não fazem sentido pra essa quantidade de palavras.
+    if (texts.line3Combined) {
+      const bboxUniao = tpl.singleWordBboxes[frameIdx];
+      ['top', 'red'].forEach(key => {
+        const bbox = m[key];
+        if (!bbox) return;
+        const st = tpl.styles[key];
+        drawStretched(ctx, texts[key], st.fontFamily, st.color, bbox);
+      });
+      if (bboxUniao) {
+        const st = tpl.styles.my;
+        drawStretched(ctx, texts.line3Combined, st.fontFamily, st.color, bboxUniao);
+      }
+      return true;
+    }
 
-    ['top', 'red', 'be'].forEach(key => {
+    ['top', 'red', 'be', 'my'].forEach(key => {
       const bbox = m[key];
       if (!bbox) return;
       const st = tpl.styles[key];
       drawStretched(ctx, texts[key], st.fontFamily, st.color, bbox);
     });
-    if (bboxMy) {
-      const st = tpl.styles.my;
-      drawStretched(ctx, texts.my, st.fontFamily, st.color, bboxMy);
-    }
 
     // SOUL: mesma bbox do frame (participa do zoom final igual aos
     // outros), só que reduzida 92% ao redor do próprio centro.
@@ -39717,16 +39731,18 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
     const l1 = (lines[0]?.words || []).map(w => w.text).join(' ');
     const l2 = (lines[1]?.words || []).map(w => w.text).join(' ');
     const l3words = lines[2]?.words || [];
-    const out = { top: l1, red: l2, be: '', my: '', soul: '' };
-    // CORREÇÃO: com só 1 palavra na linha 3, usar sempre o papel "be"
-    // (posição da esquerda, caixa estreita/pequena feita sob medida pra
-    // "BE") deixava a palavra pequena e grudada na esquerda, sem
-    // centralizar — bug real reportado. Com 1 palavra só, usa o papel
-    // "my" (posição central) em vez de "be". Com 2 ou 3+ palavras,
-    // continua exatamente como antes (be/my/soul em ordem, extras
-    // dobrando no papel "soul").
-    if (l3words.length === 1) {
-      out.my = l3words[0].text;
+    const out = { top: l1, red: l2, be: '', my: '', soul: '', line3Combined: '' };
+    // CORREÇÃO: a referência original só tem posições/tamanhos medidos
+    // pra EXATAMENTE 3 palavras independentes (BE pequeno-esquerda, MY
+    // pequeno-centro, SOUL maior-direita). Com 1, 2, 4+ palavras, tentar
+    // encaixar em papéis individuais deixava tudo pequeno e mal
+    // posicionado (bug real reportado, piorou de novo com 2 palavras).
+    // Generalizado: fora do caso de exatamente 3, TODAS as palavras da
+    // linha 3 viram um texto só, desenhado na caixa UNIÃO (be+my+soul
+    // combinados) — mesmo princípio de "esticar pra caber" que as
+    // linhas 1/2 já usam pra qualquer quantidade de palavras.
+    if (l3words.length !== 3) {
+      out.line3Combined = l3words.map(w => w.text).join(' ');
       return out;
     }
     const roleNames = ['be', 'my', 'soul'];
