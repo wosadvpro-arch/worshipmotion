@@ -21751,6 +21751,13 @@ class RenderEngineV2 {
 
     this.currentStanzaIndex = index;
     const stanza = this.parsed.stanzas[index];
+    // Detecta se isso é uma TROCA de estrofe (veio de uma diferente ou
+    // de nenhuma) — usado abaixo pra saber se deve tocar automático um
+    // template frame-exact. Precisa ser capturado ANTES de atualizar,
+    // e run pra QUALQUER estrofe (não só frame-exact), senão nunca
+    // saberíamos que "saiu" de uma frame-exact e "voltou".
+    const _estrofeTrocou = this._lastRenderedStanzaId !== stanza.id;
+    this._lastRenderedStanzaId = stanza.id;
 
     this.canvas.innerHTML = '';
     const stanzaEl = document.createElement('div');
@@ -22141,6 +22148,14 @@ class RenderEngineV2 {
     if (stanza.frameExactTemplateId && window.WM_FRAME_EXACT_RENDERER) {
       stanzaEl.querySelectorAll('.lyric-line').forEach(el => { el.style.visibility = 'hidden'; });
       this._renderFrameExactCanvas(stanzaEl, stanza, 0);
+      // Reproduz automaticamente ao ENTRAR nessa estrofe (navegação,
+      // trocar de slide) — mas só quando é uma troca de verdade (veio
+      // de outra estrofe, ou de nenhuma), não em todo re-render interno
+      // da MESMA estrofe (ex: selecionar uma palavra, mudar um
+      // estilo), senão a animação reiniciaria toda hora.
+      if (_estrofeTrocou) {
+        this.playFrameExact();
+      }
     }
 
     return stanzaEl;
