@@ -22837,6 +22837,17 @@ class RenderEngineV2 {
    * Renderiza e toca a animação de entrada na estrofe atual.
    */
   playFull(opts = {}) {
+    // TEMPLATE FRAME-EXACT: essa estrofe não usa o pipeline normal de
+    // entrada por palavra — usa o loop dedicado (playFrameExact). Sem
+    // esse desvio, toda edição de texto chamava playFull() →
+    // playEntrance() por baixo, que não sabe nada sobre o canvas
+    // frame-exact, e a reprodução automática depois de editar não
+    // acontecia certo.
+    if (typeof this.isCurrentStanzaFrameExact === 'function' && this.isCurrentStanzaFrameExact()) {
+      this.renderStanza(this.currentStanzaIndex);
+      this.playFrameExact();
+      return;
+    }
     const useTransition = opts.useTransition !== false;
     const transition = this.animConfig.transition || 'cut';
     const dur = this.animConfig.transitionDuration || 0.5;
@@ -23202,6 +23213,18 @@ function initEditor() {
         if (sch && sch.length) _prevTemplateSchemas.push({ index: idx, schema: sch });
       });
     }
+    // Idem pro template FRAME-EXACT (Kinetic Scale Stack e outros que
+    // usem esse tipo): sem isso, editar a letra (ex: acrescentar uma
+    // palavra) desativava o template — ele voltava a mostrar o texto
+    // DOM normal em vez do canvas, e era preciso reaplicar na mão toda
+    // vez. Mapeia por ÍNDICE da estrofe (mesmo critério dos outros
+    // acima), já que reparsear troca os IDs.
+    const _prevFrameExactIds = [];
+    if (engine.parsed && engine.parsed.stanzas) {
+      engine.parsed.stanzas.forEach((st, idx) => {
+        if (st.frameExactTemplateId) _prevFrameExactIds.push({ index: idx, templateId: st.frameExactTemplateId });
+      });
+    }
 
     let parsed = WM_PARSER.parse(text);
     if ($('#auto-emphasis')?.checked) {
@@ -23244,6 +23267,26 @@ function initEditor() {
       _prevTemplateSchemas.forEach(item => {
         const stNova = parsed.stanzas[item.index];
         if (stNova) { try { _aplicarLineSchemaNaEstrofe(stNova, item.schema); } catch (e) {} }
+      });
+    }
+    // Reaplica o template FRAME-EXACT nas estrofes que já tinham um
+    // aplicado — mesma reestruturação em 3 linhas que a aplicação
+    // manual faz (_distribuirEmLinhas), só que automática a cada edição.
+    if (_prevFrameExactIds.length && parsed.stanzas) {
+      _prevFrameExactIds.forEach(item => {
+        const stNova = parsed.stanzas[item.index];
+        if (!stNova) return;
+        try {
+          const linhasPalavras = _distribuirEmLinhas(stNova, 3);
+          if (linhasPalavras.length < 3) return;
+          const novasLines = linhasPalavras.map((palavras, li) => ({
+            id: stNova.lines[li]?.id || ('ln_fe_' + stNova.id + '_' + li + '_' + Date.now()),
+            words: palavras,
+            label: null,
+          }));
+          stNova.lines = novasLines;
+          stNova.frameExactTemplateId = item.templateId;
+        } catch (e) {}
       });
     }
 
