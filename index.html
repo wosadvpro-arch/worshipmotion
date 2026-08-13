@@ -39951,56 +39951,57 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
     const whiteBoxesFrame = f.white || [];
     const whiteTexts = texts.white || [];
     const stWhite = tpl.styles.white;
-    const n = Math.min(whiteBoxesFrame.length, whiteTexts.length);
-    const shiftX = _efeito2CenterShiftX(tpl, whiteTexts.length);
-    // preserveAspect só entra em ação fora do caso de exatamente 7
-    // palavras (a contagem original) — com 7, manter o esticamento
-    // exato original preserva a fidelidade pixel a pixel já validada
-    // (a proporção pura calculada aqui fica ligeiramente diferente da
-    // largura original da caixa, provavelmente por uma margem/
-    // espaçamento que já vinha embutido na medição original).
     const totalOriginalBrancas = (tpl.motionData.framesData[tpl.motionData.framesData.length - 1].white || []).length;
-    const preservarProporcao = whiteTexts.length !== totalOriginalBrancas;
+
+    if (whiteTexts.length !== totalOriginalBrancas) {
+      // Fora do caso de 7 palavras: bloco único, na caixa união de
+      // todas as posições brancas ativas nesse quadro — mesma técnica
+      // já usada na linha 3 do Kinetic Scale Stack pro mesmo problema.
+      const uniao = _efeito2UnionBboxPorFrame(tpl, frameIdx);
+      if (uniao) {
+        const textoJunto = whiteTexts.join(' ');
+        drawStretched(ctx, textoJunto, stWhite.fontFamily, stWhite.color, uniao, 'xywh');
+      }
+      return true;
+    }
+
+    // Exatamente 7 palavras: comportamento original, palavra por
+    // palavra, cada uma na sua bbox própria — fidelidade pixel a pixel
+    // já validada contra a referência.
+    const n = Math.min(whiteBoxesFrame.length, whiteTexts.length);
     for (let i = 0; i < n; i++) {
-      const b = whiteBoxesFrame[i];
-      const bboxDeslocado = shiftX ? [b[0] + shiftX, b[1], b[2], b[3]] : b;
-      drawStretched(ctx, whiteTexts[i], stWhite.fontFamily, stWhite.color, bboxDeslocado, 'xywh', preservarProporcao);
+      drawStretched(ctx, whiteTexts[i], stWhite.fontFamily, stWhite.color, whiteBoxesFrame[i], 'xywh');
     }
     return true;
   }
 
   /**
-   * Calcula (uma vez, com cache) o deslocamento horizontal que
-   * centraliza as primeiras `n` palavras brancas — usando a posição
-   * delas no ÚLTIMO quadro do motion-data como referência de "onde o
-   * grupo assenta no final". n === contagem original (7) → 0 (sem
-   * deslocamento, fidelidade exata).
+   * CORREÇÃO GERAL (linha 2 com quantidade ≠ 7): a tentativa anterior
+   * (deslocar + preservar proporção por palavra) melhorou a distorção
+   * mas ainda deixava sobreposição entre palavras vizinhas quando o
+   * texto era bem diferente do original — mesma classe de problema já
+   * resolvida na linha 3 do Efeito 3/Kinetic Scale Stack. Mesma
+   * solução aqui: fora do caso de exatamente 7 palavras, a linha 2
+   * inteira vira UM bloco só (como a linha 1 já é), desenhado na
+   * caixa UNIÃO de todas as posições brancas ativas naquele quadro —
+   * sem tentar encaixar palavra por palavra em posições individuais
+   * que não fazem sentido pra essa quantidade de texto.
    */
-  function _efeito2CenterShiftX(tpl, n) {
-    if (n <= 0) return 0;
-    tpl._centerShiftCache = tpl._centerShiftCache || {};
-    if (n in tpl._centerShiftCache) return tpl._centerShiftCache[n];
-    const ultimoFrame = tpl.motionData.framesData[tpl.motionData.framesData.length - 1];
-    const totalOriginal = (ultimoFrame.white || []).length;
-    // Contagem igual (ou maior — sem posição extra pra inventar) à
-    // original: ZERO deslocamento, sem exceção — preserva a fidelidade
-    // exata já validada quadro a quadro pixel a pixel contra a
-    // referência (86/86... digo, 66/66 quadros idênticos).
-    if (n >= totalOriginal) {
-      tpl._centerShiftCache[n] = 0;
-      return 0;
-    }
-    const boxes = (ultimoFrame.white || []).slice(0, n);
-    let shift = 0;
-    if (boxes.length === n) {
+  function _efeito2UnionBboxPorFrame(tpl, frameIdx) {
+    tpl._unionBboxCache = tpl._unionBboxCache || {};
+    if (frameIdx in tpl._unionBboxCache) return tpl._unionBboxCache[frameIdx];
+    const f = tpl.motionData.framesData[frameIdx];
+    const boxes = (f && f.white) || [];
+    let uniao = null;
+    if (boxes.length) {
       const minX = Math.min(...boxes.map(b => b[0]));
+      const minY = Math.min(...boxes.map(b => b[1]));
       const maxX = Math.max(...boxes.map(b => b[0] + b[2]));
-      const centroGrupo = (minX + maxX) / 2;
-      const centroCanvas = (tpl.logicalWidth || tpl.motionData.width) / 2;
-      shift = centroCanvas - centroGrupo;
+      const maxY = Math.max(...boxes.map(b => b[1] + b[3]));
+      uniao = [minX, minY, maxX - minX, maxY - minY];
     }
-    tpl._centerShiftCache[n] = shift;
-    return shift;
+    tpl._unionBboxCache[frameIdx] = uniao;
+    return uniao;
   }
 
   /** Garante que as fontes do template estão carregadas antes do 1º frame. */
