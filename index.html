@@ -39774,29 +39774,17 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
     const l1 = (lines[0]?.words || []).map(w => w.text).join(' ');
     const l2 = (lines[1]?.words || []).map(w => w.text).join(' ');
     const l3words = lines[2]?.words || [];
-    const out = { top: l1, red: l2, be: '', my: '', soul: '', line3Combined: '' };
-    // CORREÇÃO: a referência original só tem posições/tamanhos medidos
-    // pra EXATAMENTE 3 palavras independentes (BE pequeno-esquerda, MY
-    // pequeno-centro, SOUL maior-direita). Com 1, 2, 4+ palavras, tentar
-    // encaixar em papéis individuais deixava tudo pequeno e mal
-    // posicionado (bug real reportado, piorou de novo com 2 palavras).
-    // Generalizado: fora do caso de exatamente 3, TODAS as palavras da
-    // linha 3 viram um texto só, desenhado na caixa UNIÃO (be+my+soul
-    // combinados) — mesmo princípio de "esticar pra caber" que as
-    // linhas 1/2 já usam pra qualquer quantidade de palavras.
-    if (l3words.length !== 3) {
-      out.line3Combined = l3words.map(w => w.text).join(' ');
-      return out;
-    }
-    const roleNames = ['be', 'my', 'soul'];
-    l3words.forEach((w, i) => {
-      const role = roleNames[Math.min(i, roleNames.length - 1)];
-      if (i >= roleNames.length - 1 && l3words.length > roleNames.length) {
-        out[role] = (out[role] ? out[role] + ' ' : '') + w.text;
-      } else {
-        out[role] = w.text;
-      }
-    });
+    // MUDANÇA (a pedido explícito): a linha 3 agora sempre se comporta
+    // igual às linhas 1/2 — um texto só, esticado pra caber na caixa
+    // (a união de be+my+soul) — independente de ter 1, 2, 3 ou mais
+    // palavras. Isso troca a fidelidade exata da referência (que só
+    // media bem pra EXATAMENTE "BE"/"MY"/"SOUL", palavras curtas
+    // específicas) por um comportamento sempre consistente e bem
+    // dimensionado com qualquer texto.
+    const out = {
+      top: l1, red: l2, be: '', my: '', soul: '',
+      line3Combined: l3words.map(w => w.text).join(' '),
+    };
     return out;
   }
 
