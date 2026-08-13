@@ -22159,6 +22159,7 @@ class RenderEngineV2 {
       stanzaEl.appendChild(canvas);
     }
     const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     const texts = this._readFrameExactTexts(stanza);
     R.renderFrame(ctx, tplId, texts, elapsedMs);
 
@@ -22177,6 +22178,7 @@ class RenderEngineV2 {
         R.preloadFonts(tplId).then(() => {
           this._frameExactFontsReady = true;
           if (typeof R.clearBitmapCache === 'function') R.clearBitmapCache();
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
           R.renderFrame(ctx, tplId, texts, elapsedMs);
         });
       } else {
@@ -39611,8 +39613,12 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
     const frameIdx = getFrameIndex(elapsedMs, motion);
     const m = motion.motion[frameIdx];
 
-    ctx.fillStyle = '#000';
-    ctx.fillRect(0, 0, motion.width, motion.height);
+    // CORREÇÃO: a ferramenta original sempre desenhava um fundo preto
+    // sólido primeiro (fillRect preto) — fazia sentido lá, era um vídeo
+    // autocontido. Dentro do app, isso cobria o fundo de verdade que o
+    // usuário configurou pra estrofe (gradiente, imagem, cor). Removido
+    // — só desenha o texto; o fundo por trás (canvas de export já
+    // desenhado, ou o DOM por trás do canvas no preview) fica visível.
 
     ['top', 'red', 'be', 'my'].forEach(key => {
       const bbox = m[key];
@@ -39671,8 +39677,19 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
     const l1 = (lines[0]?.words || []).map(w => w.text).join(' ');
     const l2 = (lines[1]?.words || []).map(w => w.text).join(' ');
     const l3words = lines[2]?.words || [];
-    const roleNames = ['be', 'my', 'soul'];
     const out = { top: l1, red: l2, be: '', my: '', soul: '' };
+    // CORREÇÃO: com só 1 palavra na linha 3, usar sempre o papel "be"
+    // (posição da esquerda, caixa estreita/pequena feita sob medida pra
+    // "BE") deixava a palavra pequena e grudada na esquerda, sem
+    // centralizar — bug real reportado. Com 1 palavra só, usa o papel
+    // "my" (posição central) em vez de "be". Com 2 ou 3+ palavras,
+    // continua exatamente como antes (be/my/soul em ordem, extras
+    // dobrando no papel "soul").
+    if (l3words.length === 1) {
+      out.my = l3words[0].text;
+      return out;
+    }
+    const roleNames = ['be', 'my', 'soul'];
     l3words.forEach((w, i) => {
       const role = roleNames[Math.min(i, roleNames.length - 1)];
       if (i >= roleNames.length - 1 && l3words.length > roleNames.length) {
