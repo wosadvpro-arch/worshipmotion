@@ -22242,18 +22242,31 @@ class RenderEngineV2 {
    */
   playFrameExact() {
     if (this._frameExactRAF) cancelAnimationFrame(this._frameExactRAF);
+    this._frameExactPlaying = false;
     const R = window.WM_FRAME_EXACT_RENDERER;
     const st = this.parsed?.stanzas?.[this.currentStanzaIndex];
     if (!R || !st || !st.frameExactTemplateId) return;
     if (!this.canvas.querySelector(`[data-stanza-id="${st.id}"]`)) return;
     const durationMs = R.getDurationMs(st.frameExactTemplateId);
     const stanzaId = st.id;
+    // BUG REAL CORRIGIDO: editar o texto dispara playFrameExact() várias
+    // vezes em sequência rápida (reparse → re-render → auto-espaçamento
+    // → playFull). Como cada chamada espera a fonte carregar de forma
+    // assíncrona antes de tocar (preloadFonts().then(start)), uma
+    // chamada MAIS ANTIGA podia terminar de esperar DEPOIS de uma mais
+    // recente já ter começado a tocar — cancelando ela por cima e
+    // deixando tudo parado. Um contador de geração garante que só a
+    // ÚLTIMA chamada realmente inicia o loop; qualquer resposta de uma
+    // chamada anterior, mais lenta, é descartada ao chegar.
+    this._frameExactPlayGen = (this._frameExactPlayGen || 0) + 1;
+    const minhaGeracao = this._frameExactPlayGen;
 
     const start = () => {
+      if (this._frameExactPlayGen !== minhaGeracao) return; // superada por uma chamada mais nova
       const t0 = performance.now();
       this._frameExactPlaying = true;
       const step = (now) => {
-        if (!this._frameExactPlaying) return;
+        if (!this._frameExactPlaying || this._frameExactPlayGen !== minhaGeracao) return;
         // BUG REAL CORRIGIDO: guardar o elemento do DOM uma vez só (no
         // início) e reusar em todo quadro quebrava sempre que algo
         // re-renderizava a estrofe no meio da reprodução (ex: o app
@@ -22285,6 +22298,7 @@ class RenderEngineV2 {
 
   pauseFrameExact() {
     this._frameExactPlaying = false;
+    this._frameExactPlayGen = (this._frameExactPlayGen || 0) + 1;
     if (this._frameExactRAF) { cancelAnimationFrame(this._frameExactRAF); this._frameExactRAF = 0; }
   }
 
