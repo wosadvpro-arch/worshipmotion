@@ -22245,21 +22245,35 @@ class RenderEngineV2 {
     const R = window.WM_FRAME_EXACT_RENDERER;
     const st = this.parsed?.stanzas?.[this.currentStanzaIndex];
     if (!R || !st || !st.frameExactTemplateId) return;
-    const stanzaEl = this.canvas.querySelector(`[data-stanza-id="${st.id}"]`);
-    if (!stanzaEl) return;
+    if (!this.canvas.querySelector(`[data-stanza-id="${st.id}"]`)) return;
     const durationMs = R.getDurationMs(st.frameExactTemplateId);
+    const stanzaId = st.id;
 
     const start = () => {
       const t0 = performance.now();
       this._frameExactPlaying = true;
       const step = (now) => {
         if (!this._frameExactPlaying) return;
+        // BUG REAL CORRIGIDO: guardar o elemento do DOM uma vez só (no
+        // início) e reusar em todo quadro quebrava sempre que algo
+        // re-renderizava a estrofe no meio da reprodução (ex: o app
+        // ajusta espaçamento e chama renderStanza() de novo logo depois
+        // de aplicar um template) — o DOM antigo era substituído por um
+        // novo, mas esse loop continuava desenhando no elemento ÓRFÃO
+        // (fora da tela), enquanto o elemento novo, visível, ficava
+        // parado no frame 0 (em branco) pra sempre. Buscar de novo a
+        // cada quadro garante que sempre desenha no elemento que está
+        // de fato na tela agora.
+        const stanzaAtual = this.parsed?.stanzas?.[this.currentStanzaIndex];
+        if (!stanzaAtual || stanzaAtual.id !== stanzaId) { this._frameExactPlaying = false; return; }
+        const stanzaEl = this.canvas.querySelector(`[data-stanza-id="${stanzaId}"]`);
+        if (!stanzaEl) { this._frameExactPlaying = false; return; }
         const elapsed = now - t0;
-        this._renderFrameExactCanvas(stanzaEl, st, elapsed);
+        this._renderFrameExactCanvas(stanzaEl, stanzaAtual, elapsed);
         if (elapsed < durationMs) {
           this._frameExactRAF = requestAnimationFrame(step);
         } else {
-          this._renderFrameExactCanvas(stanzaEl, st, durationMs - 0.001); // segura no último frame
+          this._renderFrameExactCanvas(stanzaEl, stanzaAtual, durationMs - 0.001); // segura no último frame
           this._frameExactPlaying = false;
           this._frameExactRAF = 0;
         }
