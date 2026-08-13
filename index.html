@@ -13798,6 +13798,32 @@ window.WM_LOCAL_FONTS = {
 
 const TEMPLATES = [
   {
+    id: "tpl-oficial-efeito-2-frame-exact-v17",
+    name: "Efeito 2",
+    description: "Tipografia cinética em duas linhas: um bloco vermelho central e palavras brancas que constroem uma a uma, reproduzida por bounding boxes absolutas frame a frame (frame-exact).",
+    tags: ["2 linhas", "Cinético", "Pro Plus"],
+    isOfficial: true,
+    isPremium: true,
+    requiredPlan: "pro_plus",
+    isActive: true,
+    accent: "#ed0019",
+    config: {
+      type: 'frame-exact',
+      frameExactTemplateId: 'efeito-2',
+      style: {},
+      animConfig: {},
+      aspect: '16:9',
+      parsed: {
+        stanzas: [
+          { id: "stz_zbc3v7x", label: "Estrofe 1", lines: [
+            { id: "ln_o38qzmk", words: [{ id: "w_2rx9ghn", text: "PUT", chars: [{id:"ch_u0vefkn",text:"P"}, {id:"ch_45ne6qv",text:"U"}, {id:"ch_yii38yw",text:"T"}], emphasized: false }, { id: "w_q5pherw", text: "OFF", chars: [{id:"ch_2iin3sv",text:"O"}, {id:"ch_8sv40lw",text:"F"}, {id:"ch_ypprbbv",text:"F"}], emphasized: false }, { id: "w_kd1bbod", text: "HOTTED", chars: [{id:"ch_qfz3b9k",text:"H"}, {id:"ch_acvhyug",text:"O"}, {id:"ch_edw4qey",text:"T"}, {id:"ch_j2i3etx",text:"T"}, {id:"ch_4ratcep",text:"E"}, {id:"ch_opx0f9z",text:"D"}], emphasized: false }] },
+            { id: "ln_p8txq6k", words: [{ id: "w_i2yp4i4", text: "DO", chars: [{id:"ch_3133387",text:"D"}, {id:"ch_e1j1pvs",text:"O"}], emphasized: false }, { id: "w_6kuvaw7", text: "NOT", chars: [{id:"ch_obkbwek",text:"N"}, {id:"ch_gw6l9ij",text:"O"}, {id:"ch_8uxe62c",text:"T"}], emphasized: false }, { id: "w_am3xcl9", text: "PUT", chars: [{id:"ch_idvpsyz",text:"P"}, {id:"ch_5oekor2",text:"U"}, {id:"ch_fqwt0vj",text:"T"}], emphasized: false }, { id: "w_vmn5tgi", text: "IS", chars: [{id:"ch_goopwkr",text:"I"}, {id:"ch_p070cl2",text:"S"}], emphasized: false }, { id: "w_eoo1pso", text: "ON", chars: [{id:"ch_lc0qsje",text:"O"}, {id:"ch_9fc99it",text:"N"}], emphasized: false }, { id: "w_gmo4ge5", text: "THE", chars: [{id:"ch_uu7im0b",text:"T"}, {id:"ch_rbs1pfk",text:"H"}, {id:"ch_hdxj7vs",text:"E"}], emphasized: false }, { id: "w_nousk9j", text: "MAP.", chars: [{id:"ch_q7pxem8",text:"M"}, {id:"ch_250hiwr",text:"A"}, {id:"ch_ebase2x",text:"P"}, {id:"ch_btxk1nv",text:"."}], emphasized: false }] },
+          ] },
+        ],
+      },
+    },
+  },
+  {
     id: "tpl-oficial-kinetic-scale-stack-frameexact",
     name: "Kinetic Scale Stack",
     description: "Tipografia cinética em três linhas, com compressão/expansão e zoom final, reproduzida por bounding boxes absolutas frame a frame (frame-exact).",
@@ -17544,11 +17570,17 @@ const CanvasRenderer = {
       const tpl = R.getTemplate(slide.stanza.frameExactTemplateId);
       if (tpl) {
         const _cxFE = window.WM_CAIXA_DESIGN(W, H);
-        const scaleFE = _cxFE.w / tpl.motionData.width;
+        // Espaço lógico é PRÓPRIO de cada template (Kinetic Scale
+        // Stack: 3840x2160; Efeito 2: 1920x1080 — NÃO o mesmo valor,
+        // ver comentário no registro do Efeito 2 sobre por que não
+        // pode reduzir de novo). Nunca usar motionData.width aqui —
+        // esse campo é só metadado, pode não bater com o espaço real.
+        const larguraLogica = tpl.logicalWidth || tpl.motionData.width;
+        const scaleFE = _cxFE.w / larguraLogica;
         ctx.save();
         ctx.translate(_cxFE.x, _cxFE.y);
         ctx.scale(scaleFE, scaleFE);
-        const texts = R.readTextsFromStanza(slide.stanza);
+        const texts = R.readTextsFromStanza(slide.stanza, slide.stanza.frameExactTemplateId);
         // elapsedMs aqui já é relativo ao início do slide (mesmo tempo
         // usado pro resto do texto) — igual ao preview.
         R.renderFrame(ctx, slide.stanza.frameExactTemplateId, texts, elapsedMs);
@@ -22164,7 +22196,9 @@ class RenderEngineV2 {
   /**
    * Injeta/atualiza o <canvas> de um template frame-exact dentro do
    * elemento da estrofe, e desenha o frame correspondente a elapsedMs.
-   * Espaço lógico sempre 3840×2160 — o <canvas> em si é redimensionado
+   * Espaço lógico é PRÓPRIO de cada template (nunca motionData.width/
+   * height, que pode ser só metadado — ver logicalWidth/logicalHeight
+   * no registro de cada template) — o <canvas> em si é redimensionado
    * só por CSS (width/height:100%), preservando a proporção/posição
    * interna exatamente como o motion-data especifica.
    */
@@ -22179,8 +22213,8 @@ class RenderEngineV2 {
     if (!canvas) {
       canvas = document.createElement('canvas');
       canvas.className = 'wm-frame-exact-canvas';
-      canvas.width = tpl.motionData.width;
-      canvas.height = tpl.motionData.height;
+      canvas.width = tpl.logicalWidth || tpl.motionData.width;
+      canvas.height = tpl.logicalHeight || tpl.motionData.height;
       canvas.style.cssText = 'position:absolute; inset:0; width:100%; height:100%; display:block;';
       stanzaEl.style.position = stanzaEl.style.position || 'relative';
       stanzaEl.appendChild(canvas);
@@ -22215,14 +22249,12 @@ class RenderEngineV2 {
   }
 
   /**
-   * Lê o texto atual de top/red/be/my/soul a partir das linhas da
-   * estrofe (editor existente): linha 1 → top (todas as palavras
-   * juntas), linha 2 → red, linha 3 → be/my/soul por posição (a 3ª
-   * palavra em diante generaliza reusando "soul", igual às outras
-   * cenas do app).
+   * Lê o texto atual da estrofe de acordo com o layout do template
+   * frame-exact que ela usa (Kinetic Scale Stack: top/red/be/my/soul;
+   * Efeito 2: red único + palavras brancas independentes).
    */
   _readFrameExactTexts(stanza) {
-    return window.WM_FRAME_EXACT_RENDERER.readTextsFromStanza(stanza);
+    return window.WM_FRAME_EXACT_RENDERER.readTextsFromStanza(stanza, stanza && stanza.frameExactTemplateId);
   }
 
   /**
@@ -23325,15 +23357,18 @@ function initEditor() {
       });
     }
     // Reaplica o template FRAME-EXACT nas estrofes que já tinham um
-    // aplicado — mesma reestruturação em 3 linhas que a aplicação
-    // manual faz (_distribuirEmLinhas), só que automática a cada edição.
+    // aplicado — mesma reestruturação que a aplicação manual faz
+    // (_distribuirEmLinhas), só que automática a cada edição. A
+    // quantidade de linhas depende do layout de CADA template.
     if (_prevFrameExactIds.length && parsed.stanzas) {
       _prevFrameExactIds.forEach(item => {
         const stNova = parsed.stanzas[item.index];
         if (!stNova) return;
         try {
-          const linhasPalavras = _distribuirEmLinhas(stNova, 3);
-          if (linhasPalavras.length < 3) return;
+          const tplFE = window.WM_FRAME_EXACT_RENDERER?.getTemplate(item.templateId);
+          const numLinhasFE = (tplFE && tplFE.layout === 'efeito-2-style') ? 2 : 3;
+          const linhasPalavras = _distribuirEmLinhas(stNova, numLinhasFE);
+          if (linhasPalavras.length < numLinhasFE) return;
           const novasLines = linhasPalavras.map((palavras, li) => ({
             id: stNova.lines[li]?.id || ('ln_fe_' + stNova.id + '_' + li + '_' + Date.now()),
             words: palavras,
@@ -30752,6 +30787,18 @@ function initEditor() {
         if (engine && engine.parsed && engine.parsed.stanzas
             && engine.parsed.stanzas.length) {
           engine.renderStanza(engine.currentStanzaIndex);
+          // TEMPLATE FRAME-EXACT: o requestAnimationFrame fica pausado
+          // pelo navegador enquanto a aba está em segundo plano, e o
+          // <canvas> pode ser esvaziado nesse meio tempo (liberação de
+          // memória de aba inativa). Como isso NÃO é uma troca de
+          // estrofe (é a MESMA estrofe, só a aba que sumiu e voltou), a
+          // lógica normal de "só toca automático numa troca de verdade"
+          // (dentro de renderStanza) não dispara — sem isso, a letra
+          // ficava sumida até apertar Reproduzir na mão. Dispara aqui,
+          // explicitamente, sempre que a aba volta a ficar visível.
+          if (typeof engine.isCurrentStanzaFrameExact === 'function' && engine.isCurrentStanzaFrameExact()) {
+            engine.playFrameExact();
+          }
         }
       } catch (e) {}
     };
@@ -36358,12 +36405,19 @@ function initEditor() {
     // de linhas que os outros templates já usam. O motion-data e o
     // desenho ficam inteiramente por conta de WM_FRAME_EXACT_RENDERER.
     if (cfg.frameExactTemplateId) {
+      // Quantidade de linhas depende do layout do template: Kinetic
+      // Scale Stack usa 3 (título/vermelho/be-my-soul); Efeito 2 usa 2
+      // (vermelho único + palavras brancas). Lê do próprio registro do
+      // renderer em vez de fixar um número — outros templates futuros
+      // podem ter outras contagens.
+      const tplFE = window.WM_FRAME_EXACT_RENDERER?.getTemplate(cfg.frameExactTemplateId);
+      const numLinhasFE = (tplFE && tplFE.layout === 'efeito-2-style') ? 2 : 3;
       let alguma = false;
       targetIndices.forEach(stanzaIdx => {
         const stanza = parsed.stanzas[stanzaIdx];
         if (!stanza) return;
-        const linhasPalavras = _distribuirEmLinhas(stanza, 3);
-        if (linhasPalavras.length < 3) return;
+        const linhasPalavras = _distribuirEmLinhas(stanza, numLinhasFE);
+        if (linhasPalavras.length < numLinhasFE) return;
         const novasLines = linhasPalavras.map((palavras, li) => ({
           id: stanza.lines[li]?.id || ('ln_fe_' + stanza.id + '_' + li + '_' + Date.now()),
           words: palavras,
@@ -36383,7 +36437,7 @@ function initEditor() {
       }
       if (typeof markDirty === 'function') markDirty('template frame-exact aplicado');
       if (!alguma && typeof showToast === 'function') {
-        showToast('Essa estrofe precisa de pelo menos 3 linhas de texto pra esse template.');
+        showToast(`Essa estrofe precisa de pelo menos ${numLinhasFE} linhas de texto pra esse template.`);
       }
       return;
     }
@@ -39626,6 +39680,8 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
   // nenhuma alteração (mesmo JSON do ZIP, byte a byte).
   const TEMPLATES_FRAME_EXACT = {
     'kinetic-scale-stack': {
+      logicalWidth: 3840,
+      logicalHeight: 2160,
       motionData: {"fps":25.0,"frames":86,"width":3840,"height":2160,"motion":[{"top":null,"red":null,"be":null,"my":null,"soul":null},{"top":null,"red":null,"be":null,"my":null,"soul":null},{"top":null,"red":null,"be":null,"my":null,"soul":null},{"top":null,"red":null,"be":null,"my":null,"soul":null},{"top":null,"red":null,"be":null,"my":null,"soul":null},{"top":[1230,1318,1945,1533],"red":null,"be":null,"my":null,"soul":null},{"top":[1230,1318,1945,1533],"red":null,"be":null,"my":null,"soul":null},{"top":[1228,1318,1945,1534],"red":null,"be":null,"my":null,"soul":null},{"top":[1226,1318,1945,1535],"red":null,"be":null,"my":null,"soul":null},{"top":[1224,1318,1945,1536],"red":null,"be":null,"my":null,"soul":null},{"top":[1223,1319,1945,1537],"red":null,"be":null,"my":null,"soul":null},{"top":[1221,1319,1946,1538],"red":null,"be":null,"my":null,"soul":null},{"top":[1219,1319,1946,1539],"red":null,"be":null,"my":null,"soul":null},{"top":[1217,1320,1946,1540],"red":null,"be":null,"my":null,"soul":null},{"top":[1050,1351,1952,1624],"red":null,"be":null,"my":null,"soul":null},{"top":[1048,1351,1952,1626],"red":null,"be":null,"my":null,"soul":null},{"top":[1046,1061,1952,1624],"red":null,"be":null,"my":null,"soul":null},{"top":[1044,1061,1952,1625],"red":null,"be":null,"my":null,"soul":null},{"top":[973,1049,1955,1348],"red":null,"be":null,"my":null,"soul":null},{"top":[970,1049,1955,1348],"red":null,"be":null,"my":null,"soul":null},{"top":[968,1048,1955,1348],"red":null,"be":null,"my":null,"soul":null},{"top":[966,1048,1955,1349],"red":null,"be":null,"my":null,"soul":null},{"top":[964,1048,1955,1349],"red":null,"be":null,"my":null,"soul":null},{"top":[961,1047,2089,1350],"red":null,"be":null,"my":null,"soul":null},{"top":[919,1041,2202,1357],"red":null,"be":null,"my":null,"soul":null},{"top":[916,1041,2286,1357],"red":null,"be":null,"my":null,"soul":null},{"top":[914,1040,2392,1358],"red":null,"be":null,"my":null,"soul":null},{"top":[911,1040,2392,1358],"red":null,"be":null,"my":null,"soul":null},{"top":[909,1039,2394,1358],"red":null,"be":null,"my":null,"soul":null},{"top":[906,1039,2395,1359],"red":null,"be":null,"my":null,"soul":null},{"top":[904,1038,2396,1359],"red":null,"be":null,"my":null,"soul":null},{"top":[901,1038,2397,1360],"red":null,"be":null,"my":null,"soul":null},{"top":[886,1035,2949,1363],"red":null,"be":null,"my":null,"soul":null},{"top":[883,1034,2951,1363],"red":null,"be":null,"my":null,"soul":null},{"top":[881,1034,2954,1363],"red":null,"be":null,"my":null,"soul":null},{"top":[878,1034,2956,1364],"red":[900,1802,994,2160],"be":null,"my":null,"soul":null},{"top":[876,938,2959,1344],"red":[898,1776,992,2160],"be":null,"my":null,"soul":null},{"top":[873,937,2961,1345],"red":[896,1744,990,2152],"be":null,"my":null,"soul":null},{"top":[871,937,2964,1345],"red":[892,1705,1100,2126],"be":null,"my":null,"soul":null},{"top":[868,936,2966,1345],"red":[890,1654,1196,2100],"be":null,"my":null,"soul":null},{"top":[866,615,2969,1279],"red":[888,1590,1195,2046],"be":null,"my":null,"soul":null},{"top":[863,613,2971,1279],"red":[886,1530,1458,2082],"be":null,"my":null,"soul":null},{"top":[860,612,2974,1279],"red":[883,1494,1788,2117],"be":null,"my":null,"soul":null},{"top":[858,611,2976,1279],"red":[880,1478,1787,2064],"be":null,"my":null,"soul":null},{"top":[855,609,2979,1279],"red":[878,1474,1786,2001],"be":null,"my":null,"soul":null},{"top":[853,608,2981,1280],"red":[876,1475,1786,1944],"be":null,"my":null,"soul":null},{"top":[850,606,2984,1280],"red":[873,1476,1786,1911],"be":null,"my":null,"soul":null},{"top":[848,605,2986,1280],"red":[870,1472,1786,1900],"be":null,"my":null,"soul":null},{"top":[845,604,2989,1280],"red":[868,1472,1786,1900],"be":null,"my":null,"soul":null},{"top":[843,602,2991,1281],"red":[866,1472,1785,1902],"be":null,"my":null,"soul":null},{"top":[840,509,2994,1262],"red":[864,1372,1784,1906],"be":null,"my":null,"soul":null},{"top":[838,507,2996,1262],"red":[860,1372,1784,1908],"be":null,"my":null,"soul":null},{"top":[835,506,2999,1262],"red":[858,1372,1784,1910],"be":null,"my":null,"soul":null},{"top":[833,504,3001,1262],"red":[856,1373,2620,1912],"be":null,"my":null,"soul":null},{"top":[830,455,3004,1117],"red":[854,1230,2804,1773],"be":null,"my":null,"soul":null},{"top":[828,453,3006,1117],"red":[851,1230,2927,1774],"be":null,"my":null,"soul":null},{"top":[825,452,3009,1117],"red":[848,1230,2930,1776],"be":null,"my":null,"soul":null},{"top":[822,450,3011,1116],"red":[846,1230,2992,1777],"be":null,"my":null,"soul":null},{"top":[820,448,3014,1116],"red":[844,1230,2994,1778],"be":null,"my":null,"soul":null},{"top":[818,446,3016,1116],"red":[841,1230,2996,1780],"be":null,"my":null,"soul":null},{"top":[815,445,3019,1116],"red":[838,1231,2998,1781],"be":null,"my":null,"soul":null},{"top":[812,446,3021,1054],"red":[836,1107,3001,1713],"be":null,"my":null,"soul":null},{"top":[810,445,3024,1053],"red":[834,1106,3004,1714],"be":null,"my":null,"soul":null},{"top":[808,443,3026,1053],"red":[832,1106,3006,1716],"be":null,"my":null,"soul":null},{"top":[805,441,3029,1053],"red":[828,1106,3008,1716],"be":null,"my":null,"soul":null},{"top":[802,440,3031,1039],"red":[826,1078,3010,1702],"be":null,"my":null,"soul":null},{"top":[800,439,3034,1038],"red":[824,1078,3014,1703],"be":null,"my":null,"soul":null},{"top":[798,437,3036,1038],"red":[822,1078,3016,1704],"be":null,"my":null,"soul":null},{"top":[795,436,3039,1033],"red":[819,1066,3018,1700],"be":null,"my":null,"soul":null},{"top":[792,434,3041,1032],"red":[816,1066,3020,1700],"be":null,"my":null,"soul":null},{"top":[790,432,3044,1032],"red":[814,1066,3024,1702],"be":null,"my":null,"soul":null},{"top":[787,431,3046,1030],"red":[812,1062,3026,1701],"be":[791,1980,1209,2160],"my":null,"soul":null},{"top":[785,429,3049,1030],"red":[809,1062,3028,1702],"be":[788,1713,1210,2155],"my":null,"soul":null},{"top":[782,427,3051,841],"red":[806,872,3030,1344],"be":[786,1471,1208,1913],"my":null,"soul":null},{"top":[780,425,3054,840],"red":[804,872,3033,1344],"be":[783,1359,1206,1802],"my":[1400,1991,1927,2160],"soul":null},{"top":[777,424,3056,805],"red":[802,848,3036,1292],"be":[781,1330,1205,1774],"my":[1399,1724,1927,2160],"soul":[2114,1950,2968,2160]},{"top":[775,422,3059,804],"red":[799,846,3038,1292],"be":[778,1330,1203,1775],"my":[1397,1477,1927,1923],"soul":[2111,1676,3062,2136]},{"top":[772,420,3061,803],"red":[796,846,3040,1292],"be":[776,1330,1202,1776],"my":[1396,1361,1927,1808],"soul":[2111,1446,3064,1906]},{"top":[770,418,3064,803],"red":[794,845,3042,1292],"be":[773,1330,1200,1778],"my":[1395,1331,1927,1778],"soul":[2111,1346,3067,1808]},{"top":[767,417,3066,791],"red":[792,840,3046,1280],"be":[771,1331,1198,1779],"my":[1394,1331,1927,1779],"soul":[2112,1324,3069,1786]},{"top":[765,415,3069,791],"red":[790,838,3048,1280],"be":[768,1331,1197,1780],"my":[1393,1331,1927,1780],"soul":[2112,1324,3072,1787]},{"top":[762,413,3071,785],"red":[787,838,3050,1280],"be":[766,1331,1195,1781],"my":[1392,1331,1927,1781],"soul":[2113,1324,3074,1789]},{"top":[760,412,3074,784],"red":[784,836,3052,1280],"be":[763,1332,1194,1783],"my":[1390,1332,1927,1783],"soul":[2113,1324,3077,1790]},{"top":[757,410,3076,783],"red":[782,836,3055,1280],"be":[761,1332,1192,1784],"my":[1389,1332,1927,1784],"soul":[2113,1325,3079,1791]},{"top":[547,267,3285,708],"red":[576,770,3260,1295],"be":[552,1356,1061,1889],"my":[1294,1356,1930,1889],"soul":[2148,1347,3288,1898]},{"top":[547,267,3285,708],"red":[576,770,3260,1295],"be":[552,1356,1061,1889],"my":[1294,1356,1930,1889],"soul":[2148,1347,3288,1898]}],"textSlots":{"top":"YOU'RE DON'T EVEN KNOW","red":"THE PLACE I HAD TO GO.","be":"BE","my":"MY","soul":"SOUL"}},
       styles: {
         top:  { fontFamily: 'HeadingNowTrial-26Bold-KSS', color: '#f2f2f2' },
@@ -39640,6 +39696,26 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
       // frame que todo mundo, então participa do zoom final igual aos
       // outros — a correção só encolhe a caixa dele, não o congela.
       soulBaseScale: 0.92,
+    },
+    'efeito-2': {
+      layout: 'efeito-2-style',
+      // Espaço lógico PRÓPRIO deste template — 1920x1080, NÃO
+      // 3840x2160. O motion-data.json original tem width/height:3840/
+      // 2160 como METADADO (da resolução do MP4 de origem), mas as
+      // bboxes foram medidas de verdade contra um canvas de preview
+      // 1920x1080 (confirmado rodando a ferramenta original: o
+      // elemento <canvas> é width="1920" height="1080", SCALE=1, e o
+      // comentário do próprio template.js original avisa: "NÃO
+      // reduzir novamente: isso deslocava toda a composição pro
+      // canto esquerdo"). logicalWidth/Height abaixo é o que a
+      // exportação e o preview usam pra escalar — NÃO motionData.width.
+      logicalWidth: 1920,
+      logicalHeight: 1080,
+      motionData: {"fps":25,"frames":66,"width":3840,"height":2160,"framesData":[{"red":null,"white":[]},{"red":[680,500,522,72],"white":[]},{"red":[680,500,522,72],"white":[]},{"red":[680,500,522,72],"white":[]},{"red":[680,500,522,72],"white":[]},{"red":[680,500,522,72],"white":[]},{"red":[680,500,522,72],"white":[]},{"red":[320,417,1227,247],"white":[]},{"red":[320,417,1227,247],"white":[]},{"red":[320,417,1227,247],"white":[]},{"red":[245,360,1375,290],"white":[]},{"red":[245,360,1375,290],"white":[]},{"red":[245,360,1375,290],"white":[]},{"red":[245,360,1375,290],"white":[]},{"red":[180,165,1535,437],"white":[]},{"red":[180,162,1535,440],"white":[]},{"red":[180,162,1537,440],"white":[]},{"red":[210,227,1470,337],"white":[]},{"red":[210,227,1470,337],"white":[]},{"red":[210,227,1472,337],"white":[]},{"red":[225,327,1435,187],"white":[]},{"red":[222,327,1437,187],"white":[]},{"red":[220,327,1440,187],"white":[]},{"red":[220,325,1440,190],"white":[]},{"red":[220,325,1440,190],"white":[[222,582,132,155]]},{"red":[220,325,1440,190],"white":[[222,552,132,138]]},{"red":[220,325,1442,190],"white":[[222,555,132,140],[398,672,198,205]]},{"red":[220,325,1442,190],"white":[[222,555,132,140],[398,545,198,135]]},{"red":[220,325,1445,190],"white":[[222,555,130,140],[398,550,198,135]]},{"red":[217,325,1447,190],"white":[[220,555,132,140],[398,550,198,138]]},{"red":[217,325,1447,190],"white":[[220,555,132,140],[395,552,200,140]]},{"red":[215,325,1450,190],"white":[[220,555,132,140],[395,555,200,138]]},{"red":[215,325,1450,190],"white":[[220,555,132,140],[395,555,200,140]]},{"red":[215,325,1450,190],"white":[[218,555,132,140],[395,555,200,140],[635,872,192,162]]},{"red":[215,325,1450,190],"white":[[218,555,132,140],[395,555,200,140],[635,605,192,165]]},{"red":[215,325,1452,190],"white":[[218,555,132,140],[395,555,200,140],[635,548,192,132]]},{"red":[215,325,1452,190],"white":[[218,555,132,140],[392,555,200,140],[632,552,195,138]]},{"red":[215,322,1455,192],"white":[[215,555,135,140],[392,555,200,140],[632,558,195,138]]},{"red":[212,322,1457,192],"white":[[215,555,132,140],[392,555,200,140],[632,558,195,138],[868,640,95,190]]},{"red":[212,322,1457,192],"white":[[215,555,132,140],[392,555,200,140],[632,558,195,138],[868,550,95,140]]},{"red":[210,322,1460,192],"white":[[215,555,132,140],[392,555,200,140],[632,558,195,138],[868,545,95,138]]},{"red":[210,322,1460,192],"white":[[215,555,132,140],[390,555,202,140],[632,558,195,138],[868,548,95,138]]},{"red":[210,322,1460,192],"white":[[212,555,135,140],[390,555,202,140],[632,558,195,138],[868,550,95,138]]},{"red":[210,322,1460,192],"white":[[212,555,135,140],[390,555,202,140],[632,558,195,138],[868,552,95,140]]},{"red":[210,322,1462,192],"white":[[212,555,132,140],[390,555,202,140],[632,558,195,138],[868,555,95,140]]},{"red":[210,322,1465,192],"white":[[212,555,132,142],[390,555,200,142],[632,558,195,140],[868,555,95,140]]},{"red":[210,322,1465,192],"white":[[210,555,135,142],[390,555,200,142],[632,558,195,140],[868,555,95,140]]},{"red":[207,322,1467,192],"white":[[210,555,135,142],[388,555,202,142],[630,558,198,140],[868,555,95,142],[1002,730,140,240]]},{"red":[205,322,1470,192],"white":[[210,555,135,142],[388,555,202,142],[630,558,198,140],[868,555,95,142],[1002,565,140,148]]},{"red":[205,322,1470,192],"white":[[210,555,132,142],[388,555,202,142],[630,558,198,140],[868,555,95,142],[1002,548,140,138]]},{"red":[205,322,1470,192],"white":[[208,555,135,142],[388,555,202,142],[630,558,198,140],[868,555,95,142],[1002,552,140,142]]},{"red":[205,322,1470,192],"white":[[208,555,135,142],[388,555,202,142],[630,558,195,140],[868,555,95,142],[1002,555,140,142],[1182,850,190,190]]},{"red":[205,320,1470,195],"white":[[208,555,135,142],[388,555,202,142],[630,558,195,140],[868,555,95,142],[1002,555,140,142],[1182,562,192,140]]},{"red":[205,320,1472,195],"white":[[208,555,135,142],[385,555,205,142],[630,558,195,140],[868,555,95,142],[1002,555,140,142],[1182,550,192,132]]},{"red":[205,320,1475,195],"white":[[208,555,132,142],[385,555,202,142],[630,558,195,140],[868,555,95,142],[1002,555,140,142],[1182,555,192,135]]},{"red":[202,320,1477,195],"white":[[205,555,135,142],[385,555,202,142],[630,558,195,140],[868,555,95,142],[1002,555,140,142],[1182,555,192,138]]},{"red":[202,320,1477,195],"white":[[205,555,135,142],[385,555,202,142],[630,558,195,140],[868,555,95,142],[1002,555,140,142],[1182,555,192,138]]},{"red":[200,320,1480,195],"white":[[205,555,135,142],[385,555,202,142],[628,558,198,140],[868,555,95,142],[1002,555,140,142],[1182,558,192,138]]},{"red":[200,320,1480,195],"white":[[205,555,135,142],[385,555,202,142],[628,558,198,140],[868,555,95,142],[1002,555,140,142],[1182,558,192,138]]},{"red":[200,320,1480,195],"white":[[202,555,138,142],[382,555,205,142],[628,558,198,140],[868,555,95,142],[1002,555,140,142],[1182,558,195,138],[1420,762,232,252]]},{"red":[200,320,1480,195],"white":[[202,555,135,142],[382,555,205,142],[628,558,198,140],[868,555,95,142],[1002,555,140,142],[1182,558,195,138],[1420,622,232,172]]},{"red":[200,320,1482,195],"white":[[202,555,135,142],[382,555,205,142],[628,558,198,140],[868,555,95,142],[1002,555,140,142],[1182,558,195,138],[1420,565,235,142]]},{"red":[200,320,1482,195],"white":[[202,555,135,142],[382,555,205,142],[628,558,198,140],[865,555,98,142],[1002,555,142,142],[1185,558,192,138],[1420,550,235,132]]},{"red":[200,320,1485,195],"white":[[200,555,138,142],[382,555,202,142],[628,558,198,140],[865,555,98,142],[1002,555,142,142],[1185,558,192,138],[1420,550,235,132]]},{"red":[197,320,1487,195],"white":[[200,555,138,142],[380,555,205,142],[628,558,198,140],[865,555,98,142],[1002,555,142,142],[1185,558,192,140],[1420,552,235,135]]},{"red":[197,320,1487,195],"white":[[200,555,135,145],[380,555,205,145],[628,558,198,142],[865,555,98,145],[1002,555,142,145],[1185,558,192,140],[1422,555,235,138]]}]},
+      styles: {
+        red:   { fontFamily: 'HeadingNowTrial-26Bold-KSS', color: '#ed0019' },
+        white: { fontFamily: 'HeadingNowTrial-26Bold-KSS', color: '#f1f1f1' },
+      },
     },
   };
 
@@ -39669,7 +39745,12 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
   }
   Object.keys(TEMPLATES_FRAME_EXACT).forEach(id => {
     const tpl = TEMPLATES_FRAME_EXACT[id];
-    tpl.singleWordBboxes = _computeSingleWordBboxes(tpl.motionData);
+    // Só faz sentido pro layout Kinetic Scale Stack (be/my/soul dentro
+    // de motionData.motion[]) — o Efeito 2 usa uma estrutura diferente
+    // (motionData.framesData[]) e não precisa dessa caixa união.
+    if (tpl.motionData && Array.isArray(tpl.motionData.motion)) {
+      tpl.singleWordBboxes = _computeSingleWordBboxes(tpl.motionData);
+    }
   });
 
   const bitmapCache = new Map();
@@ -39717,10 +39798,23 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
   }
 
   /** Desenha o bitmap do texto ESTICADO pra caber exatamente na bbox — sem CSS transform, sem interpolação. */
-  function drawStretched(ctx, text, fontFamily, color, bbox) {
+  /**
+   * Desenha o bitmap do texto esticado na bbox — aceita os DOIS
+   * formatos vistos nos templates frame-exact até agora:
+   *  - 'x1y1x2y2' (Kinetic Scale Stack/Efeito 3): [esquerda,topo,direita,baixo]
+   *  - 'xywh' (Efeito 2): [x,y,largura,altura] — width/height JÁ são a
+   *    largura/altura, não coordenadas de canto — usar direto, nunca
+   *    calcular como x2-x1.
+   */
+  function drawStretched(ctx, text, fontFamily, color, bbox, bboxFormat) {
     if (!bbox || !text) return;
     const img = makeBitmap(text, fontFamily, color);
-    if (img) ctx.drawImage(img, bbox[0], bbox[1], bbox[2] - bbox[0], bbox[3] - bbox[1]);
+    if (!img) return;
+    if (bboxFormat === 'xywh') {
+      ctx.drawImage(img, bbox[0], bbox[1], bbox[2], bbox[3]);
+    } else {
+      ctx.drawImage(img, bbox[0], bbox[1], bbox[2] - bbox[0], bbox[3] - bbox[1]);
+    }
   }
 
   /**
@@ -39743,7 +39837,6 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
     if (!tpl) return false;
     const motion = tpl.motionData;
     const frameIdx = getFrameIndex(elapsedMs, motion);
-    const m = motion.motion[frameIdx];
 
     // CORREÇÃO: a ferramenta original sempre desenhava um fundo preto
     // sólido primeiro (fillRect preto) — fazia sentido lá, era um vídeo
@@ -39751,6 +39844,21 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
     // usuário configurou pra estrofe (gradiente, imagem, cor). Removido
     // — só desenha o texto; o fundo por trás (canvas de export já
     // desenhado, ou o DOM por trás do canvas no preview) fica visível.
+
+    // Despacha pro layout certo — cada template registrado tem uma
+    // estrutura de dados própria (Kinetic Scale Stack: top/red/be/my/
+    // soul; Efeito 2: red único + array de palavras brancas), então
+    // cada um tem sua própria função de desenho, todas reaproveitando
+    // as MESMAS peças compartilhadas (makeBitmap, drawStretched,
+    // getFrameIndex, cache de bitmap, pré-carregamento de fonte).
+    if (tpl.layout === 'efeito-2-style') {
+      return _renderFrameEfeito2Style(ctx, tpl, texts, frameIdx);
+    }
+    return _renderFrameKineticScaleStack(ctx, tpl, texts, frameIdx);
+  }
+
+  function _renderFrameKineticScaleStack(ctx, tpl, texts, frameIdx) {
+    const m = tpl.motionData.motion[frameIdx];
 
     // CORREÇÃO (linha 3 com quantidade de palavras ≠ 3): desenha o
     // texto combinado (line3Combined) na caixa UNIÃO (be+my+soul, pré-
@@ -39795,6 +39903,29 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
     return true;
   }
 
+  /**
+   * Efeito 2: 1 bloco vermelho (texto único, cresce/assenta ao longo
+   * dos frames) + N palavras brancas INDEPENDENTES (cada uma com sua
+   * própria bbox por frame, entrando em instantes diferentes — igual
+   * ao motion-data original, sem reconstrução). Bbox em formato
+   * [x,y,largura,altura] (não [x1,y1,x2,y2]) — usa 'xywh' direto.
+   */
+  function _renderFrameEfeito2Style(ctx, tpl, texts, frameIdx) {
+    const f = tpl.motionData.framesData[frameIdx];
+    if (!f) return false;
+
+    const stRed = tpl.styles.red;
+    drawStretched(ctx, texts.red, stRed.fontFamily, stRed.color, f.red, 'xywh');
+
+    const whiteBoxes = f.white || [];
+    const whiteTexts = texts.white || [];
+    const stWhite = tpl.styles.white;
+    for (let i = 0; i < whiteBoxes.length && i < whiteTexts.length; i++) {
+      drawStretched(ctx, whiteTexts[i], stWhite.fontFamily, stWhite.color, whiteBoxes[i], 'xywh');
+    }
+    return true;
+  }
+
   /** Garante que as fontes do template estão carregadas antes do 1º frame. */
   async function preloadFonts(templateId) {
     const tpl = TEMPLATES_FRAME_EXACT[templateId];
@@ -39824,7 +39955,15 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
    * método de instância) quanto pelo export (CanvasRenderer, objeto
    * plano sem "this" de engine), pra nunca divergir entre os dois.
    */
-  function readTextsFromStanza(stanza) {
+  function readTextsFromStanza(stanza, templateId) {
+    const tpl = templateId ? TEMPLATES_FRAME_EXACT[templateId] : null;
+    if (tpl && tpl.layout === 'efeito-2-style') {
+      return _readTextsEfeito2Style(stanza);
+    }
+    return _readTextsKineticScaleStack(stanza);
+  }
+
+  function _readTextsKineticScaleStack(stanza) {
     const lines = (stanza && stanza.lines) || [];
     const l1 = (lines[0]?.words || []).map(w => w.text).join(' ');
     const l2 = (lines[1]?.words || []).map(w => w.text).join(' ');
@@ -39841,6 +39980,22 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
       line3Combined: l3words.map(w => w.text).join(' '),
     };
     return out;
+  }
+
+  /**
+   * Efeito 2: linha 1 → texto vermelho único; linha 2 → palavras
+   * brancas INDEPENDENTES (uma bbox própria por palavra, no motion-
+   * data original — não uma caixa união). Se o usuário digitar menos
+   * de 7 palavras, as bboxes extras do motion-data simplesmente não
+   * são usadas (nenhuma palavra inventada). Se digitar mais de 7, as
+   * excedentes não têm bbox própria — ficam de fora (o motion-data
+   * original só tem 7 posições medidas; não recalcula posição nova).
+   */
+  function _readTextsEfeito2Style(stanza) {
+    const lines = (stanza && stanza.lines) || [];
+    const red = (lines[0]?.words || []).map(w => w.text).join(' ');
+    const white = (lines[1]?.words || []).map(w => w.text);
+    return { red, white };
   }
 
   return {
