@@ -39986,8 +39986,18 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
     text = (text || '').toUpperCase().trim();
     if (!text || !targetHeight) return null;
     const ref = _efeito2AlturaReferenciaFonte(fontFamily);
-    const fontSizePx = (targetHeight / ref.alturaPx) * ref.size;
-    const key = text + '|' + fontFamily + '|' + color + '|' + Math.round(fontSizePx);
+    const fontSizePxExato = (targetHeight / ref.alturaPx) * ref.size;
+    // CORREÇÃO DE PERFORMANCE (travamento real reportado): a caixa da
+    // palavra CRESCE continuamente quadro a quadro durante a entrada
+    // (é um efeito de zoom) — arredondar pro pixel mais próximo fazia
+    // o tamanho de fonte mudar quase todo quadro, e o cache de bitmap
+    // (por texto+fonte+cor+tamanho) quase nunca batia, forçando criar
+    // um canvas novo e redesenhar o texto a cada quadro, pra cada
+    // palavra ativa. Arredondar pra um degrau de 4px reduz drasticamente
+    // quantos tamanhos distintos aparecem ao longo da animação — troca
+    // imperceptível de precisão visual por um ganho real de performance.
+    const fontSizePx = Math.round(fontSizePxExato / 4) * 4;
+    const key = text + '|' + fontFamily + '|' + color + '|' + fontSizePx;
     if (bitmapCache.has(key)) return bitmapCache.get(key);
     const measureCanvas = document.createElement('canvas');
     const g = measureCanvas.getContext('2d');
