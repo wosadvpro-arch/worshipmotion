@@ -23392,7 +23392,15 @@ function initEditor() {
         if (!stNova) return;
         try {
           const tplFE = window.WM_FRAME_EXACT_RENDERER?.getTemplate(item.templateId);
-          const numLinhasFE = (tplFE && tplFE.layout === 'efeito-2-style') ? 2 : 3;
+          // Mesmo critério genérico de _doApplyTemplateToStanzas: lê a
+          // contagem de linhas do próprio registro do template (campo
+          // "numLines") quando disponível, em vez de listar cada
+          // layout individualmente aqui — essa cópia da lógica é que
+          // ficou desatualizada quando o Efeito 1 (2 linhas) foi
+          // registrado, e por isso a reaplicação automática falhava
+          // silenciosamente a cada edição (bug real reportado: efeito
+          // "sumia" ao acrescentar/apagar palavra).
+          const numLinhasFE = (tplFE && tplFE.numLines) || ((tplFE && tplFE.layout === 'efeito-2-style') ? 2 : 3);
           const linhasPalavras = _distribuirEmLinhas(stNova, numLinhasFE);
           if (linhasPalavras.length < numLinhasFE) return;
           const novasLines = linhasPalavras.map((palavras, li) => ({
