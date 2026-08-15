@@ -39962,8 +39962,21 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
     const totalOriginal = redBoxes.length;
 
     if (redTexts.length === totalOriginal) {
+      // CORREÇÃO (bug real reportado: "TESTE TESTE TESTE TESTE" saía
+      // com tamanhos bem diferentes entre si): mesmo com a contagem
+      // batendo (4), cada caixa original tem largura própria (medida
+      // pra BOWL/FULL/OF/PLENTY, palavras de comprimentos bem
+      // diferentes) — esticar QUALQUER texto pra caber exatamente
+      // nessa largura específica deforma/espreme palavras que não
+      // tenham esse mesmo formato. preserveAspect=true (já suportado
+      // por drawStretched, mesmo mecanismo usado noutros lugares do
+      // app pra esse tipo de distorção) mantém a proporção natural da
+      // fonte — escala pela ALTURA da caixa daquele quadro (preserva o
+      // efeito de crescimento/timing da animação), sem esticar a
+      // largura de forma não uniforme. Palavras iguais (como no
+      // exemplo reportado) saem com o mesmo tamanho entre si.
       for (let i = 0; i < totalOriginal; i++) {
-        drawStretched(ctx, redTexts[i], stRed.fontFamily, stRed.color, redBoxes[i], 'xywh');
+        drawStretched(ctx, redTexts[i], stRed.fontFamily, stRed.color, redBoxes[i], 'xywh', true);
       }
     } else if (redTexts.length > 0 && totalOriginal > 0) {
       const GAP_RATIO = 0.29; // mesmo espaçamento proporcional usado no Efeito 2
