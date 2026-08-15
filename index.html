@@ -13850,6 +13850,32 @@ const TEMPLATES = [
     },
   },
   {
+    id: "tpl-oficial-staggered-type-snap-reveal-v1",
+    name: "Staggered Type Snap Reveal",
+    description: "Tipografia cinetica em duas linhas: cinco palavras brancas se revelam de forma escalonada ate a composicao final e uma palavra vermelha entra comprimida e se expande rapidamente, reproduzida por bounding boxes absolutas frame a frame (frame-exact).",
+    tags: ["2 linhas", "Cinetico", "Pro Plus"],
+    isOfficial: true,
+    isPremium: true,
+    requiredPlan: "pro_plus",
+    isActive: true,
+    accent: "#E31313",
+    config: {
+      type: 'frame-exact',
+      frameExactTemplateId: 'staggered-type-snap-reveal',
+      style: {},
+      animConfig: {},
+      aspect: '16:9',
+      parsed: {
+        stanzas: [
+          { id: "stz_nankaqh", label: "Estrofe 1", lines: [
+            { id: "ln_5ermczi", words: [{ id: "w_ptgz4jf", text: "THE", chars: [{id:"ch_ebz9sdo",text:"T"}, {id:"ch_78xrlgq",text:"H"}, {id:"ch_nbqrmkt",text:"E"}], emphasized: false }, { id: "w_sxfvy6p", text: "HOLE", chars: [{id:"ch_lp4rf9t",text:"H"}, {id:"ch_ast6m01",text:"O"}, {id:"ch_s12kotq",text:"L"}, {id:"ch_cfc3r78",text:"E"}], emphasized: false }, { id: "w_4vjme0m", text: "WE", chars: [{id:"ch_2rlw1u9",text:"W"}, {id:"ch_mugdorp",text:"E"}], emphasized: false }, { id: "w_hvls3bc", text: "BUILD", chars: [{id:"ch_wfsubus",text:"B"}, {id:"ch_uj0esm2",text:"U"}, {id:"ch_siqykva",text:"I"}, {id:"ch_xc3kxxs",text:"L"}, {id:"ch_g2n1nhd",text:"D"}], emphasized: false }, { id: "w_ddkjc85", text: "THE", chars: [{id:"ch_puch7s0",text:"T"}, {id:"ch_m4mp205",text:"H"}, {id:"ch_co02p1n",text:"E"}], emphasized: false }] },
+            { id: "ln_rdk34zy", words: [{ id: "w_5mccqqp", text: "SNAP", chars: [{id:"ch_7no0qju",text:"S"}, {id:"ch_duhzc5y",text:"N"}, {id:"ch_f1nkvs4",text:"A"}, {id:"ch_u07nrvz",text:"P"}], emphasized: false }] },
+          ] },
+        ],
+      },
+    },
+  },
+  {
     id: "tpl-oficial-kinetic-scale-stack-frameexact",
     name: "Kinetic Scale Stack",
     description: "Tipografia cinética em três linhas, com compressão/expansão e zoom final, reproduzida por bounding boxes absolutas frame a frame (frame-exact).",
@@ -39763,6 +39789,38 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
       styles: {
         red:  { fontFamily: 'HeadingNowTrial-26Bold-KSS', color: '#f1f1f1' },
         deep: { fontFamily: 'HeadingNowTrial-26Bold-KSS', color: '#f1f1f1' },
+      },
+    },
+    'staggered-type-snap-reveal': {
+      // Efeito 4 (Staggered Type Snap Reveal): 5 palavras brancas
+      // INDEPENDENTES (bbox própria por palavra, sempre as 5
+      // presentes desde o frame 0) + 1 palavra vermelha (SNAP) que
+      // entra só a partir do frame em que aparece no motion-data
+      // original (null antes disso, a partir do frame 29). MESMA
+      // estrutura de dados do Efeito 1 (array "red" de palavras
+      // independentes + "deep" única que cresce no final) — reaproveita
+      // o layout 'efeito-1-style' já existente, sem nenhuma função
+      // nova. Motion-data ORIGINAL do pacote (motion-data.json),
+      // convertido 1:1 pro mesmo formato framesData — mesmas bboxes
+      // [x,y,largura,altura] em 1920×1080, byte a byte, sem
+      // interpolar/omitir nenhum dos 38 frames.
+      layout: 'efeito-1-style',
+      numLines: 2,
+      logicalWidth: 1920,
+      logicalHeight: 1080,
+      motionData: {"fps":25,"frames":38,"width":1920,"height":1080,"framesData":[{"red":[[164,385,202,124],[470,505,278,144],[862,542,150,105],[1115,542,337,107],[1555,542,201,105]],"deep":null},{"red":[[164,357,202,118],[470,429,278,136],[862,542,150,105],[1115,542,337,107],[1555,542,201,105]],"deep":null},{"red":[[164,335,202,114],[470,387,278,126],[862,465,150,156],[1115,542,337,107],[1555,542,201,105]],"deep":null},{"red":[[164,317,202,112],[470,357,278,120],[862,411,150,126],[1115,453,337,148],[1555,473,201,174]],"deep":null},{"red":[[164,303,202,110],[470,335,278,116],[862,375,150,120],[1115,403,337,128],[1555,413,201,130]],"deep":null},{"red":[[164,291,202,110],[470,317,278,114],[862,349,150,116],[1115,369,337,122],[1555,377,201,120]],"deep":null},{"red":[[164,283,202,108],[470,303,278,112],[862,327,150,114],[1115,345,337,116],[1555,351,201,116]],"deep":null},{"red":[[164,275,202,108],[470,291,278,112],[862,311,150,112],[1115,325,337,114],[1555,329,201,114]],"deep":null},{"red":[[164,271,202,106],[470,283,278,110],[862,299,150,110],[1115,309,337,112],[1555,313,201,112]],"deep":null},{"red":[[146,143,236,230],[469,267,280,118],[862,289,150,108],[1115,297,337,112],[1555,299,201,110]],"deep":null},{"red":[[146,141,236,228],[469,261,280,118],[862,281,150,106],[1115,287,337,110],[1555,289,201,110]],"deep":null},{"red":[[146,139,236,228],[469,257,280,118],[862,273,150,108],[1115,279,337,110],[1555,281,201,108]],"deep":null},{"red":[[146,138,236,229],[468,255,281,116],[862,269,150,106],[1115,273,337,108],[1555,275,201,106]],"deep":null},{"red":[[146,138,236,229],[469,253,280,116],[862,265,150,106],[1115,269,337,106],[1555,269,201,106]],"deep":null},{"red":[[146,138,236,229],[451,135,312,235],[857,245,157,124],[1115,265,337,108],[1555,267,201,104]],"deep":null},{"red":[[146,138,236,229],[451,135,312,235],[857,245,157,122],[1115,263,337,106],[1555,263,201,106]],"deep":null},{"red":[[146,138,236,229],[451,135,312,235],[857,244,157,123],[1115,262,337,107],[1555,263,201,104]],"deep":null},{"red":[[146,138,236,229],[451,135,312,235],[857,244,157,123],[1115,262,337,106],[1555,262,201,105]],"deep":null},{"red":[[146,138,236,229],[451,135,312,235],[828,139,200,228],[1111,235,345,133],[1555,262,201,105]],"deep":null},{"red":[[146,138,236,229],[451,135,312,235],[828,138,200,229],[1111,235,345,134],[1555,262,201,105]],"deep":null},{"red":[[146,138,236,229],[451,135,312,235],[828,138,200,229],[1111,235,345,134],[1555,262,201,105]],"deep":null},{"red":[[146,138,236,229],[451,135,312,235],[828,138,200,229],[1111,235,345,134],[1555,262,201,105]],"deep":null},{"red":[[146,138,236,229],[451,135,312,235],[828,138,200,229],[1111,235,345,134],[1555,262,201,105]],"deep":null},{"red":[[146,138,236,229],[451,135,312,235],[828,138,200,229],[1097,138,374,232],[1549,227,212,140]],"deep":null},{"red":[[146,138,236,229],[451,135,312,235],[828,138,200,229],[1097,138,374,232],[1549,227,212,140]],"deep":null},{"red":[[146,138,236,229],[451,135,312,235],[828,138,200,229],[1097,138,374,232],[1549,227,212,140]],"deep":null},{"red":[[146,138,236,229],[451,135,312,235],[828,138,200,229],[1097,138,374,232],[1536,138,236,229]],"deep":null},{"red":[[146,138,236,229],[451,135,312,235],[828,138,200,229],[1097,138,374,232],[1536,138,236,229]],"deep":null},{"red":[[146,138,236,229],[451,135,312,235],[828,138,200,229],[1097,138,374,232],[1536,138,236,229]],"deep":null},{"red":[[146,138,236,229],[451,135,312,235],[828,138,200,229],[1097,138,374,232],[1536,138,236,229]],"deep":[361,778,1227,150]},{"red":[[146,138,236,229],[451,135,312,235],[828,138,200,229],[1097,138,374,232],[1536,138,236,229]],"deep":[361,778,1227,150]},{"red":[[146,138,236,229],[451,135,312,235],[828,138,200,229],[1097,138,374,232],[1536,138,236,229]],"deep":[306,534,1312,388]},{"red":[[146,138,236,229],[451,135,312,235],[828,138,200,229],[1097,138,374,232],[1536,138,236,229]],"deep":[300,534,1324,388]},{"red":[[146,138,236,229],[451,135,312,235],[828,138,200,229],[1097,138,374,232],[1536,138,236,229]],"deep":[186,491,1552,429]},{"red":[[146,138,236,229],[451,135,312,235],[828,138,200,229],[1097,138,374,232],[1536,138,236,229]],"deep":[116,490,1692,430]},{"red":[[146,138,236,229],[451,135,312,235],[828,138,200,229],[1097,138,374,232],[1536,138,236,229]],"deep":[86,476,1752,444]},{"red":[[146,138,236,229],[451,135,312,235],[828,138,200,229],[1097,138,374,232],[1536,138,236,229]],"deep":[72,476,1780,444]},{"red":[[146,138,236,229],[451,136,312,233],[828,138,200,229],[1097,138,374,231],[1536,138,236,229]],"deep":[67,476,1790,448]}]},
+      // Fontes originais do pacote (HeadingNowTrial-85Medium pro
+      // branco, HeadingNowTrial-77Extrabold pro vermelho) NÃO estão
+      // disponíveis no projeto — só existem HeadingNowTrial-26Bold-KSS
+      // e HeadingNowTrial-66Bold-KSS (reaproveitadas dos efeitos
+      // anteriores). Substituídas pelas mais próximas já embutidas,
+      // sem duplicar fonte nenhuma: 26Bold (mais estreita) pro branco,
+      // 66Bold (mais robusta) pro SNAP vermelho, que precisa de mais
+      // peso visual. Ver relatório: isso é uma aproximação, não a
+      // fonte original.
+      styles: {
+        red:  { fontFamily: 'HeadingNowTrial-26Bold-KSS', color: '#EDEDED' },
+        deep: { fontFamily: 'HeadingNowTrial-66Bold-KSS', color: '#E31313' },
       },
     },
     'efeito-2': {
