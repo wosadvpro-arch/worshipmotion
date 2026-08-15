@@ -13928,33 +13928,6 @@ const TEMPLATES = [
       },
     },
   },
-  {
-    id: "tpl-oficial-staggered-text-transition-e6v1",
-    name: "Staggered Text Transition",
-    description: "Transição tipográfica em três estágios: frase vermelha comprimindo e recuando, frase branca entrando/expandindo e colapsando, seguida de uma palavra vermelha final, reproduzida por bounding boxes absolutas frame a frame (frame-exact).",
-    tags: ["3 linhas", "Cinético", "Pro Plus"],
-    isOfficial: true,
-    isPremium: true,
-    requiredPlan: "pro_plus",
-    isActive: true,
-    accent: "#E31313",
-    config: {
-      type: 'frame-exact',
-      frameExactTemplateId: 'efeito-6',
-      style: {},
-      animConfig: {},
-      aspect: '16:9',
-      parsed: {
-        stanzas: [
-          { id: "stz_e6b3v7x", label: "Estrofe 1", lines: [
-            { id: "ln_e6l1zbc", words: [{ id: "w_e6bld", text: "BUILD", chars: [{id:"ch_e6b1",text:"B"}, {id:"ch_e6b2",text:"U"}, {id:"ch_e6b3",text:"I"}, {id:"ch_e6b4",text:"L"}, {id:"ch_e6b5",text:"D"}], emphasized: false }, { id: "w_e6smt", text: "SOMETHING.", chars: [{id:"ch_e6s1",text:"S"}, {id:"ch_e6s2",text:"O"}, {id:"ch_e6s3",text:"M"}, {id:"ch_e6s4",text:"E"}, {id:"ch_e6s5",text:"T"}, {id:"ch_e6s6",text:"H"}, {id:"ch_e6s7",text:"I"}, {id:"ch_e6s8",text:"N"}, {id:"ch_e6s9",text:"G"}, {id:"ch_e6s10",text:"."}], emphasized: false }] },
-            { id: "ln_e6l2mkb", words: [{ id: "w_e6mke", text: "MAKE", chars: [{id:"ch_e6m1",text:"M"}, {id:"ch_e6m2",text:"A"}, {id:"ch_e6m3",text:"K"}, {id:"ch_e6m4",text:"E"}], emphasized: false }, { id: "w_e6it", text: "IT", chars: [{id:"ch_e6i1",text:"I"}, {id:"ch_e6i2",text:"T"}], emphasized: false }, { id: "w_e6btr", text: "BETTER", chars: [{id:"ch_e6bt1",text:"B"}, {id:"ch_e6bt2",text:"E"}, {id:"ch_e6bt3",text:"T"}, {id:"ch_e6bt4",text:"T"}, {id:"ch_e6bt5",text:"E"}, {id:"ch_e6bt6",text:"R"}], emphasized: false }] },
-            { id: "ln_e6l3tdy", words: [{ id: "w_e6tdy", text: "TODAY", chars: [{id:"ch_e6t1",text:"T"}, {id:"ch_e6t2",text:"O"}, {id:"ch_e6t3",text:"D"}, {id:"ch_e6t4",text:"A"}, {id:"ch_e6t5",text:"Y"}], emphasized: false }] },
-          ] },
-        ],
-      },
-    },
-  },
   // ====== TEMPLATES DO USUÁRIO (1 linha / 1 estrofe) ======
   // Templates criados pelo usuário e marcados como definitivos.
   // Cada um preserva parsed (IDs estáveis), wordOverrides (posições e
@@ -39964,39 +39937,6 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
         white: { fontFamily: 'HeadingNowTrial-26Bold-KSS', color: '#f1f1f1' },
       },
     },
-    'efeito-6': {
-      // Efeito 6 (Staggered Text Transition): 3 elementos de texto
-      // INDEPENDENTES, cada um com UMA bbox por quadro (nunca array de
-      // palavras) — igual ao padrão top/red/be/my/soul do Kinetic Scale
-      // Stack, só que com 3 nomes em vez de 5 e sem a correção de escala
-      // do SOUL nem a caixa-união (não fazem sentido aqui: aqui não há
-      // "linha de 1 palavra" precisando se equiparar a linhas maiores —
-      // cada elemento já ocupa a composição inteira sozinho quando
-      // visível). Motion-data ORIGINAL do pacote (motion-data.json),
-      // convertido 1:1 pro formato framesData já usado pelo Efeito 2 —
-      // mesmas bboxes [x,y,largura,altura] em 1920x1080, byte a byte,
-      // sem interpolar/omitir nenhum dos 80 frames.
-      layout: 'efeito-6-style',
-      logicalWidth: 1920,
-      logicalHeight: 1080,
-      motionData: {"fps":25,"frames":80,"width":1920,"height":1080,"framesData":[{"primaryRed":[108,351,1726,381],"secondaryWhite":null,"cashRed":null},{"primaryRed":[172,351,1596,381],"secondaryWhite":null,"cashRed":null},{"primaryRed":[203,351,1535,381],"secondaryWhite":null,"cashRed":null},{"primaryRed":[226,351,1488,381],"secondaryWhite":null,"cashRed":null},{"primaryRed":[245,351,1449,381],"secondaryWhite":null,"cashRed":null},{"primaryRed":[260,351,1418,381],"secondaryWhite":null,"cashRed":null},{"primaryRed":[274,351,1390,381],"secondaryWhite":null,"cashRed":null},{"primaryRed":[286,351,1366,381],"secondaryWhite":null,"cashRed":null},{"primaryRed":[298,351,1342,381],"secondaryWhite":null,"cashRed":null},{"primaryRed":[306,351,1325,381],"secondaryWhite":null,"cashRed":null},{"primaryRed":[316,351,1306,381],"secondaryWhite":null,"cashRed":null},{"primaryRed":[324,351,1290,381],"secondaryWhite":null,"cashRed":null},{"primaryRed":[330,351,1277,381],"secondaryWhite":null,"cashRed":null},{"primaryRed":[336,351,1264,381],"secondaryWhite":null,"cashRed":null},{"primaryRed":[342,351,1252,381],"secondaryWhite":null,"cashRed":null},{"primaryRed":[348,351,1241,381],"secondaryWhite":null,"cashRed":null},{"primaryRed":[352,351,1232,381],"secondaryWhite":null,"cashRed":null},{"primaryRed":[357,351,1223,381],"secondaryWhite":null,"cashRed":null},{"primaryRed":[361,351,1215,381],"secondaryWhite":null,"cashRed":null},{"primaryRed":[364,351,1208,381],"secondaryWhite":null,"cashRed":null},{"primaryRed":[368,351,1200,381],"secondaryWhite":null,"cashRed":null},{"primaryRed":[370,351,1196,381],"secondaryWhite":null,"cashRed":null},{"primaryRed":[374,351,1189,381],"secondaryWhite":null,"cashRed":null},{"primaryRed":[376,351,1184,381],"secondaryWhite":null,"cashRed":null},{"primaryRed":[378,351,1180,381],"secondaryWhite":null,"cashRed":null},{"primaryRed":[380,351,1176,381],"secondaryWhite":null,"cashRed":null},{"primaryRed":[381,351,1174,381],"secondaryWhite":null,"cashRed":null},{"primaryRed":[382,351,1172,381],"secondaryWhite":null,"cashRed":null},{"primaryRed":[384,351,1168,381],"secondaryWhite":null,"cashRed":null},{"primaryRed":[384,351,1168,381],"secondaryWhite":null,"cashRed":null},{"primaryRed":[384,351,1168,381],"secondaryWhite":null,"cashRed":null},{"primaryRed":[385,351,1165,381],"secondaryWhite":null,"cashRed":null},{"primaryRed":[386,351,1164,381],"secondaryWhite":null,"cashRed":null},{"primaryRed":[386,351,1164,381],"secondaryWhite":null,"cashRed":null},{"primaryRed":[386,351,1164,381],"secondaryWhite":null,"cashRed":null},{"primaryRed":[386,351,1164,381],"secondaryWhite":null,"cashRed":null},{"primaryRed":[386,351,1164,381],"secondaryWhite":null,"cashRed":null},{"primaryRed":[386,351,1164,381],"secondaryWhite":null,"cashRed":null},{"primaryRed":[386,351,1164,381],"secondaryWhite":null,"cashRed":null},{"primaryRed":[386,351,1164,381],"secondaryWhite":null,"cashRed":null},{"primaryRed":[384,351,856,381],"secondaryWhite":[1286,431,442,229],"cashRed":null},{"primaryRed":[384,351,856,381],"secondaryWhite":[1286,431,442,229],"cashRed":null},{"primaryRed":[385,351,725,381],"secondaryWhite":[1145,431,583,229],"cashRed":null},{"primaryRed":[385,351,725,381],"secondaryWhite":[1145,431,583,229],"cashRed":null},{"primaryRed":[385,351,725,381],"secondaryWhite":[1145,431,583,229],"cashRed":null},{"primaryRed":[384,351,500,381],"secondaryWhite":[911,431,816,229],"cashRed":null},{"primaryRed":[384,351,500,381],"secondaryWhite":[911,431,816,229],"cashRed":null},{"primaryRed":[384,351,500,381],"secondaryWhite":[911,431,816,229],"cashRed":null},{"primaryRed":[385,351,375,381],"secondaryWhite":[784,431,943,229],"cashRed":null},{"primaryRed":[385,351,375,381],"secondaryWhite":[784,431,943,229],"cashRed":null},{"primaryRed":[385,351,375,381],"secondaryWhite":[784,431,943,229],"cashRed":null},{"primaryRed":[385,351,375,381],"secondaryWhite":[784,431,943,229],"cashRed":null},{"primaryRed":null,"secondaryWhite":[428,431,1300,229],"cashRed":null},{"primaryRed":null,"secondaryWhite":[428,431,1300,229],"cashRed":null},{"primaryRed":null,"secondaryWhite":[428,431,1300,229],"cashRed":null},{"primaryRed":null,"secondaryWhite":[223,431,1504,229],"cashRed":null},{"primaryRed":null,"secondaryWhite":[223,431,1504,229],"cashRed":null},{"primaryRed":null,"secondaryWhite":[126,431,1602,229],"cashRed":null},{"primaryRed":null,"secondaryWhite":[126,431,1602,228],"cashRed":null},{"primaryRed":null,"secondaryWhite":[126,397,1602,260],"cashRed":null},{"primaryRed":null,"secondaryWhite":[126,396,1602,261],"cashRed":null},{"primaryRed":null,"secondaryWhite":[126,396,1602,261],"cashRed":null},{"primaryRed":null,"secondaryWhite":[126,396,1602,261],"cashRed":null},{"primaryRed":null,"secondaryWhite":[126,396,1602,261],"cashRed":null},{"primaryRed":null,"secondaryWhite":[315,396,1413,261],"cashRed":null},{"primaryRed":null,"secondaryWhite":[315,396,1378,33],"cashRed":null},{"primaryRed":null,"secondaryWhite":[315,396,1378,33],"cashRed":[620,492,677,212]},{"primaryRed":null,"secondaryWhite":[315,396,1378,33],"cashRed":[620,492,677,212]},{"primaryRed":null,"secondaryWhite":[1021,396,672,33],"cashRed":[620,432,677,232]},{"primaryRed":null,"secondaryWhite":null,"cashRed":[620,432,677,232]},{"primaryRed":null,"secondaryWhite":null,"cashRed":[620,432,677,232]},{"primaryRed":null,"secondaryWhite":null,"cashRed":[620,430,677,231]},{"primaryRed":null,"secondaryWhite":null,"cashRed":[620,426,677,230]},{"primaryRed":null,"secondaryWhite":null,"cashRed":[620,426,677,230]},{"primaryRed":null,"secondaryWhite":null,"cashRed":[620,396,677,193]},{"primaryRed":null,"secondaryWhite":null,"cashRed":[620,396,677,174]},{"primaryRed":null,"secondaryWhite":null,"cashRed":[620,396,677,130]},{"primaryRed":null,"secondaryWhite":null,"cashRed":[620,396,677,70]},{"primaryRed":null,"secondaryWhite":null,"cashRed":[644,396,653,14]},{"primaryRed":null,"secondaryWhite":null,"cashRed":null}]},
-      // Fontes originais do pacote (HeadingNowTrial-87Extrabold pra
-      // primaryRed, HeadingNowTrial-86Bold pra secondaryWhite/cashRed)
-      // NÃO estão disponíveis no projeto — só existem HeadingNowTrial-
-      // 26Bold-KSS e HeadingNowTrial-66Bold-KSS (reaproveitadas dos
-      // efeitos anteriores, mesmo critério já aplicado no Efeito 5 e no
-      // Staggered Type Snap Reveal). Substituídas pelas mais próximas já
-      // embutidas, sem duplicar fonte nenhuma: 66Bold (mais robusta) pro
-      // extrabold primaryRed e pro cashRed (palavra curta isolada, igual
-      // BE/MY/SOUL/DEEP/SNAP nos efeitos anteriores), 26Bold (mais
-      // estreita) pra frase branca secondaryWhite. Aproximação sinalizada
-      // no relatório, não a fonte original.
-      styles: {
-        primaryRed:     { fontFamily: 'HeadingNowTrial-66Bold-KSS', color: '#E31313' },
-        secondaryWhite: { fontFamily: 'HeadingNowTrial-26Bold-KSS', color: '#EDEDED' },
-        cashRed:        { fontFamily: 'HeadingNowTrial-66Bold-KSS', color: '#E31313' },
-      },
-    },
   };
 
   /**
@@ -40154,9 +40094,6 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
     if (tpl.layout === 'efeito-1-style') {
       return _renderFrameEfeito1Style(ctx, tpl, texts, frameIdx);
     }
-    if (tpl.layout === 'efeito-6-style') {
-      return _renderFrameEfeito6Style(ctx, tpl, texts, frameIdx);
-    }
     return _renderFrameKineticScaleStack(ctx, tpl, texts, frameIdx);
   }
 
@@ -40226,30 +40163,6 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
       const stDeep = tpl.styles.deep;
       drawStretched(ctx, texts.deep, stDeep.fontFamily, stDeep.color, f.deep, 'xywh');
     }
-
-    return true;
-  }
-
-  /**
-   * Efeito 6 (Staggered Text Transition): 3 elementos de texto
-   * INDEPENDENTES (primaryRed, secondaryWhite, cashRed), cada um com
-   * NO MÁXIMO uma bbox por quadro — nunca um array de palavras. Cada
-   * bbox já vem no formato [x,y,largura,altura] (xywh), igual ao
-   * Efeito 2 — desenha direto com drawStretched, sem cálculo de
-   * fileira/espaçamento (não há múltiplas palavras coexistindo na
-   * mesma linha aqui, diferente do Efeito 1/2). Elementos ausentes no
-   * quadro (bbox null) simplesmente não são desenhados.
-   */
-  function _renderFrameEfeito6Style(ctx, tpl, texts, frameIdx) {
-    const f = tpl.motionData.framesData[frameIdx];
-    if (!f) return false;
-
-    ['primaryRed', 'secondaryWhite', 'cashRed'].forEach(key => {
-      const bbox = f[key];
-      if (!bbox) return;
-      const st = tpl.styles[key];
-      drawStretched(ctx, texts[key], st.fontFamily, st.color, bbox, 'xywh');
-    });
 
     return true;
   }
@@ -40500,25 +40413,7 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
     if (tpl && tpl.layout === 'efeito-1-style') {
       return _readTextsEfeito1Style(stanza);
     }
-    if (tpl && tpl.layout === 'efeito-6-style') {
-      return _readTextsEfeito6Style(stanza);
-    }
     return _readTextsKineticScaleStack(stanza);
-  }
-
-  /**
-   * Efeito 6: linha 1 → primaryRed (texto único); linha 2 →
-   * secondaryWhite (texto único); linha 3 → cashRed (texto único).
-   * Os 3 elementos são independentes entre si — nenhum é array de
-   * palavras (diferente do Efeito 1/2), cada linha vira um texto só,
-   * esticado pra caber na bbox do frame correspondente.
-   */
-  function _readTextsEfeito6Style(stanza) {
-    const lines = (stanza && stanza.lines) || [];
-    const primaryRed = (lines[0]?.words || []).map(w => w.text).join(' ');
-    const secondaryWhite = (lines[1]?.words || []).map(w => w.text).join(' ');
-    const cashRed = (lines[2]?.words || []).map(w => w.text).join(' ');
-    return { primaryRed, secondaryWhite, cashRed };
   }
 
   /**
