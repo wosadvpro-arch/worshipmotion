@@ -39943,14 +39943,29 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
    * + 1 palavra branca (DEEP) que ganha bbox própria só a partir do
    * frame em que aparece no motion-data original (null antes disso).
    *
-   * CORREÇÃO (linha 1 desalinhada com quantidade de palavras ≠ 4 —
-   * bug real reportado): com a contagem EXATA original (4), usa as
-   * bboxes cruas, palavra por palavra, direto — fidelidade pixel a
-   * pixel com a referência. Com qualquer outra contagem, recalcula
-   * uma fileira esquerda→direita (mesma técnica já usada pelo Efeito 2
-   * pra sua linha de palavras independentes — _efeito2MakeBitmapAtHeight,
-   * altura de referência por slot) e CENTRALIZA o grupo inteiro no
-   * canvas — mesmo comportamento do Efeito 2 pra contagem variável.
+   * CORREÇÃO (2 bugs reais reportados em sequência):
+   * 1) Espremido/deformado: esticar QUALQUER texto pra caber exatamente
+   *    na LARGURA de uma caixa medida pra uma palavra diferente
+   *    (BOWL/FULL/OF/PLENTY têm comprimentos bem distintos) deforma
+   *    palavras de formato diferente.
+   * 2) Sobreposição: manter a largura proporcional mas desenhar em
+   *    cada X fixo da caixa original (correção do bug 1 sozinha) faz
+   *    palavras mais largas que a caixa original invadirem a vizinha.
+   *
+   * Correção final — SEMPRE recalcula uma fileira esquerda→direita
+   * (nunca usa os X fixos das caixas originais), cada palavra medida
+   * na ALTURA de referência do slot correspondente (preserva o
+   * crescimento/timing da animação) e X computado em sequência (fim
+   * de uma palavra + espaçamento = início da próxima — nunca
+   * sobrepõe), com o grupo inteiro CENTRALIZADO no canvas. É a MESMA
+   * técnica que o Efeito 2 já usa pra sua linha de palavras
+   * independentes (_efeito2MakeBitmapAtHeight + fileira com
+   * GAP_RATIO) — mesmo mecanismo, mesmo resultado, sem duplicar
+   * função nenhuma, só reaplicado aqui pra QUALQUER contagem de
+   * palavras (o Efeito 2 só usa quando a contagem foge do original;
+   * aqui usa sempre, porque a largura desigual das 4 caixas originais
+   * — BOWL/FULL/OF/PLENTY — torna esse problema visível mesmo com a
+   * contagem batendo).
    */
   function _renderFrameEfeito1Style(ctx, tpl, texts, frameIdx) {
     const f = tpl.motionData.framesData[frameIdx];
@@ -39961,24 +39976,7 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
     const redBoxes = f.red || [];
     const totalOriginal = redBoxes.length;
 
-    if (redTexts.length === totalOriginal) {
-      // CORREÇÃO (bug real reportado: "TESTE TESTE TESTE TESTE" saía
-      // com tamanhos bem diferentes entre si): mesmo com a contagem
-      // batendo (4), cada caixa original tem largura própria (medida
-      // pra BOWL/FULL/OF/PLENTY, palavras de comprimentos bem
-      // diferentes) — esticar QUALQUER texto pra caber exatamente
-      // nessa largura específica deforma/espreme palavras que não
-      // tenham esse mesmo formato. preserveAspect=true (já suportado
-      // por drawStretched, mesmo mecanismo usado noutros lugares do
-      // app pra esse tipo de distorção) mantém a proporção natural da
-      // fonte — escala pela ALTURA da caixa daquele quadro (preserva o
-      // efeito de crescimento/timing da animação), sem esticar a
-      // largura de forma não uniforme. Palavras iguais (como no
-      // exemplo reportado) saem com o mesmo tamanho entre si.
-      for (let i = 0; i < totalOriginal; i++) {
-        drawStretched(ctx, redTexts[i], stRed.fontFamily, stRed.color, redBoxes[i], 'xywh', true);
-      }
-    } else if (redTexts.length > 0 && totalOriginal > 0) {
+    if (redTexts.length > 0 && totalOriginal > 0) {
       const GAP_RATIO = 0.29; // mesmo espaçamento proporcional usado no Efeito 2
       const itens = [];
       for (let i = 0; i < redTexts.length; i++) {
