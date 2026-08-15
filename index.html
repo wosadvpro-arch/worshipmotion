@@ -13878,13 +13878,13 @@ const TEMPLATES = [
   {
     id: "tpl-oficial-staggered-dual-word-stretch-v1",
     name: "Staggered Dual Word Stretch",
-    description: "Duas palavras independentes em duas linhas: a primeira entra por cima em vermelho, a segunda entra por baixo em branco, convergem ao centro e comprimem juntas no final, reproduzida por bounding boxes absolutas frame a frame (frame-exact).",
+    description: "Duas palavras independentes em duas linhas: a primeira entra por cima em branco, a segunda entra por baixo em branco, convergem ao centro e comprimem juntas no final, reproduzida por bounding boxes absolutas frame a frame (frame-exact).",
     tags: ["2 linhas", "Cinetico", "Pro Plus"],
     isOfficial: true,
     isPremium: true,
     requiredPlan: "pro_plus",
     isActive: true,
-    accent: "#ff0000",
+    accent: "#ffffff",
     config: {
       type: 'frame-exact',
       frameExactTemplateId: 'efeito-5',
@@ -22396,7 +22396,19 @@ class RenderEngineV2 {
         if (elapsed < durationMs) {
           this._frameExactRAF = requestAnimationFrame(step);
         } else {
-          this._renderFrameExactCanvas(stanzaEl, stanzaAtual, durationMs - 0.001); // segura no último frame
+          // Ao terminar, segura no frame configurado pelo template
+          // (holdFrameIndex) quando existir — alguns templates têm,
+          // nos frames finais do motion-data original, um trecho
+          // residual em que as palavras somem da tela (pensado pra um
+          // corte/fade do vídeo de referência, não pro preview em
+          // loop do app). Sem holdFrameIndex, mantém o comportamento
+          // padrão de sempre: segura no último frame mesmo.
+          const tplFinal = R.getTemplate(stanzaAtual.frameExactTemplateId);
+          let holdElapsed = durationMs - 0.001;
+          if (tplFinal && Number.isFinite(tplFinal.holdFrameIndex) && tplFinal.motionData) {
+            holdElapsed = tplFinal.holdFrameIndex * (1000 / tplFinal.motionData.fps);
+          }
+          this._renderFrameExactCanvas(stanzaEl, stanzaAtual, holdElapsed);
           this._frameExactPlaying = false;
           this._frameExactRAF = 0;
         }
@@ -39843,14 +39855,19 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
       //
       // "red" e "white" ficam ambos ausentes no frame 24 e "red" some
       // no 25 (a composição desaparece por completo perto do fim,
-      // conforme o pacote revisado) — já tratado nativamente por
-      // drawStretched/pela lista vazia, sem necessidade de código
-      // extra. Bboxes fora da área visível (frames 0/1) são desenhadas
-      // do jeito que estão — o próprio canvas faz o clipping.
+      // conforme o pacote revisado). Como isso deixava o preview
+      // terminando "vazio" (sem nenhuma letra na tela), a reprodução
+      // (playFrameExact) agora segura no último frame com as palavras
+      // totalmente visíveis e já compactadas (holdFrameIndex, frame
+      // 18 — momento em que elas terminam de "comprimir juntas no
+      // final", antes do trecho residual 19-25 que só existia pra
+      // sumir/cortar no vídeo de referência) em vez de ir até o frame
+      // 25 (praticamente em branco).
       layout: 'efeito-2-style',
       numLines: 2,
       logicalWidth: 1920,
       logicalHeight: 1080,
+      holdFrameIndex: 18,
       motionData: {"fps":25,"frames":26,"width":1920,"height":1080,"framesData":[{"red":[274,-290,1375,318],"white":[[564,1080,772,310]]},{"red":[274,-171,1375,318],"white":[[564,998,772,310]]},{"red":[270,11,1374,317],"white":[[564,770,772,310]]},{"red":[270,11,1374,317],"white":[[564,770,772,310]]},{"red":[270,178,1374,162],"white":[[564,737,772,188]]},{"red":[270,200,1374,287],"white":[[564,649,772,266]]},{"red":[274,296,1374,198],"white":[[564,556,772,128]]},{"red":[274,296,1374,198],"white":[[564,556,772,128]]},{"red":[274,296,1374,198],"white":[[564,556,772,128]]},{"red":[358,296,1208,198],"white":[[441,556,1040,128]]},{"red":[358,296,1208,198],"white":[[441,556,1040,128]]},{"red":[358,296,1208,198],"white":[[441,556,1040,128]]},{"red":[440,296,1042,198],"white":[[320,556,1248,128]]},{"red":[440,296,1042,198],"white":[[320,556,1248,128]]},{"red":[440,296,1042,198],"white":[[320,556,1248,128]]},{"red":[524,296,876,198],"white":[[320,556,1248,128]]},{"red":[524,296,876,198],"white":[[320,556,1248,128]]},{"red":[579,296,765,198],"white":[[320,556,1248,128]]},{"red":[579,296,765,198],"white":[[320,556,1248,128]]},{"red":[571,380,765,120],"white":[[320,556,1248,128]]},{"red":[571,388,765,128],"white":[[320,562,1248,130]]},{"red":[572,440,768,160],"white":[[320,592,1248,132]]},{"red":[576,668,766,84],"white":[[320,728,1248,58]]},{"red":[576,768,690,20],"white":[[320,786,1248,14]]},{"red":null,"white":[]},{"red":null,"white":[[1135,806,50,1]]}]},
       // Fontes originais do pacote (HeadingNowTrial-85Medium pro
       // vermelho, HeadingNowTrial-77Extrabold pro branco) NÃO estão
@@ -39859,8 +39876,10 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
       // 26Bold (mais estreita, condizente com "Medium") pro vermelho,
       // 66Bold (mais robusta, condizente com "Extrabold") pro branco.
       // Aproximação sinalizada no relatório, não a fonte original.
+      // Cor da 1ª linha (antes vermelha) trocada pra branco padrão a
+      // pedido explícito — as duas linhas usam a mesma cor agora.
       styles: {
-        red:   { fontFamily: 'HeadingNowTrial-26Bold-KSS', color: '#ff0000' },
+        red:   { fontFamily: 'HeadingNowTrial-26Bold-KSS', color: '#ffffff' },
         white: { fontFamily: 'HeadingNowTrial-66Bold-KSS', color: '#ffffff' },
       },
     },
