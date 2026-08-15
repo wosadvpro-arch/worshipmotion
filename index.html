@@ -13876,6 +13876,32 @@ const TEMPLATES = [
     },
   },
   {
+    id: "tpl-oficial-staggered-dual-word-stretch-v1",
+    name: "Staggered Dual Word Stretch",
+    description: "Duas palavras independentes em duas linhas: a primeira entra por cima em vermelho, a segunda entra por baixo em branco, convergem ao centro e comprimem juntas no final, reproduzida por bounding boxes absolutas frame a frame (frame-exact).",
+    tags: ["2 linhas", "Cinetico", "Pro Plus"],
+    isOfficial: true,
+    isPremium: true,
+    requiredPlan: "pro_plus",
+    isActive: true,
+    accent: "#ff0000",
+    config: {
+      type: 'frame-exact',
+      frameExactTemplateId: 'efeito-5',
+      style: {},
+      animConfig: {},
+      aspect: '16:9',
+      parsed: {
+        stanzas: [
+          { id: "stz_c1fnv6x", label: "Estrofe 1", lines: [
+            { id: "ln_lmhp3w6", words: [{ id: "w_qw7b3pd", text: "LIKE", chars: [{id:"ch_khx4py8",text:"L"}, {id:"ch_gpan0rl",text:"I"}, {id:"ch_ykei2ii",text:"K"}, {id:"ch_aannkks",text:"E"}], emphasized: false }] },
+            { id: "ln_w7q3gxs", words: [{ id: "w_um8nlmy", text: "BRAWL", chars: [{id:"ch_tbx0kjq",text:"B"}, {id:"ch_evtavet",text:"R"}, {id:"ch_wt4ul44",text:"A"}, {id:"ch_ldqbwzb",text:"W"}, {id:"ch_90xya2c",text:"L"}], emphasized: false }] },
+          ] },
+        ],
+      },
+    },
+  },
+  {
     id: "tpl-oficial-kinetic-scale-stack-frameexact",
     name: "Kinetic Scale Stack",
     description: "Tipografia cinética em três linhas, com compressão/expansão e zoom final, reproduzida por bounding boxes absolutas frame a frame (frame-exact).",
@@ -39789,6 +39815,53 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
       styles: {
         red:  { fontFamily: 'HeadingNowTrial-26Bold-KSS', color: '#f1f1f1' },
         deep: { fontFamily: 'HeadingNowTrial-26Bold-KSS', color: '#f1f1f1' },
+      },
+    },
+    'efeito-5': {
+      // Efeito 5 (Staggered Dual Word Stretch): 2 linhas, 1 palavra
+      // independente cada — LIKE (vermelho, linha 1) e BRAWL (branco,
+      // linha 2). MESMA estrutura de dados do Efeito 2 (texto único
+      // "red" + array "white" de palavras independentes) — aqui o
+      // array "white" só tem 1 posição, mas usa o layout
+      // 'efeito-2-style' já existente sem nenhuma alteração de código.
+      //
+      // CORREÇÃO (revisão do pacote): as bboxes do motion-data.json
+      // deste efeito vêm no formato [x1,y1,x2,y2] (cantos), NÃO
+      // [x,y,largura,altura] como os outros efeitos — confirmado pelo
+      // próprio renderer de referência do pacote corrigido
+      // (`const [x1,y1,x2,y2]=e.bbox; drawImage(b,x1,y1,x2-x1,y2-y1)`)
+      // e pela consistência física dos dados: interpretando como
+      // [x1,y1,x2,y2], a altura da caixa fica praticamente constante
+      // nos frames 0-3 (~317-318px, a palavra só entrando verticalmente,
+      // ainda do mesmo tamanho) — interpretando como largura/altura
+      // direto, a "altura" oscilava sem sentido físico (28→147→330px)
+      // no mesmo trecho. Convertido aqui pra largura/altura real
+      // (x2-x1, y2-y1) antes de gravar no framesData, que é o formato
+      // que TODOS os outros efeitos (e o drawStretched compartilhado)
+      // já esperam — nenhuma mudança de código, só a conversão certa
+      // dos dados.
+      //
+      // "red" e "white" ficam ambos ausentes no frame 24 e "red" some
+      // no 25 (a composição desaparece por completo perto do fim,
+      // conforme o pacote revisado) — já tratado nativamente por
+      // drawStretched/pela lista vazia, sem necessidade de código
+      // extra. Bboxes fora da área visível (frames 0/1) são desenhadas
+      // do jeito que estão — o próprio canvas faz o clipping.
+      layout: 'efeito-2-style',
+      numLines: 2,
+      logicalWidth: 1920,
+      logicalHeight: 1080,
+      motionData: {"fps":25,"frames":26,"width":1920,"height":1080,"framesData":[{"red":[274,-290,1375,318],"white":[[564,1080,772,310]]},{"red":[274,-171,1375,318],"white":[[564,998,772,310]]},{"red":[270,11,1374,317],"white":[[564,770,772,310]]},{"red":[270,11,1374,317],"white":[[564,770,772,310]]},{"red":[270,178,1374,162],"white":[[564,737,772,188]]},{"red":[270,200,1374,287],"white":[[564,649,772,266]]},{"red":[274,296,1374,198],"white":[[564,556,772,128]]},{"red":[274,296,1374,198],"white":[[564,556,772,128]]},{"red":[274,296,1374,198],"white":[[564,556,772,128]]},{"red":[358,296,1208,198],"white":[[441,556,1040,128]]},{"red":[358,296,1208,198],"white":[[441,556,1040,128]]},{"red":[358,296,1208,198],"white":[[441,556,1040,128]]},{"red":[440,296,1042,198],"white":[[320,556,1248,128]]},{"red":[440,296,1042,198],"white":[[320,556,1248,128]]},{"red":[440,296,1042,198],"white":[[320,556,1248,128]]},{"red":[524,296,876,198],"white":[[320,556,1248,128]]},{"red":[524,296,876,198],"white":[[320,556,1248,128]]},{"red":[579,296,765,198],"white":[[320,556,1248,128]]},{"red":[579,296,765,198],"white":[[320,556,1248,128]]},{"red":[571,380,765,120],"white":[[320,556,1248,128]]},{"red":[571,388,765,128],"white":[[320,562,1248,130]]},{"red":[572,440,768,160],"white":[[320,592,1248,132]]},{"red":[576,668,766,84],"white":[[320,728,1248,58]]},{"red":[576,768,690,20],"white":[[320,786,1248,14]]},{"red":null,"white":[]},{"red":null,"white":[[1135,806,50,1]]}]},
+      // Fontes originais do pacote (HeadingNowTrial-85Medium pro
+      // vermelho, HeadingNowTrial-77Extrabold pro branco) NÃO estão
+      // disponíveis no projeto — reaproveitando as mesmas duas já
+      // embutidas nos efeitos anteriores, sem duplicar fonte nenhuma:
+      // 26Bold (mais estreita, condizente com "Medium") pro vermelho,
+      // 66Bold (mais robusta, condizente com "Extrabold") pro branco.
+      // Aproximação sinalizada no relatório, não a fonte original.
+      styles: {
+        red:   { fontFamily: 'HeadingNowTrial-26Bold-KSS', color: '#ff0000' },
+        white: { fontFamily: 'HeadingNowTrial-66Bold-KSS', color: '#ffffff' },
       },
     },
     'staggered-type-snap-reveal': {
