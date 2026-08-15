@@ -39815,12 +39815,14 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
       // e HeadingNowTrial-66Bold-KSS (reaproveitadas dos efeitos
       // anteriores). Substituídas pelas mais próximas já embutidas,
       // sem duplicar fonte nenhuma: 26Bold (mais estreita) pro branco,
-      // 66Bold (mais robusta) pro SNAP vermelho, que precisa de mais
-      // peso visual. Ver relatório: isso é uma aproximação, não a
-      // fonte original.
+      // 66Bold (mais robusta) pro SNAP. Ver relatório: isso é uma
+      // aproximação, não a fonte original.
+      // "deep" (SNAP) usa o branco padrão do app, não a cor vermelha
+      // observada no vídeo de referência — mesmo critério já aplicado
+      // no Efeito 1.
       styles: {
         red:  { fontFamily: 'HeadingNowTrial-26Bold-KSS', color: '#EDEDED' },
-        deep: { fontFamily: 'HeadingNowTrial-66Bold-KSS', color: '#E31313' },
+        deep: { fontFamily: 'HeadingNowTrial-66Bold-KSS', color: '#f1f1f1' },
       },
     },
     'efeito-2': {
