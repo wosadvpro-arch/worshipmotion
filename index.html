@@ -39943,17 +39943,14 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
    * + 1 palavra branca (DEEP) que ganha bbox própria só a partir do
    * frame em que aparece no motion-data original (null antes disso).
    *
-   * CORREÇÃO (linha 1 desalinhada da margem com quantidade de
-   * palavras ≠ 4 — bug real reportado): com a contagem EXATA original
-   * (4), usa as bboxes cruas, palavra por palavra, direto — fidelidade
-   * pixel a pixel com a referência. Com qualquer outra contagem,
-   * recalcula uma fileira esquerda→direita (mesma técnica já usada
-   * pelo Efeito 2 pra sua linha de palavras independentes —
-   * _efeito2MakeBitmapAtHeight, altura de referência por slot), mas
-   * ANCORADA na margem esquerda fixa da 1ª caixa original daquele
-   * quadro — nunca centralizada no canvas — pra continuar acompanhando
-   * a mesma margem da linha 2 (DEEP), com qualquer quantidade de
-   * palavras digitadas.
+   * CORREÇÃO (linha 1 desalinhada com quantidade de palavras ≠ 4 —
+   * bug real reportado): com a contagem EXATA original (4), usa as
+   * bboxes cruas, palavra por palavra, direto — fidelidade pixel a
+   * pixel com a referência. Com qualquer outra contagem, recalcula
+   * uma fileira esquerda→direita (mesma técnica já usada pelo Efeito 2
+   * pra sua linha de palavras independentes — _efeito2MakeBitmapAtHeight,
+   * altura de referência por slot) e CENTRALIZA o grupo inteiro no
+   * canvas — mesmo comportamento do Efeito 2 pra contagem variável.
    */
   function _renderFrameEfeito1Style(ctx, tpl, texts, frameIdx) {
     const f = tpl.motionData.framesData[frameIdx];
@@ -39978,12 +39975,17 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
         if (!img) continue;
         itens.push({ img, w: img.width, h: img.height, y: bboxRef[1] });
       }
-      let x = redBoxes[0][0]; // margem esquerda fixa (caixa original da 1ª palavra nesse quadro)
-      itens.forEach((it, i) => {
-        if (i > 0) x += it.h * GAP_RATIO;
-        ctx.drawImage(it.img, x, it.y, it.w, it.h);
-        x += it.w;
-      });
+      if (itens.length) {
+        const gaps = itens.map(it => it.h * GAP_RATIO);
+        const larguraTotal = itens.reduce((soma, it) => soma + it.w, 0) + gaps.slice(1).reduce((s, g) => s + g, 0);
+        const centroCanvas = (tpl.logicalWidth || tpl.motionData.width) / 2;
+        let x = centroCanvas - larguraTotal / 2;
+        itens.forEach((it, i) => {
+          if (i > 0) x += gaps[i];
+          ctx.drawImage(it.img, x, it.y, it.w, it.h);
+          x += it.w;
+        });
+      }
     }
 
     if (f.deep && texts.deep) {
