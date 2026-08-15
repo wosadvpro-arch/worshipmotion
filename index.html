@@ -39938,14 +39938,22 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
   }
 
   /**
-   * Efeito 1 (Kinetic Word Assembly): 4 palavras vermelhas SEMPRE
-   * independentes (uma bbox própria cada, presentes desde o frame 0 —
-   * nunca uma caixa união, nunca contagem variável, diferente do
-   * Efeito 2) + 1 palavra branca (DEEP) que ganha bbox própria só a
-   * partir do frame em que aparece no motion-data original (null antes
-   * disso). Reaproveita exatamente as mesmas peças genéricas
-   * (drawStretched em modo 'xywh', cache de bitmap) — nenhum desenho
-   * próprio, nenhuma interpolação.
+   * Efeito 1 (Kinetic Word Assembly): 4 palavras vermelhas
+   * independentes (uma bbox própria cada, presentes desde o frame 0)
+   * + 1 palavra branca (DEEP) que ganha bbox própria só a partir do
+   * frame em que aparece no motion-data original (null antes disso).
+   *
+   * CORREÇÃO (linha 1 desalinhada da margem com quantidade de
+   * palavras ≠ 4 — bug real reportado): com a contagem EXATA original
+   * (4), usa as bboxes cruas, palavra por palavra, direto — fidelidade
+   * pixel a pixel com a referência. Com qualquer outra contagem,
+   * recalcula uma fileira esquerda→direita (mesma técnica já usada
+   * pelo Efeito 2 pra sua linha de palavras independentes —
+   * _efeito2MakeBitmapAtHeight, altura de referência por slot), mas
+   * ANCORADA na margem esquerda fixa da 1ª caixa original daquele
+   * quadro — nunca centralizada no canvas — pra continuar acompanhando
+   * a mesma margem da linha 2 (DEEP), com qualquer quantidade de
+   * palavras digitadas.
    */
   function _renderFrameEfeito1Style(ctx, tpl, texts, frameIdx) {
     const f = tpl.motionData.framesData[frameIdx];
@@ -39954,9 +39962,28 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
     const stRed = tpl.styles.red;
     const redTexts = texts.red || [];
     const redBoxes = f.red || [];
-    const n = Math.min(redBoxes.length, redTexts.length);
-    for (let i = 0; i < n; i++) {
-      drawStretched(ctx, redTexts[i], stRed.fontFamily, stRed.color, redBoxes[i], 'xywh');
+    const totalOriginal = redBoxes.length;
+
+    if (redTexts.length === totalOriginal) {
+      for (let i = 0; i < totalOriginal; i++) {
+        drawStretched(ctx, redTexts[i], stRed.fontFamily, stRed.color, redBoxes[i], 'xywh');
+      }
+    } else if (redTexts.length > 0 && totalOriginal > 0) {
+      const GAP_RATIO = 0.29; // mesmo espaçamento proporcional usado no Efeito 2
+      const itens = [];
+      for (let i = 0; i < redTexts.length; i++) {
+        const slotRef = Math.min(i, totalOriginal - 1);
+        const bboxRef = redBoxes[slotRef];
+        const img = _efeito2MakeBitmapAtHeight(redTexts[i], stRed.fontFamily, stRed.color, bboxRef[3]);
+        if (!img) continue;
+        itens.push({ img, w: img.width, h: img.height, y: bboxRef[1] });
+      }
+      let x = redBoxes[0][0]; // margem esquerda fixa (caixa original da 1ª palavra nesse quadro)
+      itens.forEach((it, i) => {
+        if (i > 0) x += it.h * GAP_RATIO;
+        ctx.drawImage(it.img, x, it.y, it.w, it.h);
+        x += it.w;
+      });
     }
 
     if (f.deep && texts.deep) {
