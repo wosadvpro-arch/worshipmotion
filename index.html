@@ -22300,7 +22300,18 @@ class RenderEngineV2 {
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     const texts = this._readFrameExactTexts(stanza);
-    R.renderFrame(ctx, tplId, texts, elapsedMs);
+    R.renderFrame(ctx, tplId, texts, elapsedMs, this.wordOverrides);
+
+    // Clique-pra-selecionar por palavra (a pedido explícito, escopo
+    // inicial: Efeito 1/4 — ver getWordSlots). Reaproveita o MESMO
+    // sistema de seleção/arraste dos templates normais: os elementos
+    // DOM de cada palavra JÁ EXISTEM (o editor de texto precisa deles),
+    // só ficam com visibility:hidden por padrão pra não aparecer por
+    // cima do canvas. Aqui, reposiciona cada um em cima de onde o
+    // canvas desenhou aquela palavra NESSE frame e reativa clique —
+    // invisível (opacity:0) mas clicável (pointer-events + visibility
+    // explícitos, sobrescrevendo o hidden herdado da .lyric-line).
+    this._positionFrameExactWordOverlays(stanzaEl, tplId, tpl, texts, elapsedMs);
 
     // BUG REAL CORRIGIDO: se a fonte (HeadingNowTrial-*) ainda não
     // tinha terminado de carregar nesse instante, o desenho acima usou
@@ -22318,13 +22329,55 @@ class RenderEngineV2 {
           this._frameExactFontsReady = true;
           if (typeof R.clearBitmapCache === 'function') R.clearBitmapCache();
           ctx.clearRect(0, 0, canvas.width, canvas.height);
-          R.renderFrame(ctx, tplId, texts, elapsedMs);
+          R.renderFrame(ctx, tplId, texts, elapsedMs, this.wordOverrides);
         });
       } else {
         this._frameExactFontsReady = true;
       }
     }
   }
+
+  /**
+   * Posiciona (e reativa o clique de) cada elemento DOM de palavra
+   * de uma estrofe frame-exact exatamente em cima de onde
+   * WM_FRAME_EXACT_RENDERER desenhou aquela palavra nesse frame —
+   * pra ficar selecionável com o MESMO clique/arraste que já funciona
+   * nos templates normais, sem nenhuma lógica de seleção nova. Opera
+   * em espaço percentual (relativo ao próprio stanzaEl), então segue
+   * corretamente qualquer tamanho de preview/tela.
+   *
+   * Templates ainda não suportados por getWordSlots (retorna [])
+   * simplesmente não têm nenhuma palavra reposicionada — continuam
+   * com o comportamento de sempre (visibility:hidden, sem clique).
+   */
+  _positionFrameExactWordOverlays(stanzaEl, tplId, tpl, texts, elapsedMs) {
+    const R = window.WM_FRAME_EXACT_RENDERER;
+    const slots = R.getWordSlots(tplId, texts, elapsedMs, this.wordOverrides);
+    if (!slots.length) return;
+    const logicalW = tpl.logicalWidth || tpl.motionData.width;
+    const logicalH = tpl.logicalHeight || tpl.motionData.height;
+    slots.forEach(slot => {
+      const wordEl = stanzaEl.querySelector(`.lyric-word[data-word-id="${slot.id}"]`);
+      if (!wordEl) return;
+      wordEl.classList.add('is-frame-exact-clickable');
+      wordEl.dataset.frameExact = '1';
+      wordEl.style.position = 'absolute';
+      wordEl.style.left = (slot.x / logicalW * 100).toFixed(3) + '%';
+      wordEl.style.top = (slot.y / logicalH * 100).toFixed(3) + '%';
+      wordEl.style.width = (slot.w / logicalW * 100).toFixed(3) + '%';
+      wordEl.style.height = (slot.h / logicalH * 100).toFixed(3) + '%';
+      // opacity:0 (invisível — quem aparece de verdade é o canvas por
+      // baixo) + visibility explícito (sobrescreve o "hidden" herdado
+      // da .lyric-line pai) + pointer-events (garante que recebe o
+      // clique mesmo se alguma regra de CSS geral desativa em
+      // elementos ocultos).
+      wordEl.style.opacity = '0';
+      wordEl.style.visibility = 'visible';
+      wordEl.style.pointerEvents = 'auto';
+    });
+  }
+
+
 
   /**
    * Lê o texto atual da estrofe de acordo com o layout do template
@@ -28699,6 +28752,35 @@ function initEditor() {
           ${window.WM_T?window.WM_T("wp.moreOptionsNote"):"Fonte, tamanho, espaçamento, negrito, itálico, caixa, cor e animação ficam na barra do topo do slide. Aqui você organiza as camadas (ordem das palavras)."}
         </p>
 
+        ${(() => {
+          // Ajuste de posição por palavra pros templates frame-exact
+          // (Efeito 1/4 por enquanto — a pedido explícito: "mudar de
+          // lugar sem mudar a animação"). Deslocamento em PIXELS do
+          // espaço lógico do template, somado por cima da posição que
+          // o motion-data já calcula pra esse frame — a animação
+          // (timing, crescimento) continua vindo 100% dela; só a
+          // posição final desliza.
+          if (!info.stanza.frameExactTemplateId) return '';
+          const off = wo.frameExactOffset || { dx: 0, dy: 0 };
+          return `
+            <div class="word-panel-section-title">${window.WM_T?window.WM_T("wp.position"):"Posição"}</div>
+            <p style="font-size: 11px; color: var(--text-tertiary); margin: 4px 0 8px; line-height: 1.5;">
+              Desloca só esta palavra, sem alterar o timing/crescimento da animação.
+            </p>
+            <div class="word-panel-offset-grid" style="display:flex; gap:8px; margin-bottom:8px;">
+              <label style="flex:1; font-size:11px; color:var(--text-tertiary);">
+                Horizontal (px)
+                <input type="number" step="1" id="word-offset-dx" value="${off.dx || 0}" style="width:100%; margin-top:2px;">
+              </label>
+              <label style="flex:1; font-size:11px; color:var(--text-tertiary);">
+                Vertical (px)
+                <input type="number" step="1" id="word-offset-dy" value="${off.dy || 0}" style="width:100%; margin-top:2px;">
+              </label>
+            </div>
+            <button class="btn-tiny" id="btn-reset-frame-exact-offset" ${(off.dx || off.dy) ? '' : 'disabled'}>↺ Centralizar de novo</button>
+          `;
+        })()}
+
         <div class="scene-card-actions" style="margin-top: 16px;">
           <button class="btn-tiny" data-word-action="preview">${window.WM_T?window.WM_T("wp.previewStanza"):"▶ Prévia estrofe"}</button>
           <button class="btn-tiny" data-word-action="reset" ${hasOverride ? '' : 'disabled'}>${window.WM_T?window.WM_T("wp.resetAll"):"↺ Resetar tudo"}</button>
@@ -28708,6 +28790,35 @@ function initEditor() {
         ${renderWordOverridesList()}
       </div>
     `;
+
+    // ===== Wire: deslocamento de posição (templates frame-exact) =====
+    if (info.stanza.frameExactTemplateId) {
+      const applyOffset = () => {
+        const dxEl = $('#word-offset-dx', container);
+        const dyEl = $('#word-offset-dy', container);
+        const dx = parseFloat(dxEl?.value) || 0;
+        const dy = parseFloat(dyEl?.value) || 0;
+        if (dx === 0 && dy === 0) {
+          engine.clearWordOverride(selectedWordId, 'frameExactOffset');
+        } else {
+          engine.setWordOverride(selectedWordId, { frameExactOffset: { dx, dy } });
+        }
+        markDirty();
+        // Estrofe frame-exact: reflow de layout (largura/posição em
+        // flow) não se aplica — o canvas já recalcula tudo sozinho a
+        // partir do motion-data + overrides. Só precisa redesenhar.
+        engine.renderStanza(engine.currentStanzaIndex);
+        requestAnimationFrame(() => renderWordPanel());
+      };
+      $('#word-offset-dx', container)?.addEventListener('change', applyOffset);
+      $('#word-offset-dy', container)?.addEventListener('change', applyOffset);
+      $('#btn-reset-frame-exact-offset', container)?.addEventListener('click', () => {
+        engine.clearWordOverride(selectedWordId, 'frameExactOffset');
+        markDirty();
+        engine.renderStanza(engine.currentStanzaIndex);
+        renderWordPanel();
+      });
+    }
 
     // Wire dos selects/inputs
     $$('[data-word-prop]', container).forEach(input => {
@@ -40103,7 +40214,7 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
    * ctx.scale global) — este código nunca lê o tamanho do preview/
    * export pra decidir a bbox.
    */
-  function renderFrame(ctx, templateId, texts, elapsedMs) {
+  function renderFrame(ctx, templateId, texts, elapsedMs, wordOverrides) {
     const tpl = TEMPLATES_FRAME_EXACT[templateId];
     if (!tpl) return false;
     const motion = tpl.motionData;
@@ -40122,11 +40233,18 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
     // cada um tem sua própria função de desenho, todas reaproveitando
     // as MESMAS peças compartilhadas (makeBitmap, drawStretched,
     // getFrameIndex, cache de bitmap, pré-carregamento de fonte).
+    //
+    // `wordOverrides` (opcional, a pedido explícito): mapa {wordId:
+    // {style:{fontFamily}, frameExactOffset:{dx,dy}}} — MESMO objeto
+    // engine.wordOverrides já usado pelos templates normais (fonte e
+    // posição por palavra). Só o layout 'efeito-1-style' consome isso
+    // por enquanto (Efeito 1 e 4); os demais ignoram o parâmetro sem
+    // efeito nenhum — comportamento 100% igual a antes pra eles.
     if (tpl.layout === 'efeito-2-style') {
       return _renderFrameEfeito2Style(ctx, tpl, texts, frameIdx);
     }
     if (tpl.layout === 'efeito-1-style') {
-      return _renderFrameEfeito1Style(ctx, tpl, texts, frameIdx);
+      return _renderFrameEfeito1Style(ctx, tpl, texts, frameIdx, wordOverrides);
     }
     return _renderFrameKineticScaleStack(ctx, tpl, texts, frameIdx);
   }
@@ -40161,46 +40279,88 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
    * — BOWL/FULL/OF/PLENTY — torna esse problema visível mesmo com a
    * contagem batendo).
    */
-  function _renderFrameEfeito1Style(ctx, tpl, texts, frameIdx) {
+  /**
+   * Calcula a fileira de palavras independentes da linha "red" (Efeito
+   * 1/4) — MESMO cálculo já usado pra desenhar (altura de referência
+   * do slot original + fileira com espaçamento proporcional,
+   * centralizada), mas devolve as posições prontas em vez de desenhar
+   * direto. Isso permite reaproveitar o MESMO cálculo em dois lugares
+   * sem duplicar: 1) o desenho no canvas (chamador desenha cada item
+   * devolvido) e 2) `getWordSlots`, que posiciona os elementos DOM
+   * invisíveis clicáveis por cima do canvas, pro editor.
+   *
+   * `wordOverrides` (opcional, a pedido explícito — clique pra
+   * selecionar uma palavra e mudar fonte/posição, mesmo sistema já
+   * usado nos templates normais): mapa {wordId: {style:{fontFamily},
+   * frameExactOffset:{dx,dy}}}. Fonte override entra ANTES de medir o
+   * bitmap (cada palavra pode ter sua própria fonte); deslocamento
+   * entra DEPOIS do layout calculado (empurra só aquela palavra,
+   * sem afetar o cálculo de espaçamento das vizinhas nem o timing/
+   * crescimento da animação, que continua vindo 100% do motion-data).
+   */
+  function _computeRedWordSlots(texts, redBoxes, canvasCenterX, style, wordIds, wordOverrides) {
+    const GAP_RATIO = 0.29; // mesmo espaçamento proporcional usado no Efeito 2
+    const totalOriginal = redBoxes.length;
+    const itens = [];
+    for (let i = 0; i < texts.length; i++) {
+      const slotRef = Math.min(i, totalOriginal - 1);
+      const bboxRef = redBoxes[slotRef];
+      const wid = wordIds && wordIds[i];
+      const ov = (wid && wordOverrides && wordOverrides[wid]) || null;
+      const fontFamily = (ov && ov.style && ov.style.fontFamily) || style.fontFamily;
+      const img = _efeito2MakeBitmapAtHeight(texts[i], fontFamily, style.color, bboxRef[3]);
+      if (!img) continue;
+      const dx = (ov && ov.frameExactOffset && ov.frameExactOffset.dx) || 0;
+      const dy = (ov && ov.frameExactOffset && ov.frameExactOffset.dy) || 0;
+      itens.push({ id: wid, img, w: img.width, h: img.height, y: bboxRef[1], dx, dy });
+    }
+    if (!itens.length) return [];
+    const gaps = itens.map(it => it.h * GAP_RATIO);
+    const larguraTotal = itens.reduce((soma, it) => soma + it.w, 0) + gaps.slice(1).reduce((s, g) => s + g, 0);
+    let x = canvasCenterX - larguraTotal / 2;
+    const slots = [];
+    itens.forEach((it, i) => {
+      if (i > 0) x += gaps[i];
+      slots.push({ id: it.id, img: it.img, x: x + it.dx, y: it.y + it.dy, w: it.w, h: it.h });
+      x += it.w;
+    });
+    return slots;
+  }
+
+  function _renderFrameEfeito1Style(ctx, tpl, texts, frameIdx, wordOverrides) {
     const f = tpl.motionData.framesData[frameIdx];
     if (!f) return false;
 
     const stRed = tpl.styles.red;
     const redTexts = texts.red || [];
     const redBoxes = f.red || [];
-    const totalOriginal = redBoxes.length;
 
-    if (redTexts.length > 0 && totalOriginal > 0) {
-      const GAP_RATIO = 0.29; // mesmo espaçamento proporcional usado no Efeito 2
-      const itens = [];
-      for (let i = 0; i < redTexts.length; i++) {
-        const slotRef = Math.min(i, totalOriginal - 1);
-        const bboxRef = redBoxes[slotRef];
-        const img = _efeito2MakeBitmapAtHeight(redTexts[i], stRed.fontFamily, stRed.color, bboxRef[3]);
-        if (!img) continue;
-        itens.push({ img, w: img.width, h: img.height, y: bboxRef[1] });
-      }
-      if (itens.length) {
-        const gaps = itens.map(it => it.h * GAP_RATIO);
-        const larguraTotal = itens.reduce((soma, it) => soma + it.w, 0) + gaps.slice(1).reduce((s, g) => s + g, 0);
-        const centroCanvas = (tpl.logicalWidth || tpl.motionData.width) / 2;
-        let x = centroCanvas - larguraTotal / 2;
-        itens.forEach((it, i) => {
-          if (i > 0) x += gaps[i];
-          ctx.drawImage(it.img, x, it.y, it.w, it.h);
-          x += it.w;
-        });
-      }
+    if (redTexts.length > 0 && redBoxes.length > 0) {
+      const centroCanvas = (tpl.logicalWidth || tpl.motionData.width) / 2;
+      const slots = _computeRedWordSlots(redTexts, redBoxes, centroCanvas, stRed, texts.redIds, wordOverrides);
+      slots.forEach(s => ctx.drawImage(s.img, s.x, s.y, s.w, s.h));
     }
 
     if (f.deep && texts.deep) {
       const stDeep = tpl.styles.deep;
+      // Override de fonte/posição por palavra só se "deep" for
+      // exatamente 1 palavra (o caso normal — DEEP/SNAP, e o que o
+      // clique-pra-selecionar no editor cobre). Com mais de 1 palavra
+      // (edição livre por contagem, já suportada à parte), continua
+      // sem override — não há como saber qual fonte pertence a qual
+      // pedaço do texto combinado sem uma palavra só de referência.
+      const deepWid = texts.deepIds && texts.deepIds.length === 1 ? texts.deepIds[0] : null;
+      const ov = (deepWid && wordOverrides && wordOverrides[deepWid]) || null;
+      const fontFamily = (ov && ov.style && ov.style.fontFamily) || stDeep.fontFamily;
+      const dx = (ov && ov.frameExactOffset && ov.frameExactOffset.dx) || 0;
+      const dy = (ov && ov.frameExactOffset && ov.frameExactOffset.dy) || 0;
+      const bboxAplicado = (dx || dy) ? [f.deep[0] + dx, f.deep[1] + dy, f.deep[2], f.deep[3]] : f.deep;
       // Edição livre por palavra (a pedido explícito): DEEP/SNAP são
       // 1 palavra na referência — se o usuário mantiver 1 palavra,
       // fidelidade pixel a pixel exata (raw stretch); se acrescentar
       // mais, monta em fileira proporcional dentro da mesma caixa, sem
       // distorcer.
-      _drawSingleTextRoleInBox(ctx, texts.deep, stDeep.fontFamily, stDeep.color, f.deep, 'xywh', tpl.deepRefWordCount ?? 1);
+      _drawSingleTextRoleInBox(ctx, texts.deep, fontFamily, stDeep.color, bboxAplicado, 'xywh', tpl.deepRefWordCount ?? 1);
     }
 
     return true;
@@ -40538,9 +40698,16 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
    */
   function _readTextsEfeito1Style(stanza) {
     const lines = (stanza && stanza.lines) || [];
-    const red = (lines[0]?.words || []).map(w => w.text);
-    const deep = (lines[1]?.words || []).map(w => w.text).join(' ');
-    return { red, deep };
+    const redWords = lines[0]?.words || [];
+    const deepWords = lines[1]?.words || [];
+    const red = redWords.map(w => w.text);
+    const deep = deepWords.map(w => w.text).join(' ');
+    // IDs em paralelo aos textos (mesma ordem) — usados pra: 1) aplicar
+    // override de fonte/posição por palavra (setWordOverride, mesmo
+    // sistema já usado nos templates normais) e 2) posicionar o
+    // elemento DOM invisível de cada palavra sobre o canvas, pra ficar
+    // clicável/selecionável (getWordSlots, abaixo).
+    return { red, deep, redIds: redWords.map(w => w.id), deepIds: deepWords.map(w => w.id) };
   }
 
   function _readTextsKineticScaleStack(stanza) {
@@ -40578,6 +40745,45 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
     return { red, white };
   }
 
+  /**
+   * Devolve a posição/tamanho (espaço LÓGICO do template — mesma
+   * unidade de logicalWidth/logicalHeight) de cada palavra no frame
+   * atual. Usado pelo editor pra posicionar, por cima do canvas, os
+   * elementos DOM invisíveis de cada palavra — clicáveis, reaproveitando
+   * o MESMO sistema de seleção/arraste já usado nos templates normais
+   * (o clique cai em cima do elemento DOM certo, não precisa de nenhuma
+   * lógica de seleção nova).
+   *
+   * Só suporta o layout 'efeito-1-style' por enquanto (Efeito 1 e 4,
+   * a pedido explícito) — outros templates devolvem lista vazia (sem
+   * quebrar nada: o editor simplesmente não mostra handles clicáveis
+   * pra eles ainda).
+   */
+  function getWordSlots(templateId, texts, elapsedMs, wordOverrides) {
+    const tpl = TEMPLATES_FRAME_EXACT[templateId];
+    if (!tpl || tpl.layout !== 'efeito-1-style') return [];
+    const frameIdx = getFrameIndex(elapsedMs, tpl.motionData);
+    const f = tpl.motionData.framesData[frameIdx];
+    if (!f) return [];
+
+    const out = [];
+    const redTexts = texts.red || [];
+    const redBoxes = f.red || [];
+    if (redTexts.length > 0 && redBoxes.length > 0) {
+      const centroCanvas = (tpl.logicalWidth || tpl.motionData.width) / 2;
+      const slots = _computeRedWordSlots(redTexts, redBoxes, centroCanvas, tpl.styles.red, texts.redIds, wordOverrides);
+      slots.forEach(s => out.push({ id: s.id, x: s.x, y: s.y, w: s.w, h: s.h }));
+    }
+    if (f.deep && texts.deep && texts.deepIds && texts.deepIds.length === 1) {
+      const wid = texts.deepIds[0];
+      const ov = (wordOverrides && wordOverrides[wid]) || null;
+      const dx = (ov && ov.frameExactOffset && ov.frameExactOffset.dx) || 0;
+      const dy = (ov && ov.frameExactOffset && ov.frameExactOffset.dy) || 0;
+      out.push({ id: wid, x: f.deep[0] + dx, y: f.deep[1] + dy, w: f.deep[2], h: f.deep[3] });
+    }
+    return out;
+  }
+
   return {
     TEMPLATES_FRAME_EXACT,
     renderFrame,
@@ -40586,6 +40792,7 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
     getTemplate,
     getDurationMs,
     readTextsFromStanza,
+    getWordSlots,
     clearBitmapCache,
   };
 })();
