@@ -40786,7 +40786,13 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
         const dx = (ov && ov.frameExactOffset && ov.frameExactOffset.dx) || 0;
         const dy = (ov && ov.frameExactOffset && ov.frameExactOffset.dy) || 0;
         const bboxAplicado = (dx || dy) ? [f.deep[0] + dx, f.deep[1] + dy, f.deep[2], f.deep[3]] : f.deep;
-        _drawSingleTextRoleInBox(ctx, texts.deep, fontFamily, stDeep.color, bboxAplicado, 'xywh', tpl.deepRefWordCount ?? 1);
+        // BUG REAL CORRIGIDO (relatado: o número de tamanho na barra
+        // mudava, mas a palavra ficava do mesmo tamanho): essa chamada
+        // não passava wordIds/wordOverrides — a função de desenho nem
+        // sabia que existia um override de escala pra aplicar (fonte e
+        // posição funcionavam porque eram resolvidas por fora, ANTES
+        // desta chamada; escala nunca era lida em lugar nenhum aqui).
+        _drawSingleTextRoleInBox(ctx, texts.deep, fontFamily, stDeep.color, bboxAplicado, 'xywh', tpl.deepRefWordCount ?? 1, deepIds, wordOverrides);
       } else {
         // 2+ PALAVRAS — dois bugs reais corrigidos aqui:
         // 1) "descentralizado": antes centralizava no centro do
