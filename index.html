@@ -22374,34 +22374,43 @@ class RenderEngineV2 {
       if (!wordEl) return;
       wordEl.classList.add('is-frame-exact-clickable');
       wordEl.dataset.frameExact = '1';
+      // BUG REAL CORRIGIDO (a caixa de seleção aparecia deslocada pra
+      // cima/esquerda da palavra de verdade — confirmado inspecionando
+      // o elemento: ele tinha a classe "is-free-positioned"). Essa
+      // classe é adicionada por OUTRO sistema do app (ensureWordIsFree,
+      // chamado ao selecionar/aplicar fonte numa palavra) e sua regra
+      // CSS aplica `transform: translate(-50%, -50%)` — ou seja, o
+      // left/top dela é o CENTRO da palavra, não o canto superior
+      // esquerdo (que é como eu tinha calculado antes). Em vez de
+      // torcer pra essa classe nunca aparecer (ela é de um sistema
+      // compartilhado, fora do meu controle), assumo ela explicitamente
+      // aqui — adiciono sempre e calculo left/top como CENTRO da caixa,
+      // deixando o próprio CSS recentralizar certo.
+      wordEl.classList.add('is-free-positioned');
       wordEl.style.position = 'absolute';
-      wordEl.style.left = (slot.x / logicalW * 100).toFixed(3) + '%';
-      wordEl.style.top = (slot.y / logicalH * 100).toFixed(3) + '%';
+      const centroXPct = ((slot.x + slot.w / 2) / logicalW * 100).toFixed(3) + '%';
+      const centroYPct = ((slot.y + slot.h / 2) / logicalH * 100).toFixed(3) + '%';
+      wordEl.style.left = centroXPct;
+      wordEl.style.top = centroYPct;
       wordEl.style.width = (slot.w / logicalW * 100).toFixed(3) + '%';
       wordEl.style.height = (slot.h / logicalH * 100).toFixed(3) + '%';
-      // BUG REAL CORRIGIDO (caixa de seleção aparecia deslocada pra
-      // cima/esquerda da palavra de verdade): o CSS de ".lyric-word"
-      // é pensado pro texto normal em fluxo — padding/margin negativa
-      // (0.45em pra compensar espaçamento de letra) deslocava a caixa
-      // pra fora do left/top que a gente calculou. box-sizing:border-
-      // box + margin/padding zerados garantem que o retângulo
-      // renderizado bate exatamente com left/top/width/height, sem
-      // nenhum deslocamento extra herdado.
+      // Garante que nenhum scale/rotate residual de outra ação
+      // (arraste, resize) deforme o overlay — o "centro" calculado
+      // acima já é a posição final, sem transform extra por cima.
+      wordEl.style.setProperty('--wm-word-tf', 'scale(1)');
+      // padding/margin da .lyric-word são pensados pro texto normal em
+      // fluxo (compensar espaçamento de letra) — zera aqui pra não
+      // desviar o retângulo do que foi calculado.
       wordEl.style.margin = '0';
       wordEl.style.padding = '0';
       wordEl.style.boxSizing = 'border-box';
-      // BUG REAL CORRIGIDO (mesmo relato): a medição de "tinta" da
-      // palavra (updateSelectionBox → _wordInkBounds) usa a
-      // font-family DESSE elemento pra achar o topo/base real do
-      // texto — sem isso, usava a fonte global do editor (ex:
-      // Montserrat), bem diferente da fonte de verdade usada no
-      // canvas (HeadingNowTrial-*), o que deslocava a caixa de
-      // seleção verticalmente também. Aplica a MESMA fonte (já
-      // resolvida por getWordSlots — considera override por palavra).
+      // A medição de "tinta" da palavra (updateSelectionBox →
+      // _wordInkBounds) usa a font-family/peso DESSE elemento pra achar
+      // o topo/base real do texto — aplica a MESMA fonte que o canvas
+      // de verdade usa (já resolvida por getWordSlots, considera
+      // override por palavra), sempre em negrito (peso que o canvas
+      // sempre desenha).
       if (slot.fontFamily) wordEl.style.fontFamily = `"${slot.fontFamily}"`;
-      // O canvas sempre desenha em peso 700 (negrito) — garante que a
-      // medição de tinta usa o mesmo peso, não o que a palavra herdaria
-      // do estilo normal do editor.
       wordEl.style.fontWeight = '700';
       // opacity:0 (invisível — quem aparece de verdade é o canvas por
       // baixo) + visibility explícito (sobrescreve o "hidden" herdado
