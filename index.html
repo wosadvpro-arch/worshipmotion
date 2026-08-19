@@ -17693,7 +17693,13 @@ const CanvasRenderer = {
         const texts = R.readTextsFromStanza(slide.stanza, slide.stanza.frameExactTemplateId);
         // elapsedMs aqui já é relativo ao início do slide (mesmo tempo
         // usado pro resto do texto) — igual ao preview.
-        R.renderFrame(ctx, slide.stanza.frameExactTemplateId, texts, elapsedMs);
+        // BUG REAL CORRIGIDO (relatado: mover palavra funcionava
+        // perfeito no preview, mas o export saía com o efeito original,
+        // sem respeitar o movimento): slide.wordOverrides já existe,
+        // montado especificamente pra esse slide (ver _buildSlides,
+        // filtra allWordOverrides pelas palavras da estrofe) — só
+        // faltava passar pro renderFrame aqui, igual o preview já faz.
+        R.renderFrame(ctx, slide.stanza.frameExactTemplateId, texts, elapsedMs, slide.wordOverrides);
         ctx.restore();
         return;
       }
