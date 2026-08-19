@@ -40492,11 +40492,12 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
     // `wordOverrides` (opcional, a pedido explícito): mapa {wordId:
     // {style:{fontFamily}, frameExactOffset:{dx,dy}}} — MESMO objeto
     // engine.wordOverrides já usado pelos templates normais (fonte e
-    // posição por palavra). Só o layout 'efeito-1-style' consome isso
-    // por enquanto (Efeito 1 e 4); os demais ignoram o parâmetro sem
-    // efeito nenhum — comportamento 100% igual a antes pra eles.
+    // posição por palavra). Layouts 'efeito-1-style' (Efeito 1 e 4) e
+    // 'efeito-2-style' (Efeito 2 e 5) consomem isso; Kinetic Scale
+    // Stack (Efeito 3) ainda não — ignora o parâmetro sem efeito
+    // nenhum, comportamento 100% igual a antes.
     if (tpl.layout === 'efeito-2-style') {
-      return _renderFrameEfeito2Style(ctx, tpl, texts, frameIdx);
+      return _renderFrameEfeito2Style(ctx, tpl, texts, frameIdx, wordOverrides);
     }
     if (tpl.layout === 'efeito-1-style') {
       return _renderFrameEfeito1Style(ctx, tpl, texts, frameIdx, wordOverrides);
@@ -40803,15 +40804,38 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
    * (usado pela linha 3 do Efeito 3, que já combina be+my+soul numa
    * caixa só por decisão de design anterior, independente da
    * contagem).
+   *
+   * `wordIds`/`wordOverrides` (opcionais, a pedido explícito — clique
+   * pra selecionar uma palavra dentro dessa linha e mudar fonte/
+   * posição, MESMO sistema já usado no Efeito 1/4): se alguma palavra
+   * dessa linha tem override ativo, força o cálculo em fileira mesmo
+   * quando a contagem bate com a referência — sem isso, não teria
+   * como aplicar fonte/posição por palavra num texto que normalmente
+   * é desenhado como UMA imagem só colada (stretch cru).
    */
-  function _drawSingleTextRoleInBox(ctx, text, fontFamily, color, bbox, bboxFormat, refWordCount) {
+  function _drawSingleTextRoleInBox(ctx, text, fontFamily, color, bbox, bboxFormat, refWordCount, wordIds, wordOverrides) {
     if (!bbox || !text) return;
     const palavras = String(text).trim().split(/\s+/).filter(Boolean);
     if (!palavras.length) return;
-    if (refWordCount != null && palavras.length === refWordCount) {
+    const temOverrideAtivo = !!(wordIds && wordOverrides && palavras.some((_, i) => wordIds[i] && wordOverrides[wordIds[i]]));
+    if (refWordCount != null && palavras.length === refWordCount && !temOverrideAtivo) {
       drawStretched(ctx, text, fontFamily, color, bbox, bboxFormat);
       return;
     }
+    const slots = _computeSingleTextWordSlots(palavras, wordIds, bbox, bboxFormat, fontFamily, color, wordOverrides);
+    slots.forEach(s => ctx.drawImage(s.img, s.x, s.y, s.w, s.h));
+  }
+
+  /**
+   * Calcula (sem desenhar) a fileira de palavras de um campo "texto
+   * único numa caixa" (ver _drawSingleTextRoleInBox acima) — MESMO
+   * cálculo, mas devolve as posições prontas em vez de desenhar
+   * direto. Reaproveitado em dois lugares, sem duplicar: 1) o desenho
+   * de fato (_drawSingleTextRoleInBox chama isto e desenha cada item)
+   * e 2) getWordSlots, que posiciona os elementos DOM invisíveis
+   * clicáveis por cima do canvas, pro editor.
+   */
+  function _computeSingleTextWordSlots(palavras, wordIds, bbox, bboxFormat, fontFamily, color, wordOverrides) {
     let bx, by, bw, bh;
     if (bboxFormat === 'xywh') {
       bx = bbox[0]; by = bbox[1]; bw = bbox[2]; bh = bbox[3];
@@ -40820,23 +40844,31 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
     }
     const GAP_RATIO = 0.29; // mesmo espaçamento proporcional usado nas palavras independentes
     const itens = [];
-    for (const p of palavras) {
-      const img = _efeito2MakeBitmapAtHeight(p, fontFamily, color, bh);
-      if (img) itens.push({ img, w: img.width, h: img.height });
+    for (let i = 0; i < palavras.length; i++) {
+      const wid = wordIds && wordIds[i];
+      const ov = (wid && wordOverrides && wordOverrides[wid]) || null;
+      const fam = (ov && ov.style && ov.style.fontFamily) || fontFamily;
+      const img = _efeito2MakeBitmapAtHeight(palavras[i], fam, color, bh);
+      if (!img) continue;
+      const dx = (ov && ov.frameExactOffset && ov.frameExactOffset.dx) || 0;
+      const dy = (ov && ov.frameExactOffset && ov.frameExactOffset.dy) || 0;
+      itens.push({ id: wid, img, w: img.width, h: img.height, dx, dy, fontFamily: fam });
     }
-    if (!itens.length) return;
+    if (!itens.length) return [];
     const gaps = itens.map(it => it.h * GAP_RATIO);
     const larguraTotal = itens.reduce((s, it) => s + it.w, 0) + gaps.slice(1).reduce((s, g) => s + g, 0);
     const centroBox = bx + bw / 2;
     let x = centroBox - larguraTotal / 2;
+    const slots = [];
     itens.forEach((it, i) => {
       if (i > 0) x += gaps[i];
-      ctx.drawImage(it.img, x, by, it.w, it.h);
+      slots.push({ id: it.id, img: it.img, x: x + it.dx, y: by + it.dy, w: it.w, h: it.h, fontFamily: it.fontFamily });
       x += it.w;
     });
+    return slots;
   }
 
-  function _renderFrameEfeito2Style(ctx, tpl, texts, frameIdx) {
+  function _renderFrameEfeito2Style(ctx, tpl, texts, frameIdx, wordOverrides) {
     const f = tpl.motionData.framesData[frameIdx];
     if (!f) return false;
 
@@ -40844,23 +40876,32 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
     // Edição livre por palavra (a pedido explícito): se a quantidade
     // de palavras do texto atual bater com a referência original
     // (`redRefWordCount` — 3 no Efeito 2 "PUT OFF HOTTED", 1 no
-    // Efeito 5 "LIKE"), fidelidade pixel a pixel exata (raw stretch);
-    // se for diferente, monta em fileira proporcional dentro da mesma
-    // caixa, sem distorcer.
-    _drawSingleTextRoleInBox(ctx, texts.red, stRed.fontFamily, stRed.color, f.red, 'xywh', tpl.redRefWordCount ?? 1);
+    // Efeito 5 "LIKE") E nenhuma delas tiver override de fonte/posição
+    // ativo, fidelidade pixel a pixel exata (raw stretch); senão,
+    // monta em fileira proporcional dentro da mesma caixa, sem
+    // distorcer — e já aplica fonte/posição por palavra quando houver.
+    _drawSingleTextRoleInBox(ctx, texts.red, stRed.fontFamily, stRed.color, f.red, 'xywh', tpl.redRefWordCount ?? 1, texts.redIds, wordOverrides);
 
     const whiteBoxesFrame = f.white || [];
     const whiteTexts = texts.white || [];
+    const whiteIds = texts.whiteIds;
     const stWhite = tpl.styles.white;
     const totalOriginal = (tpl.motionData.framesData[tpl.motionData.framesData.length - 1].white || []).length;
     if (!totalOriginal || !whiteTexts.length) return true;
 
-    // Exatamente a contagem original (7): usa as bboxes cruas, palavra
-    // por palavra, direto — SEM passar pelo cálculo de fileira abaixo.
-    // Fidelidade pixel a pixel exata, já validada contra a referência
-    // (o cálculo proporcional de espaçamento é uma ótima aproximação,
-    // mas não bate 100% com os valores medidos originais).
-    if (whiteTexts.length === totalOriginal) {
+    // Só entra no atalho de fidelidade exata (bboxes cruas, sem
+    // recálculo de fileira) se NENHUMA palavra tem override ativo —
+    // com override, precisa passar pelo cálculo abaixo pra poder
+    // aplicar fonte/deslocamento por palavra.
+    const temOverrideWhite = !!(whiteIds && wordOverrides && whiteTexts.some((_, i) => whiteIds[i] && wordOverrides[whiteIds[i]]));
+
+    // Exatamente a contagem original (7), sem overrides: usa as bboxes
+    // cruas, palavra por palavra, direto — SEM passar pelo cálculo de
+    // fileira abaixo. Fidelidade pixel a pixel exata, já validada
+    // contra a referência (o cálculo proporcional de espaçamento é uma
+    // ótima aproximação, mas não bate 100% com os valores medidos
+    // originais).
+    if (whiteTexts.length === totalOriginal && !temOverrideWhite) {
       const n = Math.min(whiteBoxesFrame.length, whiteTexts.length);
       for (let i = 0; i < n; i++) {
         drawStretched(ctx, whiteTexts[i], stWhite.fontFamily, stWhite.color, whiteBoxesFrame[i], 'xywh');
@@ -40877,16 +40918,22 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
     // renderiza o bitmap JÁ no tamanho certo (via altura de
     // referência — ver _efeito2MakeBitmapAtHeight — não precisa de
     // stretch posterior, o que evita a variação de métrica por
-    // palavra que causava tamanhos inconsistentes entre elas).
+    // palavra que causava tamanhos inconsistentes entre elas). Já
+    // considera fonte/deslocamento por palavra (override), quando
+    // houver.
     const itens = [];
     for (let i = 0; i < whiteTexts.length; i++) {
       const slotRef = Math.min(i, totalOriginal - 1);
       if (slotRef >= numAtivos) continue; // essa palavra ainda não "chegou" nesse quadro
       const bboxRef = whiteBoxesFrame[slotRef];
-      const texto = whiteTexts[i];
-      const img = _efeito2MakeBitmapAtHeight(texto, stWhite.fontFamily, stWhite.color, bboxRef[3]);
+      const wid = whiteIds && whiteIds[i];
+      const ov = (wid && wordOverrides && wordOverrides[wid]) || null;
+      const fam = (ov && ov.style && ov.style.fontFamily) || stWhite.fontFamily;
+      const img = _efeito2MakeBitmapAtHeight(whiteTexts[i], fam, stWhite.color, bboxRef[3]);
       if (!img) continue;
-      itens.push({ img, w: img.width, h: img.height, y: bboxRef[1] });
+      const dx = (ov && ov.frameExactOffset && ov.frameExactOffset.dx) || 0;
+      const dy = (ov && ov.frameExactOffset && ov.frameExactOffset.dy) || 0;
+      itens.push({ id: wid, img, w: img.width, h: img.height, y: bboxRef[1], dx, dy });
     }
     if (!itens.length) return true;
 
@@ -40898,7 +40945,7 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
     let x = centroCanvas - larguraTotal / 2;
     itens.forEach((it, i) => {
       if (i > 0) x += gaps[i];
-      ctx.drawImage(it.img, x, it.y, it.w, it.h);
+      ctx.drawImage(it.img, x + it.dx, it.y + it.dy, it.w, it.h);
       x += it.w;
     });
 
@@ -40995,9 +41042,14 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
    */
   function _readTextsEfeito2Style(stanza) {
     const lines = (stanza && stanza.lines) || [];
-    const red = (lines[0]?.words || []).map(w => w.text).join(' ');
-    const white = (lines[1]?.words || []).map(w => w.text);
-    return { red, white };
+    const redWords = lines[0]?.words || [];
+    const whiteWords = lines[1]?.words || [];
+    const red = redWords.map(w => w.text).join(' ');
+    const white = whiteWords.map(w => w.text);
+    // IDs em paralelo (mesma ordem) — mesmo propósito do Efeito 1: override
+    // de fonte/posição por palavra + posicionamento do elemento DOM
+    // clicável (getWordSlots).
+    return { red, white, redIds: redWords.map(w => w.id), whiteIds: whiteWords.map(w => w.id) };
   }
 
   /**
@@ -41009,14 +41061,16 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
    * (o clique cai em cima do elemento DOM certo, não precisa de nenhuma
    * lógica de seleção nova).
    *
-   * Só suporta o layout 'efeito-1-style' por enquanto (Efeito 1 e 4,
-   * a pedido explícito) — outros templates devolvem lista vazia (sem
-   * quebrar nada: o editor simplesmente não mostra handles clicáveis
-   * pra eles ainda).
+   * Suporta os layouts 'efeito-1-style' (Efeito 1 e 4) e
+   * 'efeito-2-style' (Efeito 2 e 5, a pedido explícito) — outros
+   * templates devolvem lista vazia (sem quebrar nada: o editor
+   * simplesmente não mostra handles clicáveis pra eles ainda).
    */
   function getWordSlots(templateId, texts, elapsedMs, wordOverrides) {
     const tpl = TEMPLATES_FRAME_EXACT[templateId];
-    if (!tpl || tpl.layout !== 'efeito-1-style') return [];
+    if (!tpl) return [];
+    if (tpl.layout === 'efeito-2-style') return _getWordSlotsEfeito2Style(tpl, texts, elapsedMs, wordOverrides);
+    if (tpl.layout !== 'efeito-1-style') return [];
     const frameIdx = getFrameIndex(elapsedMs, tpl.motionData);
     const f = tpl.motionData.framesData[frameIdx];
     if (!f) return [];
@@ -41036,6 +41090,75 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
       const dy = (ov && ov.frameExactOffset && ov.frameExactOffset.dy) || 0;
       const fontFamily = (ov && ov.style && ov.style.fontFamily) || tpl.styles.deep.fontFamily;
       out.push({ id: wid, x: f.deep[0] + dx, y: f.deep[1] + dy, w: f.deep[2], h: f.deep[3], fontFamily });
+    }
+    return out;
+  }
+
+  /**
+   * getWordSlots pro layout 'efeito-2-style' (Efeito 2 e 5) — mesmo
+   * propósito, dados diferentes: "red" é um texto único (pode ter 1
+   * ou várias palavras coladas — ex: "PUT OFF HOTTED") numa caixa só;
+   * "white" é um array de palavras independentes (bbox própria cada).
+   * Reaproveita as MESMAS funções de cálculo já usadas pelo desenho de
+   * verdade (_computeSingleTextWordSlots pro "red", mesma fórmula em
+   * fileira do "white" em _renderFrameEfeito2Style) — sem duplicar a
+   * matemática de posicionamento, só devolve em vez de desenhar.
+   *
+   * Diferença importante pro "red": aqui SEMPRE calcula em fileira
+   * (por palavra), mesmo quando a contagem bate com a referência (caso
+   * em que o DESENHO usa uma imagem só colada, por fidelidade) — sem
+   * isso não haveria como clicar numa palavra individual dentro de um
+   * texto como "PUT OFF HOTTED". É uma aproximação de onde cada
+   * palavra fica dentro da imagem colada (visualmente bem próxima,
+   * já que usa a mesma altura de referência e centralização), não a
+   * posição exata pixel a pixel do glifo colado.
+   */
+  function _getWordSlotsEfeito2Style(tpl, texts, elapsedMs, wordOverrides) {
+    const frameIdx = getFrameIndex(elapsedMs, tpl.motionData);
+    const f = tpl.motionData.framesData[frameIdx];
+    if (!f) return [];
+    const out = [];
+
+    if (f.red && texts.red) {
+      const stRed = tpl.styles.red;
+      const palavras = String(texts.red).trim().split(/\s+/).filter(Boolean);
+      if (palavras.length) {
+        const slots = _computeSingleTextWordSlots(palavras, texts.redIds, f.red, 'xywh', stRed.fontFamily, stRed.color, wordOverrides);
+        slots.forEach(s => out.push({ id: s.id, x: s.x, y: s.y, w: s.w, h: s.h, fontFamily: s.fontFamily }));
+      }
+    }
+
+    const whiteBoxesFrame = f.white || [];
+    const whiteTexts = texts.white || [];
+    const whiteIds = texts.whiteIds;
+    const stWhite = tpl.styles.white;
+    const totalOriginal = (tpl.motionData.framesData[tpl.motionData.framesData.length - 1].white || []).length;
+    if (totalOriginal && whiteTexts.length) {
+      const numAtivos = whiteBoxesFrame.length;
+      const GAP_RATIO = 0.29;
+      const itens = [];
+      for (let i = 0; i < whiteTexts.length; i++) {
+        const slotRef = Math.min(i, totalOriginal - 1);
+        if (slotRef >= numAtivos) continue;
+        const bboxRef = whiteBoxesFrame[slotRef];
+        const wid = whiteIds && whiteIds[i];
+        const ov = (wid && wordOverrides && wordOverrides[wid]) || null;
+        const fam = (ov && ov.style && ov.style.fontFamily) || stWhite.fontFamily;
+        const dx = (ov && ov.frameExactOffset && ov.frameExactOffset.dx) || 0;
+        const dy = (ov && ov.frameExactOffset && ov.frameExactOffset.dy) || 0;
+        itens.push({ id: wid, w: bboxRef[2], h: bboxRef[3], y: bboxRef[1], dx, dy, fontFamily: fam });
+      }
+      if (itens.length) {
+        const gaps = itens.map(it => it.h * GAP_RATIO);
+        const larguraTotal = itens.reduce((soma, it) => soma + it.w, 0) + gaps.slice(1).reduce((s, g) => s + g, 0);
+        const centroCanvas = (tpl.logicalWidth || tpl.motionData.width) / 2;
+        let x = centroCanvas - larguraTotal / 2;
+        itens.forEach((it, i) => {
+          if (i > 0) x += gaps[i];
+          out.push({ id: it.id, x: x + it.dx, y: it.y + it.dy, w: it.w, h: it.h, fontFamily: it.fontFamily });
+          x += it.w;
+        });
+      }
     }
     return out;
   }
