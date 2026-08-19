@@ -27865,6 +27865,19 @@ function initEditor() {
         el.classList.toggle('has-anim-override', !!engine.wordOverrides[wid]);
         el.classList.toggle('is-word-selected', selectedWordIds.has(wid));
       });
+      // BUG REAL CORRIGIDO (relatado: os botões -/+ de tamanho — que
+      // passam por AQUI, via setMultiStyleOverride, não pelo trecho
+      // onde eu tinha corrigido antes por engano — faziam a seleção de
+      // palavra "sumir" nas estrofes frame-exact): mesmo problema já
+      // corrigido em selectFont (troca de fonte) — esse forEach acima
+      // reseta opacity/classe em TODA palavra, sem saber que as
+      // palavras invisíveis do Efeito 1-5 precisam continuar
+      // corretamente posicionadas/clicáveis depois disso. Resincroniza
+      // por último, igual já funciona na troca de fonte.
+      const stz = (typeof getStanzaEl === 'function') ? getStanzaEl() : null;
+      if (stz && typeof engine._resyncFrameExactWordOverlaysIfNeeded === 'function') {
+        engine._resyncFrameExactWordOverlaysIfNeeded(stz);
+      }
       if (typeof updateSelectionBox === 'function') updateSelectionBox();
       renderWordPanel();
     });
