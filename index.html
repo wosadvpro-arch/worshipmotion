@@ -22289,7 +22289,32 @@ class RenderEngineV2 {
     // editor de letra lê/escreve o texto normalmente.
     if (stanza.frameExactTemplateId && window.WM_FRAME_EXACT_RENDERER) {
       stanzaEl.querySelectorAll('.lyric-line').forEach(el => { el.style.visibility = 'hidden'; });
-      this._renderFrameExactCanvas(stanzaEl, stanza, 0);
+      // BUG REAL CORRIGIDO (relatado: aplicar qualquer edição — trocar
+      // fonte, cor, etc — fazia a exibição "voltar pro início" da
+      // animação, tendo que apertar play pra ver o resultado de
+      // verdade): essa chamada é SEMPRE executada quando a estrofe é
+      // re-renderizada, não só quando o usuário troca de estrofe/slide
+      // — inclusive nos re-renders internos de uma edição (o
+      // `if (_estrofeTrocou) this.playFrameExact()` logo abaixo já
+      // sabia diferenciar isso, mas o desenho ESTÁTICO em si sempre
+      // usava frame 0 de qualquer forma). Agora: numa troca de
+      // estrofe/slide de verdade, mostra o frame 0 (ponto de partida
+      // antes do play automático abaixo). Numa edição na MESMA
+      // estrofe (_estrofeTrocou = false), mostra o frame de REPOUSO
+      // (holdFrameIndex do template, se definido — ver Efeito 5 — ou
+      // o último frame, senão) em vez de voltar ao início — a
+      // animação só roda de fato ao apertar play ou trocar de slide.
+      let elapsedInicial = 0;
+      if (!_estrofeTrocou) {
+        const tplParaHold = window.WM_FRAME_EXACT_RENDERER.getTemplate(stanza.frameExactTemplateId);
+        if (tplParaHold && tplParaHold.motionData) {
+          const holdIdx = Number.isFinite(tplParaHold.holdFrameIndex)
+            ? tplParaHold.holdFrameIndex
+            : (tplParaHold.motionData.frames - 1);
+          elapsedInicial = holdIdx * (1000 / tplParaHold.motionData.fps);
+        }
+      }
+      this._renderFrameExactCanvas(stanzaEl, stanza, elapsedInicial);
       // Reproduz automaticamente ao ENTRAR nessa estrofe (navegação,
       // trocar de slide) — mas só quando é uma troca de verdade (veio
       // de outra estrofe, ou de nenhuma), não em todo re-render interno
