@@ -22308,6 +22308,12 @@ class RenderEngineV2 {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     const texts = this._readFrameExactTexts(stanza);
     R.renderFrame(ctx, tplId, texts, elapsedMs, this.wordOverrides);
+    // Guarda o frame atual no próprio elemento — usado por
+    // _resyncFrameExactWordOverlaysIfNeeded pra reposicionar as
+    // palavras clicáveis com o MESMO frame exibido, mesmo quando
+    // chamado de fora do fluxo normal de render (ex: antes de medir a
+    // caixa de seleção).
+    canvas.dataset.lastElapsedMs = String(elapsedMs);
 
     // Clique-pra-selecionar por palavra (a pedido explícito, escopo
     // inicial: Efeito 1/4 — ver getWordSlots). Reaproveita o MESMO
@@ -22406,6 +22412,31 @@ class RenderEngineV2 {
       wordEl.style.visibility = 'visible';
       wordEl.style.pointerEvents = 'auto';
     });
+  }
+
+  /**
+   * Garante que a posição dos elementos clicáveis de uma estrofe
+   * frame-exact está em dia ANTES de medir a caixa de seleção — sem
+   * isso, se `updateSelectionBox()` rodasse num instante em que o
+   * último `_renderFrameExactCanvas` ainda não tinha reposicionado
+   * tudo (ex: corrida entre o clique e o próximo frame), a caixa
+   * calculava em cima de uma posição desatualizada. Reusa o MESMO
+   * frame já desenhado no canvas (guardado em lastElapsedMs), não
+   * recalcula nada — é só uma garantia de sincronismo.
+   */
+  _resyncFrameExactWordOverlaysIfNeeded(stanzaEl) {
+    if (!stanzaEl) return;
+    const R = window.WM_FRAME_EXACT_RENDERER;
+    if (!R) return;
+    const canvas = stanzaEl.querySelector('.wm-frame-exact-canvas');
+    if (!canvas) return;
+    const stanza = this.parsed?.stanzas?.[this.currentStanzaIndex];
+    if (!stanza || !stanza.frameExactTemplateId) return;
+    const tpl = R.getTemplate(stanza.frameExactTemplateId);
+    if (!tpl) return;
+    const elapsedMs = parseFloat(canvas.dataset.lastElapsedMs) || 0;
+    const texts = this._readFrameExactTexts(stanza);
+    this._positionFrameExactWordOverlays(stanzaEl, stanza.frameExactTemplateId, tpl, texts, elapsedMs);
   }
 
 
@@ -25387,6 +25418,12 @@ function initEditor() {
     if (!selectedWordId) { hideSelectionBox(); return; }
     const stanza = getStanzaEl();
     if (!stanza) return;
+    // Garante que estrofes frame-exact (Efeito 1/4) tenham a posição
+    // das palavras clicáveis em dia ANTES de medir — ver
+    // _resyncFrameExactWordOverlaysIfNeeded.
+    if (typeof engine._resyncFrameExactWordOverlaysIfNeeded === 'function') {
+      engine._resyncFrameExactWordOverlaysIfNeeded(stanza);
+    }
     const box = ensureSelectionBoxExists();
     if (!box) return;
 
