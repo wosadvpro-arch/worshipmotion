@@ -25638,9 +25638,19 @@ function initEditor() {
     if (!wordEl) { hideSelectionBox(); return; }
 
     const wo = engine.wordOverrides[selectedWordId] || {};
-    const rotation = wo.rotation || 0;
-    const scaleX = (wo.style && wo.style.scaleX) || 1;
-    const scaleY = (wo.style && wo.style.scaleY) || 1;
+    // BUG REAL CORRIGIDO (relatado: caixa de seleção sumia/ficava
+    // torta): scaleX/scaleY/rotation vêm das alças de redimensionar
+    // não-uniforme (cantos/bordas) — um sistema que o renderer dos
+    // efeitos frame-exact nunca aprendeu a interpretar (só entende
+    // fontSizeScale uniforme, via os botões -/+). Já desativei essas
+    // alças pra palavras frame-exact (ver onHandleMouseDown), mas essa
+    // blindagem aqui cobre qualquer valor que ainda esteja salvo de
+    // antes — a caixa de seleção nunca aplica esse transform nas
+    // palavras frame-exact, sempre trata como neutro (1, 1, 0).
+    const _ehFrameExact = wordEl.dataset.frameExact === '1';
+    const rotation = _ehFrameExact ? 0 : (wo.rotation || 0);
+    const scaleX = _ehFrameExact ? 1 : ((wo.style && wo.style.scaleX) || 1);
+    const scaleY = _ehFrameExact ? 1 : ((wo.style && wo.style.scaleY) || 1);
 
     // A palavra free tem translate(-50%,-50%) FIXO no CSS (centro no
     // ponto). Pra medir o retângulo "base" da palavra, neutralizamos só
@@ -26452,6 +26462,29 @@ function initEditor() {
     if (!selectedWordId) return;
     const handle = ev.target.dataset.handle;
     if (!handle) return;
+
+    // BUG REAL CORRIGIDO (relatado: caixa de seleção sumia/ficava
+    // torta e "font-size" não fazia mais nada — investigado via
+    // inspeção do elemento: achado data-scale-x/data-scale-y com
+    // valores estranhos tipo 1.4595814583608178, causando um
+    // `transform: scale(...)` na CAIXA de seleção que a empurrava pra
+    // fora da tela): essas alças de redimensionar nos cantos/bordas
+    // (arrastar pra esticar não-uniformemente) escrevem
+    // wo.style.scaleX/scaleY — um sistema completamente diferente do
+    // fontSizeScale que os botões -/+ usam, e que o renderer dos
+    // efeitos frame-exact NUNCA aprendeu a interpretar (só suporta
+    // fontSizeScale uniforme). Usar essas alças numa palavra
+    // frame-exact deixa o override com um campo que nunca é lido no
+    // desenho — mas AINDA É lido pela própria caixa de seleção (fora
+    // do meu controle), que aplica o transform mesmo assim, quebrando
+    // a exibição por completo. Desativa essas alças especificamente
+    // pras palavras frame-exact — a posição/tamanho delas já tem
+    // controles próprios (arrastar pra mover, botões -/+ pra
+    // tamanho, campos numéricos de posição no painel).
+    {
+      const _wordElCheck = document.querySelector(`.lyric-word[data-word-id="${selectedWordId}"]`);
+      if (_wordElCheck && _wordElCheck.dataset.frameExact === '1') return;
+    }
 
     // MULTI: redimensiona todas proporcionalmente
     if (selectedWordIds.size > 1 && handle !== 'rotate') {
@@ -29468,6 +29501,15 @@ function initEditor() {
           if (engine.wordOverrides[el.dataset.wordId]) el.classList.add('has-anim-override');
           el.classList.toggle('is-word-selected', el.dataset.wordId === selectedWordId);
         });
+        // Mesma resincronização já aplicada nos outros pontos (troca
+        // de fonte, tamanho) — garante que a palavra recém-resetada
+        // continua clicável/corretamente posicionada nas estrofes
+        // frame-exact.
+        const stz = (typeof getStanzaEl === 'function') ? getStanzaEl() : null;
+        if (stz && typeof engine._resyncFrameExactWordOverlaysIfNeeded === 'function') {
+          engine._resyncFrameExactWordOverlaysIfNeeded(stz);
+        }
+        if (typeof updateSelectionBox === 'function') updateSelectionBox();
         renderWordPanel();
       });
     });
