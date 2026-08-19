@@ -25399,6 +25399,14 @@ function initEditor() {
   }
 
   function _wordInkBounds(wordEl, rect) {
+    // Estrofes frame-exact (Efeito 1/4): a altura do elemento JÁ É a
+    // caixa exata da letra (bbox calculada quadro a quadro pelo
+    // motion-data, sem sobra de ascendente/descendente) — não uma
+    // "font-size" no sentido tradicional. Reaplicar o ajuste de tinta
+    // abaixo (que assume rect.height ≈ tamanho de fonte, com folga
+    // acima/abaixo do texto) media errado em cima de uma medida que já
+    // é precisa, deslocando a caixa. Usa o retângulo bruto direto.
+    if (wordEl.dataset.frameExact === '1') return { top: rect.top, bottom: rect.bottom };
     try {
       const text = (wordEl.textContent || '').trim();
       const boxH = rect.height;
