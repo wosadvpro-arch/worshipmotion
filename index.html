@@ -31012,6 +31012,27 @@ function initEditor() {
           const _stzAtual = engine.parsed && engine.parsed.stanzas[engine.currentStanzaIndex];
           if (_stzAtual && _stzAtual.frameExactTemplateId) {
             engine.renderStanza(engine.currentStanzaIndex);
+            // BUG REAL CORRIGIDO (relatado: clicar em -/+ fazia a
+            // seleção de palavra "sumir" — não dava mais pra clicar
+            // pra selecionar depois): renderStanza recria os elementos
+            // DOM de cada palavra do zero, e o clique de repouso deles
+            // (posição/tamanho/clicável) depende de
+            // _positionFrameExactWordOverlays já ter rodado nesses
+            // elementos NOVOS. Isso já acontece dentro do renderStanza
+            // — mas outros lugares do editor (ex: reset de opacity
+            // agendado por algum outro fluxo) podem rodar DEPOIS e
+            // desalinhar de novo, igual já corrigido antes na troca de
+            // fonte (ver selectFont). Repete a mesma rede de segurança
+            // aqui: resincroniza mais uma vez, um frame depois, pra
+            // garantir que a última palavra da lista fica clicável não
+            // importa o que rodou entre o clique no -/+ e agora.
+            requestAnimationFrame(() => {
+              const stz2 = (typeof getStanzaEl === 'function') ? getStanzaEl() : null;
+              if (stz2 && typeof engine._resyncFrameExactWordOverlaysIfNeeded === 'function') {
+                engine._resyncFrameExactWordOverlaysIfNeeded(stz2);
+              }
+              if (typeof updateSelectionBox === 'function') updateSelectionBox();
+            });
             if (typeof markDirty === 'function') markDirty();
             return;
           }
