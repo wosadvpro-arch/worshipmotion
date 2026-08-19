@@ -41351,7 +41351,19 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
         const fam = (ov && ov.style && ov.style.fontFamily) || stWhite.fontFamily;
         const dx = (ov && ov.frameExactOffset && ov.frameExactOffset.dx) || 0;
         const dy = (ov && ov.frameExactOffset && ov.frameExactOffset.dy) || 0;
-        itens.push({ id: wid, w: bboxRef[2], h: bboxRef[3], y: bboxRef[1], dx, dy, fontFamily: fam });
+        // BUG REAL CORRIGIDO (caixa de seleção "ainda não perfeita"):
+        // aqui usava a largura/altura da CAIXA ORIGINAL medida no vídeo
+        // (bboxRef[2]/[3]) direto — mas o desenho de verdade
+        // (_renderFrameEfeito2Style) usa o tamanho do BITMAP GERADO pro
+        // texto atual (_efeito2MakeBitmapAtHeight), que naturalmente é
+        // diferente (a caixa original foi medida pra uma palavra
+        // diferente — a largura de "SANTO" não é a largura de qualquer
+        // outra palavra da referência). Agora gera o MESMO bitmap e usa
+        // as MESMAS dimensões reais — sem aproximação, sem
+        // desalinhamento possível, igual já foi feito pro campo "red".
+        const img = _efeito2MakeBitmapAtHeight(whiteTexts[i], fam, stWhite.color, bboxRef[3]);
+        if (!img) continue;
+        itens.push({ id: wid, w: img.width, h: img.height, y: bboxRef[1], dx, dy, fontFamily: fam });
       }
       if (itens.length) {
         const gaps = itens.map(it => it.h * GAP_RATIO);
