@@ -22373,6 +22373,30 @@ class RenderEngineV2 {
       wordEl.style.top = (slot.y / logicalH * 100).toFixed(3) + '%';
       wordEl.style.width = (slot.w / logicalW * 100).toFixed(3) + '%';
       wordEl.style.height = (slot.h / logicalH * 100).toFixed(3) + '%';
+      // BUG REAL CORRIGIDO (caixa de seleção aparecia deslocada pra
+      // cima/esquerda da palavra de verdade): o CSS de ".lyric-word"
+      // é pensado pro texto normal em fluxo — padding/margin negativa
+      // (0.45em pra compensar espaçamento de letra) deslocava a caixa
+      // pra fora do left/top que a gente calculou. box-sizing:border-
+      // box + margin/padding zerados garantem que o retângulo
+      // renderizado bate exatamente com left/top/width/height, sem
+      // nenhum deslocamento extra herdado.
+      wordEl.style.margin = '0';
+      wordEl.style.padding = '0';
+      wordEl.style.boxSizing = 'border-box';
+      // BUG REAL CORRIGIDO (mesmo relato): a medição de "tinta" da
+      // palavra (updateSelectionBox → _wordInkBounds) usa a
+      // font-family DESSE elemento pra achar o topo/base real do
+      // texto — sem isso, usava a fonte global do editor (ex:
+      // Montserrat), bem diferente da fonte de verdade usada no
+      // canvas (HeadingNowTrial-*), o que deslocava a caixa de
+      // seleção verticalmente também. Aplica a MESMA fonte (já
+      // resolvida por getWordSlots — considera override por palavra).
+      if (slot.fontFamily) wordEl.style.fontFamily = `"${slot.fontFamily}"`;
+      // O canvas sempre desenha em peso 700 (negrito) — garante que a
+      // medição de tinta usa o mesmo peso, não o que a palavra herdaria
+      // do estilo normal do editor.
+      wordEl.style.fontWeight = '700';
       // opacity:0 (invisível — quem aparece de verdade é o canvas por
       // baixo) + visibility explícito (sobrescreve o "hidden" herdado
       // da .lyric-line pai) + pointer-events (garante que recebe o
@@ -40319,7 +40343,7 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
       if (!img) continue;
       const dx = (ov && ov.frameExactOffset && ov.frameExactOffset.dx) || 0;
       const dy = (ov && ov.frameExactOffset && ov.frameExactOffset.dy) || 0;
-      itens.push({ id: wid, img, w: img.width, h: img.height, y: bboxRef[1], dx, dy });
+      itens.push({ id: wid, img, w: img.width, h: img.height, y: bboxRef[1], dx, dy, fontFamily });
     }
     if (!itens.length) return [];
     const gaps = itens.map(it => it.h * GAP_RATIO);
@@ -40328,7 +40352,7 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
     const slots = [];
     itens.forEach((it, i) => {
       if (i > 0) x += gaps[i];
-      slots.push({ id: it.id, img: it.img, x: x + it.dx, y: it.y + it.dy, w: it.w, h: it.h });
+      slots.push({ id: it.id, img: it.img, x: x + it.dx, y: it.y + it.dy, w: it.w, h: it.h, fontFamily: it.fontFamily });
       x += it.w;
     });
     return slots;
@@ -40779,14 +40803,15 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
     if (redTexts.length > 0 && redBoxes.length > 0) {
       const centroCanvas = (tpl.logicalWidth || tpl.motionData.width) / 2;
       const slots = _computeRedWordSlots(redTexts, redBoxes, centroCanvas, tpl.styles.red, texts.redIds, wordOverrides);
-      slots.forEach(s => out.push({ id: s.id, x: s.x, y: s.y, w: s.w, h: s.h }));
+      slots.forEach(s => out.push({ id: s.id, x: s.x, y: s.y, w: s.w, h: s.h, fontFamily: s.fontFamily }));
     }
     if (f.deep && texts.deep && texts.deepIds && texts.deepIds.length === 1) {
       const wid = texts.deepIds[0];
       const ov = (wordOverrides && wordOverrides[wid]) || null;
       const dx = (ov && ov.frameExactOffset && ov.frameExactOffset.dx) || 0;
       const dy = (ov && ov.frameExactOffset && ov.frameExactOffset.dy) || 0;
-      out.push({ id: wid, x: f.deep[0] + dx, y: f.deep[1] + dy, w: f.deep[2], h: f.deep[3] });
+      const fontFamily = (ov && ov.style && ov.style.fontFamily) || tpl.styles.deep.fontFamily;
+      out.push({ id: wid, x: f.deep[0] + dx, y: f.deep[1] + dy, w: f.deep[2], h: f.deep[3], fontFamily });
     }
     return out;
   }
