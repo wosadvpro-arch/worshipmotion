@@ -39799,6 +39799,13 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
       // frame que todo mundo, então participa do zoom final igual aos
       // outros — a correção só encolhe a caixa dele, não o congela.
       soulBaseScale: 0.92,
+      // Edição livre por palavra (a pedido explícito): quantidade de
+      // palavras da referência pra "top"/"red" (bate com o campo
+      // "textSlots" do próprio motionData acima) — usada por
+      // _drawSingleTextRoleInBox pra decidir entre fidelidade exata
+      // (raw stretch) e fileira proporcional sem distorcer.
+      topRefWordCount: 4,
+      redRefWordCount: 6,
     },
     'efeito-1': {
       // Efeito 1 (Kinetic Word Assembly): 4 palavras vermelhas
@@ -39828,6 +39835,11 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
         red:  { fontFamily: 'HeadingNowTrial-26Bold-KSS', color: '#f1f1f1' },
         deep: { fontFamily: 'HeadingNowTrial-26Bold-KSS', color: '#f1f1f1' },
       },
+      // Edição livre por palavra (a pedido explícito): DEEP é 1
+      // palavra na referência — usado por _drawSingleTextRoleInBox pra
+      // decidir entre fidelidade exata (raw stretch) e fileira
+      // proporcional sem distorcer.
+      deepRefWordCount: 1,
     },
     'efeito-5': {
       // Efeito 5 (Staggered Dual Word Stretch): 2 linhas, 1 palavra
@@ -39854,15 +39866,22 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
       // dos dados.
       //
       // "red" e "white" ficam ambos ausentes no frame 24 e "red" some
-      // no 25 (a composição desaparece por completo perto do fim,
-      // conforme o pacote revisado). Como isso deixava o preview
-      // terminando "vazio" (sem nenhuma letra na tela), a reprodução
-      // (playFrameExact) agora segura no último frame com as palavras
-      // totalmente visíveis e já compactadas (holdFrameIndex, frame
-      // 18 — momento em que elas terminam de "comprimir juntas no
-      // final", antes do trecho residual 19-25 que só existia pra
-      // sumir/cortar no vídeo de referência) em vez de ir até o frame
-      // 25 (praticamente em branco).
+      // no 25 (a composição desaparece por completo pertinho do fim,
+      // conforme o pacote revisado — comportamento real do vídeo de
+      // referência, preservado aqui integralmente). Isso deixava o
+      // preview terminando "vazio" (sem nenhuma letra na tela) quando
+      // a reprodução chegava ao fim — problema real reportado.
+      // CORREÇÃO: reaproveitei o mecanismo genérico `holdFrameIndex`
+      // que playFrameExact já suporta pra QUALQUER template (não é
+      // exclusivo desse efeito) — a animação toca INTEIRA, com os 26
+      // frames originais e o colapso final incluído, mas ao terminar
+      // e pausar, em vez de segurar no frame literalmente final (quase
+      // em branco), segura no frame 18 — o último em que LIKE/BRAWL
+      // estão comprimidos juntos mas ainda totalmente visíveis e
+      // legíveis. Não removi nenhum frame do motion-data (fidelidade
+      // total mantida, os 26 continuam aí caso o comportamento de
+      // "segurar" precise mudar no futuro) — só o estado de repouso
+      // final é diferente do último frame bruto.
       layout: 'efeito-2-style',
       numLines: 2,
       logicalWidth: 1920,
@@ -39882,6 +39901,11 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
         red:   { fontFamily: 'HeadingNowTrial-26Bold-KSS', color: '#ffffff' },
         white: { fontFamily: 'HeadingNowTrial-66Bold-KSS', color: '#ffffff' },
       },
+      // Edição livre por palavra (a pedido explícito): LIKE é 1
+      // palavra na referência — usado por _drawSingleTextRoleInBox pra
+      // decidir entre fidelidade exata (raw stretch) e fileira
+      // proporcional sem distorcer.
+      redRefWordCount: 1,
     },
     'staggered-type-snap-reveal': {
       // Efeito 4 (Staggered Type Snap Reveal): 5 palavras brancas
@@ -39916,6 +39940,11 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
         red:  { fontFamily: 'HeadingNowTrial-26Bold-KSS', color: '#EDEDED' },
         deep: { fontFamily: 'HeadingNowTrial-66Bold-KSS', color: '#f1f1f1' },
       },
+      // Edição livre por palavra (a pedido explícito): SNAP é 1
+      // palavra na referência — usado por _drawSingleTextRoleInBox pra
+      // decidir entre fidelidade exata (raw stretch) e fileira
+      // proporcional sem distorcer.
+      deepRefWordCount: 1,
     },
     'efeito-2': {
       layout: 'efeito-2-style',
@@ -39936,6 +39965,11 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
         red:   { fontFamily: 'HeadingNowTrial-26Bold-KSS', color: '#f1f1f1' },
         white: { fontFamily: 'HeadingNowTrial-26Bold-KSS', color: '#f1f1f1' },
       },
+      // Edição livre por palavra (a pedido explícito): "PUT OFF
+      // HOTTED" é 3 palavras na referência — usado por
+      // _drawSingleTextRoleInBox pra decidir entre fidelidade exata
+      // (raw stretch) e fileira proporcional sem distorcer.
+      redRefWordCount: 3,
     },
   };
 
@@ -40161,7 +40195,12 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
 
     if (f.deep && texts.deep) {
       const stDeep = tpl.styles.deep;
-      drawStretched(ctx, texts.deep, stDeep.fontFamily, stDeep.color, f.deep, 'xywh');
+      // Edição livre por palavra (a pedido explícito): DEEP/SNAP são
+      // 1 palavra na referência — se o usuário mantiver 1 palavra,
+      // fidelidade pixel a pixel exata (raw stretch); se acrescentar
+      // mais, monta em fileira proporcional dentro da mesma caixa, sem
+      // distorcer.
+      _drawSingleTextRoleInBox(ctx, texts.deep, stDeep.fontFamily, stDeep.color, f.deep, 'xywh', tpl.deepRefWordCount ?? 1);
     }
 
     return true;
@@ -40177,15 +40216,20 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
     // individuais que não fazem sentido pra essa quantidade de palavras.
     if (texts.line3Combined) {
       const bboxUniao = tpl.singleWordBboxes[frameIdx];
-      ['top', 'red'].forEach(key => {
-        const bbox = m[key];
-        if (!bbox) return;
-        const st = tpl.styles[key];
-        drawStretched(ctx, texts[key], st.fontFamily, st.color, bbox);
-      });
+      // Edição livre por palavra (a pedido explícito): linha 1 (top,
+      // referência 4 palavras) e linha 2 (red, referência 6 palavras)
+      // usam fidelidade pixel a pixel exata quando a contagem bate, e
+      // fileira proporcional sem distorcer quando o usuário
+      // acrescenta/remove palavra.
+      _drawSingleTextRoleInBox(ctx, texts.top, tpl.styles.top.fontFamily, tpl.styles.top.color, m.top, undefined, tpl.topRefWordCount ?? 4);
+      _drawSingleTextRoleInBox(ctx, texts.red, tpl.styles.red.fontFamily, tpl.styles.red.color, m.red, undefined, tpl.redRefWordCount ?? 6);
       if (bboxUniao) {
         const st = tpl.styles.my;
-        drawStretched(ctx, texts.line3Combined, st.fontFamily, st.color, bboxUniao);
+        // Linha 3 já é sempre "combinada numa caixa só" por decisão de
+        // design anterior (independente da contagem) — sempre usa a
+        // fileira proporcional (refWordCount=null pula a checagem de
+        // fidelidade exata, que não se aplica aqui).
+        _drawSingleTextRoleInBox(ctx, texts.line3Combined, st.fontFamily, st.color, bboxUniao, undefined, null);
       }
       return true;
     }
@@ -40313,12 +40357,82 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
     return c;
   }
 
+  /**
+   * Desenha um texto de UMA linha (que pode ter 1 ou várias palavras)
+   * dentro de UMA bbox só — usado por todo campo que originalmente é
+   * "um texto único esticado numa caixa" (DEEP/SNAP, LIKE, "PUT OFF
+   * HOTTED" no Efeito 2, as linhas 1/2 e a linha 3 combinada do Efeito
+   * 3), em vez de um array de palavras independentes com bbox própria
+   * cada.
+   *
+   * LIMITAÇÃO REAL CORRIGIDA (a pedido explícito): essas caixas foram
+   * medidas no vídeo original pro texto DE REFERÊNCIA específico
+   * (ex: a caixa de "PUT OFF HOTTED" tem o formato de exatamente esse
+   * trecho). Editar livremente pra um texto com quantidade diferente
+   * de palavras — não só substituir 1 por 1 — sempre acabava
+   * espremido/distorcido, porque o stretch cru força QUALQUER texto a
+   * ocupar exatamente aquela largura/altura específica.
+   *
+   * Critério (mesmo já usado nos campos de palavras independentes):
+   * se a quantidade de palavras do texto atual bate com
+   * `refWordCount` (a quantidade original medida naquela caixa), usa
+   * o stretch cru — fidelidade pixel a pixel exata, sem mudança de
+   * comportamento pro texto de referência. Se for diferente (usuário
+   * acrescentou/removeu palavra), mede cada palavra na ALTURA da
+   * caixa (sem esticar a largura de forma não uniforme — evita
+   * deformar letras) e monta uma fileira centralizada dentro da
+   * própria caixa (não no canvas inteiro — cada campo mantém sua
+   * posição original).
+   *
+   * `refWordCount === null` pula direto pro cálculo em fileira sempre
+   * (usado pela linha 3 do Efeito 3, que já combina be+my+soul numa
+   * caixa só por decisão de design anterior, independente da
+   * contagem).
+   */
+  function _drawSingleTextRoleInBox(ctx, text, fontFamily, color, bbox, bboxFormat, refWordCount) {
+    if (!bbox || !text) return;
+    const palavras = String(text).trim().split(/\s+/).filter(Boolean);
+    if (!palavras.length) return;
+    if (refWordCount != null && palavras.length === refWordCount) {
+      drawStretched(ctx, text, fontFamily, color, bbox, bboxFormat);
+      return;
+    }
+    let bx, by, bw, bh;
+    if (bboxFormat === 'xywh') {
+      bx = bbox[0]; by = bbox[1]; bw = bbox[2]; bh = bbox[3];
+    } else {
+      bx = bbox[0]; by = bbox[1]; bw = bbox[2] - bbox[0]; bh = bbox[3] - bbox[1];
+    }
+    const GAP_RATIO = 0.29; // mesmo espaçamento proporcional usado nas palavras independentes
+    const itens = [];
+    for (const p of palavras) {
+      const img = _efeito2MakeBitmapAtHeight(p, fontFamily, color, bh);
+      if (img) itens.push({ img, w: img.width, h: img.height });
+    }
+    if (!itens.length) return;
+    const gaps = itens.map(it => it.h * GAP_RATIO);
+    const larguraTotal = itens.reduce((s, it) => s + it.w, 0) + gaps.slice(1).reduce((s, g) => s + g, 0);
+    const centroBox = bx + bw / 2;
+    let x = centroBox - larguraTotal / 2;
+    itens.forEach((it, i) => {
+      if (i > 0) x += gaps[i];
+      ctx.drawImage(it.img, x, by, it.w, it.h);
+      x += it.w;
+    });
+  }
+
   function _renderFrameEfeito2Style(ctx, tpl, texts, frameIdx) {
     const f = tpl.motionData.framesData[frameIdx];
     if (!f) return false;
 
     const stRed = tpl.styles.red;
-    drawStretched(ctx, texts.red, stRed.fontFamily, stRed.color, f.red, 'xywh');
+    // Edição livre por palavra (a pedido explícito): se a quantidade
+    // de palavras do texto atual bater com a referência original
+    // (`redRefWordCount` — 3 no Efeito 2 "PUT OFF HOTTED", 1 no
+    // Efeito 5 "LIKE"), fidelidade pixel a pixel exata (raw stretch);
+    // se for diferente, monta em fileira proporcional dentro da mesma
+    // caixa, sem distorcer.
+    _drawSingleTextRoleInBox(ctx, texts.red, stRed.fontFamily, stRed.color, f.red, 'xywh', tpl.redRefWordCount ?? 1);
 
     const whiteBoxesFrame = f.white || [];
     const whiteTexts = texts.white || [];
