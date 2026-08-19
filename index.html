@@ -28397,7 +28397,19 @@ function initEditor() {
     const aplicarTamanho = (delta) => {
       if (_ctxTemSelecao() && !_ctxSelecaoEhEstrofeInteira()) {
         const escalaAtual = (_ctxValorSelecao('fontSizeScale', 1) || 1);
-        const nova = Math.max(0.2, Math.round((escalaAtual + delta * 0.1) * 100) / 100);
+        // BUG REAL CORRIGIDO (relatado: aumentar a fonte parecia não
+        // fazer nada, e ao clicar repetidamente o valor disparou pra
+        // 7.9x — quase 8x o tamanho original — deixando a palavra
+        // gigantesca/fora da área visível e quebrando até o clique-
+        // pra-selecionar): antes só tinha limite inferior (0.2), sem
+        // teto nenhum. Pras estrofes frame-exact especificamente
+        // (Efeito 1-5), limita também por cima (3x) — o renderer já
+        // aplica esse mesmo teto na hora de desenhar (_clampFontSizeScale),
+        // então limitar aqui também evita o número guardado ficar bem
+        // maior do que qualquer coisa que apareça na tela.
+        const stzAtualParaLimite = engine.parsed && engine.parsed.stanzas[engine.currentStanzaIndex];
+        const tetoSuperior = (stzAtualParaLimite && stzAtualParaLimite.frameExactTemplateId) ? 3 : Infinity;
+        const nova = Math.max(0.2, Math.min(tetoSuperior, Math.round((escalaAtual + delta * 0.1) * 100) / 100));
         if (typeof aplicarEstiloSensivel === 'function')
           aplicarEstiloSensivel('fontSizeScale', nova === 1 ? null : nova, { afetaLargura: true });
       } else {
@@ -40626,7 +40638,7 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
       // Cresce/encolhe ao redor do CENTRO vertical original da caixa
       // (não do topo) — mesmo critério usado pelo resize dos templates
       // normais, evita a palavra "grudar" no topo ao aumentar.
-      const scale = (ov && ov.style && ov.style.fontSizeScale) || 1;
+      const scale = _clampFontSizeScale(ov && ov.style && ov.style.fontSizeScale);
       const alturaAlvo = bboxRef[3] * scale;
       const img = _efeito2MakeBitmapAtHeight(texts[i], fontFamily, style.color, alturaAlvo);
       if (!img) continue;
@@ -40772,7 +40784,7 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
           // Tamanho por palavra (a pedido explícito — botões -/+ do
           // painel, mesmo campo wo.style.fontSizeScale já usado pelos
           // templates normais).
-          const scale = (ov && ov.style && ov.style.fontSizeScale) || 1;
+          const scale = _clampFontSizeScale(ov && ov.style && ov.style.fontSizeScale);
           const img = _efeito2MakeBitmapAtHeight(deepWords[i], fam, stDeep.color, f.deep[3] * scale);
           if (!img) continue;
           const dx = (ov && ov.frameExactOffset && ov.frameExactOffset.dx) || 0;
@@ -40913,6 +40925,21 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
    * que suas letras específicas meçam ascendente/descendente um
    * pouco diferente entre si.
    */
+  /**
+   * Limita o fator de escala por palavra (wo.style.fontSizeScale) a uma
+   * faixa sensata pros templates frame-exact — bug real reportado: o
+   * valor podia crescer sem limite clicando repetidamente em "+"
+   * (cada clique soma +0.1, sem teto), deixando a palavra gigantesca
+   * (chegou a 7.9x = quase 8 vezes o tamanho original), estourando
+   * pra fora da área visível e quebrando o clique-pra-selecionar
+   * (a área clicável ficava enorme e mal posicionada). 0.3x a 3x
+   * cobre uma faixa ampla e útil de verdade sem permitir o descontrole.
+   */
+  function _clampFontSizeScale(scale) {
+    if (!scale || !isFinite(scale)) return 1;
+    return Math.max(0.3, Math.min(3, scale));
+  }
+
   function _efeito2MakeBitmapAtHeight(text, fontFamily, color, targetHeight) {
     text = (text || '').toUpperCase().trim();
     if (!text || !targetHeight) return null;
@@ -41045,7 +41072,7 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
       // Tamanho por palavra (a pedido explícito — botões -/+ do painel,
       // mesmo campo wo.style.fontSizeScale já usado pelos templates
       // normais): multiplica a altura-alvo antes de gerar o bitmap.
-      const scale = (ov && ov.style && ov.style.fontSizeScale) || 1;
+      const scale = _clampFontSizeScale(ov && ov.style && ov.style.fontSizeScale);
       const img = _efeito2MakeBitmapAtHeight(palavras[i], fam, color, bh * scale);
       if (!img) continue;
       const dx = (ov && ov.frameExactOffset && ov.frameExactOffset.dx) || 0;
@@ -41176,7 +41203,7 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
       // Tamanho por palavra (a pedido explícito — botões -/+ do
       // painel, mesmo campo wo.style.fontSizeScale já usado pelos
       // templates normais).
-      const scale = (ov && ov.style && ov.style.fontSizeScale) || 1;
+      const scale = _clampFontSizeScale(ov && ov.style && ov.style.fontSizeScale);
       const img = _efeito2MakeBitmapAtHeight(whiteTexts[i], fam, stWhite.color, bboxRef[3] * scale);
       if (!img) continue;
       const dx = (ov && ov.frameExactOffset && ov.frameExactOffset.dx) || 0;
@@ -41387,7 +41414,7 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
         const dx = (ov && ov.frameExactOffset && ov.frameExactOffset.dx) || 0;
         const dy = (ov && ov.frameExactOffset && ov.frameExactOffset.dy) || 0;
         // Tamanho por palavra — mesmo campo wo.style.fontSizeScale.
-        const scale = (ov && ov.style && ov.style.fontSizeScale) || 1;
+        const scale = _clampFontSizeScale(ov && ov.style && ov.style.fontSizeScale);
         itens.push({ id: wid, dx, dy, fontFamily: fam, texto: deepWords[i], scale });
       }
       // Precisa medir o bitmap de cada item pra saber a largura real
@@ -41464,7 +41491,7 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
         const dx = (ov && ov.frameExactOffset && ov.frameExactOffset.dx) || 0;
         const dy = (ov && ov.frameExactOffset && ov.frameExactOffset.dy) || 0;
         // Tamanho por palavra — mesmo campo wo.style.fontSizeScale.
-        const scale = (ov && ov.style && ov.style.fontSizeScale) || 1;
+        const scale = _clampFontSizeScale(ov && ov.style && ov.style.fontSizeScale);
         // BUG REAL CORRIGIDO (caixa de seleção "ainda não perfeita"):
         // aqui usava a largura/altura da CAIXA ORIGINAL medida no vídeo
         // (bboxRef[2]/[3]) direto — mas o desenho de verdade
