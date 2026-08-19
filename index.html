@@ -40583,6 +40583,47 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
     return slots;
   }
 
+  /**
+   * Acha o intervalo de frames em que o campo "deep" (Efeito 1/4) fica
+   * ativo no motion-data original (ex: Efeito 1 frames 16-34, Efeito 4
+   * frames 29-37) — usado pra distribuir a entrada de várias palavras
+   * dentro dessa MESMA janela de tempo (ver abaixo), em vez de
+   * inventar um intervalo novo. Cacheado no próprio template (evita
+   * rescanear a cada frame renderizado).
+   */
+  function _getDeepActiveFrameRange(tpl) {
+    if (tpl._deepActiveRange) return tpl._deepActiveRange;
+    let min = -1, max = -1;
+    const frames = tpl.motionData.framesData;
+    for (let i = 0; i < frames.length; i++) {
+      if (frames[i].deep) {
+        if (min === -1) min = i;
+        max = i;
+      }
+    }
+    tpl._deepActiveRange = { min, max };
+    return tpl._deepActiveRange;
+  }
+
+  /**
+   * Calcula em que frame a i-ésima palavra (de `count` no total) do
+   * campo "deep" deve "chegar" (começar a aparecer), quando ele tem
+   * mais de 1 palavra — distribuindo pela janela de tempo ativa
+   * original (`range`), mas só usando os primeiros 60% dela pras
+   * chegadas (`ARRIVAL_SPAN_RATIO`) — os 40% finais ficam livres pra
+   * todas as palavras já chegadas crescerem/assentarem JUNTAS antes
+   * do fim, em vez da última chegar só no frame final sem nenhum
+   * tempo de "assentar" (ajuste fino feito depois de testar: usar
+   * 100% da janela deixava a última palavra aparecer só no
+   * derradeiro frame, quase sem transição visível).
+   */
+  function _deepWordArrivalFrame(i, count, range) {
+    if (count <= 1 || range.max <= range.min) return range.min;
+    const ARRIVAL_SPAN_RATIO = 0.6;
+    const span = (range.max - range.min) * ARRIVAL_SPAN_RATIO;
+    return range.min + Math.round(i * span / (count - 1));
+  }
+
   function _renderFrameEfeito1Style(ctx, tpl, texts, frameIdx, wordOverrides) {
     const f = tpl.motionData.framesData[frameIdx];
     if (!f) return false;
@@ -40599,24 +40640,67 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
 
     if (f.deep && texts.deep) {
       const stDeep = tpl.styles.deep;
-      // Override de fonte/posição por palavra só se "deep" for
-      // exatamente 1 palavra (o caso normal — DEEP/SNAP, e o que o
-      // clique-pra-selecionar no editor cobre). Com mais de 1 palavra
-      // (edição livre por contagem, já suportada à parte), continua
-      // sem override — não há como saber qual fonte pertence a qual
-      // pedaço do texto combinado sem uma palavra só de referência.
-      const deepWid = texts.deepIds && texts.deepIds.length === 1 ? texts.deepIds[0] : null;
-      const ov = (deepWid && wordOverrides && wordOverrides[deepWid]) || null;
-      const fontFamily = (ov && ov.style && ov.style.fontFamily) || stDeep.fontFamily;
-      const dx = (ov && ov.frameExactOffset && ov.frameExactOffset.dx) || 0;
-      const dy = (ov && ov.frameExactOffset && ov.frameExactOffset.dy) || 0;
-      const bboxAplicado = (dx || dy) ? [f.deep[0] + dx, f.deep[1] + dy, f.deep[2], f.deep[3]] : f.deep;
-      // Edição livre por palavra (a pedido explícito): DEEP/SNAP são
-      // 1 palavra na referência — se o usuário mantiver 1 palavra,
-      // fidelidade pixel a pixel exata (raw stretch); se acrescentar
-      // mais, monta em fileira proporcional dentro da mesma caixa, sem
-      // distorcer.
-      _drawSingleTextRoleInBox(ctx, texts.deep, fontFamily, stDeep.color, bboxAplicado, 'xywh', tpl.deepRefWordCount ?? 1);
+      const deepIds = texts.deepIds || [];
+      if (deepIds.length <= 1) {
+        // Comportamento de sempre: DEEP/SNAP são 1 palavra na
+        // referência — se o usuário mantiver 1 palavra, fidelidade
+        // pixel a pixel exata (raw stretch); override de fonte/posição
+        // também só se aplica aqui (não há como saber qual fonte
+        // pertence a qual pedaço de um texto combinado sem uma
+        // palavra só de referência).
+        const deepWid = deepIds.length === 1 ? deepIds[0] : null;
+        const ov = (deepWid && wordOverrides && wordOverrides[deepWid]) || null;
+        const fontFamily = (ov && ov.style && ov.style.fontFamily) || stDeep.fontFamily;
+        const dx = (ov && ov.frameExactOffset && ov.frameExactOffset.dx) || 0;
+        const dy = (ov && ov.frameExactOffset && ov.frameExactOffset.dy) || 0;
+        const bboxAplicado = (dx || dy) ? [f.deep[0] + dx, f.deep[1] + dy, f.deep[2], f.deep[3]] : f.deep;
+        _drawSingleTextRoleInBox(ctx, texts.deep, fontFamily, stDeep.color, bboxAplicado, 'xywh', tpl.deepRefWordCount ?? 1);
+      } else {
+        // 2+ PALAVRAS — dois bugs reais corrigidos aqui:
+        // 1) "descentralizado": antes centralizava no centro do
+        //    próprio bbox medido no vídeo original (que tem um
+        //    pequeno desvio natural do centro do canvas — a linha de
+        //    cima, "red", já centraliza no CANVAS). Unificado: agora
+        //    as duas linhas centralizam no mesmo ponto.
+        // 2) "não é sequencial"/"a última sempre fica menor": o campo
+        //    "deep" no vídeo original só tem 1 palavra — nunca existiu
+        //    dado de entrada escalonada pra ele, então TODAS as
+        //    palavras apareciam juntas de uma vez, ao mesmo tempo, em
+        //    vez de uma de cada vez (isso também explicava a
+        //    impressão de "menor": ao aparecerem todas juntas de
+        //    repente, sem crescimento gradual individual, qualquer
+        //    diferença de timing parecia errática). Agora distribui a
+        //    entrada de cada palavra pela MESMA janela de tempo que
+        //    esse campo já ocupa no vídeo original (_getDeepActiveFrameRange)
+        //    — mesma técnica já usada na linha branca do Efeito 2.
+        const deepWords = String(texts.deep).trim().split(/\s+/).filter(Boolean);
+        const range = _getDeepActiveFrameRange(tpl);
+        const centroCanvas = (tpl.logicalWidth || tpl.motionData.width) / 2;
+        const GAP_RATIO = 0.29;
+        const itens = [];
+        for (let i = 0; i < deepWords.length; i++) {
+          const chegada = _deepWordArrivalFrame(i, deepWords.length, range);
+          if (frameIdx < chegada) continue; // essa palavra ainda não "chegou" nesse quadro
+          const wid = deepIds[i];
+          const ov = (wid && wordOverrides && wordOverrides[wid]) || null;
+          const fam = (ov && ov.style && ov.style.fontFamily) || stDeep.fontFamily;
+          const img = _efeito2MakeBitmapAtHeight(deepWords[i], fam, stDeep.color, f.deep[3]);
+          if (!img) continue;
+          const dx = (ov && ov.frameExactOffset && ov.frameExactOffset.dx) || 0;
+          const dy = (ov && ov.frameExactOffset && ov.frameExactOffset.dy) || 0;
+          itens.push({ id: wid, img, w: img.width, h: img.height, dx, dy });
+        }
+        if (itens.length) {
+          const gaps = itens.map(it => it.h * GAP_RATIO);
+          const larguraTotal = itens.reduce((s, it) => s + it.w, 0) + gaps.slice(1).reduce((s, g) => s + g, 0);
+          let x = centroCanvas - larguraTotal / 2;
+          itens.forEach((it, i) => {
+            if (i > 0) x += gaps[i];
+            ctx.drawImage(it.img, x + it.dx, f.deep[1] + it.dy, it.w, it.h);
+            x += it.w;
+          });
+        }
+      }
     }
 
     return true;
@@ -41126,13 +41210,52 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
       const slots = _computeRedWordSlots(redTexts, redBoxes, centroCanvas, tpl.styles.red, texts.redIds, wordOverrides);
       slots.forEach(s => out.push({ id: s.id, x: s.x, y: s.y, w: s.w, h: s.h, fontFamily: s.fontFamily }));
     }
-    if (f.deep && texts.deep && texts.deepIds && texts.deepIds.length === 1) {
-      const wid = texts.deepIds[0];
+    const deepIds = texts.deepIds || [];
+    if (f.deep && texts.deep && deepIds.length === 1) {
+      const wid = deepIds[0];
       const ov = (wordOverrides && wordOverrides[wid]) || null;
       const dx = (ov && ov.frameExactOffset && ov.frameExactOffset.dx) || 0;
       const dy = (ov && ov.frameExactOffset && ov.frameExactOffset.dy) || 0;
       const fontFamily = (ov && ov.style && ov.style.fontFamily) || tpl.styles.deep.fontFamily;
       out.push({ id: wid, x: f.deep[0] + dx, y: f.deep[1] + dy, w: f.deep[2], h: f.deep[3], fontFamily });
+    } else if (f.deep && texts.deep && deepIds.length > 1) {
+      // Mesmo cálculo EXATO do desenho (_renderFrameEfeito1Style) —
+      // centralização no canvas + entrada sequencial distribuída pela
+      // janela de tempo original do campo — sem duplicar a fórmula,
+      // só devolvendo posições em vez de desenhar.
+      const stDeep = tpl.styles.deep;
+      const deepWords = String(texts.deep).trim().split(/\s+/).filter(Boolean);
+      const range = _getDeepActiveFrameRange(tpl);
+      const centroCanvas = (tpl.logicalWidth || tpl.motionData.width) / 2;
+      const GAP_RATIO = 0.29;
+      const itens = [];
+      for (let i = 0; i < deepWords.length; i++) {
+        const chegada = _deepWordArrivalFrame(i, deepWords.length, range);
+        if (frameIdx < chegada) continue;
+        const wid = deepIds[i];
+        const ov = (wid && wordOverrides && wordOverrides[wid]) || null;
+        const fam = (ov && ov.style && ov.style.fontFamily) || stDeep.fontFamily;
+        const dx = (ov && ov.frameExactOffset && ov.frameExactOffset.dx) || 0;
+        const dy = (ov && ov.frameExactOffset && ov.frameExactOffset.dy) || 0;
+        itens.push({ id: wid, dx, dy, fontFamily: fam, texto: deepWords[i] });
+      }
+      // Precisa medir o bitmap de cada item pra saber a largura real
+      // (mesma altura-alvo pra todos: f.deep[3]) — mesma fonte que
+      // _renderFrameEfeito1Style usaria.
+      const itensMedidos = itens.map(it => {
+        const img = _efeito2MakeBitmapAtHeight(it.texto, it.fontFamily, stDeep.color, f.deep[3]);
+        return img ? { ...it, w: img.width, h: img.height } : null;
+      }).filter(Boolean);
+      if (itensMedidos.length) {
+        const gaps = itensMedidos.map(it => it.h * GAP_RATIO);
+        const larguraTotal = itensMedidos.reduce((s, it) => s + it.w, 0) + gaps.slice(1).reduce((s, g) => s + g, 0);
+        let x = centroCanvas - larguraTotal / 2;
+        itensMedidos.forEach((it, i) => {
+          if (i > 0) x += gaps[i];
+          out.push({ id: it.id, x: x + it.dx, y: f.deep[1] + it.dy, w: it.w, h: it.h, fontFamily: it.fontFamily });
+          x += it.w;
+        });
+      }
     }
     return out;
   }
