@@ -40812,13 +40812,28 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
    * quando a contagem bate com a referência — sem isso, não teria
    * como aplicar fonte/posição por palavra num texto que normalmente
    * é desenhado como UMA imagem só colada (stretch cru).
+   *
+   * `forceRowLayout` (opcional): quando true, NUNCA usa o stretch cru
+   * (mesmo com a contagem batendo e sem override nenhum) — sempre
+   * calcula em fileira. BUG REAL CORRIGIDO (Efeito 2/5, campo "red" —
+   * ex: "PUT OFF HOTTED"): a caixa de seleção usa uma APROXIMAÇÃO de
+   * onde cada palavra fica dentro da imagem colada (getWordSlots não
+   * tem como saber o recorte exato do stretch cru) — isso fazia a
+   * caixa aparecer visivelmente deslocada da palavra de verdade nesse
+   * campo especificamente (nunca acontecia nos campos de 1 palavra só,
+   * tipo DEEP/SNAP/LIKE, onde não há "vizinha" pra desalinhar contra).
+   * Com forceRowLayout, o que é DESENHADO passa a ser exatamente o
+   * mesmo cálculo que a caixa de seleção usa — sem aproximação, sem
+   * desalinhamento possível. Como o próprio bbox já foi medido no
+   * vídeo original com o formato certo pro texto de referência, a
+   * diferença visual pro texto padrão é imperceptível.
    */
-  function _drawSingleTextRoleInBox(ctx, text, fontFamily, color, bbox, bboxFormat, refWordCount, wordIds, wordOverrides) {
+  function _drawSingleTextRoleInBox(ctx, text, fontFamily, color, bbox, bboxFormat, refWordCount, wordIds, wordOverrides, forceRowLayout) {
     if (!bbox || !text) return;
     const palavras = String(text).trim().split(/\s+/).filter(Boolean);
     if (!palavras.length) return;
     const temOverrideAtivo = !!(wordIds && wordOverrides && palavras.some((_, i) => wordIds[i] && wordOverrides[wordIds[i]]));
-    if (refWordCount != null && palavras.length === refWordCount && !temOverrideAtivo) {
+    if (!forceRowLayout && refWordCount != null && palavras.length === refWordCount && !temOverrideAtivo) {
       drawStretched(ctx, text, fontFamily, color, bbox, bboxFormat);
       return;
     }
@@ -40868,19 +40883,46 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
     return slots;
   }
 
+  /**
+   * Redistribui o índice de uma palavra do usuário (0..userCount-1)
+   * pro slot de tempo de entrada ORIGINAL (0..totalOriginal-1) —
+   * espalhando proporcionalmente por TODA a faixa original, não só
+   * pegando os primeiros. BUG REAL CORRIGIDO (relatado: "a animação
+   * só funciona perfeitamente com muitas palavras, com menos ela fica
+   * atropelada"): antes, `slotRef = Math.min(i, totalOriginal - 1)`
+   * sempre usava os primeiros N tempos de entrada do vídeo original —
+   * que, no vídeo de referência (7 palavras), aconteciam bem cedo
+   * (span pequeno). Com menos palavras do usuário, isso fazia todas
+   * elas "chegarem" logo no início e o resto da animação ficar parado,
+   * sem nada acontecendo — em vez de continuar fiel ao RITMO
+   * completo do efeito original. Essa fórmula distribui os índices do
+   * usuário por igual ao longo de TODA a faixa original — a última
+   * palavra do usuário sempre usa o tempo de entrada da ÚLTIMA palavra
+   * original, preservando o ritmo/duração da entrada escalonada
+   * completa, não importa quantas palavras o usuário tenha.
+   */
+  function _remapSlotIndex(userIndex, userCount, totalOriginal) {
+    if (userCount <= 1) return 0;
+    return Math.round(userIndex * (totalOriginal - 1) / (userCount - 1));
+  }
+
   function _renderFrameEfeito2Style(ctx, tpl, texts, frameIdx, wordOverrides) {
     const f = tpl.motionData.framesData[frameIdx];
     if (!f) return false;
 
     const stRed = tpl.styles.red;
-    // Edição livre por palavra (a pedido explícito): se a quantidade
-    // de palavras do texto atual bater com a referência original
-    // (`redRefWordCount` — 3 no Efeito 2 "PUT OFF HOTTED", 1 no
-    // Efeito 5 "LIKE") E nenhuma delas tiver override de fonte/posição
-    // ativo, fidelidade pixel a pixel exata (raw stretch); senão,
-    // monta em fileira proporcional dentro da mesma caixa, sem
-    // distorcer — e já aplica fonte/posição por palavra quando houver.
-    _drawSingleTextRoleInBox(ctx, texts.red, stRed.fontFamily, stRed.color, f.red, 'xywh', tpl.redRefWordCount ?? 1, texts.redIds, wordOverrides);
+    // Edição livre por palavra (a pedido explícito): monta SEMPRE em
+    // fileira (forceRowLayout) — nunca a imagem colada crua. BUG REAL
+    // CORRIGIDO (relatado: caixa de seleção deslocada em campos com
+    // mais de 1 palavra, tipo "PUT OFF HOTTED"): a caixa de seleção
+    // usa uma aproximação de onde cada palavra fica dentro da imagem
+    // colada — sem como saber o recorte exato do stretch cru. Com
+    // forceRowLayout, o desenho passa a usar o MESMO cálculo que a
+    // caixa de seleção já usa (ver getWordSlots/_getWordSlotsEfeito2Style)
+    // — sem aproximação, sem desalinhamento possível. Diferença visual
+    // pro texto padrão é imperceptível (a caixa já foi medida no
+    // formato certo pro texto de referência).
+    _drawSingleTextRoleInBox(ctx, texts.red, stRed.fontFamily, stRed.color, f.red, 'xywh', tpl.redRefWordCount ?? 1, texts.redIds, wordOverrides, true);
 
     const whiteBoxesFrame = f.white || [];
     const whiteTexts = texts.white || [];
@@ -40914,8 +40956,9 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
     const GAP_RATIO = 0.29; // espaçamento entre palavras, proporcional à altura (medido na referência: ~42px pra ~145px de altura)
 
     // Pra cada palavra do usuário, decide se já está visível nesse
-    // quadro (usando o timing do slot original correspondente) e
-    // renderiza o bitmap JÁ no tamanho certo (via altura de
+    // quadro (usando o timing do slot original correspondente,
+    // REDISTRIBUÍDO por toda a faixa original — ver _remapSlotIndex)
+    // e renderiza o bitmap JÁ no tamanho certo (via altura de
     // referência — ver _efeito2MakeBitmapAtHeight — não precisa de
     // stretch posterior, o que evita a variação de métrica por
     // palavra que causava tamanhos inconsistentes entre elas). Já
@@ -40923,7 +40966,7 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
     // houver.
     const itens = [];
     for (let i = 0; i < whiteTexts.length; i++) {
-      const slotRef = Math.min(i, totalOriginal - 1);
+      const slotRef = _remapSlotIndex(i, whiteTexts.length, totalOriginal);
       if (slotRef >= numAtivos) continue; // essa palavra ainda não "chegou" nesse quadro
       const bboxRef = whiteBoxesFrame[slotRef];
       const wid = whiteIds && whiteIds[i];
@@ -41138,7 +41181,7 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
       const GAP_RATIO = 0.29;
       const itens = [];
       for (let i = 0; i < whiteTexts.length; i++) {
-        const slotRef = Math.min(i, totalOriginal - 1);
+        const slotRef = _remapSlotIndex(i, whiteTexts.length, totalOriginal);
         if (slotRef >= numAtivos) continue;
         const bboxRef = whiteBoxesFrame[slotRef];
         const wid = whiteIds && whiteIds[i];
