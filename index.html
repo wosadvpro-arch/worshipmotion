@@ -3294,6 +3294,24 @@ body.timeline-collapsed .timeline-collapse-btn {
   transform-origin: center center;
 }
 
+/* CORREÇÃO (bug real reportado: trocar fonte/cor/tamanho numa
+   palavra do Efeito 1/4 fazia a estrofe "voltar ao início e travar"
+   até apertar play): dezenas de ações do editor (fonte, cor, resize,
+   arraste, etc.) fazem `el.style.opacity = '1'` em TODAS as palavras
+   da estrofe — pensado pro sistema de texto normal (garante que
+   nenhuma fique "sumida" no meio de uma transição). Isso derrubava o
+   opacity:0 que as palavras invisíveis do Efeito 1/4 precisam manter
+   pra sempre (quem aparece de verdade é o canvas por baixo),
+   revelando o texto cru do navegador por cima. Em vez de caçar e
+   corrigir cada um desses lugares (mais de 25 no arquivo, arriscado
+   mexer em todos), essa regra com !important blinda especificamente
+   esses elementos contra qualquer opacity inline vindo de fora —
+   nenhuma outra parte do CSS ganha nada além dessa proteção pontual.
+*/
+.lyric-word[data-frame-exact="1"] {
+  opacity: 0 !important;
+}
+
 /* Durante drag */
 .lyric-word.is-being-dragged {
   z-index: 100;
@@ -30326,6 +30344,24 @@ function initEditor() {
             el.classList.toggle('has-anim-override', !!engine.wordOverrides[wid]);
             el.classList.toggle('is-word-selected', selectedWordIds.has(wid));
           });
+          // BUG REAL CORRIGIDO (relatado: trocar a fonte fazia a
+          // estrofe "voltar pro início e travar" até apertar play):
+          // o forEach acima é do sistema de texto normal (garante que
+          // nenhuma palavra fique "sumida" no meio de uma transição) —
+          // ele força opacity:1 em TODA palavra da estrofe, inclusive
+          // as invisíveis do Efeito 1/4 (que precisam ficar
+          // opacity:0 pra sempre — quem aparece de verdade é o
+          // canvas). Isso fazia a palavra NÃO editada (ex: ALELUIA)
+          // reaparecer com o texto cru do navegador (fonte/posição
+          // erradas) por cima do canvas, até o próximo play
+          // reprocessar tudo certo de novo. Reaplica o
+          // reposicionamento (que já bota opacity:0 de volta) por
+          // último, depois desse reset — só tem efeito em estrofes
+          // frame-exact (o método já verifica isso e não faz nada nas
+          // outras).
+          if (typeof engine._resyncFrameExactWordOverlaysIfNeeded === 'function') {
+            engine._resyncFrameExactWordOverlaysIfNeeded(stz);
+          }
         }
         if (typeof updateSelectionBox === 'function') updateSelectionBox();
         if (typeof renderWordPanel === 'function') renderWordPanel();
