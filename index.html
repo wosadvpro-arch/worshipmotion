@@ -40858,7 +40858,19 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
     // linhas 1/2, em vez de ficar pequeno/mal posicionado em papéis
     // individuais que não fazem sentido pra essa quantidade de palavras.
     if (texts.line3Combined) {
-      const bboxUniao = tpl.singleWordBboxes[frameIdx];
+      // BUG REAL CORRIGIDO (relatado: "não consigo aumentar a última
+      // linha"): m.top/m.red/singleWordBboxes só têm valor numa janela
+      // de frames que pode ser BEM estreita (red chega a ficar nulo em
+      // 35 de 86 frames no vídeo de referência) — se o frame exato
+      // pedido cair num desses "buracos", o campo sumia inteiro (nem
+      // desenhava, nem ficava selecionável/redimensionável). Busca pra
+      // trás até achar o último bbox conhecido pra cada um — garante
+      // que os três campos sempre aparecem com alguma posição/tamanho
+      // razoável, mesmo que o frame exato "de repouso" caia numa
+      // lacuna.
+      const bboxTop = _acharBboxValidoParaTras(f => tpl.motionData.motion[f] && tpl.motionData.motion[f].top, frameIdx);
+      const bboxRed = _acharBboxValidoParaTras(f => tpl.motionData.motion[f] && tpl.motionData.motion[f].red, frameIdx);
+      const bboxUniao = _acharBboxValidoParaTras(f => tpl.singleWordBboxes[f], frameIdx);
       // Edição livre por palavra (a pedido explícito): linha 1 (top,
       // referência 4 palavras) e linha 2 (red, referência 6 palavras)
       // usam fidelidade pixel a pixel exata quando a contagem bate E
@@ -40867,8 +40879,8 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
       // o desenho e a caixa de seleção (getWordSlots) usem exatamente
       // o mesmo cálculo, sem aproximação (mesma correção já aplicada
       // no Efeito 2, ver seu campo "red").
-      _drawSingleTextRoleInBox(ctx, texts.top, tpl.styles.top.fontFamily, tpl.styles.top.color, m.top, undefined, tpl.topRefWordCount ?? 4, texts.topIds, wordOverrides, true);
-      _drawSingleTextRoleInBox(ctx, texts.red, tpl.styles.red.fontFamily, tpl.styles.red.color, m.red, undefined, tpl.redRefWordCount ?? 6, texts.redIds, wordOverrides, true);
+      if (bboxTop) _drawSingleTextRoleInBox(ctx, texts.top, tpl.styles.top.fontFamily, tpl.styles.top.color, bboxTop, undefined, tpl.topRefWordCount ?? 4, texts.topIds, wordOverrides, true);
+      if (bboxRed) _drawSingleTextRoleInBox(ctx, texts.red, tpl.styles.red.fontFamily, tpl.styles.red.color, bboxRed, undefined, tpl.redRefWordCount ?? 6, texts.redIds, wordOverrides, true);
       if (bboxUniao) {
         const st = tpl.styles.my;
         // Linha 3 já é sempre "combinada numa caixa só" por decisão de
@@ -40980,6 +40992,36 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
   function _clampFontSizeScale(scale) {
     if (!scale || !isFinite(scale)) return 1;
     return Math.max(0.3, Math.min(3, scale));
+  }
+
+  /**
+   * Acha o bbox "válido" mais próximo, buscando pra TRÁS a partir de
+   * `frameIdx`, dentro de um array de bboxes por frame (ex:
+   * tpl.singleWordBboxes, ou f.deep de cada frame). BUG REAL CORRIGIDO
+   * (relatado: "não consigo aumentar a última linha" — que sempre é um
+   * campo com janela de tempo estreita, tipo a linha 3 combinada do
+   * Efeito 3, que só existe entre os frames 80-85 de 86 no total):
+   * campos assim têm uma janela de frames VÁLIDOS muito estreita (às
+   * vezes só ~6 de 86 frames). Qualquer pequena imprecisão de qual
+   * frame exato está sendo mostrado no momento (ex: o frame de
+   * "repouso" calculado ficar 1 frame fora dessa janela estreita, por
+   * alguma diferença de arredondamento ou timing entre o clique do
+   * usuário e o último render) fazia esse campo DESAPARECER por
+   * completo do cálculo (não é questão de aplicar escala errado — o
+   * campo simplesmente não entra em getWordSlots/no desenho nenhum),
+   * e por consequência: nada pra clicar, nada pra redimensionar.
+   * Buscando pra trás até achar o último bbox válido, o campo sempre
+   * aparece com ALGUMA posição/tamanho razoável (o último conhecido),
+   * mesmo que o frame pedido esteja um pouco fora da janela estreita
+   * de ativação original.
+   */
+  function _acharBboxValidoParaTras(getBboxDoFrame, frameIdx, limiteBusca) {
+    const limite = limiteBusca == null ? 30 : limiteBusca;
+    for (let f = frameIdx, tentativas = 0; f >= 0 && tentativas <= limite; f--, tentativas++) {
+      const b = getBboxDoFrame(f);
+      if (b) return b;
+    }
+    return null;
   }
 
   function _efeito2MakeBitmapAtHeight(text, fontFamily, color, targetHeight) {
@@ -41585,25 +41627,33 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
     if (!m) return [];
     const out = [];
 
-    if (m.top && texts.top) {
+    // Mesma correção do desenho (ver _renderFrameKineticScaleStack):
+    // busca pra trás até achar um bbox válido pra cada campo — top/red
+    // podem ficar nulos em boa parte dos frames (red chega a ficar
+    // nulo em 35 de 86 no vídeo de referência), e a janela da linha 3
+    // é ainda mais estreita.
+    const bboxTop = _acharBboxValidoParaTras(f => tpl.motionData.motion[f] && tpl.motionData.motion[f].top, frameIdx);
+    const bboxRed = _acharBboxValidoParaTras(f => tpl.motionData.motion[f] && tpl.motionData.motion[f].red, frameIdx);
+    const bboxUniao = _acharBboxValidoParaTras(f => tpl.singleWordBboxes[f], frameIdx);
+
+    if (bboxTop && texts.top) {
       const stTop = tpl.styles.top;
       const palavras = String(texts.top).trim().split(/\s+/).filter(Boolean);
       if (palavras.length) {
-        const slots = _computeSingleTextWordSlots(palavras, texts.topIds, m.top, undefined, stTop.fontFamily, stTop.color, wordOverrides);
+        const slots = _computeSingleTextWordSlots(palavras, texts.topIds, bboxTop, undefined, stTop.fontFamily, stTop.color, wordOverrides);
         slots.forEach(s => out.push({ id: s.id, x: s.x, y: s.y, w: s.w, h: s.h, fontFamily: s.fontFamily }));
       }
     }
 
-    if (m.red && texts.red) {
+    if (bboxRed && texts.red) {
       const stRed = tpl.styles.red;
       const palavras = String(texts.red).trim().split(/\s+/).filter(Boolean);
       if (palavras.length) {
-        const slots = _computeSingleTextWordSlots(palavras, texts.redIds, m.red, undefined, stRed.fontFamily, stRed.color, wordOverrides);
+        const slots = _computeSingleTextWordSlots(palavras, texts.redIds, bboxRed, undefined, stRed.fontFamily, stRed.color, wordOverrides);
         slots.forEach(s => out.push({ id: s.id, x: s.x, y: s.y, w: s.w, h: s.h, fontFamily: s.fontFamily }));
       }
     }
 
-    const bboxUniao = tpl.singleWordBboxes[frameIdx];
     if (bboxUniao && texts.line3Combined) {
       // Mesmo estilo que o desenho usa pra linha 3 (tpl.styles.my —
       // ver _renderFrameKineticScaleStack).
