@@ -40641,7 +40641,20 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
     if (f.deep && texts.deep) {
       const stDeep = tpl.styles.deep;
       const deepIds = texts.deepIds || [];
-      if (deepIds.length <= 1) {
+      // BUG REAL CORRIGIDO (relatado como "ainda continua igual"): a
+      // condição usava a quantidade de IDs de palavra (deepIds.length)
+      // pra decidir se era "1 palavra" ou "várias" — mas se o usuário
+      // digitou "SANTO SANTO" DENTRO da MESMA palavra (um espaço no
+      // meio do texto de UM objeto-palavra só, em vez de duas palavras
+      // separadas de verdade no editor), deepIds.length continuava 1,
+      // mesmo com 2 palavras de fato no texto — caindo sempre no
+      // caminho ANTIGO (sem a correção de centralização/sequência).
+      // Agora usa a quantidade REAL de palavras depois de dividir o
+      // texto por espaço (igual _drawSingleTextRoleInBox já fazia
+      // internamente) — bate com o que aparece na tela de verdade,
+      // não importa como o usuário digitou.
+      const deepWords = String(texts.deep).trim().split(/\s+/).filter(Boolean);
+      if (deepWords.length <= 1) {
         // Comportamento de sempre: DEEP/SNAP são 1 palavra na
         // referência — se o usuário mantiver 1 palavra, fidelidade
         // pixel a pixel exata (raw stretch); override de fonte/posição
@@ -40673,7 +40686,6 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
         //    entrada de cada palavra pela MESMA janela de tempo que
         //    esse campo já ocupa no vídeo original (_getDeepActiveFrameRange)
         //    — mesma técnica já usada na linha branca do Efeito 2.
-        const deepWords = String(texts.deep).trim().split(/\s+/).filter(Boolean);
         const range = _getDeepActiveFrameRange(tpl);
         const centroCanvas = (tpl.logicalWidth || tpl.motionData.width) / 2;
         const GAP_RATIO = 0.29;
@@ -40681,6 +40693,13 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
         for (let i = 0; i < deepWords.length; i++) {
           const chegada = _deepWordArrivalFrame(i, deepWords.length, range);
           if (frameIdx < chegada) continue; // essa palavra ainda não "chegou" nesse quadro
+          // deepIds pode ter MENOS entradas que deepWords (quando o
+          // texto tem mais palavras separadas por espaço do que
+          // objetos-palavra de verdade) — usa o id só se existir pra
+          // essa posição; sem id, a palavra ainda desenha certo
+          // (posição/tamanho/sequência), só não recebe override de
+          // fonte/posição individual (não há como saber a qual objeto
+          // ela pertence).
           const wid = deepIds[i];
           const ov = (wid && wordOverrides && wordOverrides[wid]) || null;
           const fam = (ov && ov.style && ov.style.fontFamily) || stDeep.fontFamily;
@@ -41211,14 +41230,18 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
       slots.forEach(s => out.push({ id: s.id, x: s.x, y: s.y, w: s.w, h: s.h, fontFamily: s.fontFamily }));
     }
     const deepIds = texts.deepIds || [];
-    if (f.deep && texts.deep && deepIds.length === 1) {
-      const wid = deepIds[0];
-      const ov = (wordOverrides && wordOverrides[wid]) || null;
+    // Mesmo critério corrigido do desenho: usa a quantidade REAL de
+    // palavras (depois de dividir por espaço), não a quantidade de
+    // IDs — ver comentário em _renderFrameEfeito1Style.
+    const deepWordsCount = texts.deep ? String(texts.deep).trim().split(/\s+/).filter(Boolean).length : 0;
+    if (f.deep && texts.deep && deepWordsCount === 1) {
+      const wid = deepIds.length === 1 ? deepIds[0] : null;
+      const ov = (wid && wordOverrides && wordOverrides[wid]) || null;
       const dx = (ov && ov.frameExactOffset && ov.frameExactOffset.dx) || 0;
       const dy = (ov && ov.frameExactOffset && ov.frameExactOffset.dy) || 0;
       const fontFamily = (ov && ov.style && ov.style.fontFamily) || tpl.styles.deep.fontFamily;
       out.push({ id: wid, x: f.deep[0] + dx, y: f.deep[1] + dy, w: f.deep[2], h: f.deep[3], fontFamily });
-    } else if (f.deep && texts.deep && deepIds.length > 1) {
+    } else if (f.deep && texts.deep && deepWordsCount > 1) {
       // Mesmo cálculo EXATO do desenho (_renderFrameEfeito1Style) —
       // centralização no canvas + entrada sequencial distribuída pela
       // janela de tempo original do campo — sem duplicar a fórmula,
