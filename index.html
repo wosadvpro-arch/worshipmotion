@@ -3312,6 +3312,20 @@ body.timeline-collapsed .timeline-collapse-btn {
   opacity: 0 !important;
 }
 
+/* Reforço (mesmo bug): a marca por palavra acima depende do código
+   deste arquivo já ter processado aquela palavra especificamente — se
+   o elemento acabou de ser recriado do zero por outro fluxo (ex:
+   troca de fonte + reflow) antes disso acontecer, ela ainda não tem o
+   atributo. A ESTROFE inteira, por outro lado, é marcada assim que
+   _renderFrameExactCanvas roda (garantido sempre que a estrofe é
+   frame-exact) — essa regra esconde QUALQUER palavra dentro dela,
+   sem depender de nada por palavra ter rodado a tempo. Cobre o caso
+   em que a de cima falha.
+*/
+.lyric-stanza[data-frame-exact="1"] .lyric-word {
+  opacity: 0 !important;
+}
+
 /* Durante drag */
 .lyric-word.is-being-dragged {
   z-index: 100;
@@ -22304,6 +22318,20 @@ class RenderEngineV2 {
     const tplId = stanza.frameExactTemplateId;
     const tpl = R.getTemplate(tplId);
     if (!tpl) return;
+
+    // BUG REAL CORRIGIDO (persistia mesmo após a blindagem por
+    // palavra): o próprio renderStanza força opacity:1 em TODA
+    // palavra da estrofe logo no início do "render estático" (linha
+    // ~22262), antes até de qualquer código deste arquivo rodar — e
+    // se por qualquer motivo uma palavra específica não tiver recebido
+    // ainda o atributo data-frame-exact (ex: elemento acabou de ser
+    // recriado do zero por outro fluxo, tipo troca de fonte + reflow),
+    // a blindagem por palavra não pega. Marca a ESTROFE inteira aqui
+    // — isso sim é garantido rodar toda vez que a estrofe é frame-
+    // exact (é a condição desta própria função) — e a regra CSS abaixo
+    // esconde QUALQUER palavra dentro dela, sem depender de nenhum
+    // atributo por palavra ter sido processado a tempo.
+    stanzaEl.dataset.frameExact = '1';
 
     let canvas = stanzaEl.querySelector('.wm-frame-exact-canvas');
     if (!canvas) {
