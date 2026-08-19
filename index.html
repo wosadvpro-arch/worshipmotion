@@ -40998,15 +40998,31 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
    * (span pequeno). Com menos palavras do usuário, isso fazia todas
    * elas "chegarem" logo no início e o resto da animação ficar parado,
    * sem nada acontecendo — em vez de continuar fiel ao RITMO
-   * completo do efeito original. Essa fórmula distribui os índices do
-   * usuário por igual ao longo de TODA a faixa original — a última
-   * palavra do usuário sempre usa o tempo de entrada da ÚLTIMA palavra
-   * original, preservando o ritmo/duração da entrada escalonada
-   * completa, não importa quantas palavras o usuário tenha.
+   * completo do efeito original.
+   *
+   * BUG REAL CORRIGIDO (2ª rodada — relatado: "a animação da segunda
+   * palavra continua atrasada"): espalhar por 100% da faixa original
+   * fazia a ÚLTIMA palavra do usuário usar o tempo de entrada da
+   * ÚLTIMA palavra original — que, com poucas palavras no total
+   * original (7) e poucas do usuário, podia cair beeem perto do fim
+   * da animação inteira, sem quase nenhum tempo de sobra pra ela
+   * ficar visível/assentada antes do vídeo parar (mesmo problema já
+   * corrigido no campo "deep" do Efeito 1/4 — esquecido de aplicar
+   * aqui também). Agora só usa os primeiros `ARRIVAL_SPAN_RATIO`
+   * (60%) da faixa original pras CHEGADAS, deixando os 40% finais
+   * livres pra todas as palavras já chegadas ficarem visíveis juntas
+   * antes do fim — só quando a contagem do usuário é MENOR que a
+   * original (é exatamente esse caso que atrasa demais; com contagem
+   * igual ou maior, mantém o mapeamento 1:1 de sempre, sem comprimir).
    */
   function _remapSlotIndex(userIndex, userCount, totalOriginal) {
     if (userCount <= 1) return 0;
-    return Math.round(userIndex * (totalOriginal - 1) / (userCount - 1));
+    if (userCount >= totalOriginal) {
+      return Math.min(userIndex, totalOriginal - 1);
+    }
+    const ARRIVAL_SPAN_RATIO = 0.6;
+    const maxSlot = Math.max(1, Math.round((totalOriginal - 1) * ARRIVAL_SPAN_RATIO));
+    return Math.min(totalOriginal - 1, Math.round(userIndex * maxSlot / (userCount - 1)));
   }
 
   function _renderFrameEfeito2Style(ctx, tpl, texts, frameIdx, wordOverrides) {
