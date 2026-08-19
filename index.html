@@ -25258,6 +25258,37 @@ function initEditor() {
             dragState.groupInitialPositions[wid] = { x: wo.position.x, y: wo.position.y };
           }
         });
+      } else if (dragState.wordEl.dataset.frameExact === '1') {
+        // Palavra de um template frame-exact (Efeito 1/4): não usa
+        // wo.position (esse campo é de OUTRO sistema, que substitui a
+        // posição inteira — ia CONGELAR a animação no lugar arrastado
+        // em vez de só deslocar por cima dela). Usa frameExactOffset,
+        // um deslocamento somado à posição que a animação já calcula
+        // pra cada frame (ver _computeRedWordSlots/
+        // _drawSingleTextRoleInBox no renderer) — mesmo campo que os
+        // controles numéricos de Posição já editam.
+        //
+        // O elemento OVERLAY já está posicionado em left/top na MESMA
+        // convenção usada pelas palavras free normais (fração do
+        // stanza, CENTRO da palavra — _positionFrameExactWordOverlays
+        // usa esse padrão de propósito) — lê direto dali como ponto de
+        // partida, sem precisar (nem poder) usar wo.position.
+        const leftPct = parseFloat(dragState.wordEl.style.left) || 0;
+        const topPct = parseFloat(dragState.wordEl.style.top) || 0;
+        dragState.startPosX = leftPct / 100;
+        dragState.startPosY = topPct / 100;
+        dragState.isFrameExactDrag = true;
+        const stanzaObj = engine.parsed?.stanzas?.[engine.currentStanzaIndex];
+        const R = window.WM_FRAME_EXACT_RENDERER;
+        const tplFE = (stanzaObj && R) ? R.getTemplate(stanzaObj.frameExactTemplateId) : null;
+        dragState.feStanza = stanzaObj;
+        dragState.feTplId = stanzaObj ? stanzaObj.frameExactTemplateId : null;
+        dragState.feLogicalW = tplFE ? (tplFE.logicalWidth || tplFE.motionData.width) : 1;
+        dragState.feLogicalH = tplFE ? (tplFE.logicalHeight || tplFE.motionData.height) : 1;
+        const existingOff = (engine.wordOverrides[dragState.wordId] && engine.wordOverrides[dragState.wordId].frameExactOffset) || {};
+        dragState.feStartOffsetDx = existingOff.dx || 0;
+        dragState.feStartOffsetDy = existingOff.dy || 0;
+        dragState.feCanvas = stanza.querySelector('.wm-frame-exact-canvas');
       } else {
         const myPos = engine.wordOverrides[dragState.wordId]?.position;
         if (!myPos) { cleanupDrag(); return; }
@@ -25294,6 +25325,30 @@ function initEditor() {
       const newY = Math.max(-0.05, Math.min(1.0, dragState.startPosY + deltaY));
       dragState.wordEl.style.left = (newX * 100).toFixed(3) + '%';
       dragState.wordEl.style.top = (newY * 100).toFixed(3) + '%';
+    }
+
+    // Efeito 1/4: o elemento acima é invisível (opacity:0 sempre —
+    // quem aparece de verdade é o canvas), então movê-lo sozinho não
+    // dá NENHUM feedback visual do arraste. Redesenha o canvas em
+    // tempo real com o deslocamento provisório (sem gravar em
+    // engine.wordOverrides ainda — só no soltar, ver onMouseUp) pra
+    // acompanhar o mouse igual às palavras normais acompanham.
+    if (dragState.isFrameExactDrag && dragState.feCanvas) {
+      const R = window.WM_FRAME_EXACT_RENDERER;
+      const dxPx = deltaX * dragState.feLogicalW;
+      const dyPx = deltaY * dragState.feLogicalH;
+      const tempOverrides = {
+        ...engine.wordOverrides,
+        [dragState.wordId]: {
+          ...(engine.wordOverrides[dragState.wordId] || {}),
+          frameExactOffset: { dx: dragState.feStartOffsetDx + dxPx, dy: dragState.feStartOffsetDy + dyPx },
+        },
+      };
+      const ctx = dragState.feCanvas.getContext('2d');
+      const elapsedMs = parseFloat(dragState.feCanvas.dataset.lastElapsedMs) || 0;
+      const texts = engine._readFrameExactTexts(dragState.feStanza);
+      ctx.clearRect(0, 0, dragState.feCanvas.width, dragState.feCanvas.height);
+      R.renderFrame(ctx, dragState.feTplId, texts, elapsedMs, tempOverrides);
     }
 
     // Salva os deltas ajustados no dragState pra usar no mouseup
@@ -25334,6 +25389,24 @@ function initEditor() {
           const newY = Math.max(-0.05, Math.min(1.0, pos.y + deltaY));
           engine.setWordOverride(wid, { position: { x: newX, y: newY } });
         });
+      } else if (dragState.isFrameExactDrag) {
+        // Grava o deslocamento final (frameExactOffset), não a
+        // posição absoluta — é isso que o renderer do Efeito 1/4 lê
+        // (ver _computeRedWordSlots/_drawSingleTextRoleInBox), somado
+        // por cima da posição que a animação já calcula pra cada
+        // frame. Soma ao deslocamento que a palavra já tinha antes
+        // desse arraste (não zera — permite arrastar de novo a partir
+        // de onde parou).
+        const dxPx = deltaX * dragState.feLogicalW;
+        const dyPx = deltaY * dragState.feLogicalH;
+        engine.setWordOverride(dragState.wordId, {
+          frameExactOffset: { dx: dragState.feStartOffsetDx + dxPx, dy: dragState.feStartOffsetDy + dyPx },
+        });
+        // Re-render "de verdade" (não o provisório do mousemove) —
+        // recalcula tudo a partir de engine.wordOverrides, garantindo
+        // que o resultado final bate exato com o que o painel numérico
+        // de Posição também gravaria.
+        engine.renderStanza(engine.currentStanzaIndex);
       } else {
         const newX = Math.max(-0.05, Math.min(1.0, dragState.startPosX + deltaX));
         const newY = Math.max(-0.05, Math.min(1.0, dragState.startPosY + deltaY));
