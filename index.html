@@ -30997,6 +30997,24 @@ function initEditor() {
           engine.setWordOverride(wid, { style: ns });
         });
         if (opts.afetaLargura && (wordKey === 'letterSpacing' || wordKey === 'fontSizeScale')) {
+          // BUG REAL CORRIGIDO (relatado: os botões -/+ de tamanho não
+          // faziam nada nos templates frame-exact — Efeito 1 a 5): esse
+          // "caminho suave" mexe direto no CSS/DOM (pensado pra
+          // performance nos templates normais, que reagem a
+          // font-size/left/top de verdade) — mas nas estrofes frame-
+          // exact quem aparece de verdade é o CANVAS por baixo,
+          // completamente alheio a esse CSS. Detecta a estrofe atual e
+          // desvia pro re-render de canvas de verdade (que já aplica
+          // wo.style.fontSizeScale corretamente — ver
+          // _computeRedWordSlots/_computeSingleTextWordSlots no
+          // renderer) em vez do caminho leve, que nunca teria efeito
+          // nenhum visível nesse caso.
+          const _stzAtual = engine.parsed && engine.parsed.stanzas[engine.currentStanzaIndex];
+          if (_stzAtual && _stzAtual.frameExactTemplateId) {
+            engine.renderStanza(engine.currentStanzaIndex);
+            if (typeof markDirty === 'function') markDirty();
+            return;
+          }
           // Caminho SUAVE (DOM direto, sem renderStanza) — usado nos que
           // mais pesavam (espaçamento e tamanho). Aplica CSS + reflui via
           // left/top direto, fluido a 60fps.
@@ -40568,11 +40586,20 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
       const wid = wordIds && wordIds[i];
       const ov = (wid && wordOverrides && wordOverrides[wid]) || null;
       const fontFamily = (ov && ov.style && ov.style.fontFamily) || style.fontFamily;
-      const img = _efeito2MakeBitmapAtHeight(texts[i], fontFamily, style.color, bboxRef[3]);
+      // Tamanho por palavra (a pedido explícito — botões -/+ do painel,
+      // mesmo campo wo.style.fontSizeScale já usado pelos templates
+      // normais): multiplica a altura-alvo antes de gerar o bitmap.
+      // Cresce/encolhe ao redor do CENTRO vertical original da caixa
+      // (não do topo) — mesmo critério usado pelo resize dos templates
+      // normais, evita a palavra "grudar" no topo ao aumentar.
+      const scale = (ov && ov.style && ov.style.fontSizeScale) || 1;
+      const alturaAlvo = bboxRef[3] * scale;
+      const img = _efeito2MakeBitmapAtHeight(texts[i], fontFamily, style.color, alturaAlvo);
       if (!img) continue;
       const dx = (ov && ov.frameExactOffset && ov.frameExactOffset.dx) || 0;
       const dy = (ov && ov.frameExactOffset && ov.frameExactOffset.dy) || 0;
-      itens.push({ id: wid, img, w: img.width, h: img.height, y: bboxRef[1], dx, dy, fontFamily });
+      const centroY = bboxRef[1] + bboxRef[3] / 2;
+      itens.push({ id: wid, img, w: img.width, h: img.height, y: centroY - img.height / 2, dx, dy, fontFamily });
     }
     if (!itens.length) return [];
     const gaps = itens.map(it => it.h * GAP_RATIO);
@@ -40694,6 +40721,7 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
         const centroCanvas = (tpl.logicalWidth || tpl.motionData.width) / 2;
         const GAP_RATIO = 0.29;
         const itens = [];
+        const centroYDeep = f.deep[1] + f.deep[3] / 2;
         for (let i = 0; i < deepWords.length; i++) {
           const chegada = _deepWordArrivalFrame(i, deepWords.length, range);
           if (frameIdx < chegada) continue; // essa palavra ainda não "chegou" nesse quadro
@@ -40707,11 +40735,15 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
           const wid = deepIds[i];
           const ov = (wid && wordOverrides && wordOverrides[wid]) || null;
           const fam = (ov && ov.style && ov.style.fontFamily) || stDeep.fontFamily;
-          const img = _efeito2MakeBitmapAtHeight(deepWords[i], fam, stDeep.color, f.deep[3]);
+          // Tamanho por palavra (a pedido explícito — botões -/+ do
+          // painel, mesmo campo wo.style.fontSizeScale já usado pelos
+          // templates normais).
+          const scale = (ov && ov.style && ov.style.fontSizeScale) || 1;
+          const img = _efeito2MakeBitmapAtHeight(deepWords[i], fam, stDeep.color, f.deep[3] * scale);
           if (!img) continue;
           const dx = (ov && ov.frameExactOffset && ov.frameExactOffset.dx) || 0;
           const dy = (ov && ov.frameExactOffset && ov.frameExactOffset.dy) || 0;
-          itens.push({ id: wid, img, w: img.width, h: img.height, dx, dy });
+          itens.push({ id: wid, img, w: img.width, h: img.height, y: centroYDeep - img.height / 2, dx, dy });
         }
         if (itens.length) {
           const gaps = itens.map(it => it.h * GAP_RATIO);
@@ -40719,7 +40751,7 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
           let x = centroCanvas - larguraTotal / 2;
           itens.forEach((it, i) => {
             if (i > 0) x += gaps[i];
-            ctx.drawImage(it.img, x + it.dx, f.deep[1] + it.dy, it.w, it.h);
+            ctx.drawImage(it.img, x + it.dx, it.y + it.dy, it.w, it.h);
             x += it.w;
           });
         }
@@ -40969,17 +41001,24 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
     } else {
       bx = bbox[0]; by = bbox[1]; bw = bbox[2] - bbox[0]; bh = bbox[3] - bbox[1];
     }
+    const centroYCaixa = by + bh / 2;
     const GAP_RATIO = 0.29; // mesmo espaçamento proporcional usado nas palavras independentes
     const itens = [];
     for (let i = 0; i < palavras.length; i++) {
       const wid = wordIds && wordIds[i];
       const ov = (wid && wordOverrides && wordOverrides[wid]) || null;
       const fam = (ov && ov.style && ov.style.fontFamily) || fontFamily;
-      const img = _efeito2MakeBitmapAtHeight(palavras[i], fam, color, bh);
+      // Tamanho por palavra (a pedido explícito — botões -/+ do painel,
+      // mesmo campo wo.style.fontSizeScale já usado pelos templates
+      // normais): multiplica a altura-alvo antes de gerar o bitmap.
+      const scale = (ov && ov.style && ov.style.fontSizeScale) || 1;
+      const img = _efeito2MakeBitmapAtHeight(palavras[i], fam, color, bh * scale);
       if (!img) continue;
       const dx = (ov && ov.frameExactOffset && ov.frameExactOffset.dx) || 0;
       const dy = (ov && ov.frameExactOffset && ov.frameExactOffset.dy) || 0;
-      itens.push({ id: wid, img, w: img.width, h: img.height, dx, dy, fontFamily: fam });
+      // Cresce/encolhe ao redor do centro vertical da caixa (não do
+      // topo) — cada palavra pode ter altura diferente agora.
+      itens.push({ id: wid, img, w: img.width, h: img.height, y: centroYCaixa - img.height / 2, dx, dy, fontFamily: fam });
     }
     if (!itens.length) return [];
     const gaps = itens.map(it => it.h * GAP_RATIO);
@@ -40989,7 +41028,7 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
     const slots = [];
     itens.forEach((it, i) => {
       if (i > 0) x += gaps[i];
-      slots.push({ id: it.id, img: it.img, x: x + it.dx, y: by + it.dy, w: it.w, h: it.h, fontFamily: it.fontFamily });
+      slots.push({ id: it.id, img: it.img, x: x + it.dx, y: it.y + it.dy, w: it.w, h: it.h, fontFamily: it.fontFamily });
       x += it.w;
     });
     return slots;
@@ -41100,11 +41139,17 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
       const wid = whiteIds && whiteIds[i];
       const ov = (wid && wordOverrides && wordOverrides[wid]) || null;
       const fam = (ov && ov.style && ov.style.fontFamily) || stWhite.fontFamily;
-      const img = _efeito2MakeBitmapAtHeight(whiteTexts[i], fam, stWhite.color, bboxRef[3]);
+      // Tamanho por palavra (a pedido explícito — botões -/+ do
+      // painel, mesmo campo wo.style.fontSizeScale já usado pelos
+      // templates normais).
+      const scale = (ov && ov.style && ov.style.fontSizeScale) || 1;
+      const img = _efeito2MakeBitmapAtHeight(whiteTexts[i], fam, stWhite.color, bboxRef[3] * scale);
       if (!img) continue;
       const dx = (ov && ov.frameExactOffset && ov.frameExactOffset.dx) || 0;
       const dy = (ov && ov.frameExactOffset && ov.frameExactOffset.dy) || 0;
-      itens.push({ id: wid, img, w: img.width, h: img.height, y: bboxRef[1], dx, dy });
+      // Cresce/encolhe ao redor do centro vertical do slot original.
+      const centroYSlot = bboxRef[1] + bboxRef[3] / 2;
+      itens.push({ id: wid, img, w: img.width, h: img.height, y: centroYSlot - img.height / 2, dx, dy });
     }
     if (!itens.length) return true;
 
@@ -41272,10 +41317,21 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
     if (f.deep && texts.deep && deepWordsCount === 1) {
       const wid = deepIds.length === 1 ? deepIds[0] : null;
       const ov = (wid && wordOverrides && wordOverrides[wid]) || null;
-      const dx = (ov && ov.frameExactOffset && ov.frameExactOffset.dx) || 0;
-      const dy = (ov && ov.frameExactOffset && ov.frameExactOffset.dy) || 0;
-      const fontFamily = (ov && ov.style && ov.style.fontFamily) || tpl.styles.deep.fontFamily;
-      out.push({ id: wid, x: f.deep[0] + dx, y: f.deep[1] + dy, w: f.deep[2], h: f.deep[3], fontFamily });
+      if (!ov) {
+        // Sem nenhum override: fidelidade exata (mesma bbox crua que o
+        // stretch cru do desenho usa).
+        out.push({ id: wid, x: f.deep[0], y: f.deep[1], w: f.deep[2], h: f.deep[3], fontFamily: tpl.styles.deep.fontFamily });
+      } else {
+        // Com QUALQUER override (fonte, posição OU tamanho): espelha
+        // exatamente o mesmo caminho que o desenho usa nesse caso
+        // (_drawSingleTextRoleInBox cai em _computeSingleTextWordSlots
+        // assim que há override) — NUNCA aproximar com a caixa bruta
+        // escalada (o formato natural do bitmap gerado é diferente do
+        // formato da caixa medida pra outra palavra — mesmo bug já
+        // corrigido antes, ver guia de implementação §3.6).
+        const slots = _computeSingleTextWordSlots([texts.deep], deepIds, f.deep, 'xywh', tpl.styles.deep.fontFamily, tpl.styles.deep.color, wordOverrides);
+        slots.forEach(s => out.push({ id: s.id, x: s.x, y: s.y, w: s.w, h: s.h, fontFamily: s.fontFamily }));
+      }
     } else if (f.deep && texts.deep && deepWordsCount > 1) {
       // Mesmo cálculo EXATO do desenho (_renderFrameEfeito1Style) —
       // centralização no canvas + entrada sequencial distribuída pela
@@ -41285,6 +41341,7 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
       const deepWords = String(texts.deep).trim().split(/\s+/).filter(Boolean);
       const range = _getDeepActiveFrameRange(tpl);
       const centroCanvas = (tpl.logicalWidth || tpl.motionData.width) / 2;
+      const centroYDeep = f.deep[1] + f.deep[3] / 2;
       const GAP_RATIO = 0.29;
       const itens = [];
       for (let i = 0; i < deepWords.length; i++) {
@@ -41295,14 +41352,16 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
         const fam = (ov && ov.style && ov.style.fontFamily) || stDeep.fontFamily;
         const dx = (ov && ov.frameExactOffset && ov.frameExactOffset.dx) || 0;
         const dy = (ov && ov.frameExactOffset && ov.frameExactOffset.dy) || 0;
-        itens.push({ id: wid, dx, dy, fontFamily: fam, texto: deepWords[i] });
+        // Tamanho por palavra — mesmo campo wo.style.fontSizeScale.
+        const scale = (ov && ov.style && ov.style.fontSizeScale) || 1;
+        itens.push({ id: wid, dx, dy, fontFamily: fam, texto: deepWords[i], scale });
       }
       // Precisa medir o bitmap de cada item pra saber a largura real
-      // (mesma altura-alvo pra todos: f.deep[3]) — mesma fonte que
-      // _renderFrameEfeito1Style usaria.
+      // (altura-alvo = f.deep[3] × escala por palavra) — mesma fonte
+      // que _renderFrameEfeito1Style usaria.
       const itensMedidos = itens.map(it => {
-        const img = _efeito2MakeBitmapAtHeight(it.texto, it.fontFamily, stDeep.color, f.deep[3]);
-        return img ? { ...it, w: img.width, h: img.height } : null;
+        const img = _efeito2MakeBitmapAtHeight(it.texto, it.fontFamily, stDeep.color, f.deep[3] * it.scale);
+        return img ? { ...it, w: img.width, h: img.height, y: centroYDeep - img.height / 2 } : null;
       }).filter(Boolean);
       if (itensMedidos.length) {
         const gaps = itensMedidos.map(it => it.h * GAP_RATIO);
@@ -41310,7 +41369,7 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
         let x = centroCanvas - larguraTotal / 2;
         itensMedidos.forEach((it, i) => {
           if (i > 0) x += gaps[i];
-          out.push({ id: it.id, x: x + it.dx, y: f.deep[1] + it.dy, w: it.w, h: it.h, fontFamily: it.fontFamily });
+          out.push({ id: it.id, x: x + it.dx, y: it.y + it.dy, w: it.w, h: it.h, fontFamily: it.fontFamily });
           x += it.w;
         });
       }
@@ -41370,6 +41429,8 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
         const fam = (ov && ov.style && ov.style.fontFamily) || stWhite.fontFamily;
         const dx = (ov && ov.frameExactOffset && ov.frameExactOffset.dx) || 0;
         const dy = (ov && ov.frameExactOffset && ov.frameExactOffset.dy) || 0;
+        // Tamanho por palavra — mesmo campo wo.style.fontSizeScale.
+        const scale = (ov && ov.style && ov.style.fontSizeScale) || 1;
         // BUG REAL CORRIGIDO (caixa de seleção "ainda não perfeita"):
         // aqui usava a largura/altura da CAIXA ORIGINAL medida no vídeo
         // (bboxRef[2]/[3]) direto — mas o desenho de verdade
@@ -41380,9 +41441,10 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
         // outra palavra da referência). Agora gera o MESMO bitmap e usa
         // as MESMAS dimensões reais — sem aproximação, sem
         // desalinhamento possível, igual já foi feito pro campo "red".
-        const img = _efeito2MakeBitmapAtHeight(whiteTexts[i], fam, stWhite.color, bboxRef[3]);
+        const img = _efeito2MakeBitmapAtHeight(whiteTexts[i], fam, stWhite.color, bboxRef[3] * scale);
         if (!img) continue;
-        itens.push({ id: wid, w: img.width, h: img.height, y: bboxRef[1], dx, dy, fontFamily: fam });
+        const centroYSlot = bboxRef[1] + bboxRef[3] / 2;
+        itens.push({ id: wid, w: img.width, h: img.height, y: centroYSlot - img.height / 2, dx, dy, fontFamily: fam });
       }
       if (itens.length) {
         const gaps = itens.map(it => it.h * GAP_RATIO);
