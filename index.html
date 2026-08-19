@@ -25581,8 +25581,16 @@ function initEditor() {
     if (!stanza) return;
     // Garante que estrofes frame-exact (Efeito 1/4) tenham a posição
     // das palavras clicáveis em dia ANTES de medir — ver
-    // _resyncFrameExactWordOverlaysIfNeeded.
-    if (typeof engine._resyncFrameExactWordOverlaysIfNeeded === 'function') {
+    // _resyncFrameExactWordOverlaysIfNeeded. EXCETO durante um
+    // arraste em andamento (dragState.isFrameExactDrag): nesse caso a
+    // posição em tempo real já está sendo controlada diretamente pelo
+    // onMouseMove (a cada movimento), calculada a partir do
+    // deslocamento provisório do arraste — recalcular aqui a partir de
+    // engine.wordOverrides (que só é gravado no soltar) desfaria esse
+    // movimento a cada atualização da caixa de seleção, fazendo ela
+    // "não acompanhar" o arraste e só se corrigir ao soltar (bug real
+    // reportado).
+    if (!(dragState && dragState.isFrameExactDrag) && typeof engine._resyncFrameExactWordOverlaysIfNeeded === 'function') {
       engine._resyncFrameExactWordOverlaysIfNeeded(stanza);
     }
     const box = ensureSelectionBoxExists();
