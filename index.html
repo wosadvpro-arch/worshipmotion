@@ -40492,17 +40492,15 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
     // `wordOverrides` (opcional, a pedido explícito): mapa {wordId:
     // {style:{fontFamily}, frameExactOffset:{dx,dy}}} — MESMO objeto
     // engine.wordOverrides já usado pelos templates normais (fonte e
-    // posição por palavra). Layouts 'efeito-1-style' (Efeito 1 e 4) e
-    // 'efeito-2-style' (Efeito 2 e 5) consomem isso; Kinetic Scale
-    // Stack (Efeito 3) ainda não — ignora o parâmetro sem efeito
-    // nenhum, comportamento 100% igual a antes.
+    // posição por palavra). Todos os layouts registrados consomem isso
+    // agora — Kinetic Scale Stack (Efeito 3) inclusive.
     if (tpl.layout === 'efeito-2-style') {
       return _renderFrameEfeito2Style(ctx, tpl, texts, frameIdx, wordOverrides);
     }
     if (tpl.layout === 'efeito-1-style') {
       return _renderFrameEfeito1Style(ctx, tpl, texts, frameIdx, wordOverrides);
     }
-    return _renderFrameKineticScaleStack(ctx, tpl, texts, frameIdx);
+    return _renderFrameKineticScaleStack(ctx, tpl, texts, frameIdx, wordOverrides);
   }
 
   /**
@@ -40725,7 +40723,7 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
     return true;
   }
 
-  function _renderFrameKineticScaleStack(ctx, tpl, texts, frameIdx) {
+  function _renderFrameKineticScaleStack(ctx, tpl, texts, frameIdx, wordOverrides) {
     const m = tpl.motionData.motion[frameIdx];
 
     // CORREÇÃO (linha 3 com quantidade de palavras ≠ 3): desenha o
@@ -40737,18 +40735,23 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
       const bboxUniao = tpl.singleWordBboxes[frameIdx];
       // Edição livre por palavra (a pedido explícito): linha 1 (top,
       // referência 4 palavras) e linha 2 (red, referência 6 palavras)
-      // usam fidelidade pixel a pixel exata quando a contagem bate, e
-      // fileira proporcional sem distorcer quando o usuário
-      // acrescenta/remove palavra.
-      _drawSingleTextRoleInBox(ctx, texts.top, tpl.styles.top.fontFamily, tpl.styles.top.color, m.top, undefined, tpl.topRefWordCount ?? 4);
-      _drawSingleTextRoleInBox(ctx, texts.red, tpl.styles.red.fontFamily, tpl.styles.red.color, m.red, undefined, tpl.redRefWordCount ?? 6);
+      // usam fidelidade pixel a pixel exata quando a contagem bate E
+      // nenhuma palavra tem override ativo; senão, monta SEMPRE em
+      // fileira (forceRowLayout) — nunca a imagem colada crua, pra que
+      // o desenho e a caixa de seleção (getWordSlots) usem exatamente
+      // o mesmo cálculo, sem aproximação (mesma correção já aplicada
+      // no Efeito 2, ver seu campo "red").
+      _drawSingleTextRoleInBox(ctx, texts.top, tpl.styles.top.fontFamily, tpl.styles.top.color, m.top, undefined, tpl.topRefWordCount ?? 4, texts.topIds, wordOverrides, true);
+      _drawSingleTextRoleInBox(ctx, texts.red, tpl.styles.red.fontFamily, tpl.styles.red.color, m.red, undefined, tpl.redRefWordCount ?? 6, texts.redIds, wordOverrides, true);
       if (bboxUniao) {
         const st = tpl.styles.my;
         // Linha 3 já é sempre "combinada numa caixa só" por decisão de
         // design anterior (independente da contagem) — sempre usa a
         // fileira proporcional (refWordCount=null pula a checagem de
-        // fidelidade exata, que não se aplica aqui).
-        _drawSingleTextRoleInBox(ctx, texts.line3Combined, st.fontFamily, st.color, bboxUniao, undefined, null);
+        // fidelidade exata, que não se aplica aqui; forceRowLayout
+        // também não muda nada aqui, já é sempre fileira, mas mantém
+        // a assinatura consistente com os outros dois campos).
+        _drawSingleTextRoleInBox(ctx, texts.line3Combined, st.fontFamily, st.color, bboxUniao, undefined, null, texts.line3Ids, wordOverrides, true);
       }
       return true;
     }
@@ -41176,8 +41179,10 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
 
   function _readTextsKineticScaleStack(stanza) {
     const lines = (stanza && stanza.lines) || [];
-    const l1 = (lines[0]?.words || []).map(w => w.text).join(' ');
-    const l2 = (lines[1]?.words || []).map(w => w.text).join(' ');
+    const l1words = lines[0]?.words || [];
+    const l2words = lines[1]?.words || [];
+    const l1 = l1words.map(w => w.text).join(' ');
+    const l2 = l2words.map(w => w.text).join(' ');
     const l3words = lines[2]?.words || [];
     // MUDANÇA (a pedido explícito): a linha 3 agora sempre se comporta
     // igual às linhas 1/2 — um texto só, esticado pra caber na caixa
@@ -41189,6 +41194,12 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
     const out = {
       top: l1, red: l2, be: '', my: '', soul: '',
       line3Combined: l3words.map(w => w.text).join(' '),
+      // IDs em paralelo aos textos (mesma ordem) — MESMO propósito dos
+      // Efeitos 1/2: override de fonte/posição por palavra + clique-
+      // pra-selecionar (getWordSlots).
+      topIds: l1words.map(w => w.id),
+      redIds: l2words.map(w => w.id),
+      line3Ids: l3words.map(w => w.id),
     };
     return out;
   }
@@ -41223,15 +41234,17 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
    * (o clique cai em cima do elemento DOM certo, não precisa de nenhuma
    * lógica de seleção nova).
    *
-   * Suporta os layouts 'efeito-1-style' (Efeito 1 e 4) e
-   * 'efeito-2-style' (Efeito 2 e 5, a pedido explícito) — outros
-   * templates devolvem lista vazia (sem quebrar nada: o editor
+   * Suporta os layouts 'efeito-1-style' (Efeito 1 e 4), 'efeito-2-style'
+   * (Efeito 2 e 5) e o Kinetic Scale Stack (Efeito 3, a pedido explícito
+   * — não tem campo `layout` próprio, identificado direto pelo id) —
+   * outros templates devolvem lista vazia (sem quebrar nada: o editor
    * simplesmente não mostra handles clicáveis pra eles ainda).
    */
   function getWordSlots(templateId, texts, elapsedMs, wordOverrides) {
     const tpl = TEMPLATES_FRAME_EXACT[templateId];
     if (!tpl) return [];
     if (tpl.layout === 'efeito-2-style') return _getWordSlotsEfeito2Style(tpl, texts, elapsedMs, wordOverrides);
+    if (templateId === 'kinetic-scale-stack') return _getWordSlotsKineticScaleStack(tpl, texts, elapsedMs, wordOverrides);
     if (tpl.layout !== 'efeito-1-style') return [];
     const frameIdx = getFrameIndex(elapsedMs, tpl.motionData);
     const f = tpl.motionData.framesData[frameIdx];
@@ -41377,6 +41390,60 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
         });
       }
     }
+    return out;
+  }
+
+  /**
+   * getWordSlots pro Kinetic Scale Stack (Efeito 3) — mesmo propósito
+   * do Efeito 2, dados diferentes: "top" e "red" são textos únicos
+   * (podem ter 1 ou várias palavras coladas — ex: "YOU'RE DON'T EVEN
+   * KNOW"), e a linha 3 (be+my+soul) é sempre combinada numa caixa só
+   * (line3Combined, decisão de design anterior, independente da
+   * contagem). Reaproveita a MESMA função de cálculo que o desenho de
+   * verdade usa (_computeSingleTextWordSlots) — sem duplicar a
+   * matemática de posicionamento.
+   *
+   * ATENÇÃO AO FORMATO DE BBOX: diferente do Efeito 1/2/4/5 (que usam
+   * [x,y,largura,altura]), o Kinetic Scale Stack usa
+   * [x1,y1,x2,y2] (cantos) — mesmo formato que _drawSingleTextRoleInBox
+   * já recebe pra esses 3 campos (bboxFormat omitido/undefined).
+   */
+  function _getWordSlotsKineticScaleStack(tpl, texts, elapsedMs, wordOverrides) {
+    const frameIdx = getFrameIndex(elapsedMs, tpl.motionData);
+    const m = tpl.motionData.motion[frameIdx];
+    if (!m) return [];
+    const out = [];
+
+    if (m.top && texts.top) {
+      const stTop = tpl.styles.top;
+      const palavras = String(texts.top).trim().split(/\s+/).filter(Boolean);
+      if (palavras.length) {
+        const slots = _computeSingleTextWordSlots(palavras, texts.topIds, m.top, undefined, stTop.fontFamily, stTop.color, wordOverrides);
+        slots.forEach(s => out.push({ id: s.id, x: s.x, y: s.y, w: s.w, h: s.h, fontFamily: s.fontFamily }));
+      }
+    }
+
+    if (m.red && texts.red) {
+      const stRed = tpl.styles.red;
+      const palavras = String(texts.red).trim().split(/\s+/).filter(Boolean);
+      if (palavras.length) {
+        const slots = _computeSingleTextWordSlots(palavras, texts.redIds, m.red, undefined, stRed.fontFamily, stRed.color, wordOverrides);
+        slots.forEach(s => out.push({ id: s.id, x: s.x, y: s.y, w: s.w, h: s.h, fontFamily: s.fontFamily }));
+      }
+    }
+
+    const bboxUniao = tpl.singleWordBboxes[frameIdx];
+    if (bboxUniao && texts.line3Combined) {
+      // Mesmo estilo que o desenho usa pra linha 3 (tpl.styles.my —
+      // ver _renderFrameKineticScaleStack).
+      const stLine3 = tpl.styles.my;
+      const palavras = String(texts.line3Combined).trim().split(/\s+/).filter(Boolean);
+      if (palavras.length) {
+        const slots = _computeSingleTextWordSlots(palavras, texts.line3Ids, bboxUniao, undefined, stLine3.fontFamily, stLine3.color, wordOverrides);
+        slots.forEach(s => out.push({ id: s.id, x: s.x, y: s.y, w: s.w, h: s.h, fontFamily: s.fontFamily }));
+      }
+    }
+
     return out;
   }
 
