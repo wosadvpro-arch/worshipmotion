@@ -22293,7 +22293,14 @@ class RenderEngineV2 {
       canvas.className = 'wm-frame-exact-canvas';
       canvas.width = tpl.logicalWidth || tpl.motionData.width;
       canvas.height = tpl.logicalHeight || tpl.motionData.height;
-      canvas.style.cssText = 'position:absolute; inset:0; width:100%; height:100%; display:block;';
+      // pointer-events:none — CRÍTICO: sem isso, o canvas (que fica
+      // por cima no DOM, appendChild depois das .lyric-word) capturava
+      // TODO clique antes dele chegar nos elementos de palavra
+      // invisíveis por baixo (mesmo eles tendo pointer-events:auto) —
+      // era por isso que clicar numa palavra não selecionava nada
+      // (bug real reportado). Com pointer-events:none aqui, o clique
+      // atravessa o canvas direto pro elemento certo.
+      canvas.style.cssText = 'position:absolute; inset:0; width:100%; height:100%; display:block; pointer-events:none;';
       stanzaEl.style.position = stanzaEl.style.position || 'relative';
       stanzaEl.appendChild(canvas);
     }
