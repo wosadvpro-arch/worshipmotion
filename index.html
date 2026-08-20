@@ -13804,6 +13804,35 @@ window.WM_LOCAL_FONTS = {
 
 const TEMPLATES = [
   {
+    id: "tpl-oficial-progressive-text-stack-frame-exact-v1",
+    name: "Efeito 7",
+    description: "Composição tipográfica em cinco linhas — quatro brancas e uma vermelha central — com expansão vertical progressiva e compressão horizontal, reproduzida por bounding boxes absolutas frame a frame.",
+    tags: ["5 linhas", "Cinético", "Pro Plus"],
+    isOfficial: true,
+    isPremium: true,
+    requiredPlan: "pro_plus",
+    isActive: true,
+    accent: "#ed0019",
+    config: {
+      type: 'frame-exact',
+      frameExactTemplateId: 'efeito-7',
+      style: {},
+      animConfig: {},
+      aspect: '16:9',
+      parsed: {
+        stanzas: [
+          { id: "stz_i7evuon", label: "Estrofe 1", lines: [
+            { id: "ln_9870z32", words: [{ id: "w_vmwdhsj", text: "MY", chars: [{id:"ch_1o42vq0",text:"M"}, {id:"ch_9eayv6k",text:"Y"}], emphasized: false }, { id: "w_97g455e", text: "WHOLE", chars: [{id:"ch_to61uyb",text:"W"}, {id:"ch_s9p4zt1",text:"H"}, {id:"ch_pm0m2oa",text:"O"}, {id:"ch_l14pi3r",text:"L"}, {id:"ch_m0i7z7l",text:"E"}], emphasized: false }, { id: "w_87b36w3", text: "COOL", chars: [{id:"ch_8pvuzql",text:"C"}, {id:"ch_oon7biy",text:"O"}, {id:"ch_2rey7wx",text:"O"}, {id:"ch_i9jxm2p",text:"L"}], emphasized: false }] },
+            { id: "ln_ujapbi1", words: [{ id: "w_s9xjy11", text: "MY", chars: [{id:"ch_ewjpatn",text:"M"}, {id:"ch_nfeexmi",text:"Y"}], emphasized: false }, { id: "w_aubuuly", text: "WHOLE", chars: [{id:"ch_ydg0qag",text:"W"}, {id:"ch_onnl83q",text:"H"}, {id:"ch_gd6qgv5",text:"O"}, {id:"ch_ueguf0o",text:"L"}, {id:"ch_x962zhv",text:"E"}], emphasized: false }, { id: "w_hfhbm8w", text: "COOL", chars: [{id:"ch_iokrcqm",text:"C"}, {id:"ch_8nys787",text:"O"}, {id:"ch_xktyni5",text:"O"}, {id:"ch_lhlw2av",text:"L"}], emphasized: false }] },
+            { id: "ln_h376u0d", words: [{ id: "w_wb0d36v", text: "MY", chars: [{id:"ch_r2jut17",text:"M"}, {id:"ch_az2nk4g",text:"Y"}], emphasized: false }, { id: "w_psadthd", text: "WHOLE", chars: [{id:"ch_9a2dhvs",text:"W"}, {id:"ch_yxpfaot",text:"H"}, {id:"ch_x66j8ei",text:"O"}, {id:"ch_plr732u",text:"L"}, {id:"ch_kb604lp",text:"E"}], emphasized: false }, { id: "w_s5x0wci", text: "COOL", chars: [{id:"ch_iht4cz6",text:"C"}, {id:"ch_6j27as0",text:"O"}, {id:"ch_quzd2g8",text:"O"}, {id:"ch_byf6poe",text:"L"}], emphasized: false }] },
+            { id: "ln_ouy2xeq", words: [{ id: "w_dbrzrap", text: "MY", chars: [{id:"ch_u3hxv0c",text:"M"}, {id:"ch_sovdnlm",text:"Y"}], emphasized: false }, { id: "w_ipqsqzh", text: "WHOLE", chars: [{id:"ch_bczu6wr",text:"W"}, {id:"ch_zqhhhae",text:"H"}, {id:"ch_pdc12fa",text:"O"}, {id:"ch_em4iorz",text:"L"}, {id:"ch_gjcikdz",text:"E"}], emphasized: false }, { id: "w_1jdx420", text: "COOL", chars: [{id:"ch_sdxe845",text:"C"}, {id:"ch_x71c58d",text:"O"}, {id:"ch_px44a6m",text:"O"}, {id:"ch_fzq8l73",text:"L"}], emphasized: false }] },
+            { id: "ln_pqgnyr5", words: [{ id: "w_3bavj36", text: "MY", chars: [{id:"ch_75z5ljm",text:"M"}, {id:"ch_kr7qu7v",text:"Y"}], emphasized: false }, { id: "w_9fl2fwg", text: "WHOLE", chars: [{id:"ch_uqfzztn",text:"W"}, {id:"ch_wb0in57",text:"H"}, {id:"ch_5de6ibk",text:"O"}, {id:"ch_i5dei69",text:"L"}, {id:"ch_k4nlhb3",text:"E"}], emphasized: false }, { id: "w_d9uqnii", text: "COOL", chars: [{id:"ch_5gpm4ej",text:"C"}, {id:"ch_60yie9p",text:"O"}, {id:"ch_vb156fu",text:"O"}, {id:"ch_awaz6rl",text:"L"}], emphasized: false }] },
+          ] },
+        ],
+      },
+    },
+  },
+  {
     id: "tpl-oficial-staggered-text-transition-e6v1",
     name: "Efeito 6",
     description: "Transição tipográfica frame-exact em três estágios: frase vermelha comprimindo, frase branca entrando/expandindo e colapsando, seguida de TODAY vermelho por cima.",
@@ -23418,7 +23447,7 @@ function initEditor() {
         if (!stNova) return;
         try {
           const tplFE = window.WM_FRAME_EXACT_RENDERER?.getTemplate(item.templateId);
-          const numLinhasFE = (tplFE && tplFE.layout === 'efeito-2-style') ? 2 : 3;
+          const numLinhasFE = _numLinhasParaTemplateFE(tplFE);
           const linhasPalavras = _distribuirEmLinhas(stNova, numLinhasFE);
           if (linhasPalavras.length < numLinhasFE) return;
           const novasLines = linhasPalavras.map((palavras, li) => ({
@@ -35963,6 +35992,19 @@ function initEditor() {
    *
    * Retorna: array de arrays de palavras [[w,w],[w],[w,w,w]]
    */
+  /**
+   * Quantas linhas do editor um template frame-exact precisa —
+   * centralizado aqui em vez de espalhar a mesma lista de layouts em
+   * cada ponto que decide isso (aplicação do template, reaplicação
+   * automática após edição).
+   */
+  function _numLinhasParaTemplateFE(tplFE) {
+    if (!tplFE) return 3;
+    if (tplFE.layout === 'efeito-2-style') return 2;
+    if (tplFE.layout === 'efeito-7-style') return 5;
+    return 3;
+  }
+
   function _distribuirEmLinhas(stanza, numLinhasSchema) {
     const linhasReais = (stanza.lines || []).filter(ln => ln.words && ln.words.length);
 
@@ -36463,7 +36505,7 @@ function initEditor() {
       // renderer em vez de fixar um número — outros templates futuros
       // podem ter outras contagens.
       const tplFE = window.WM_FRAME_EXACT_RENDERER?.getTemplate(cfg.frameExactTemplateId);
-      const numLinhasFE = (tplFE && tplFE.layout === 'efeito-2-style') ? 2 : 3;
+      const numLinhasFE = _numLinhasParaTemplateFE(tplFE);
       let alguma = false;
       targetIndices.forEach(stanzaIdx => {
         const stanza = parsed.stanzas[stanzaIdx];
@@ -39768,6 +39810,34 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
         cashRed:        { fontFamily: 'HeadingNowTrial-66Bold-KSS', color: '#EDEDED' },
       },
     },
+    'efeito-7': {
+      layout: 'efeito-7-style',
+      // Espaço lógico PRÓPRIO — 3840x2160, confirmado direto na
+      // ferramenta de referência aprovada (o coordinateSpace do próprio
+      // pacote diz "3840x2160 motion-data coordinates with 2x mapping
+      // from the 1920x1080 source" — as bboxes JÁ estão nesse espaço
+      // maior; NÃO precisa dividir por 2 aqui, porque o mecanismo de
+      // escala genérico do app (logicalWidth/Height) já projeta esse
+      // espaço lógico pro tamanho de saída certo, exatamente como já
+      // faz pro Kinetic Scale Stack — mesma arquitetura, sem código novo.
+      logicalWidth: 3840,
+      logicalHeight: 2160,
+      motionData: {"fps":25,"frames":20,"framesData":[{"red":null,"whiteTop":null,"whiteUpper":null,"whiteLower":null,"whiteBottom":null},{"red":null,"whiteTop":[388,766,3064,122],"whiteUpper":null,"whiteLower":null,"whiteBottom":[388,1242,3064,120]},{"red":null,"whiteTop":[388,766,3064,122],"whiteUpper":null,"whiteLower":null,"whiteBottom":[388,1242,3064,120]},{"red":[192,904,3440,348],"whiteTop":null,"whiteUpper":[388,654,3064,204],"whiteLower":[388,1288,3064,198],"whiteBottom":null},{"red":[192,904,3440,348],"whiteTop":[388,480,3064,128],"whiteUpper":[388,654,3064,204],"whiteLower":[388,1288,3064,198],"whiteBottom":[388,1530,3064,120]},{"red":[192,904,3440,348],"whiteTop":[388,480,3064,128],"whiteUpper":[388,654,3064,204],"whiteLower":[388,1288,3064,198],"whiteBottom":[388,1530,3064,120]},{"red":[192,904,3440,348],"whiteTop":[388,480,3064,128],"whiteUpper":[388,654,3064,204],"whiteLower":[388,1288,3064,198],"whiteBottom":[388,1530,3064,120]},{"red":[192,904,3440,348],"whiteTop":[388,480,3064,128],"whiteUpper":[388,654,3064,204],"whiteLower":[388,1288,3064,198],"whiteBottom":[388,1530,3064,120]},{"red":[228,904,3364,348],"whiteTop":[388,480,3064,128],"whiteUpper":[388,654,3064,204],"whiteLower":[388,1288,3064,198],"whiteBottom":[388,1530,3064,120]},{"red":[228,904,3364,348],"whiteTop":[388,480,3064,128],"whiteUpper":[388,654,3064,204],"whiteLower":[388,1288,3064,198],"whiteBottom":[388,1530,3064,120]},{"red":[268,904,3284,348],"whiteTop":[388,360,3064,210],"whiteUpper":[388,608,3064,234],"whiteLower":[382,1308,3070,234],"whiteBottom":[382,1582,3070,212]},{"red":[268,904,3284,348],"whiteTop":[388,360,3064,210],"whiteUpper":[388,608,3064,234],"whiteLower":[382,1308,3070,234],"whiteBottom":[382,1582,3070,212]},{"red":[268,904,3284,348],"whiteTop":[388,360,3064,210],"whiteUpper":[388,608,3064,234],"whiteLower":[382,1308,3070,234],"whiteBottom":[382,1582,3070,212]},{"red":[372,904,3072,348],"whiteTop":[366,316,3110,236],"whiteUpper":[366,590,3110,248],"whiteLower":[362,1316,3116,244],"whiteBottom":[364,1598,3100,236]},{"red":[372,904,3072,348],"whiteTop":[366,316,3110,236],"whiteUpper":[366,590,3110,248],"whiteLower":[362,1316,3116,244],"whiteBottom":[364,1598,3100,236]},{"red":[372,904,3072,348],"whiteTop":[366,316,3110,236],"whiteUpper":[366,590,3110,248],"whiteLower":[362,1316,3116,244],"whiteBottom":[364,1598,3100,236]},{"red":[372,904,3072,348],"whiteTop":[366,316,3110,236],"whiteUpper":[366,590,3110,248],"whiteLower":[362,1316,3116,244],"whiteBottom":[364,1598,3100,236]},{"red":[668,904,2474,348],"whiteTop":[348,242,3158,260],"whiteUpper":[348,548,3146,256],"whiteLower":[350,1352,3152,254],"whiteBottom":[350,1652,3152,248]},{"red":[668,904,2474,348],"whiteTop":[348,242,3158,260],"whiteUpper":[348,548,3146,256],"whiteLower":[350,1352,3152,254],"whiteBottom":[350,1652,3152,248]},{"red":[1148,904,1504,348],"whiteTop":[348,242,3158,260],"whiteUpper":[348,548,3146,256],"whiteLower":[350,1352,3152,254],"whiteBottom":[350,1652,3152,248]}]},
+      // 5 papéis INDEPENDENTES, cada um uma linha de texto inteira —
+      // mesma técnica do Efeito 6 (drawStretched direto na bbox
+      // 'xywh'), só que com 5 linhas em vez de 3, e sem "revezamento":
+      // aqui os 5 crescem juntos ao longo dos 20 quadros. A ordem de
+      // desenho importa (red por último = por cima, igual à referência
+      // — "elementOrder": whiteTop/whiteUpper/whiteLower/whiteBottom/red).
+      ordemDesenho: ['whiteTop', 'whiteUpper', 'whiteLower', 'whiteBottom', 'red'],
+      styles: {
+        whiteTop:    { fontFamily: 'HeadingNowTrial-66Bold-KSS', color: '#f1f1f1' },
+        whiteUpper:  { fontFamily: 'HeadingNowTrial-66Bold-KSS', color: '#f1f1f1' },
+        whiteLower:  { fontFamily: 'HeadingNowTrial-66Bold-KSS', color: '#f1f1f1' },
+        whiteBottom: { fontFamily: 'HeadingNowTrial-66Bold-KSS', color: '#f1f1f1' },
+        red:         { fontFamily: 'HeadingNowTrial-66Bold-KSS', color: '#ed0019' },
+      },
+    },
     'efeito-2': {
       layout: 'efeito-2-style',
       // Espaço lógico PRÓPRIO deste template — 1920x1080, NÃO
@@ -39945,7 +40015,31 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
     if (tpl.layout === 'efeito-6-style') {
       return _renderFrameEfeito6Style(ctx, tpl, texts, frameIdx);
     }
+    if (tpl.layout === 'efeito-7-style') {
+      return _renderFrameEfeito7Style(ctx, tpl, texts, frameIdx);
+    }
     return _renderFrameKineticScaleStack(ctx, tpl, texts, frameIdx);
+  }
+
+  /**
+   * Efeito 7 ("Progressive Text Stack"): 5 papéis independentes, cada
+   * um uma linha de texto inteira — mesma técnica do Efeito 6, só que
+   * os 5 crescem JUNTOS ao longo dos quadros (sem revezamento/handoff).
+   * A ORDEM de desenho importa: red é desenhado por último (por cima
+   * das brancas), igual ao "elementOrder" da referência original.
+   */
+  function _renderFrameEfeito7Style(ctx, tpl, texts, frameIdx) {
+    const f = tpl.motionData.framesData[frameIdx];
+    if (!f) return false;
+    (tpl.ordemDesenho || Object.keys(tpl.styles)).forEach(papel => {
+      const bbox = f[papel];
+      if (!bbox) return;
+      const texto = (texts && texts[papel] || '').trim();
+      if (!texto) return;
+      const st = tpl.styles[papel];
+      drawStretched(ctx, texto, st.fontFamily, st.color, bbox, 'xywh');
+    });
+    return true;
   }
 
   /**
@@ -40217,7 +40311,28 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
     if (tpl && tpl.layout === 'efeito-6-style') {
       return _readTextsEfeito6Style(stanza);
     }
+    if (tpl && tpl.layout === 'efeito-7-style') {
+      return _readTextsEfeito7Style(stanza);
+    }
     return _readTextsKineticScaleStack(stanza);
+  }
+
+  /**
+   * Efeito 7: 5 linhas do editor → 5 papéis, cada linha inteira vira
+   * UM texto só. Ordem do editor: whiteTop, whiteUpper, red,
+   * whiteLower, whiteBottom (de cima pra baixo na composição visual —
+   * a ordem de DESENHO, que coloca red por cima, é outra coisa, ver
+   * ordemDesenho no registro do template).
+   */
+  function _readTextsEfeito7Style(stanza) {
+    const lines = (stanza && stanza.lines) || [];
+    return {
+      whiteTop: (lines[0]?.words || []).map(w => w.text).join(' '),
+      whiteUpper: (lines[1]?.words || []).map(w => w.text).join(' '),
+      red: (lines[2]?.words || []).map(w => w.text).join(' '),
+      whiteLower: (lines[3]?.words || []).map(w => w.text).join(' '),
+      whiteBottom: (lines[4]?.words || []).map(w => w.text).join(' '),
+    };
   }
 
   /**
