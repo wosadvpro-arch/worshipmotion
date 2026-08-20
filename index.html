@@ -13804,6 +13804,33 @@ window.WM_LOCAL_FONTS = {
 
 const TEMPLATES = [
   {
+    id: "tpl-oficial-progressive-phrase-scale-cascade-frame-exact-v1",
+    name: "Efeito 8",
+    description: "Cascata tipográfica em três frases que se revezam: WANT IT OUT sai enquanto SELFISH HEART. vermelho entra e expande, dando lugar a NEVER GIVE crescendo no final.",
+    tags: ["3 linhas", "Cinético", "Pro Plus"],
+    isOfficial: true,
+    isPremium: true,
+    requiredPlan: "pro_plus",
+    isActive: true,
+    accent: "#FF0000",
+    config: {
+      type: 'frame-exact',
+      frameExactTemplateId: 'efeito-8',
+      style: {},
+      animConfig: {},
+      aspect: '16:9',
+      parsed: {
+        stanzas: [
+          { id: "stz_fg3uf51", label: "Estrofe 1", lines: [
+            { id: "ln_8to63ki", words: [{ id: "w_3fqeokf", text: "WANT", chars: [{id:"ch_1x0l1lo",text:"W"}, {id:"ch_azavnsb",text:"A"}, {id:"ch_4ih7z6d",text:"N"}, {id:"ch_6lk7atl",text:"T"}], emphasized: false }, { id: "w_5xzcisr", text: "IT", chars: [{id:"ch_h8etxlh",text:"I"}, {id:"ch_vozuxg8",text:"T"}], emphasized: false }, { id: "w_etthh5u", text: "OUT", chars: [{id:"ch_mhyxmff",text:"O"}, {id:"ch_2r3az3q",text:"U"}, {id:"ch_wmtrebc",text:"T"}], emphasized: false }] },
+            { id: "ln_stbqenl", words: [{ id: "w_1px1nwl", text: "SELFISH", chars: [{id:"ch_0dyhvaz",text:"S"}, {id:"ch_k45fg9s",text:"E"}, {id:"ch_fwq0yo2",text:"L"}, {id:"ch_ixuiyy0",text:"F"}, {id:"ch_dx9xn8d",text:"I"}, {id:"ch_24zlpxh",text:"S"}, {id:"ch_sne1xys",text:"H"}], emphasized: false }, { id: "w_ticxgb8", text: "HEART.", chars: [{id:"ch_ft8v86g",text:"H"}, {id:"ch_3b8wsi0",text:"E"}, {id:"ch_os6rwld",text:"A"}, {id:"ch_vmevb16",text:"R"}, {id:"ch_j1qu544",text:"T"}, {id:"ch_jg0l7wp",text:"."}], emphasized: false }] },
+            { id: "ln_04yayoa", words: [{ id: "w_3c3anq2", text: "NEVER", chars: [{id:"ch_tr7tsgc",text:"N"}, {id:"ch_hkjg2vb",text:"E"}, {id:"ch_b46wy3w",text:"V"}, {id:"ch_ou9go6y",text:"E"}, {id:"ch_6zabh20",text:"R"}], emphasized: false }, { id: "w_ey890ps", text: "GIVE", chars: [{id:"ch_eooiul4",text:"G"}, {id:"ch_iabu3go",text:"I"}, {id:"ch_zl6md06",text:"V"}, {id:"ch_yrsvau1",text:"E"}], emphasized: false }] },
+          ] },
+        ],
+      },
+    },
+  },
+  {
     id: "tpl-oficial-progressive-text-stack-frame-exact-v1",
     name: "Efeito 7",
     description: "Composição tipográfica em cinco linhas — quatro brancas e uma vermelha central — com expansão vertical progressiva e compressão horizontal, reproduzida por bounding boxes absolutas frame a frame.",
@@ -39838,6 +39865,41 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
         red:         { fontFamily: 'HeadingNowTrial-66Bold-KSS', color: '#f1f1f1' },
       },
     },
+    'efeito-8': {
+      layout: 'efeito-8-style',
+      // Espaço lógico PRÓPRIO — 1920x1080 (confirmado no motion-data.json
+      // original, sem armadilha de escala dessa vez — coordinateSystem
+      // já diz "1920x1080", batendo com os valores de bbox medidos).
+      logicalWidth: 1920,
+      logicalHeight: 1080,
+      motionData: {"fps":25,"frames":74,"framesData":[{"want":null,"it_1":null,"out":null,"selfish":null,"heart":null,"never":null,"give":null},{"want":[366,427,554,389],"it_1":null,"out":null,"selfish":null,"heart":null,"never":null,"give":null},{"want":[365,397,555,420],"it_1":null,"out":null,"selfish":null,"heart":null,"never":null,"give":null},{"want":[363,381,557,436],"it_1":null,"out":null,"selfish":null,"heart":null,"never":null,"give":null},{"want":[362,369,558,449],"it_1":[989,401,162,417],"out":null,"selfish":null,"heart":null,"never":null,"give":null},{"want":[361,361,558,456],"it_1":[989,381,162,437],"out":null,"selfish":null,"heart":null,"never":null,"give":null},{"want":[360,355,559,456],"it_1":[989,371,163,448],"out":null,"selfish":null,"heart":null,"never":null,"give":null},{"want":[359,351,560,456],"it_1":[989,361,163,458],"out":null,"selfish":null,"heart":null,"never":null,"give":null},{"want":[358,347,561,456],"it_1":[989,355,164,458],"out":null,"selfish":null,"heart":null,"never":null,"give":null},{"want":[356,345,563,456],"it_1":[989,351,164,458],"out":[1222,349,349,465],"selfish":null,"heart":null,"never":null,"give":null},{"want":[355,343,564,457],"it_1":[989,347,164,458],"out":[1222,345,350,468],"selfish":null,"heart":null,"never":null,"give":null},{"want":[354,341,565,458],"it_1":[989,345,165,458],"out":[1223,341,350,468],"selfish":null,"heart":null,"never":null,"give":null},{"want":[353,339,566,458],"it_1":[990,343,164,458],"out":[1223,339,352,468],"selfish":null,"heart":null,"never":null,"give":null},{"want":[352,335,567,460],"it_1":[990,341,164,459],"out":[1224,335,352,472],"selfish":null,"heart":null,"never":null,"give":null},{"want":[351,331,568,462],"it_1":[990,337,165,462],"out":[1224,335,353,470],"selfish":null,"heart":null,"never":null,"give":null},{"want":[350,323,569,464],"it_1":[990,335,165,462],"out":[1225,331,353,474],"selfish":null,"heart":null,"never":null,"give":null},{"want":[348,313,571,468],"it_1":[990,331,165,464],"out":[1225,329,354,472],"selfish":null,"heart":null,"never":null,"give":null},{"want":[347,297,572,470],"it_1":[990,323,166,466],"out":[1226,323,354,476],"selfish":null,"heart":null,"never":null,"give":null},{"want":[347,279,571,468],"it_1":[990,315,166,468],"out":[1226,315,356,478],"selfish":null,"heart":null,"never":null,"give":null},{"want":[348,278,570,427],"it_1":[990,299,167,472],"out":[1227,303,356,482],"selfish":null,"heart":null,"never":null,"give":null},{"want":null,"it_1":[990,277,167,476],"out":[1227,285,357,486],"selfish":null,"heart":null,"never":null,"give":null},{"want":null,"it_1":[990,277,167,438],"out":[1228,277,357,470],"selfish":[270,1074,687,6],"heart":null,"never":null,"give":null},{"want":null,"it_1":[990,277,135,358],"out":[1228,277,326,418],"selfish":[244,850,713,230],"heart":null,"never":null,"give":null},{"want":null,"it_1":[990,276,135,317],"out":[1229,276,326,341],"selfish":[244,706,713,374],"heart":[1034,954,592,126],"never":null,"give":null},{"want":null,"it_1":[990,276,135,305],"out":[1229,275,327,318],"selfish":[242,602,715,478],"heart":[1034,774,593,306],"never":null,"give":null},{"want":null,"it_1":null,"out":[1230,275,327,308],"selfish":[240,522,717,516],"heart":[1034,654,644,426],"never":null,"give":null},{"want":null,"it_1":null,"out":null,"selfish":[240,462,717,508],"heart":[1034,562,646,516],"never":null,"give":null},{"want":null,"it_1":null,"out":null,"selfish":[238,418,719,503],"heart":[1034,495,648,507],"never":null,"give":null},{"want":null,"it_1":null,"out":null,"selfish":[236,382,721,499],"heart":[1034,442,650,504],"never":null,"give":null},{"want":null,"it_1":null,"out":null,"selfish":[236,354,721,496],"heart":[1034,402,650,496],"never":null,"give":null},{"want":null,"it_1":null,"out":null,"selfish":[234,334,723,492],"heart":[1034,370,652,495],"never":null,"give":null},{"want":null,"it_1":null,"out":null,"selfish":[232,318,725,492],"heart":[1034,346,654,492],"never":null,"give":null},{"want":null,"it_1":null,"out":null,"selfish":[232,307,725,491],"heart":[1034,330,654,488],"never":null,"give":null},{"want":null,"it_1":null,"out":null,"selfish":[230,302,727,488],"heart":[1034,318,656,484],"never":null,"give":null},{"want":null,"it_1":null,"out":null,"selfish":[228,298,729,490],"heart":[1035,310,657,484],"never":null,"give":null},{"want":null,"it_1":null,"out":null,"selfish":[228,298,729,490],"heart":[1035,304,657,486],"never":null,"give":null},{"want":null,"it_1":null,"out":null,"selfish":[226,297,731,491],"heart":[1036,302,658,486],"never":null,"give":null},{"want":null,"it_1":null,"out":null,"selfish":[224,296,733,493],"heart":[1036,302,660,487],"never":null,"give":null},{"want":null,"it_1":null,"out":null,"selfish":[224,296,733,494],"heart":[1036,301,660,489],"never":null,"give":null},{"want":null,"it_1":null,"out":null,"selfish":[222,296,735,494],"heart":[1036,300,662,490],"never":null,"give":null},{"want":null,"it_1":null,"out":null,"selfish":[220,296,737,496],"heart":[1036,300,664,492],"never":null,"give":null},{"want":null,"it_1":null,"out":null,"selfish":[220,295,737,497],"heart":[1036,300,664,492],"never":null,"give":null},{"want":null,"it_1":null,"out":null,"selfish":[218,294,739,498],"heart":[1036,300,666,492],"never":null,"give":null},{"want":null,"it_1":null,"out":null,"selfish":[216,294,741,498],"heart":[1036,300,668,492],"never":null,"give":null},{"want":null,"it_1":null,"out":null,"selfish":[216,294,741,498],"heart":[1036,299,668,493],"never":null,"give":null},{"want":null,"it_1":null,"out":null,"selfish":[214,293,743,499],"heart":[1036,298,670,494],"never":null,"give":null},{"want":null,"it_1":null,"out":null,"selfish":[212,292,745,500],"heart":[1036,298,672,495],"never":null,"give":null},{"want":null,"it_1":null,"out":null,"selfish":[212,290,745,501],"heart":[1036,297,672,497],"never":null,"give":null},{"want":null,"it_1":null,"out":null,"selfish":[210,283,747,503],"heart":[1037,295,673,498],"never":null,"give":null},{"want":null,"it_1":null,"out":null,"selfish":[208,274,749,507],"heart":[1037,291,675,499],"never":null,"give":null},{"want":null,"it_1":null,"out":null,"selfish":[208,262,749,508],"heart":[1037,286,675,499],"never":null,"give":null},{"want":null,"it_1":null,"out":null,"selfish":[206,246,751,512],"heart":[1038,274,676,504],"never":null,"give":null},{"want":null,"it_1":null,"out":null,"selfish":[205,226,752,515],"heart":[1038,259,677,507],"never":null,"give":null},{"want":null,"it_1":null,"out":null,"selfish":[204,195,753,519],"heart":[1038,242,678,508],"never":null,"give":null},{"want":null,"it_1":null,"out":null,"selfish":[202,155,754,527],"heart":[1038,214,680,516],"never":null,"give":null},{"want":null,"it_1":null,"out":null,"selfish":[201,99,755,538],"heart":[1038,182,681,520],"never":null,"give":null},{"want":null,"it_1":null,"out":null,"selfish":[200,14,756,556],"heart":[1038,134,682,528],"never":null,"give":null},{"want":null,"it_1":null,"out":null,"selfish":[198,0,758,458],"heart":[1038,66,684,540],"never":null,"give":null},{"want":null,"it_1":null,"out":null,"selfish":[197,0,759,250],"heart":[1038,2,685,519],"never":null,"give":null},{"want":null,"it_1":null,"out":null,"selfish":[196,0,760,66],"heart":[1038,0,686,366],"never":[395,875,616,205],"give":null},{"want":null,"it_1":null,"out":null,"selfish":null,"heart":[1038,0,688,134],"never":[394,719,617,361],"give":[1089,973,436,107]},{"want":null,"it_1":null,"out":null,"selfish":null,"heart":[1038,0,686,18],"never":[393,607,618,473],"give":[1089,781,437,299]},{"want":null,"it_1":null,"out":null,"selfish":null,"heart":null,"never":[392,523,623,540],"give":[1089,651,438,429]},{"want":null,"it_1":null,"out":null,"selfish":null,"heart":null,"never":[391,461,624,532],"give":[1090,557,439,522]},{"want":null,"it_1":null,"out":null,"selfish":null,"heart":null,"never":[390,411,625,526],"give":[1090,483,440,548]},{"want":null,"it_1":null,"out":null,"selfish":null,"heart":null,"never":[389,373,626,522],"give":[1090,427,441,542]},{"want":null,"it_1":null,"out":null,"selfish":null,"heart":null,"never":[388,343,627,518],"give":[1090,385,442,536]},{"want":null,"it_1":null,"out":null,"selfish":null,"heart":null,"never":[387,321,628,516],"give":[1090,351,443,532]},{"want":null,"it_1":null,"out":null,"selfish":null,"heart":null,"never":[386,305,629,514],"give":[1091,325,443,530]},{"want":null,"it_1":null,"out":null,"selfish":null,"heart":null,"never":[385,293,630,512],"give":[1091,305,444,528]},{"want":null,"it_1":null,"out":null,"selfish":null,"heart":null,"never":[380,285,636,514],"give":[1092,291,448,528]},{"want":null,"it_1":null,"out":null,"selfish":null,"heart":null,"never":[370,279,647,521],"give":[1093,277,457,534]},{"want":null,"it_1":null,"out":null,"selfish":null,"heart":null,"never":[355,273,663,533],"give":[1096,267,469,547]},{"want":null,"it_1":null,"out":null,"selfish":null,"heart":null,"never":[332,263,688,553],"give":[1100,257,488,567]}]},
+      // 7 palavras INDEPENDENTES, agrupadas em 3 frases que se revezam
+      // (mesma ideia do Efeito 6 — cada papel tem sua própria janela de
+      // quadros ativos): "WANT IT OUT" (branca, quadros iniciais) →
+      // "SELFISH HEART." (vermelha, quadros do meio) → "NEVER GIVE"
+      // (branca, quadros finais). Mapeamento do editor: linha 1 → want/
+      // it_1/out; linha 2 → selfish/heart; linha 3 → never/give — cada
+      // linha pode ter uma quantidade diferente de papéis (3, 2 e 2).
+      //
+      // FONTE: nenhuma das variantes preferidas do pacote (76/77/86/87)
+      // está disponível no projeto — usando a mais próxima já embutida
+      // (66Bold) como substituta, igual já fiz nos efeitos anteriores
+      // quando a fonte exata não vinha no pacote.
+      linhasParaPapeis: [
+        ['want', 'it_1', 'out'],
+        ['selfish', 'heart'],
+        ['never', 'give'],
+      ],
+      styles: {
+        want:    { fontFamily: 'HeadingNowTrial-66Bold-KSS', color: '#FFFFFF' },
+        it_1:    { fontFamily: 'HeadingNowTrial-66Bold-KSS', color: '#FFFFFF' },
+        out:     { fontFamily: 'HeadingNowTrial-66Bold-KSS', color: '#FFFFFF' },
+        selfish: { fontFamily: 'HeadingNowTrial-66Bold-KSS', color: '#FFFFFF' },
+        heart:   { fontFamily: 'HeadingNowTrial-66Bold-KSS', color: '#FFFFFF' },
+        never:   { fontFamily: 'HeadingNowTrial-66Bold-KSS', color: '#FFFFFF' },
+        give:    { fontFamily: 'HeadingNowTrial-66Bold-KSS', color: '#FFFFFF' },
+      },
+    },
     'efeito-2': {
       layout: 'efeito-2-style',
       // Espaço lógico PRÓPRIO deste template — 1920x1080, NÃO
@@ -40018,7 +40080,30 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
     if (tpl.layout === 'efeito-7-style') {
       return _renderFrameEfeito7Style(ctx, tpl, texts, frameIdx);
     }
+    if (tpl.layout === 'efeito-8-style') {
+      return _renderFrameEfeito8Style(ctx, tpl, texts, frameIdx);
+    }
     return _renderFrameKineticScaleStack(ctx, tpl, texts, frameIdx);
+  }
+
+  /**
+   * Efeito 8 ("Progressive Phrase Scale Cascade"): 7 palavras
+   * independentes agrupadas em 3 frases que se revezam ao longo dos
+   * quadros (cada palavra tem sua própria janela ativa — igual ao
+   * Efeito 6, só que por PALAVRA em vez de por frase inteira).
+   */
+  function _renderFrameEfeito8Style(ctx, tpl, texts, frameIdx) {
+    const f = tpl.motionData.framesData[frameIdx];
+    if (!f) return false;
+    ['want', 'it_1', 'out', 'selfish', 'heart', 'never', 'give'].forEach(papel => {
+      const bbox = f[papel];
+      if (!bbox) return;
+      const texto = (texts && texts[papel] || '').trim();
+      if (!texto) return;
+      const st = tpl.styles[papel];
+      drawStretched(ctx, texto, st.fontFamily, st.color, bbox, 'xywh');
+    });
+    return true;
   }
 
   /**
@@ -40314,7 +40399,31 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
     if (tpl && tpl.layout === 'efeito-7-style') {
       return _readTextsEfeito7Style(stanza);
     }
+    if (tpl && tpl.layout === 'efeito-8-style') {
+      return _readTextsEfeito8Style(stanza, tpl);
+    }
     return _readTextsKineticScaleStack(stanza);
+  }
+
+  /**
+   * Efeito 8: cada linha do editor tem uma quantidade DIFERENTE de
+   * papéis (linha 1 → 3 palavras; linha 2 → 2; linha 3 → 2) — usa
+   * tpl.linhasParaPapeis pra saber quantos papéis cada linha alimenta,
+   * mapeando palavra i da linha pro papel i daquela linha (posicional,
+   * igual ao Efeito 1). Palavras extras além dos papéis disponíveis
+   * naquela linha são ignoradas (nunca inventa palavra nova).
+   */
+  function _readTextsEfeito8Style(stanza, tpl) {
+    const lines = (stanza && stanza.lines) || [];
+    const mapa = tpl.linhasParaPapeis || [];
+    const out = {};
+    mapa.forEach((papeis, li) => {
+      const palavras = (lines[li]?.words || []).map(w => w.text);
+      papeis.forEach((papel, i) => {
+        out[papel] = palavras[i] || '';
+      });
+    });
+    return out;
   }
 
   /**
