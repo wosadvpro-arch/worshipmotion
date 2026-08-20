@@ -20701,9 +20701,28 @@ class VideoExporter {
         slideDurations = slideStarts.slice(1).map((end, i) => end - slideStarts[i]);
       } else {
         // === MODO ANTIGO: stanzaDuration fixo ===
-        slideDurations = this.slides.map(s =>
-          (s.animation.stanzaDuration || this.options.stanzaDuration) * 1000
-        );
+        // BUG REAL CORRIGIDO: esse cálculo não sabia nada sobre
+        // templates frame-exact — toda estrofe recebia a duração
+        // genérica configurada (baseada em contagem de palavras),
+        // completamente desconectada da duração REAL do template
+        // (ex: Efeito 6 dura 3200ms fixos, sem relação com quantas
+        // palavras o usuário digitou). Se a duração genérica fosse
+        // menor que a do template, a exportação cortava a animação no
+        // meio; se fosse maior, o vídeo passava a maior parte do tempo
+        // segurando o quadro final (que pode ser em branco, como no
+        // Efeito 6) — nos dois casos parecia que "não aparece" no
+        // vídeo exportado, mesmo com o preview funcionando certinho
+        // (o preview já usava getDurationMs() corretamente). Mesma
+        // classe de bug já corrigida antes pro isSlideStatic, só que
+        // nesse outro ponto do código.
+        const R_FE = window.WM_FRAME_EXACT_RENDERER;
+        slideDurations = this.slides.map(s => {
+          if (s.stanza && s.stanza.frameExactTemplateId && R_FE) {
+            const durFE = R_FE.getDurationMs(s.stanza.frameExactTemplateId);
+            if (durFE) return durFE;
+          }
+          return (s.animation.stanzaDuration || this.options.stanzaDuration) * 1000;
+        });
         slideStarts = [0];
         for (let i = 0; i < slideDurations.length; i++) {
           slideStarts.push(slideStarts[i] + slideDurations[i]);
