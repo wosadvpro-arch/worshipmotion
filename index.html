@@ -40136,13 +40136,15 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     if (!f) return false;
     const grupos = tpl.linhasParaPapeis || [['want', 'it_1', 'out'], ['selfish', 'heart'], ['never', 'give']];
 
-    grupos.forEach(papeis => {
+    grupos.forEach((papeis, grupoIndex) => {
       const todosOriginais = papeis.every(p => {
         const texto = (texts && texts[p] || '').trim();
         return !texto || texto.toUpperCase() === EFEITO8_PALAVRA_ORIGINAL[p];
       });
+      const todasPalavras = (texts && texts._linhas && texts._linhas[grupoIndex]) || papeis.map(p => texts && texts[p]);
+      const contagemBate = todasPalavras.filter(w => (w || '').trim()).length === papeis.length;
 
-      if (todosOriginais) {
+      if (todosOriginais && contagemBate) {
         // Fidelidade total: cada papel com sua bbox e recorte de
         // tamanho natural, exatamente como medido no MP4 original.
         papeis.forEach(papel => {
@@ -40167,36 +40169,30 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
         return;
       }
 
-      // Texto alterado nessa linha: reflow em fileira, usando a UNIÃO
-      // das bboxes ativas nesse quadro como referência de altura/
-      // posição vertical — evita palavras maiores invadindo a vizinha.
-      const ativos = papeis
-        .map(p => ({ papel: p, bbox: f[p], texto: (texts && texts[p] || '').trim() }))
-        .filter(o => o.bbox && o.texto);
+      // Texto (ou quantidade de palavras) alterado nessa linha: reflow
+      // em fileira. Usa as bboxes dos papéis ORIGINAIS que estão
+      // ativos nesse quadro pra saber SE a linha deve aparecer agora
+      // (timing) e pra que tamanho/posição de referência usar — mas
+      // desenha TODAS as palavras que o usuário digitou nessa linha
+      // (não só até a quantidade original de papéis).
+      //
+      // BUG REAL CORRIGIDO ("não consigo adicionar mais palavras"): o
+      // código antes só olhava pra `papeis` (3, 2 ou 2 nomes fixos) —
+      // uma 4ª palavra na linha 1 não tinha papel nenhum pra ler o
+      // texto dela, então sumia. Agora usa `todasPalavras` (a lista
+      // INTEIRA de palavras da linha, sem limite).
+      const referencias = papeis.map(p => f[p]).filter(Boolean);
+      if (!referencias.length) return;
+      const alturaRef = Math.max(...referencias.map(b => b[3]));
+      const centroYOriginal = referencias.reduce((s, b) => s + (b[1] + b[3] / 2), 0) / referencias.length;
+      const ultimoPapel = papeis[papeis.length - 1];
+      const stLinha = tpl.styles[ultimoPapel];
+
+      const ativos = todasPalavras
+        .map(texto => ({ texto: (texto || '').trim(), st: stLinha }))
+        .filter(o => o.texto);
       if (!ativos.length) return;
 
-      // BUG REAL CORRIGIDO: usar a EXTENSÃO VERTICAL da união (do topo
-      // do elemento mais alto até a base do mais baixo) como altura de
-      // referência misturava "posição espalhada" com "tamanho" — os
-      // elementos desse grupo não ficam exatamente na mesma altura
-      // (cada um tem seu próprio Y), então essa extensão ficava bem
-      // maior que qualquer elemento individual, gerando texto enorme
-      // que cobria a tela inteira. Corrigido: usa a MAIOR altura
-      // individual entre os elementos ativos como referência de
-      // tamanho — a posição Y de cada um continua sendo a própria.
-      const alturaRef = Math.max(...ativos.map(o => o.bbox[3]));
-      // BUG REAL CORRIGIDO (2ª rodada — "animação não está
-      // centralizada"): ancorar pelo TOPO da bbox original (Math.min)
-      // e desenhar o texto reorganizado a partir dali funcionava mal
-      // quando a altura do bitmap reorganizado não batia exatamente
-      // com a altura original — o texto acabava bem mais alto do que
-      // deveria (medido: ~58px de diferença numa tela de teste, nada
-      // sutil). Corrigido ancorando pelo CENTRO VERTICAL médio das
-      // bboxes originais ativas (não o topo) — assim o texto
-      // reorganizado fica centralizado no mesmo eixo Y que o vídeo
-      // original usava pra esse grupo, não importa a altura final do
-      // bitmap depois do ajuste de "encolher pra caber".
-      const centroYOriginal = ativos.reduce((s, o) => s + (o.bbox[1] + o.bbox[3] / 2), 0) / ativos.length;
       const larguraCanvas = tpl.logicalWidth || tpl.motionData.width;
       const GAP_RATIO = 0.28;
       const MARGEM = 0.94;
@@ -40205,16 +40201,16 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       // grupo); se a fileira toda não couber em 94% da largura do
       // canvas, encolhe TODAS as palavras pelo mesmo fator antes de
       // desenhar de verdade — evita palavras vazando pra fora da tela
-      // quando o texto digitado é mais largo que o espaço original
-      // media pra 2-3 palavras curtas. Mesma técnica já usada nos
+      // quando o texto digitado é mais largo (ou tem mais palavras) do
+      // que o espaço original media. Mesma técnica já usada nos
       // Efeitos 1 e 2 pro mesmo tipo de problema.
-      let itens = _efeito8MedirItensGrupo(ativos, tpl.styles, alturaRef);
+      let itens = _efeito8MedirItensGrupo(ativos, alturaRef);
       if (itens.length) {
         let larguraTotal = _efeito8LarguraTotal(itens, GAP_RATIO);
         const larguraMax = larguraCanvas * MARGEM;
         if (larguraTotal > larguraMax) {
           const fator = larguraMax / larguraTotal;
-          itens = _efeito8MedirItensGrupo(ativos, tpl.styles, alturaRef * fator);
+          itens = _efeito8MedirItensGrupo(ativos, alturaRef * fator);
           larguraTotal = _efeito8LarguraTotal(itens, GAP_RATIO);
         }
         const gaps = itens.map(it => it.h * GAP_RATIO);
@@ -40231,10 +40227,9 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     return true;
   }
 
-  function _efeito8MedirItensGrupo(ativos, styles, altura) {
+  function _efeito8MedirItensGrupo(ativos, altura) {
     return ativos.map(o => {
-      const st = styles[o.papel];
-      const img = _efeito2MakeBitmapAtHeight(o.texto, st.fontFamily, st.color, altura);
+      const img = _efeito2MakeBitmapAtHeight(o.texto, o.st.fontFamily, o.st.color, altura);
       return img ? { img, w: img.width, h: img.height } : null;
     }).filter(Boolean);
   }
@@ -40571,18 +40566,30 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
    * papéis (linha 1 → 3 palavras; linha 2 → 2; linha 3 → 2) — usa
    * tpl.linhasParaPapeis pra saber quantos papéis cada linha alimenta,
    * mapeando palavra i da linha pro papel i daquela linha (posicional,
-   * igual ao Efeito 1). Palavras extras além dos papéis disponíveis
-   * naquela linha são ignoradas (nunca inventa palavra nova).
+   * igual ao Efeito 1) — usado quando a quantidade de palavras bate
+   * com o original (caminho de fidelidade total).
+   *
+   * BUG REAL CORRIGIDO ("não consigo adicionar mais palavras na
+   * linha"): antes, qualquer palavra além da quantidade de papéis
+   * originais daquela linha (3, 2 e 2) era silenciosamente descartada
+   * — o usuário digitava uma 4ª palavra na linha 1 e ela simplesmente
+   * não aparecia em lugar nenhum. Corrigido: agora TAMBÉM devolve a
+   * lista COMPLETA de palavras de cada linha (out._linhas), que o
+   * renderer usa pra decidir se cabe no caminho de fidelidade (mesma
+   * quantidade E mesmo texto do original) ou se precisa cair na
+   * fileira recalculada (que já existia pra texto alterado, e agora
+   * também cobre quantidade alterada).
    */
   function _readTextsEfeito8Style(stanza, tpl) {
     const lines = (stanza && stanza.lines) || [];
     const mapa = tpl.linhasParaPapeis || [];
-    const out = {};
+    const out = { _linhas: [] };
     mapa.forEach((papeis, li) => {
       const palavras = (lines[li]?.words || []).map(w => w.text);
       papeis.forEach((papel, i) => {
         out[papel] = palavras[i] || '';
       });
+      out._linhas.push(palavras);
     });
     return out;
   }
