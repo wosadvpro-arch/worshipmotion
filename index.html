@@ -40372,7 +40372,7 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     const m = g.measureText('AEIMNORSTUXBCDFGHJKLPQVWYZ0123456789');
     const asc = m.actualBoundingBoxAscent || size * 0.75;
     const desc = m.actualBoundingBoxDescent || size * 0.2;
-    cache[fontFamily] = { alturaPx: asc + desc, size };
+    cache[fontFamily] = { alturaPx: asc + desc, ascPx: asc, descPx: desc, size };
     return cache[fontFamily];
   }
 
@@ -40408,8 +40408,22 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     const m = g.measureText(text);
     const left = Math.max(0, Math.ceil(m.actualBoundingBoxLeft || 0));
     const right = Math.ceil(m.actualBoundingBoxRight || m.width);
-    const asc = Math.ceil(m.actualBoundingBoxAscent || fontSizePx * 0.75);
-    const desc = Math.ceil(m.actualBoundingBoxDescent || fontSizePx * 0.2);
+    // BUG REAL CORRIGIDO: usar o ascendente/descendente MEDIDO DESSA
+    // PALAVRA (m.actualBoundingBoxAscent/Descent) pra recortar o
+    // bitmap fazia palavras com acento (ex: "GLÓRIA") medirem bem mais
+    // alto que palavras sem acento (ex: "ALELUIA") — a amostra de
+    // referência não tem letra acentuada, então o acento "roubava"
+    // espaço vertical da letra em si, deixando "GLÓRIA" com as letras
+    // menores e mais pra baixo que a vizinha na mesma fileira. Corrigido
+    // usando o ascendente/descendente de REFERÊNCIA (escalado pro
+    // tamanho de fonte calculado) como moldura de recorte fixa pra
+    // qualquer palavra — o acento pode ficar levemente cortado no topo
+    // em casos extremos, mas o corpo da letra fica sempre no mesmo
+    // tamanho/posição entre palavras vizinhas, que é o que mais importa
+    // visualmente numa fileira.
+    const escala = fontSizePx / ref.size;
+    const asc = Math.ceil(ref.ascPx * escala);
+    const desc = Math.ceil(ref.descPx * escala);
     const c = document.createElement('canvas');
     c.width = left + right + 4;
     c.height = asc + desc + 4;
