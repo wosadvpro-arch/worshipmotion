@@ -39955,6 +39955,12 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       // (66Bold) como substituta, igual já fiz nos efeitos anteriores
       // quando a fonte exata não vinha disponível.
       palavraOriginal: { KELVIN: 'KELVIN', RAISE: 'RAISE', TILL: 'TILL', OFF: 'OFF.' },
+      // A PEDIDO EXPLÍCITO: o tamanho real do MP4 original é pequeno
+      // (~91px de altura numa tela de 1080px, validado por medição de
+      // pixel contra a referência) — o usuário prefere maior/mais
+      // impactante mesmo fugindo do tamanho real. 3.5x traz pra perto
+      // da faixa de tamanho usada nos outros efeitos (~300-400px).
+      escalaExtra: 3.5,
       styles: {
         KELVIN: { fontFamily: 'HeadingNowTrial-66Bold-KSS', color: '#FFFFFF' },
         RAISE:  { fontFamily: 'HeadingNowTrial-66Bold-KSS', color: '#FFFFFF' },
@@ -40168,9 +40174,56 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
    * palavras de tamanho diferente da original.
    */
   function _renderFrameEfeito10Style(ctx, tpl, texts, frameIdx) {
-    const f = tpl.motionData.framesData[frameIdx];
-    if (!f) return false;
+    const fOriginal = tpl.motionData.framesData[frameIdx];
+    if (!fOriginal) return false;
     const papeis = ['KELVIN', 'RAISE', 'TILL', 'OFF'];
+
+    // A PEDIDO EXPLÍCITO: o tamanho do texto no MP4 original é bem
+    // pequeno (validado: 91px de altura numa tela de 1080px, batendo
+    // quase exato com a referência real) — mas o usuário prefere um
+    // texto maior/mais impactante, mesmo fugindo do tamanho real do
+    // vídeo fonte. Escala TODAS as bboxes desse quadro em torno do
+    // centro do conjunto (união das palavras ativas) por um fator
+    // fixo — preserva o timing de entrada de cada palavra e o
+    // movimento relativo entre elas (a "forma" da animação continua
+    // igual), só que tudo maior e ainda centralizado no mesmo ponto.
+    const ESCALA_EXTRA_PEDIDA = tpl.escalaExtra || 1;
+    let f = fOriginal;
+    if (ESCALA_EXTRA_PEDIDA !== 1) {
+      const ativas = papeis.map(p => fOriginal[p]).filter(Boolean);
+      if (ativas.length) {
+        const minX = Math.min(...ativas.map(b => b[0]));
+        const maxX = Math.max(...ativas.map(b => b[0] + b[2]));
+        const minY = Math.min(...ativas.map(b => b[1]));
+        const maxY = Math.max(...ativas.map(b => b[1] + b[3]));
+        const cx = (minX + maxX) / 2;
+        const cy = (minY + maxY) / 2;
+        // BUG REAL CORRIGIDO (testado antes de entregar): com as 4
+        // palavras juntas, escalar por 3.5x sem limite fazia o texto
+        // vazar pra fora da tela dos dois lados. Limita a escala
+        // efetiva desse quadro pra que a largura total do grupo nunca
+        // ultrapasse 92% da largura do canvas — em quadros com só 1-2
+        // palavras (largura menor) a escala pedida cabe inteira; só
+        // encolhe quando teria vazado.
+        const larguraCanvas = tpl.logicalWidth || tpl.motionData.width;
+        const larguraUniao = maxX - minX;
+        const escalaMaxima = (larguraCanvas * 0.92) / larguraUniao;
+        const ESCALA_EXTRA = Math.min(ESCALA_EXTRA_PEDIDA, escalaMaxima);
+        f = {};
+        papeis.forEach(p => {
+          const b = fOriginal[p];
+          if (!b) { f[p] = null; return; }
+          const w2 = b[2] * ESCALA_EXTRA;
+          const h2 = b[3] * ESCALA_EXTRA;
+          const cxB = b[0] + b[2] / 2;
+          const cyB = b[1] + b[3] / 2;
+          const cxB2 = cx + (cxB - cx) * ESCALA_EXTRA;
+          const cyB2 = cy + (cyB - cy) * ESCALA_EXTRA;
+          f[p] = [cxB2 - w2 / 2, cyB2 - h2 / 2, w2, h2];
+        });
+      }
+    }
+
     const todasPalavras = (texts && texts._linhas && texts._linhas[0]) || papeis.map(p => texts && texts[p]);
     const contagemBate = todasPalavras.filter(w => (w || '').trim()).length === papeis.length;
     const todosOriginais = papeis.every((p, i) => {
@@ -40193,15 +40246,42 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     // Quantidade OU conteúdo alterado: reflow em fileira — mesma
     // técnica do Efeito 8 (referência de altura/posição pelas bboxes
     // originais ativas nesse quadro, encolhe se não couber).
+    //
+    // A PEDIDO EXPLÍCITO: aproxima a entrada SEQUENCIAL do vídeo
+    // original (cada palavra chegando depois da outra, não fiel pixel
+    // a pixel já que não existe timing medido pra texto diferente do
+    // original — é uma aproximação, não os dados reais do MP4).
+    // Distribui a chegada de cada palavra ao longo dos primeiros ~10
+    // quadros (mesma janela de tempo em que a construção acontece no
+    // vídeo original, de 31 quadros no total) e dá um "crescimento"
+    // rápido nos ~4 quadros seguintes à chegada dela, pra não aparecer
+    // com um corte seco.
     const referencias = papeis.map(p => f[p]).filter(Boolean);
     if (!referencias.length) return true;
     const alturaRef = Math.max(...referencias.map(b => b[3]));
     const centroYOriginal = referencias.reduce((s, b) => s + (b[1] + b[3] / 2), 0) / referencias.length;
     const stLinha = tpl.styles.OFF;
 
-    const ativos = todasPalavras
-      .map(texto => ({ texto: (texto || '').trim(), st: stLinha }))
+    const palavrasComTexto = todasPalavras
+      .map((texto, i) => ({ texto: (texto || '').trim(), indice: i }))
       .filter(o => o.texto);
+    if (!palavrasComTexto.length) return true;
+
+    const FRAME_CONSTRUCAO_FIM = Math.min(10, Math.round(tpl.motionData.frames * 0.32));
+    const FRAMES_CRESCIMENTO = 4;
+    const n = palavrasComTexto.length;
+    const ativos = palavrasComTexto
+      .map((o, ordem) => {
+        const frameChegada = n > 1 ? Math.round(ordem * FRAME_CONSTRUCAO_FIM / (n - 1)) : 0;
+        if (frameIdx < frameChegada) return null; // ainda não chegou
+        const progresso = FRAMES_CRESCIMENTO > 0
+          ? Math.min(1, (frameIdx - frameChegada) / FRAMES_CRESCIMENTO)
+          : 1;
+        // crescimento suave: começa em 55% da altura e vai até 100%
+        const fatorCrescimento = 0.55 + 0.45 * progresso;
+        return { texto: o.texto, st: stLinha, fatorCrescimento };
+      })
+      .filter(Boolean);
     if (!ativos.length) return true;
 
     const larguraCanvas = tpl.logicalWidth || tpl.motionData.width;
@@ -40362,7 +40442,8 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
 
   function _efeito8MedirItensGrupo(ativos, altura) {
     return ativos.map(o => {
-      const img = _efeito2MakeBitmapAtHeight(o.texto, o.st.fontFamily, o.st.color, altura);
+      const alturaItem = altura * (o.fatorCrescimento != null ? o.fatorCrescimento : 1);
+      const img = _efeito2MakeBitmapAtHeight(o.texto, o.st.fontFamily, o.st.color, alturaItem);
       return img ? { img, w: img.width, h: img.height } : null;
     }).filter(Boolean);
   }
