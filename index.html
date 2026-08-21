@@ -13804,6 +13804,36 @@ window.WM_LOCAL_FONTS = {
 
 const TEMPLATES = [
   {
+    id: "tpl-oficial-sequential-phrase-zoom-compression-frame-exact-v1",
+    name: "Efeito 11",
+    description: "Revezamento sequencial de seis frases com zoom e compressão progressiva, terminando em duas linhas simultâneas comprimindo juntas, reproduzido por bounding boxes absolutas frame a frame.",
+    tags: ["6 linhas", "Cinético", "Pro Plus"],
+    isOfficial: true,
+    isPremium: true,
+    requiredPlan: "pro_plus",
+    isActive: true,
+    accent: "#e31313",
+    config: {
+      type: 'frame-exact',
+      frameExactTemplateId: 'efeito-11',
+      style: {},
+      animConfig: {},
+      aspect: '16:9',
+      parsed: {
+        stanzas: [
+          { id: "stz_piit7vp", label: "Estrofe 1", lines: [
+            { id: "ln_2f14765", words: [{ id: "w_lp5rq93", text: "BE", chars: [{id:"ch_k6yevow",text:"B"}, {id:"ch_h1itgfo",text:"E"}], emphasized: false }, { id: "w_idu8gs3", text: "MY", chars: [{id:"ch_gmive9u",text:"M"}, {id:"ch_uqitofr",text:"Y"}], emphasized: false }, { id: "w_g3chl18", text: "SOUL", chars: [{id:"ch_4j6z8lm",text:"S"}, {id:"ch_irr2spd",text:"O"}, {id:"ch_c03rlux",text:"U"}, {id:"ch_jcm4j4r",text:"L"}], emphasized: false }] },
+            { id: "ln_kv06wfn", words: [{ id: "w_tcx174g", text: "MONSTER", chars: [{id:"ch_8mhq4n8",text:"M"}, {id:"ch_2viby28",text:"O"}, {id:"ch_ytcfmhe",text:"N"}, {id:"ch_856pxgs",text:"S"}, {id:"ch_ex958xb",text:"T"}, {id:"ch_dt0ty9g",text:"E"}, {id:"ch_wumj95i",text:"R"}], emphasized: false }] },
+            { id: "ln_ofppoz0", words: [{ id: "w_4q0e0ue", text: "PART", chars: [{id:"ch_9gi8c0x",text:"P"}, {id:"ch_00fdsj8",text:"A"}, {id:"ch_t8cacho",text:"R"}, {id:"ch_hzw8zh1",text:"T"}], emphasized: false }] },
+            { id: "ln_38wqfl4", words: [{ id: "w_chovqc8", text: "OR", chars: [{id:"ch_8t0wy0e",text:"O"}, {id:"ch_dl2ohfu",text:"R"}], emphasized: false }, { id: "w_yowc1lc", text: "ME", chars: [{id:"ch_gqk81ki",text:"M"}, {id:"ch_z0tcxra",text:"E"}], emphasized: false }, { id: "w_zffyhph", text: "BUT", chars: [{id:"ch_0md6wi5",text:"B"}, {id:"ch_2ojaa9v",text:"U"}, {id:"ch_cvtt911",text:"T"}], emphasized: false }] },
+            { id: "ln_4rydcty", words: [{ id: "w_d9k145m", text: "NOW", chars: [{id:"ch_uxitb6l",text:"N"}, {id:"ch_ut5iarp",text:"O"}, {id:"ch_srnwti2",text:"W"}], emphasized: false }, { id: "w_lcsg87h", text: "I", chars: [{id:"ch_loqt8s1",text:"I"}], emphasized: false }, { id: "w_3arv6rg", text: "LOOSE", chars: [{id:"ch_zgn2hod",text:"L"}, {id:"ch_4wh5f1d",text:"O"}, {id:"ch_j3troos",text:"O"}, {id:"ch_zdi0sah",text:"S"}, {id:"ch_6sh67v4",text:"E"}], emphasized: false }] },
+            { id: "ln_aqvsy4v", words: [{ id: "w_aoh6qdd", text: "CONTROL", chars: [{id:"ch_xjonvjs",text:"C"}, {id:"ch_vjxduqv",text:"O"}, {id:"ch_mh3slt4",text:"N"}, {id:"ch_osmcj4w",text:"T"}, {id:"ch_4861ilz",text:"R"}, {id:"ch_sxn6z4a",text:"O"}, {id:"ch_4q51vz8",text:"L"}], emphasized: false }] },
+          ] },
+        ],
+      },
+    },
+  },
+  {
     id: "tpl-oficial-sequential-word-build-compression-frame-exact-v1",
     name: "Efeito 10",
     description: "Construção sequencial de palavras da esquerda para a direita, seguida de compressão horizontal progressiva do conjunto completo, reproduzida por bounding boxes absolutas frame a frame.",
@@ -36055,6 +36085,7 @@ function initEditor() {
     if (tplFE.layout === 'efeito-2-style') return 2;
     if (tplFE.layout === 'efeito-7-style') return 5;
     if (tplFE.layout === 'efeito-10-style') return 1;
+    if (tplFE.layout === 'efeito-11-style') return 6;
     return 3;
   }
 
@@ -39968,6 +39999,38 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
         OFF:    { fontFamily: 'HeadingNowTrial-66Bold-KSS', color: '#FFFFFF' },
       },
     },
+    'efeito-11': {
+      layout: 'efeito-11-style',
+      // Espaço lógico PRÓPRIO — 1920x1080 (coordinateSystem do próprio
+      // pacote confirma isso, sem armadilha de escala).
+      logicalWidth: 1920,
+      logicalHeight: 1080,
+      motionData: {"fps":25,"frames":90,"framesData":[{"be_my_soul":null,"monster":null,"part":null,"or_me_but":null,"now_i_loose":null,"control":null},{"be_my_soul":[620,832,1100,84],"monster":null,"part":null,"or_me_but":null,"now_i_loose":null,"control":null},{"be_my_soul":[622,832,1091,84],"monster":null,"part":null,"or_me_but":null,"now_i_loose":null,"control":null},{"be_my_soul":[232,594,1474,322],"monster":null,"part":null,"or_me_but":null,"now_i_loose":null,"control":null},{"be_my_soul":[238,437,1461,479],"monster":null,"part":null,"or_me_but":null,"now_i_loose":null,"control":null},{"be_my_soul":[246,437,1446,480],"monster":null,"part":null,"or_me_but":null,"now_i_loose":null,"control":null},{"be_my_soul":[252,176,1433,742],"monster":null,"part":null,"or_me_but":null,"now_i_loose":null,"control":null},{"be_my_soul":[260,160,1418,759],"monster":null,"part":null,"or_me_but":null,"now_i_loose":null,"control":null},{"be_my_soul":[266,160,1406,760],"monster":null,"part":null,"or_me_but":null,"now_i_loose":null,"control":null},{"be_my_soul":[274,160,1390,760],"monster":null,"part":null,"or_me_but":null,"now_i_loose":null,"control":null},{"be_my_soul":[280,159,1377,761],"monster":null,"part":null,"or_me_but":null,"now_i_loose":null,"control":null},{"be_my_soul":[288,158,1362,762],"monster":null,"part":null,"or_me_but":null,"now_i_loose":null,"control":null},{"be_my_soul":[295,158,1348,763],"monster":null,"part":null,"or_me_but":null,"now_i_loose":null,"control":null},{"be_my_soul":[302,157,1334,765],"monster":null,"part":null,"or_me_but":null,"now_i_loose":null,"control":null},{"be_my_soul":[309,156,1319,767],"monster":null,"part":null,"or_me_but":null,"now_i_loose":null,"control":null},{"be_my_soul":[316,156,1306,768],"monster":null,"part":null,"or_me_but":null,"now_i_loose":null,"control":null},{"be_my_soul":[324,156,1290,768],"monster":null,"part":null,"or_me_but":null,"now_i_loose":null,"control":null},{"be_my_soul":[330,155,1277,769],"monster":null,"part":null,"or_me_but":null,"now_i_loose":null,"control":null},{"be_my_soul":null,"monster":[126,154,1692,772],"part":null,"or_me_but":null,"now_i_loose":null,"control":null},{"be_my_soul":null,"monster":[133,153,1677,774],"part":null,"or_me_but":null,"now_i_loose":null,"control":null},{"be_my_soul":null,"monster":[141,153,1662,775],"part":null,"or_me_but":null,"now_i_loose":null,"control":null},{"be_my_soul":null,"monster":[149,152,1646,776],"part":null,"or_me_but":null,"now_i_loose":null,"control":null},{"be_my_soul":null,"monster":[157,151,1630,778],"part":null,"or_me_but":null,"now_i_loose":null,"control":null},{"be_my_soul":null,"monster":[165,151,1614,778],"part":null,"or_me_but":null,"now_i_loose":null,"control":null},{"be_my_soul":null,"monster":[173,150,1598,780],"part":null,"or_me_but":null,"now_i_loose":null,"control":null},{"be_my_soul":null,"monster":[181,149,1583,781],"part":null,"or_me_but":null,"now_i_loose":null,"control":null},{"be_my_soul":null,"monster":[188,149,1568,782],"part":null,"or_me_but":null,"now_i_loose":null,"control":null},{"be_my_soul":null,"monster":[196,149,1552,783],"part":null,"or_me_but":null,"now_i_loose":null,"control":null},{"be_my_soul":null,"monster":[204,148,1536,784],"part":null,"or_me_but":null,"now_i_loose":null,"control":null},{"be_my_soul":null,"monster":[212,147,1520,786],"part":null,"or_me_but":null,"now_i_loose":null,"control":null},{"be_my_soul":null,"monster":[220,147,1504,787],"part":null,"or_me_but":null,"now_i_loose":null,"control":null},{"be_my_soul":null,"monster":[229,146,1487,788],"part":null,"or_me_but":null,"now_i_loose":null,"control":null},{"be_my_soul":null,"monster":null,"part":[505,153,931,773],"or_me_but":null,"now_i_loose":null,"control":null},{"be_my_soul":null,"monster":null,"part":[512,152,918,774],"or_me_but":null,"now_i_loose":null,"control":null},{"be_my_soul":null,"monster":null,"part":[518,152,906,776],"or_me_but":null,"now_i_loose":null,"control":null},{"be_my_soul":null,"monster":null,"part":[524,152,893,776],"or_me_but":null,"now_i_loose":null,"control":null},{"be_my_soul":null,"monster":null,"part":[531,152,879,776],"or_me_but":null,"now_i_loose":null,"control":null},{"be_my_soul":null,"monster":null,"part":[538,151,866,777],"or_me_but":null,"now_i_loose":null,"control":null},{"be_my_soul":null,"monster":null,"part":[544,150,854,778],"or_me_but":null,"now_i_loose":null,"control":null},{"be_my_soul":null,"monster":null,"part":[551,149,840,781],"or_me_but":null,"now_i_loose":null,"control":null},{"be_my_soul":null,"monster":null,"part":[558,148,826,782],"or_me_but":null,"now_i_loose":null,"control":null},{"be_my_soul":null,"monster":null,"part":null,"or_me_but":[81,144,1789,799],"now_i_loose":null,"control":null},{"be_my_soul":null,"monster":null,"part":null,"or_me_but":[83,143,1784,801],"now_i_loose":null,"control":null},{"be_my_soul":null,"monster":null,"part":null,"or_me_but":[86,143,1778,801],"now_i_loose":null,"control":null},{"be_my_soul":null,"monster":null,"part":null,"or_me_but":[88,142,1774,803],"now_i_loose":null,"control":null},{"be_my_soul":null,"monster":null,"part":null,"or_me_but":[91,141,1768,805],"now_i_loose":null,"control":null},{"be_my_soul":null,"monster":null,"part":null,"or_me_but":[94,141,1763,805],"now_i_loose":null,"control":null},{"be_my_soul":null,"monster":null,"part":null,"or_me_but":[96,141,1758,805],"now_i_loose":null,"control":null},{"be_my_soul":null,"monster":null,"part":null,"or_me_but":[99,140,1752,807],"now_i_loose":null,"control":null},{"be_my_soul":null,"monster":null,"part":null,"or_me_but":[102,140,1747,807],"now_i_loose":null,"control":null},{"be_my_soul":null,"monster":null,"part":null,"or_me_but":[564,351,820,381],"now_i_loose":null,"control":null},{"be_my_soul":null,"monster":null,"part":null,"or_me_but":[565,351,818,381],"now_i_loose":null,"control":null},{"be_my_soul":null,"monster":null,"part":null,"or_me_but":[566,350,816,382],"now_i_loose":null,"control":null},{"be_my_soul":null,"monster":null,"part":null,"or_me_but":[568,350,812,383],"now_i_loose":null,"control":null},{"be_my_soul":null,"monster":null,"part":null,"or_me_but":[569,350,810,383],"now_i_loose":null,"control":null},{"be_my_soul":null,"monster":null,"part":null,"or_me_but":null,"now_i_loose":null,"control":null},{"be_my_soul":null,"monster":null,"part":null,"or_me_but":null,"now_i_loose":[108,205,1794,319],"control":[234,549,1117,329]},{"be_my_soul":null,"monster":null,"part":null,"or_me_but":null,"now_i_loose":[108,200,1794,329],"control":[234,549,1355,330]},{"be_my_soul":null,"monster":null,"part":null,"or_me_but":null,"now_i_loose":[110,200,1792,329],"control":[234,549,1355,330]},{"be_my_soul":null,"monster":null,"part":null,"or_me_but":null,"now_i_loose":[112,200,1788,329],"control":[235,549,1570,331]},{"be_my_soul":null,"monster":null,"part":null,"or_me_but":null,"now_i_loose":[114,200,1782,329],"control":[237,549,1566,331]},{"be_my_soul":null,"monster":null,"part":null,"or_me_but":null,"now_i_loose":[120,199,1772,330],"control":[240,549,1561,332]},{"be_my_soul":null,"monster":null,"part":null,"or_me_but":null,"now_i_loose":[126,198,1758,331],"control":[244,550,1553,331]},{"be_my_soul":null,"monster":null,"part":null,"or_me_but":null,"now_i_loose":[137,198,1737,331],"control":[250,550,1541,332]},{"be_my_soul":null,"monster":null,"part":null,"or_me_but":null,"now_i_loose":[154,197,1704,332],"control":[259,550,1523,332]},{"be_my_soul":null,"monster":null,"part":null,"or_me_but":null,"now_i_loose":[197,196,1618,333],"control":[285,550,1472,333]},{"be_my_soul":null,"monster":null,"part":null,"or_me_but":null,"now_i_loose":[196,196,1620,333],"control":[284,550,1473,333]},{"be_my_soul":null,"monster":null,"part":null,"or_me_but":null,"now_i_loose":[196,196,1620,333],"control":[284,550,1474,334]},{"be_my_soul":null,"monster":null,"part":null,"or_me_but":null,"now_i_loose":[198,196,1616,333],"control":[285,550,1472,334]},{"be_my_soul":null,"monster":null,"part":null,"or_me_but":null,"now_i_loose":[200,196,1612,333],"control":[286,550,1470,334]},{"be_my_soul":null,"monster":null,"part":null,"or_me_but":null,"now_i_loose":[202,196,1608,333],"control":[288,550,1466,334]},{"be_my_soul":null,"monster":null,"part":null,"or_me_but":null,"now_i_loose":[206,196,1600,333],"control":[290,550,1462,334]},{"be_my_soul":null,"monster":null,"part":null,"or_me_but":null,"now_i_loose":[211,196,1589,333],"control":[293,550,1456,334]},{"be_my_soul":null,"monster":null,"part":null,"or_me_but":null,"now_i_loose":[218,196,1576,333],"control":[297,550,1448,334]},{"be_my_soul":null,"monster":null,"part":null,"or_me_but":null,"now_i_loose":[226,196,1560,333],"control":[302,550,1438,334]},{"be_my_soul":null,"monster":null,"part":null,"or_me_but":null,"now_i_loose":[238,196,1536,333],"control":[309,550,1424,334]},{"be_my_soul":null,"monster":null,"part":null,"or_me_but":null,"now_i_loose":[254,196,1504,333],"control":[319,550,1404,334]},{"be_my_soul":null,"monster":null,"part":null,"or_me_but":null,"now_i_loose":[295,196,1421,333],"control":[343,550,1355,334]},{"be_my_soul":null,"monster":null,"part":null,"or_me_but":null,"now_i_loose":[296,196,1420,333],"control":[343,550,1355,334]},{"be_my_soul":null,"monster":null,"part":null,"or_me_but":null,"now_i_loose":[298,196,1416,333],"control":[345,550,1352,334]},{"be_my_soul":null,"monster":null,"part":null,"or_me_but":null,"now_i_loose":[300,196,1412,333],"control":[346,550,1349,334]},{"be_my_soul":null,"monster":null,"part":null,"or_me_but":null,"now_i_loose":[305,196,1401,332],"control":[349,550,1343,334]},{"be_my_soul":null,"monster":null,"part":null,"or_me_but":null,"now_i_loose":[312,196,1388,332],"control":[353,550,1336,334]},{"be_my_soul":null,"monster":null,"part":null,"or_me_but":null,"now_i_loose":[320,196,1372,332],"control":[358,550,1325,334]},{"be_my_soul":null,"monster":null,"part":null,"or_me_but":null,"now_i_loose":[331,196,1349,332],"control":[365,550,1312,334]},{"be_my_soul":null,"monster":null,"part":null,"or_me_but":null,"now_i_loose":[346,196,1320,332],"control":[373,550,1295,334]},{"be_my_soul":null,"monster":null,"part":null,"or_me_but":null,"now_i_loose":[364,196,1283,332],"control":[385,550,1271,334]},{"be_my_soul":null,"monster":null,"part":null,"or_me_but":null,"now_i_loose":[390,196,1231,332],"control":[401,550,1240,334]},{"be_my_soul":null,"monster":null,"part":null,"or_me_but":null,"now_i_loose":[429,196,1154,332],"control":[423,550,1195,334]},{"be_my_soul":null,"monster":null,"part":null,"or_me_but":null,"now_i_loose":[520,196,972,332],"control":[478,550,1085,334]}]},
+      // 6 papéis INDEPENDENTES, cada um uma frase inteira — mesma
+      // técnica do Efeito 6 (drawStretched direto na bbox 'xywh'),
+      // estendida pra 6 papéis. Revezamento sequencial: be_my_soul →
+      // monster → part → or_me_but, e por fim now_i_loose + control
+      // aparecem JUNTOS (2 linhas simultâneas) até o final, comprimindo
+      // juntos. bboxConfidence do pacote original é "ESTIMATED"
+      // (extraído por máscara de pixel do MP4, não de dados vetoriais).
+      //
+      // FONTE: a própria ferramenta de referência usa Arial Black
+      // genérico (não uma fonte real do projeto) — usando a variante
+      // já embutida (66Bold-KSS) como substituta, mesmo padrão adotado
+      // nos efeitos anteriores quando a fonte real não está disponível.
+      palavraOriginal: {
+        be_my_soul: 'BE MY SOUL', monster: 'MONSTER', part: 'PART',
+        or_me_but: 'OR ME BUT', now_i_loose: 'NOW I LOOSE', control: 'CONTROL',
+      },
+      styles: {
+        be_my_soul:  { fontFamily: 'HeadingNowTrial-66Bold-KSS', color: '#e31313' },
+        monster:     { fontFamily: 'HeadingNowTrial-66Bold-KSS', color: '#ffffff' },
+        part:        { fontFamily: 'HeadingNowTrial-66Bold-KSS', color: '#e31313' },
+        or_me_but:   { fontFamily: 'HeadingNowTrial-66Bold-KSS', color: '#ffffff' },
+        now_i_loose: { fontFamily: 'HeadingNowTrial-66Bold-KSS', color: '#e31313' },
+        control:     { fontFamily: 'HeadingNowTrial-66Bold-KSS', color: '#ffffff' },
+      },
+    },
     'efeito-2': {
       layout: 'efeito-2-style',
       // Espaço lógico PRÓPRIO deste template — 1920x1080, NÃO
@@ -40154,7 +40217,32 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     if (tpl.layout === 'efeito-10-style') {
       return _renderFrameEfeito10Style(ctx, tpl, texts, frameIdx);
     }
+    if (tpl.layout === 'efeito-11-style') {
+      return _renderFrameEfeito11Style(ctx, tpl, texts, frameIdx);
+    }
     return _renderFrameKineticScaleStack(ctx, tpl, texts, frameIdx);
+  }
+
+  /**
+   * Efeito 11 ("Sequential Phrase Zoom Compression"): 6 papéis
+   * independentes, cada um uma frase inteira — mesma técnica do
+   * Efeito 6 (drawStretched direto na bbox 'xywh'), estendida pra 6.
+   * Revezamento sequencial: be_my_soul → monster → part → or_me_but,
+   * e por fim now_i_loose + control aparecem JUNTOS (2 linhas
+   * simultâneas) até o final, comprimindo lado a lado.
+   */
+  function _renderFrameEfeito11Style(ctx, tpl, texts, frameIdx) {
+    const f = tpl.motionData.framesData[frameIdx];
+    if (!f) return false;
+    ['be_my_soul', 'monster', 'part', 'or_me_but', 'now_i_loose', 'control'].forEach(papel => {
+      const bbox = f[papel];
+      if (!bbox) return;
+      const texto = (texts && texts[papel] || '').trim();
+      if (!texto) return;
+      const st = tpl.styles[papel];
+      drawStretched(ctx, texto, st.fontFamily, st.color, bbox, 'xywh');
+    });
+    return true;
   }
 
   /**
@@ -40790,7 +40878,25 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     if (tpl && tpl.layout === 'efeito-10-style') {
       return _readTextsEfeito10Style(stanza);
     }
+    if (tpl && tpl.layout === 'efeito-11-style') {
+      return _readTextsEfeito11Style(stanza);
+    }
     return _readTextsKineticScaleStack(stanza);
+  }
+
+  /**
+   * Efeito 11: 6 linhas do editor → 6 papéis, cada linha inteira vira
+   * UM texto só (todas as palavras daquela linha juntas) — igual ao
+   * Efeito 6/7, agora com 6 linhas.
+   */
+  function _readTextsEfeito11Style(stanza) {
+    const lines = (stanza && stanza.lines) || [];
+    const papeis = ['be_my_soul', 'monster', 'part', 'or_me_but', 'now_i_loose', 'control'];
+    const out = {};
+    papeis.forEach((papel, i) => {
+      out[papel] = (lines[i]?.words || []).map(w => w.text).join(' ');
+    });
+    return out;
   }
 
   /**
