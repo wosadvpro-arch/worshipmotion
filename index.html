@@ -13804,6 +13804,33 @@ window.WM_LOCAL_FONTS = {
 
 const TEMPLATES = [
   {
+    id: "tpl-oficial-staggered-vertical-type-cascade-frame-exact-v1",
+    name: "Efeito 13",
+    description: "Cascata tipográfica vertical em três linhas com entrada escalonada e deformação de overshoot, terminando numa saída também escalonada de baixo para cima.",
+    tags: ["3 linhas", "Cinético", "Pro Plus"],
+    isOfficial: true,
+    isPremium: true,
+    requiredPlan: "pro_plus",
+    isActive: true,
+    accent: "#ED0019",
+    config: {
+      type: 'frame-exact',
+      frameExactTemplateId: 'efeito-13',
+      style: {},
+      animConfig: {},
+      aspect: '16:9',
+      parsed: {
+        stanzas: [
+          { id: "stz_si1n1q5", label: "Estrofe 1", lines: [
+            { id: "ln_29sa8ma", words: [{ id: "w_kiob4b1", text: "PUT", chars: [{id:"ch_m8pyt7q",text:"P"}, {id:"ch_d8b11e9",text:"U"}, {id:"ch_6dmsuht",text:"T"}], emphasized: false }, { id: "w_ckxwu5w", text: "OFF", chars: [{id:"ch_be3zgf6",text:"O"}, {id:"ch_ycadyjd",text:"F"}, {id:"ch_6psrjws",text:"F"}], emphasized: false }, { id: "w_7tlx7ed", text: "HOTTED", chars: [{id:"ch_cdfp92t",text:"H"}, {id:"ch_9vl0f8x",text:"O"}, {id:"ch_urgiyo0",text:"T"}, {id:"ch_0py4ndc",text:"T"}, {id:"ch_ql5lz90",text:"E"}, {id:"ch_bt1s3a0",text:"D"}], emphasized: false }] },
+            { id: "ln_anjiqvu", words: [{ id: "w_ykxu8m1", text: "DO", chars: [{id:"ch_rc368yy",text:"D"}, {id:"ch_cbb0hwo",text:"O"}], emphasized: false }, { id: "w_h9dj7n1", text: "NOT", chars: [{id:"ch_ab87f1y",text:"N"}, {id:"ch_yi8j2jn",text:"O"}, {id:"ch_5xzii9y",text:"T"}], emphasized: false }, { id: "w_hjb3h8l", text: "PUT", chars: [{id:"ch_oecx4bq",text:"P"}, {id:"ch_niir2k7",text:"U"}, {id:"ch_q08ro8e",text:"T"}], emphasized: false }] },
+            { id: "ln_w2caq2e", words: [{ id: "w_9w27wev", text: "IS", chars: [{id:"ch_o4cjt8y",text:"I"}, {id:"ch_r753gqk",text:"S"}], emphasized: false }, { id: "w_t2a7etr", text: "ON", chars: [{id:"ch_h3c41xn",text:"O"}, {id:"ch_knyveyf",text:"N"}], emphasized: false }, { id: "w_7l3p4t4", text: "THE", chars: [{id:"ch_vpedd2z",text:"T"}, {id:"ch_uja68u8",text:"H"}, {id:"ch_9o04dtp",text:"E"}], emphasized: false }, { id: "w_3ltwy2q", text: "MAP.", chars: [{id:"ch_9jmycee",text:"M"}, {id:"ch_izhogst",text:"A"}, {id:"ch_t5koegr",text:"P"}, {id:"ch_22wljoh",text:"."}], emphasized: false }] },
+          ] },
+        ],
+      },
+    },
+  },
+  {
     id: "tpl-oficial-kinetic-perspective-warp-stack-frame-exact-v1",
     name: "Efeito 12",
     description: "Empilhamento de três frases com deformação de perspectiva real quadro a quadro — cada linha entra com um leve keystone que assenta, terminando com as três empilhadas e a última fortemente inclinada.",
@@ -40058,6 +40085,49 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
         control:     { fontFamily: 'HeadingNowTrial-66Bold-KSS', color: '#ffffff' },
       },
     },
+    'efeito-13': {
+      layout: 'efeito-13-style',
+      // Espaço lógico PRÓPRIO — 1920x1080 (coordinateSystem do próprio
+      // pacote confirma explicitamente: "source-pixel coordinates",
+      // sem armadilha de escala).
+      logicalWidth: 1920,
+      logicalHeight: 1080,
+      motionData: {"fps":25,"frames":68,"framesData":[{"top_put":[442,466,248,84],"top_off":null,"top_hotted":null,"mid_do":null,"mid_not":null,"mid_put":null,"bot_is":null,"bot_on":null,"bot_the":null,"bot_map":null},{"top_put":[442,458,248,92],"top_off":null,"top_hotted":null,"mid_do":null,"mid_not":null,"mid_put":null,"bot_is":null,"bot_on":null,"bot_the":null,"bot_map":null},{"top_put":[441,451,249,99],"top_off":null,"top_hotted":null,"mid_do":null,"mid_not":null,"mid_put":null,"bot_is":null,"bot_on":null,"bot_the":null,"bot_map":null},{"top_put":[440,450,250,100],"top_off":[738,471,222,77],"top_hotted":null,"mid_do":null,"mid_not":null,"mid_put":null,"bot_is":null,"bot_on":null,"bot_the":null,"bot_map":null},{"top_put":[439,450,250,100],"top_off":[736,466,224,84],"top_hotted":null,"mid_do":null,"mid_not":null,"mid_put":null,"bot_is":null,"bot_on":null,"bot_the":null,"bot_map":null},{"top_put":[438,449,250,101],"top_off":[735,459,225,91],"top_hotted":null,"mid_do":null,"mid_not":null,"mid_put":null,"bot_is":null,"bot_on":null,"bot_the":null,"bot_map":null},{"top_put":[438,449,250,101],"top_off":[734,454,226,96],"top_hotted":null,"mid_do":null,"mid_not":null,"mid_put":null,"bot_is":null,"bot_on":null,"bot_the":null,"bot_map":null},{"top_put":[436,449,252,101],"top_off":[734,447,226,103],"top_hotted":null,"mid_do":null,"mid_not":null,"mid_put":null,"bot_is":null,"bot_on":null,"bot_the":null,"bot_map":null},{"top_put":[436,448,252,102],"top_off":[734,446,226,104],"top_hotted":[1008,470,494,80],"mid_do":null,"mid_not":null,"mid_put":null,"bot_is":null,"bot_on":null,"bot_the":null,"bot_map":null},{"top_put":[435,448,252,102],"top_off":[734,446,226,104],"top_hotted":[1008,466,498,84],"mid_do":null,"mid_not":null,"mid_put":null,"bot_is":null,"bot_on":null,"bot_the":null,"bot_map":null},{"top_put":[434,448,252,102],"top_off":[733,446,227,104],"top_hotted":[1008,458,500,92],"mid_do":null,"mid_not":null,"mid_put":null,"bot_is":null,"bot_on":null,"bot_the":null,"bot_map":null},{"top_put":[434,448,252,102],"top_off":[732,446,228,104],"top_hotted":[1008,454,500,96],"mid_do":null,"mid_not":null,"mid_put":null,"bot_is":null,"bot_on":null,"bot_the":null,"bot_map":null},{"top_put":[432,448,254,102],"top_off":[732,445,228,105],"top_hotted":[1008,447,502,103],"mid_do":null,"mid_not":null,"mid_put":null,"bot_is":null,"bot_on":null,"bot_the":null,"bot_map":null},{"top_put":[432,448,254,102],"top_off":[732,445,228,105],"top_hotted":[1008,445,502,105],"mid_do":null,"mid_not":null,"mid_put":null,"bot_is":null,"bot_on":null,"bot_the":null,"bot_map":null},{"top_put":[431,448,253,102],"top_off":[732,445,228,105],"top_hotted":[1008,445,503,105],"mid_do":null,"mid_not":null,"mid_put":null,"bot_is":null,"bot_on":null,"bot_the":null,"bot_map":null},{"top_put":[430,448,254,102],"top_off":[732,445,228,105],"top_hotted":[1008,445,504,105],"mid_do":null,"mid_not":null,"mid_put":null,"bot_is":null,"bot_on":null,"bot_the":null,"bot_map":null},{"top_put":[430,448,254,102],"top_off":[731,444,229,106],"top_hotted":[1008,444,505,106],"mid_do":null,"mid_not":null,"mid_put":null,"bot_is":null,"bot_on":null,"bot_the":null,"bot_map":null},{"top_put":[428,361,256,169],"top_off":[730,358,230,172],"top_hotted":[1008,358,506,172],"mid_do":null,"mid_not":null,"mid_put":null,"bot_is":null,"bot_on":null,"bot_the":null,"bot_map":null},{"top_put":[428,361,255,169],"top_off":[730,358,230,172],"top_hotted":[1008,358,506,172],"mid_do":null,"mid_not":null,"mid_put":null,"bot_is":null,"bot_on":null,"bot_the":null,"bot_map":null},{"top_put":[427,212,255,170],"top_off":[730,210,230,172],"top_hotted":[1008,209,508,173],"mid_do":null,"mid_not":null,"mid_put":null,"bot_is":null,"bot_on":null,"bot_the":null,"bot_map":null},{"top_put":[426,212,256,170],"top_off":[730,209,230,173],"top_hotted":[1008,209,508,173],"mid_do":null,"mid_not":null,"mid_put":null,"bot_is":null,"bot_on":null,"bot_the":null,"bot_map":null},{"top_put":[426,192,256,170],"top_off":[730,189,230,173],"top_hotted":[1008,189,509,173],"mid_do":[309,433,290,517],"mid_not":null,"mid_put":null,"bot_is":null,"bot_on":null,"bot_the":null,"bot_map":null},{"top_put":[424,192,258,170],"top_off":[729,188,231,174],"top_hotted":[1008,188,510,174],"mid_do":[308,423,290,527],"mid_not":null,"mid_put":null,"bot_is":null,"bot_on":null,"bot_the":null,"bot_map":null},{"top_put":[424,191,257,170],"top_off":[728,188,232,173],"top_hotted":[1008,188,511,173],"mid_do":[307,411,291,522],"mid_not":null,"mid_put":null,"bot_is":null,"bot_on":null,"bot_the":null,"bot_map":null},{"top_put":[423,190,257,171],"top_off":[728,187,232,174],"top_hotted":[1008,187,512,174],"mid_do":[306,403,291,364],"mid_not":null,"mid_put":null,"bot_is":null,"bot_on":null,"bot_the":null,"bot_map":null},{"top_put":[422,190,258,171],"top_off":[728,187,232,174],"top_hotted":[1008,187,512,174],"mid_do":[305,403,291,345],"mid_not":[677,451,433,499],"mid_put":null,"bot_is":null,"bot_on":null,"bot_the":null,"bot_map":null},{"top_put":[422,189,258,172],"top_off":[728,186,232,175],"top_hotted":[1008,186,514,175],"mid_do":[304,403,292,346],"mid_not":[676,439,434,511],"mid_put":null,"bot_is":null,"bot_on":null,"bot_the":null,"bot_map":null},{"top_put":[420,188,260,172],"top_off":[727,186,233,174],"top_hotted":[1009,186,513,174],"mid_do":[303,403,292,346],"mid_not":[676,429,435,521],"mid_put":null,"bot_is":null,"bot_on":null,"bot_the":null,"bot_map":null},{"top_put":[420,188,259,172],"top_off":[726,185,234,175],"top_hotted":[1009,185,514,175],"mid_do":[302,403,293,346],"mid_not":[675,417,436,533],"mid_put":null,"bot_is":null,"bot_on":null,"bot_the":null,"bot_map":null},{"top_put":[418,188,260,172],"top_off":[726,184,234,176],"top_hotted":[1009,184,515,176],"mid_do":[301,402,293,348],"mid_not":[675,405,436,468],"mid_put":null,"bot_is":null,"bot_on":null,"bot_the":null,"bot_map":null},{"top_put":[418,188,260,172],"top_off":[726,184,234,176],"top_hotted":[1009,184,515,176],"mid_do":[300,402,294,348],"mid_not":[675,402,436,348],"mid_put":[1190,475,428,475],"bot_is":null,"bot_on":null,"bot_the":null,"bot_map":null},{"top_put":[417,187,261,173],"top_off":[726,184,234,176],"top_hotted":[1010,184,516,176],"mid_do":[299,402,294,348],"mid_not":[674,402,437,348],"mid_put":[1190,461,429,489],"bot_is":null,"bot_on":null,"bot_the":null,"bot_map":null},{"top_put":[416,186,262,174],"top_off":[726,183,234,177],"top_hotted":[1010,183,516,177],"mid_do":[298,402,295,349],"mid_not":[674,402,438,349],"mid_put":[1191,447,429,503],"bot_is":null,"bot_on":null,"bot_the":null,"bot_map":null},{"top_put":[416,186,260,173],"top_off":[725,183,235,176],"top_hotted":[1010,183,518,176],"mid_do":[297,401,295,350],"mid_not":[673,401,439,350],"mid_put":[1191,435,430,515],"bot_is":null,"bot_on":null,"bot_the":null,"bot_map":null},{"top_put":[414,185,262,173],"top_off":[724,182,236,177],"top_hotted":[1010,182,518,177],"mid_do":[296,401,295,350],"mid_not":[673,401,439,350],"mid_put":[1191,421,431,528],"bot_is":null,"bot_on":null,"bot_the":null,"bot_map":null},{"top_put":[414,184,262,174],"top_off":[724,181,236,177],"top_hotted":[1010,181,519,177],"mid_do":[295,401,296,351],"mid_not":[672,401,440,351],"mid_put":[1192,411,431,450],"bot_is":null,"bot_on":null,"bot_the":null,"bot_map":null},{"top_put":[413,184,263,174],"top_off":[724,180,236,178],"top_hotted":[1010,180,520,178],"mid_do":[294,401,296,351],"mid_not":[672,401,441,351],"mid_put":[1192,406,432,346],"bot_is":null,"bot_on":null,"bot_the":null,"bot_map":null},{"top_put":[412,184,263,174],"top_off":[724,180,236,178],"top_hotted":[1010,180,520,178],"mid_do":[293,401,297,351],"mid_not":[672,401,441,351],"mid_put":[1192,406,433,346],"bot_is":null,"bot_on":null,"bot_the":null,"bot_map":null},{"top_put":[412,184,262,173],"top_off":[724,180,236,177],"top_hotted":[1010,180,522,177],"mid_do":[292,400,297,352],"mid_not":[671,400,442,352],"mid_put":[1193,406,433,346],"bot_is":null,"bot_on":null,"bot_the":null,"bot_map":null},{"top_put":[410,182,264,175],"top_off":[723,179,237,178],"top_hotted":[1010,179,522,178],"mid_do":[291,400,298,353],"mid_not":[671,400,442,353],"mid_put":[1193,406,434,347],"bot_is":null,"bot_on":null,"bot_the":null,"bot_map":null},{"top_put":[410,182,264,175],"top_off":[722,179,238,178],"top_hotted":[1010,179,524,178],"mid_do":[290,400,298,353],"mid_not":[670,400,443,353],"mid_put":[1193,405,435,348],"bot_is":null,"bot_on":null,"bot_the":null,"bot_map":null},{"top_put":[409,181,265,176],"top_off":[722,178,238,179],"top_hotted":[1010,178,524,179],"mid_do":[289,400,299,354],"mid_not":[670,400,444,354],"mid_put":[1194,405,435,349],"bot_is":null,"bot_on":null,"bot_the":null,"bot_map":null},{"top_put":[408,180,265,176],"top_off":[722,178,238,178],"top_hotted":[1010,178,525,178],"mid_do":[288,399,299,355],"mid_not":[669,399,445,355],"mid_put":[1194,405,436,349],"bot_is":[198,799,180,281],"bot_on":null,"bot_the":null,"bot_map":null},{"top_put":[408,180,264,176],"top_off":[722,177,238,179],"top_hotted":[1010,177,526,179],"mid_do":[287,399,299,355],"mid_not":[669,399,445,355],"mid_put":[1195,405,436,349],"bot_is":[197,791,179,235],"bot_on":null,"bot_the":null,"bot_map":null},{"top_put":[406,180,266,176],"top_off":[721,176,239,180],"top_hotted":[1010,176,526,180],"mid_do":[286,399,300,355],"mid_not":[669,399,445,355],"mid_put":[1195,405,437,349],"bot_is":[196,790,180,156],"bot_on":[445,810,263,270],"bot_the":null,"bot_map":null},{"top_put":[406,180,266,176],"top_off":[720,176,240,180],"top_hotted":[1010,176,528,180],"mid_do":[285,399,300,356],"mid_not":[668,399,447,356],"mid_put":[1195,405,438,350],"bot_is":[194,790,180,156],"bot_on":[444,802,264,278],"bot_the":null,"bot_map":null},{"top_put":[405,179,267,177],"top_off":[720,175,240,181],"top_hotted":[1010,175,528,181],"mid_do":[284,399,301,356],"mid_not":[668,399,447,356],"mid_put":[1196,404,438,351],"bot_is":[194,790,180,158],"bot_on":[444,795,264,271],"bot_the":null,"bot_map":null},{"top_put":[404,178,266,177],"top_off":[720,175,240,180],"top_hotted":[1010,175,530,180],"mid_do":[283,399,301,356],"mid_not":[667,399,448,356],"mid_put":[1196,404,439,351],"bot_is":[192,791,181,157],"bot_on":[442,791,266,157],"bot_the":[776,823,357,257],"bot_map":null},{"top_put":[404,178,266,177],"top_off":[720,174,240,181],"top_hotted":[1010,174,530,181],"mid_do":[282,398,302,358],"mid_not":[667,398,448,358],"mid_put":[1196,404,440,352],"bot_is":[192,792,180,156],"bot_on":[442,792,265,156],"bot_the":[776,814,359,266],"bot_map":null},{"top_put":[402,177,268,178],"top_off":[720,174,240,181],"top_hotted":[1010,174,531,181],"mid_do":[281,398,302,358],"mid_not":[666,398,450,358],"mid_put":[1197,404,440,352],"bot_is":[190,792,182,156],"bot_on":[441,792,265,156],"bot_the":[776,803,360,275],"bot_map":[1210,830,436,250]},{"top_put":[402,176,268,178],"top_off":[719,173,241,181],"top_hotted":[1010,173,532,181],"mid_do":[280,398,303,358],"mid_not":[666,398,450,358],"mid_put":[1197,403,441,353],"bot_is":[189,792,181,156],"bot_on":[440,792,266,156],"bot_the":[776,797,360,177],"bot_map":[1210,829,436,251]},{"top_put":[400,176,269,178],"top_off":[718,172,242,182],"top_hotted":[1010,172,532,182],"mid_do":[279,398,303,359],"mid_not":[666,398,450,359],"mid_put":[1197,403,442,354],"bot_is":[188,792,182,158],"bot_on":[440,792,266,158],"bot_the":[776,796,360,150],"bot_map":[1210,818,438,262]},{"top_put":[400,176,268,178],"top_off":[718,172,242,182],"top_hotted":[1010,172,534,182],"mid_do":[278,397,304,360],"mid_not":[665,397,451,360],"mid_put":[1198,403,442,354],"bot_is":[186,792,182,159],"bot_on":[438,792,268,159],"bot_the":[776,796,360,152],"bot_map":[1210,810,486,270]},{"top_put":[399,176,269,177],"top_off":[718,172,242,181],"top_hotted":[1010,172,534,181],"mid_do":[277,397,304,360],"mid_not":[665,397,451,360],"mid_put":[1198,403,443,354],"bot_is":[186,792,182,160],"bot_on":[438,792,267,160],"bot_the":[776,796,360,152],"bot_map":[1211,802,487,236]},{"top_put":[398,174,270,179],"top_off":[718,171,242,182],"top_hotted":[1011,171,535,182],"mid_do":[276,397,304,361],"mid_not":[664,397,453,361],"mid_put":[1198,403,444,355],"bot_is":[184,793,182,159],"bot_on":[438,793,266,159],"bot_the":[775,796,361,152],"bot_map":[1212,796,486,156]},{"top_put":[398,174,270,179],"top_off":[718,171,242,182],"top_hotted":[1011,171,535,182],"mid_do":[275,397,305,361],"mid_not":[664,397,453,361],"mid_put":[1199,403,444,355],"bot_is":[184,794,182,158],"bot_on":[436,794,268,158],"bot_the":[774,796,363,152],"bot_map":[1212,796,488,156]},{"top_put":[396,173,271,180],"top_off":[717,170,243,183],"top_hotted":[1011,170,536,183],"mid_do":[274,397,305,361],"mid_not":[663,397,454,361],"mid_put":[1199,402,445,356],"bot_is":[182,794,183,158],"bot_on":[436,794,268,158],"bot_the":[774,798,363,151],"bot_map":[1212,798,488,154]},{"top_put":[396,172,270,180],"top_off":[716,169,244,183],"top_hotted":[1011,169,537,183],"mid_do":[273,396,306,362],"mid_not":[663,396,454,362],"mid_put":[1199,402,446,356],"bot_is":[182,794,182,159],"bot_on":[435,794,269,159],"bot_the":[774,798,364,152],"bot_map":[1212,798,490,155]},{"top_put":[395,172,271,180],"top_off":[716,169,244,183],"top_hotted":[1012,169,536,183],"mid_do":[272,396,306,363],"mid_not":[663,396,455,363],"mid_put":[1200,402,446,357],"bot_is":[180,795,184,159],"bot_on":[434,795,270,159],"bot_the":[774,798,364,152],"bot_map":[1213,798,489,156]},{"top_put":[394,172,272,180],"top_off":[716,168,244,184],"top_hotted":[1012,168,538,184],"mid_do":[271,396,307,363],"mid_not":[662,396,456,363],"mid_put":[1200,402,447,357],"bot_is":[179,796,183,159],"bot_on":[434,796,269,159],"bot_the":[774,799,364,153],"bot_map":[1213,799,491,156]},{"top_put":[394,172,272,180],"top_off":[716,168,244,184],"top_hotted":[1012,168,538,184],"mid_do":[271,407,306,363],"mid_not":[662,407,456,363],"mid_put":[1200,412,448,358],"bot_is":[178,848,184,160],"bot_on":[432,848,270,160],"bot_the":[774,852,364,153],"bot_map":[1214,852,490,156]},{"top_put":[392,171,272,181],"top_off":[715,167,245,185],"top_hotted":[1012,167,539,185],"mid_do":[270,406,307,365],"mid_not":[661,406,457,365],"mid_put":[1201,412,448,359],"bot_is":[176,849,184,159],"bot_on":[432,849,270,159],"bot_the":[773,852,365,154],"bot_map":[1214,852,492,156]},{"top_put":[392,180,272,180],"top_off":[714,176,246,184],"top_hotted":[1012,176,540,184],"mid_do":[269,458,307,364],"mid_not":[661,458,458,364],"mid_put":[1201,463,449,359],"bot_is":[176,980,182,100],"bot_on":[432,980,270,100],"bot_the":[772,984,364,96],"bot_map":[1214,984,444,96]},{"top_put":[391,179,273,181],"top_off":[714,175,246,185],"top_hotted":[1012,175,541,185],"mid_do":[268,458,307,365],"mid_not":[660,458,459,365],"mid_put":[1201,463,450,360],"bot_is":null,"bot_on":null,"bot_the":null,"bot_map":null},{"top_put":[390,178,274,182],"top_off":[714,175,246,185],"top_hotted":[1012,175,542,185],"mid_do":[267,645,308,366],"mid_not":[660,645,459,305],"mid_put":[1202,651,450,299],"bot_is":null,"bot_on":null,"bot_the":null,"bot_map":null},{"top_put":[390,380,274,170],"top_off":[714,376,246,174],"top_hotted":[1012,376,542,174],"mid_do":[266,645,308,367],"mid_not":[660,645,459,305],"mid_put":[1202,651,451,299],"bot_is":null,"bot_on":null,"bot_the":null,"bot_map":null},{"top_put":[388,810,274,140],"top_off":[714,807,246,143],"top_hotted":[1012,807,544,143],"mid_do":null,"mid_not":null,"mid_put":null,"bot_is":null,"bot_on":null,"bot_the":null,"bot_map":null},{"top_put":null,"top_off":null,"top_hotted":null,"mid_do":null,"mid_not":null,"mid_put":null,"bot_is":null,"bot_on":null,"bot_the":null,"bot_map":null}]},
+      // 10 palavras independentes em 3 linhas (3+3+4) — cada uma com
+      // sua própria bbox por quadro, entrada sequencial escalonada
+      // (com "overshoot"/deformação vertical, capturada diretamente
+      // pela bbox mudando de quadro a quadro — sem precisar de técnica
+      // especial, só desenhar esticado na bbox de cada quadro) e saída
+      // também escalonada (de baixo pra cima). Quadro 67 é o terminal
+      // (tudo invisível).
+      //
+      // FONTE: candidata é "HeadingNowTrial-86Bold" (status PROVÁVEL,
+      // não confirmada — nota do próprio pacote) — usando a variante
+      // já embutida (66Bold-KSS) como substituta, mesmo padrão adotado
+      // nos efeitos anteriores.
+      linhasParaPapeis: [
+        ['top_put', 'top_off', 'top_hotted'],
+        ['mid_do', 'mid_not', 'mid_put'],
+        ['bot_is', 'bot_on', 'bot_the', 'bot_map'],
+      ],
+      palavraOriginal: {
+        top_put: 'PUT', top_off: 'OFF', top_hotted: 'HOTTED',
+        mid_do: 'DO', mid_not: 'NOT', mid_put: 'PUT',
+        bot_is: 'IS', bot_on: 'ON', bot_the: 'THE', bot_map: 'MAP.',
+      },
+      styles: {
+        top_put:    { fontFamily: 'HeadingNowTrial-66Bold-KSS', color: '#ED0019' },
+        top_off:    { fontFamily: 'HeadingNowTrial-66Bold-KSS', color: '#ED0019' },
+        top_hotted: { fontFamily: 'HeadingNowTrial-66Bold-KSS', color: '#ED0019' },
+        mid_do:     { fontFamily: 'HeadingNowTrial-66Bold-KSS', color: '#F1F1F1' },
+        mid_not:    { fontFamily: 'HeadingNowTrial-66Bold-KSS', color: '#F1F1F1' },
+        mid_put:    { fontFamily: 'HeadingNowTrial-66Bold-KSS', color: '#F1F1F1' },
+        bot_is:     { fontFamily: 'HeadingNowTrial-66Bold-KSS', color: '#ED0019' },
+        bot_on:     { fontFamily: 'HeadingNowTrial-66Bold-KSS', color: '#ED0019' },
+        bot_the:    { fontFamily: 'HeadingNowTrial-66Bold-KSS', color: '#ED0019' },
+        bot_map:    { fontFamily: 'HeadingNowTrial-66Bold-KSS', color: '#ED0019' },
+      },
+    },
     'efeito-12': {
       layout: 'efeito-12-style',
       // Espaço lógico PRÓPRIO — 1920x1080 (coordinateSystem do próprio
@@ -40090,16 +40160,16 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
         line3_we: 'WE', line3_build: 'BUILD', line3_the: 'THE', line3_snap: 'SNAP.',
       },
       styles: {
-        line1_full: { fontFamily: 'HeadingNowTrial-66Bold-KSS', color: '#F01414' },
-        line1_of: { fontFamily: 'HeadingNowTrial-66Bold-KSS', color: '#F01414' },
-        line1_plenty: { fontFamily: 'HeadingNowTrial-66Bold-KSS', color: '#F01414' },
+        line1_full: { fontFamily: 'HeadingNowTrial-66Bold-KSS', color: '#F2F2F2' },
+        line1_of: { fontFamily: 'HeadingNowTrial-66Bold-KSS', color: '#F2F2F2' },
+        line1_plenty: { fontFamily: 'HeadingNowTrial-66Bold-KSS', color: '#F2F2F2' },
         line2_deep: { fontFamily: 'HeadingNowTrial-66Bold-KSS', color: '#F2F2F2' },
         line2_the: { fontFamily: 'HeadingNowTrial-66Bold-KSS', color: '#F2F2F2' },
         line2_hole: { fontFamily: 'HeadingNowTrial-66Bold-KSS', color: '#F2F2F2' },
-        line3_we: { fontFamily: 'HeadingNowTrial-66Bold-KSS', color: '#F01414' },
-        line3_build: { fontFamily: 'HeadingNowTrial-66Bold-KSS', color: '#F01414' },
-        line3_the: { fontFamily: 'HeadingNowTrial-66Bold-KSS', color: '#F01414' },
-        line3_snap: { fontFamily: 'HeadingNowTrial-66Bold-KSS', color: '#F01414' },
+        line3_we: { fontFamily: 'HeadingNowTrial-66Bold-KSS', color: '#F2F2F2' },
+        line3_build: { fontFamily: 'HeadingNowTrial-66Bold-KSS', color: '#F2F2F2' },
+        line3_the: { fontFamily: 'HeadingNowTrial-66Bold-KSS', color: '#F2F2F2' },
+        line3_snap: { fontFamily: 'HeadingNowTrial-66Bold-KSS', color: '#F2F2F2' },
       },
     },
     'efeito-2': {
@@ -40328,7 +40398,85 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     if (tpl.layout === 'efeito-12-style') {
       return _renderFrameEfeito12Style(ctx, tpl, texts, frameIdx);
     }
+    if (tpl.layout === 'efeito-13-style') {
+      return _renderFrameEfeito13Style(ctx, tpl, texts, frameIdx);
+    }
     return _renderFrameKineticScaleStack(ctx, tpl, texts, frameIdx);
+  }
+
+  /**
+   * Efeito 13 ("Staggered Vertical Type Cascade"): 10 palavras
+   * independentes em 3 linhas (3+3+4) — cada uma com sua própria bbox
+   * por quadro. Fidelidade: desenha esticado direto na bbox de cada
+   * quadro (o pacote é explícito: "draw bitmap into the exact source
+   * bbox, do not derive bbox from new text" — a deformação/overshoot
+   * de entrada já vem capturada na própria variação da bbox quadro a
+   * quadro, sem precisar de nenhuma técnica especial de recorte).
+   * Texto alterado: reflow em fileira por linha, mesma técnica já
+   * validada nos Efeitos 8, 10 e 12.
+   */
+  function _renderFrameEfeito13Style(ctx, tpl, texts, frameIdx) {
+    const f = tpl.motionData.framesData[frameIdx];
+    if (!f) return false;
+    const grupos = tpl.linhasParaPapeis;
+
+    grupos.forEach((papeis, grupoIndex) => {
+      const todasPalavras = (texts && texts._linhas && texts._linhas[grupoIndex]) || papeis.map(p => texts && texts[p]);
+      const contagemBate = todasPalavras.filter(w => (w || '').trim()).length === papeis.length;
+      const todosOriginais = papeis.every((p, i) => {
+        const texto = (todasPalavras[i] || '').trim();
+        return !texto || texto.toUpperCase() === (tpl.palavraOriginal[p] || '').toUpperCase();
+      });
+
+      if (todosOriginais && contagemBate) {
+        papeis.forEach((papel, i) => {
+          const bbox = f[papel];
+          if (!bbox) return;
+          const texto = (todasPalavras[i] || '').trim();
+          if (!texto) return;
+          const st = tpl.styles[papel];
+          drawStretched(ctx, texto, st.fontFamily, st.color, bbox, 'xywh');
+        });
+        return;
+      }
+
+      // Texto (ou quantidade) alterado: reflow em fileira — mesma
+      // técnica já validada nos Efeitos 8, 10 e 12.
+      const referencias = papeis.map(p => f[p]).filter(Boolean);
+      if (!referencias.length) return;
+      const alturaRef = Math.max(...referencias.map(b => b[3]));
+      const centroYOriginal = referencias.reduce((s, b) => s + (b[1] + b[3] / 2), 0) / referencias.length;
+      const stLinha = tpl.styles[papeis[papeis.length - 1]];
+
+      const ativos = todasPalavras
+        .map(texto => ({ texto: (texto || '').trim(), st: stLinha }))
+        .filter(o => o.texto);
+      if (!ativos.length) return;
+
+      const larguraCanvas = tpl.logicalWidth || tpl.motionData.width;
+      const GAP_RATIO = 0.28;
+      const MARGEM = 0.94;
+      let itens = _efeito8MedirItensGrupo(ativos, alturaRef);
+      if (itens.length) {
+        let larguraTotal = _efeito8LarguraTotal(itens, GAP_RATIO);
+        const larguraMax = larguraCanvas * MARGEM;
+        if (larguraTotal > larguraMax) {
+          const fatorEnc = larguraMax / larguraTotal;
+          itens = _efeito8MedirItensGrupo(ativos, alturaRef * fatorEnc);
+          larguraTotal = _efeito8LarguraTotal(itens, GAP_RATIO);
+        }
+        const gaps = itens.map(it => it.h * GAP_RATIO);
+        const centroCanvas = larguraCanvas / 2;
+        let x = centroCanvas - larguraTotal / 2;
+        itens.forEach((it, i) => {
+          if (i > 0) x += gaps[i];
+          const y = centroYOriginal - it.h / 2;
+          ctx.drawImage(it.img, x, y, it.w, it.h);
+          x += it.w;
+        });
+      }
+    });
+    return true;
   }
 
   /**
@@ -41120,7 +41268,28 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     if (tpl && tpl.layout === 'efeito-12-style') {
       return _readTextsEfeito12Style(stanza, tpl);
     }
+    if (tpl && tpl.layout === 'efeito-13-style') {
+      return _readTextsEfeito13Style(stanza, tpl);
+    }
     return _readTextsKineticScaleStack(stanza);
+  }
+
+  /**
+   * Efeito 13: 3 linhas do editor → 10 papéis de palavra (3+3+4),
+   * mapeamento posicional dentro de cada linha — igual ao Efeito 8/12.
+   */
+  function _readTextsEfeito13Style(stanza, tpl) {
+    const lines = (stanza && stanza.lines) || [];
+    const grupos = tpl.linhasParaPapeis;
+    const out = { _linhas: [] };
+    grupos.forEach((papeis, li) => {
+      const palavras = (lines[li]?.words || []).map(w => w.text);
+      papeis.forEach((papel, i) => {
+        out[papel] = palavras[i] || '';
+      });
+      out._linhas.push(palavras);
+    });
+    return out;
   }
 
   /**
