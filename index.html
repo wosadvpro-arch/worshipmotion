@@ -39797,6 +39797,16 @@ if (typeof window === 'undefined') { global.window = {}; }
 window.WM_FRAME_EXACT_RENDERER = (function () {
   'use strict';
 
+  // Efeito 8: tamanho NATURAL (cheio) de cada palavra + ponto de
+  // ancoragem, medidos a partir dos 74 quadros REAIS do MP4 original
+  // (nao so das bboxes do motion-data). Confirmado por medicao de
+  // pixel que as transicoes de saida sao RECORTE (a letra fica no
+  // tamanho natural constante; so a "janela" visivel encolhe, ancorada
+  // num canto) -- NAO esticamento. ax: 'e'=esquerda/'d'=direita,
+  // ay: 't'=topo/'b'=base -- o lado que fica fixo enquanto o outro
+  // lado da bbox se move durante a transicao.
+const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":167,"h":476,"ax":"e","ay":"t"},"out":{"w":357,"h":486,"ax":"e","ay":"t"},"selfish":{"w":760,"h":556,"ax":"d","ay":"b"},"heart":{"w":688,"h":540,"ax":"e","ay":"t"},"never":{"w":688,"h":553,"ax":"d","ay":"b"},"give":{"w":488,"h":567,"ax":"e","ay":"b"}};
+
   // Registro de templates frame-exact — motion-data ORIGINAL, sem
   // nenhuma alteração (mesmo JSON do ZIP, byte a byte).
   const TEMPLATES_FRAME_EXACT = {
@@ -40089,8 +40099,16 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
   /**
    * Efeito 8 ("Progressive Phrase Scale Cascade"): 7 palavras
    * independentes agrupadas em 3 frases que se revezam ao longo dos
-   * quadros (cada palavra tem sua própria janela ativa — igual ao
-   * Efeito 6, só que por PALAVRA em vez de por frase inteira).
+   * quadros. DIFERENÇA IMPORTANTE em relação aos outros efeitos: aqui,
+   * nas transições de entrada/saída, a bbox NÃO representa uma letra
+   * esticando — representa uma JANELA DE RECORTE sobre uma letra de
+   * tamanho CONSTANTE (confirmado medindo pixel a pixel nos 74 quadros
+   * reais do MP4: a espessura do traço de uma letra, numa mesma linha
+   * horizontal, fica EXATAMENTE igual entre quadros onde a bbox muda
+   * de tamanho — provando que é recorte, não escala). Por isso desenha
+   * o bitmap sempre no tamanho NATURAL (EFEITO8_NATURAL), ancorado no
+   * canto que a própria medição mostrou ficar fixo, e usa ctx.clip()
+   * com a bbox do quadro atual como janela visível.
    */
   function _renderFrameEfeito8Style(ctx, tpl, texts, frameIdx) {
     const f = tpl.motionData.framesData[frameIdx];
@@ -40101,7 +40119,24 @@ window.WM_FRAME_EXACT_RENDERER = (function () {
       const texto = (texts && texts[papel] || '').trim();
       if (!texto) return;
       const st = tpl.styles[papel];
-      drawStretched(ctx, texto, st.fontFamily, st.color, bbox, 'xywh');
+      const nat = EFEITO8_NATURAL[papel];
+      const img = makeBitmap(texto, st.fontFamily, st.color);
+      if (!img) return;
+
+      const [bx, by, bw, bh] = bbox;
+      const natW = nat ? nat.w : bw;
+      const natH = nat ? nat.h : bh;
+      // Ancora o retângulo de desenho (tamanho NATURAL) no canto certo
+      // da bbox atual — o lado que a medição mostrou ficar fixo.
+      const drawX = (nat && nat.ax === 'd') ? (bx + bw - natW) : bx;
+      const drawY = (nat && nat.ay === 'b') ? (by + bh - natH) : by;
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(bx, by, bw, bh);
+      ctx.clip();
+      ctx.drawImage(img, drawX, drawY, natW, natH);
+      ctx.restore();
     });
     return true;
   }
