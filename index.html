@@ -40185,7 +40185,18 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       // individual entre os elementos ativos como referência de
       // tamanho — a posição Y de cada um continua sendo a própria.
       const alturaRef = Math.max(...ativos.map(o => o.bbox[3]));
-      const yRef = Math.min(...ativos.map(o => o.bbox[1]));
+      // BUG REAL CORRIGIDO (2ª rodada — "animação não está
+      // centralizada"): ancorar pelo TOPO da bbox original (Math.min)
+      // e desenhar o texto reorganizado a partir dali funcionava mal
+      // quando a altura do bitmap reorganizado não batia exatamente
+      // com a altura original — o texto acabava bem mais alto do que
+      // deveria (medido: ~58px de diferença numa tela de teste, nada
+      // sutil). Corrigido ancorando pelo CENTRO VERTICAL médio das
+      // bboxes originais ativas (não o topo) — assim o texto
+      // reorganizado fica centralizado no mesmo eixo Y que o vídeo
+      // original usava pra esse grupo, não importa a altura final do
+      // bitmap depois do ajuste de "encolher pra caber".
+      const centroYOriginal = ativos.reduce((s, o) => s + (o.bbox[1] + o.bbox[3] / 2), 0) / ativos.length;
       const larguraCanvas = tpl.logicalWidth || tpl.motionData.width;
       const GAP_RATIO = 0.28;
       const MARGEM = 0.94;
@@ -40211,7 +40222,8 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
         let x = centroCanvas - larguraTotal / 2;
         itens.forEach((it, i) => {
           if (i > 0) x += gaps[i];
-          ctx.drawImage(it.img, x, yRef, it.w, it.h);
+          const y = centroYOriginal - it.h / 2;
+          ctx.drawImage(it.img, x, y, it.w, it.h);
           x += it.w;
         });
       }
