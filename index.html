@@ -40096,6 +40096,15 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     return _renderFrameKineticScaleStack(ctx, tpl, texts, frameIdx);
   }
 
+  // Palavras ORIGINAIS por papel — usadas pra decidir se o recorte de
+  // tamanho natural (fiel ao MP4) se aplica, ou se o texto foi editado
+  // e precisa cair de volta no esticamento adaptável.
+  const EFEITO8_PALAVRA_ORIGINAL = {
+    want: 'WANT', it_1: 'IT', out: 'OUT',
+    selfish: 'SELFISH', heart: 'HEART.',
+    never: 'NEVER', give: 'GIVE',
+  };
+
   /**
    * Efeito 8 ("Progressive Phrase Scale Cascade"): 7 palavras
    * independentes agrupadas em 3 frases que se revezam ao longo dos
@@ -40105,40 +40114,122 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
    * tamanho CONSTANTE (confirmado medindo pixel a pixel nos 74 quadros
    * reais do MP4: a espessura do traço de uma letra, numa mesma linha
    * horizontal, fica EXATAMENTE igual entre quadros onde a bbox muda
-   * de tamanho — provando que é recorte, não escala). Por isso desenha
-   * o bitmap sempre no tamanho NATURAL (EFEITO8_NATURAL), ancorado no
-   * canto que a própria medição mostrou ficar fixo, e usa ctx.clip()
-   * com a bbox do quadro atual como janela visível.
+   * de tamanho — provando que é recorte, não escala).
+   *
+   * BUG REAL CORRIGIDO (2 rodadas): a 1ª tentativa aplicava o recorte
+   * de tamanho natural (medido da palavra ORIGINAL) pra qualquer texto
+   * digitado — "IT" (2 letras, caixa estreita) virava referência de
+   * tamanho pra "PERDÃO" (6 letras), que ficava minúsculo. A 2ª
+   * tentativa (esticar preservando proporção pela altura) resolveu o
+   * tamanho, mas como cada papel ainda usava SÓ a própria bbox
+   * estreita, palavras mais longas invadiam o espaço da vizinha
+   * (sobreposição). Corrigido de vez tratando cada GRUPO DE LINHA (as
+   * 2-3 palavras de uma frase) como um bloco: se TODAS as palavras da
+   * linha baterem com o original, desenha cada uma com o recorte fiel
+   * de tamanho natural; se QUALQUER uma foi alterada, a linha inteira
+   * vira uma fileira recalculada (união das bboxes ativas naquele
+   * quadro como área de referência, palavras com espaçamento
+   * calculado) — mesma técnica já usada no Efeito 2.
    */
   function _renderFrameEfeito8Style(ctx, tpl, texts, frameIdx) {
     const f = tpl.motionData.framesData[frameIdx];
     if (!f) return false;
-    ['want', 'it_1', 'out', 'selfish', 'heart', 'never', 'give'].forEach(papel => {
-      const bbox = f[papel];
-      if (!bbox) return;
-      const texto = (texts && texts[papel] || '').trim();
-      if (!texto) return;
-      const st = tpl.styles[papel];
-      const nat = EFEITO8_NATURAL[papel];
-      const img = makeBitmap(texto, st.fontFamily, st.color);
-      if (!img) return;
+    const grupos = tpl.linhasParaPapeis || [['want', 'it_1', 'out'], ['selfish', 'heart'], ['never', 'give']];
 
-      const [bx, by, bw, bh] = bbox;
-      const natW = nat ? nat.w : bw;
-      const natH = nat ? nat.h : bh;
-      // Ancora o retângulo de desenho (tamanho NATURAL) no canto certo
-      // da bbox atual — o lado que a medição mostrou ficar fixo.
-      const drawX = (nat && nat.ax === 'd') ? (bx + bw - natW) : bx;
-      const drawY = (nat && nat.ay === 'b') ? (by + bh - natH) : by;
+    grupos.forEach(papeis => {
+      const todosOriginais = papeis.every(p => {
+        const texto = (texts && texts[p] || '').trim();
+        return !texto || texto.toUpperCase() === EFEITO8_PALAVRA_ORIGINAL[p];
+      });
 
-      ctx.save();
-      ctx.beginPath();
-      ctx.rect(bx, by, bw, bh);
-      ctx.clip();
-      ctx.drawImage(img, drawX, drawY, natW, natH);
-      ctx.restore();
+      if (todosOriginais) {
+        // Fidelidade total: cada papel com sua bbox e recorte de
+        // tamanho natural, exatamente como medido no MP4 original.
+        papeis.forEach(papel => {
+          const bbox = f[papel];
+          if (!bbox) return;
+          const texto = (texts && texts[papel] || '').trim();
+          if (!texto) return;
+          const st = tpl.styles[papel];
+          const nat = EFEITO8_NATURAL[papel];
+          const img = makeBitmap(texto, st.fontFamily, st.color);
+          if (!img || !nat) return;
+          const [bx, by, bw, bh] = bbox;
+          const drawX = (nat.ax === 'd') ? (bx + bw - nat.w) : bx;
+          const drawY = (nat.ay === 'b') ? (by + bh - nat.h) : by;
+          ctx.save();
+          ctx.beginPath();
+          ctx.rect(bx, by, bw, bh);
+          ctx.clip();
+          ctx.drawImage(img, drawX, drawY, nat.w, nat.h);
+          ctx.restore();
+        });
+        return;
+      }
+
+      // Texto alterado nessa linha: reflow em fileira, usando a UNIÃO
+      // das bboxes ativas nesse quadro como referência de altura/
+      // posição vertical — evita palavras maiores invadindo a vizinha.
+      const ativos = papeis
+        .map(p => ({ papel: p, bbox: f[p], texto: (texts && texts[p] || '').trim() }))
+        .filter(o => o.bbox && o.texto);
+      if (!ativos.length) return;
+
+      // BUG REAL CORRIGIDO: usar a EXTENSÃO VERTICAL da união (do topo
+      // do elemento mais alto até a base do mais baixo) como altura de
+      // referência misturava "posição espalhada" com "tamanho" — os
+      // elementos desse grupo não ficam exatamente na mesma altura
+      // (cada um tem seu próprio Y), então essa extensão ficava bem
+      // maior que qualquer elemento individual, gerando texto enorme
+      // que cobria a tela inteira. Corrigido: usa a MAIOR altura
+      // individual entre os elementos ativos como referência de
+      // tamanho — a posição Y de cada um continua sendo a própria.
+      const alturaRef = Math.max(...ativos.map(o => o.bbox[3]));
+      const yRef = Math.min(...ativos.map(o => o.bbox[1]));
+      const larguraCanvas = tpl.logicalWidth || tpl.motionData.width;
+      const GAP_RATIO = 0.28;
+      const MARGEM = 0.94;
+
+      // Mede primeiro na altura "natural" (a maior bbox individual do
+      // grupo); se a fileira toda não couber em 94% da largura do
+      // canvas, encolhe TODAS as palavras pelo mesmo fator antes de
+      // desenhar de verdade — evita palavras vazando pra fora da tela
+      // quando o texto digitado é mais largo que o espaço original
+      // media pra 2-3 palavras curtas. Mesma técnica já usada nos
+      // Efeitos 1 e 2 pro mesmo tipo de problema.
+      let itens = _efeito8MedirItensGrupo(ativos, tpl.styles, alturaRef);
+      if (itens.length) {
+        let larguraTotal = _efeito8LarguraTotal(itens, GAP_RATIO);
+        const larguraMax = larguraCanvas * MARGEM;
+        if (larguraTotal > larguraMax) {
+          const fator = larguraMax / larguraTotal;
+          itens = _efeito8MedirItensGrupo(ativos, tpl.styles, alturaRef * fator);
+          larguraTotal = _efeito8LarguraTotal(itens, GAP_RATIO);
+        }
+        const gaps = itens.map(it => it.h * GAP_RATIO);
+        const centroCanvas = larguraCanvas / 2;
+        let x = centroCanvas - larguraTotal / 2;
+        itens.forEach((it, i) => {
+          if (i > 0) x += gaps[i];
+          ctx.drawImage(it.img, x, yRef, it.w, it.h);
+          x += it.w;
+        });
+      }
     });
     return true;
+  }
+
+  function _efeito8MedirItensGrupo(ativos, styles, altura) {
+    return ativos.map(o => {
+      const st = styles[o.papel];
+      const img = _efeito2MakeBitmapAtHeight(o.texto, st.fontFamily, st.color, altura);
+      return img ? { img, w: img.width, h: img.height } : null;
+    }).filter(Boolean);
+  }
+
+  function _efeito8LarguraTotal(itens, gapRatio) {
+    const gaps = itens.map(it => it.h * gapRatio);
+    return itens.reduce((s, it) => s + it.w, 0) + gaps.slice(1).reduce((s, g) => s + g, 0);
   }
 
   /**
