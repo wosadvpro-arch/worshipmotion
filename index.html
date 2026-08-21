@@ -13804,6 +13804,31 @@ window.WM_LOCAL_FONTS = {
 
 const TEMPLATES = [
   {
+    id: "tpl-oficial-sequential-word-build-compression-frame-exact-v1",
+    name: "Efeito 10",
+    description: "Construção sequencial de palavras da esquerda para a direita, seguida de compressão horizontal progressiva do conjunto completo, reproduzida por bounding boxes absolutas frame a frame.",
+    tags: ["1 linha", "Cinético", "Pro Plus"],
+    isOfficial: true,
+    isPremium: true,
+    requiredPlan: "pro_plus",
+    isActive: true,
+    accent: "#FFFFFF",
+    config: {
+      type: 'frame-exact',
+      frameExactTemplateId: 'efeito-10',
+      style: {},
+      animConfig: {},
+      aspect: '16:9',
+      parsed: {
+        stanzas: [
+          { id: "stz_660wewz", label: "Estrofe 1", lines: [
+            { id: "ln_iqv57hh", words: [{ id: "w_2zjps2e", text: "KELVIN", chars: [{id:"ch_moigi64",text:"K"}, {id:"ch_dybeflb",text:"E"}, {id:"ch_96z4ar5",text:"L"}, {id:"ch_rr99f8p",text:"V"}, {id:"ch_jfrdvd3",text:"I"}, {id:"ch_99qsnky",text:"N"}], emphasized: false }, { id: "w_73egvh3", text: "RAISE", chars: [{id:"ch_hmm7vc1",text:"R"}, {id:"ch_4tzr6so",text:"A"}, {id:"ch_qdowyxr",text:"I"}, {id:"ch_o6zjseq",text:"S"}, {id:"ch_54wmq0v",text:"E"}], emphasized: false }, { id: "w_4v51d34", text: "TILL", chars: [{id:"ch_583dkyz",text:"T"}, {id:"ch_uxpdozl",text:"I"}, {id:"ch_0sqqt6r",text:"L"}, {id:"ch_xnxgy7x",text:"L"}], emphasized: false }, { id: "w_7nqdqlg", text: "OFF.", chars: [{id:"ch_oj0csqq",text:"O"}, {id:"ch_ovnl928",text:"F"}, {id:"ch_9bioicy",text:"F"}, {id:"ch_0ah5auv",text:"."}], emphasized: false }] },
+          ] },
+        ],
+      },
+    },
+  },
+  {
     id: "tpl-oficial-progressive-phrase-scale-cascade-frame-exact-v1",
     name: "Efeito 8",
     description: "Cascata tipográfica em três frases que se revezam: WANT IT OUT sai enquanto SELFISH HEART. vermelho entra e expande, dando lugar a NEVER GIVE crescendo no final.",
@@ -36029,6 +36054,7 @@ function initEditor() {
     if (!tplFE) return 3;
     if (tplFE.layout === 'efeito-2-style') return 2;
     if (tplFE.layout === 'efeito-7-style') return 5;
+    if (tplFE.layout === 'efeito-10-style') return 1;
     return 3;
   }
 
@@ -39910,6 +39936,32 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
         give:    { fontFamily: 'HeadingNowTrial-66Bold-KSS', color: '#FFFFFF' },
       },
     },
+    'efeito-10': {
+      layout: 'efeito-10-style',
+      // Espaço lógico PRÓPRIO — 1920x1080 (confirmado no
+      // coordinateSystem do motion-data.json original: "absolute",
+      // 1920x1080 — sem armadilha de escala).
+      logicalWidth: 1920,
+      logicalHeight: 1080,
+      motionData: {"fps":25,"frames":31,"framesData":[{"KELVIN":[478,561,306,43],"RAISE":null,"TILL":null,"OFF":null},{"KELVIN":[479,521,306,83],"RAISE":null,"TILL":null,"OFF":null},{"KELVIN":[479,501,306,100],"RAISE":null,"TILL":null,"OFF":null},{"KELVIN":[479,493,306,94],"RAISE":null,"TILL":null,"OFF":null},{"KELVIN":[484,492,303,91],"RAISE":[823,561,253,42],"TILL":null,"OFF":null},{"KELVIN":[484,492,303,91],"RAISE":[823,523,254,80],"TILL":null,"OFF":null},{"KELVIN":[488,493,300,90],"RAISE":[824,501,252,102],"TILL":[1106,581,104,21],"OFF":[1235,581,21,21]},{"KELVIN":[488,493,300,90],"RAISE":[824,493,252,96],"TILL":[1106,533,104,70],"OFF":[1235,533,21,70]},{"KELVIN":[488,493,300,90],"RAISE":[824,492,252,93],"TILL":[1106,509,169,94],"OFF":[1307,521,169,82]},{"KELVIN":[493,493,297,89],"RAISE":[826,492,248,92],"TILL":[1105,497,167,92],"OFF":[1304,503,168,98]},{"KELVIN":[493,493,297,89],"RAISE":[826,492,248,92],"TILL":[1105,495,167,88],"OFF":[1304,495,168,92]},{"KELVIN":[496,493,295,89],"RAISE":[827,493,247,91],"TILL":[1104,494,166,88],"OFF":[1301,493,167,91]},{"KELVIN":[502,494,291,87],"RAISE":[828,493,244,90],"TILL":[1102,495,164,87],"OFF":[1296,494,166,89]},{"KELVIN":[504,494,290,87],"RAISE":[829,494,243,89],"TILL":[1101,495,164,86],"OFF":[1295,494,164,89]},{"KELVIN":[507,495,288,86],"RAISE":[830,494,241,89],"TILL":[1100,496,163,85],"OFF":[1293,494,163,89]},{"KELVIN":[509,495,287,86],"RAISE":[830,494,240,89],"TILL":[1099,496,162,85],"OFF":[1291,495,163,88]},{"KELVIN":[512,495,285,86],"RAISE":[831,494,239,88],"TILL":[1098,496,161,85],"OFF":[1289,495,162,87]},{"KELVIN":[515,495,283,85],"RAISE":[832,495,237,87],"TILL":[1098,496,159,85],"OFF":[1287,495,161,87]},{"KELVIN":[517,496,282,84],"RAISE":[833,495,235,87],"TILL":[1097,496,159,84],"OFF":[1285,495,160,87]},{"KELVIN":[520,496,280,84],"RAISE":[833,495,235,86],"TILL":[1096,497,158,83],"OFF":[1283,496,159,86]},{"KELVIN":[523,496,278,83],"RAISE":[834,496,233,85],"TILL":[1095,497,157,83],"OFF":[1281,496,158,85]},{"KELVIN":[525,496,277,83],"RAISE":[835,496,231,85],"TILL":[1094,497,156,82],"OFF":[1279,496,157,85]},{"KELVIN":[528,497,275,82],"RAISE":[836,496,230,85],"TILL":[1093,498,156,81],"OFF":[1277,496,156,85]},{"KELVIN":[531,497,273,82],"RAISE":[836,496,229,85],"TILL":[1093,498,154,81],"OFF":[1275,497,155,84]},{"KELVIN":[533,497,272,82],"RAISE":[837,496,228,84],"TILL":[1092,498,153,81],"OFF":[1273,497,154,83]},{"KELVIN":[536,498,270,80],"RAISE":[838,497,226,83],"TILL":[1091,498,152,81],"OFF":[1271,497,153,83]},{"KELVIN":[539,498,268,80],"RAISE":[839,497,224,83],"TILL":[1090,499,151,79],"OFF":[1269,498,152,82]},{"KELVIN":[541,498,267,80],"RAISE":[840,497,223,82],"TILL":[1089,499,151,79],"OFF":[1267,498,152,82]},{"KELVIN":[544,498,265,80],"RAISE":[840,498,222,81],"TILL":[1088,499,150,79],"OFF":[1265,498,151,81]},{"KELVIN":[547,499,263,78],"RAISE":[841,498,220,81],"TILL":[1088,500,148,78],"OFF":[1263,498,150,81]},{"KELVIN":[549,499,262,78],"RAISE":[842,498,219,81],"TILL":[1087,500,147,77],"OFF":[1261,499,149,80]}]},
+      // 4 palavras INDEPENDENTES numa linha só, entrada sequencial da
+      // esquerda pra direita — igual à linha 1 do Efeito 1 (BOWL/FULL/
+      // OF/PLENTY), só que sem a estratégia híbrida de camadas PNG
+      // (esse pacote só trouxe bbox, sem recorte de imagem do MP4).
+      //
+      // FONTE: "HeadingNowTrial-86Bold" é só "provável" segundo o
+      // próprio pacote (não confirmada sem o arquivo físico da fonte
+      // original) — usando a variante Bold mais próxima já embutida
+      // (66Bold) como substituta, igual já fiz nos efeitos anteriores
+      // quando a fonte exata não vinha disponível.
+      palavraOriginal: { KELVIN: 'KELVIN', RAISE: 'RAISE', TILL: 'TILL', OFF: 'OFF.' },
+      styles: {
+        KELVIN: { fontFamily: 'HeadingNowTrial-66Bold-KSS', color: '#FFFFFF' },
+        RAISE:  { fontFamily: 'HeadingNowTrial-66Bold-KSS', color: '#FFFFFF' },
+        TILL:   { fontFamily: 'HeadingNowTrial-66Bold-KSS', color: '#FFFFFF' },
+        OFF:    { fontFamily: 'HeadingNowTrial-66Bold-KSS', color: '#FFFFFF' },
+      },
+    },
     'efeito-2': {
       layout: 'efeito-2-style',
       // Espaço lógico PRÓPRIO deste template — 1920x1080, NÃO
@@ -40093,7 +40145,88 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     if (tpl.layout === 'efeito-8-style') {
       return _renderFrameEfeito8Style(ctx, tpl, texts, frameIdx);
     }
+    if (tpl.layout === 'efeito-10-style') {
+      return _renderFrameEfeito10Style(ctx, tpl, texts, frameIdx);
+    }
     return _renderFrameKineticScaleStack(ctx, tpl, texts, frameIdx);
+  }
+
+  /**
+   * Efeito 10 ("Sequential Word Build Compression"): 4 palavras
+   * independentes numa linha só, cada uma com sua própria bbox por
+   * quadro (entrada sequencial da esquerda pra direita, depois
+   * compressão horizontal progressiva do conjunto completo).
+   *
+   * Texto ORIGINAL (bate com a palavra daquele papel): desenha exatamente
+   * na bbox, esticando pra caber — fidelidade total, igual ao pacote
+   * pede ("a medição do novo texto pode ser usada apenas pra
+   * rasterização/fit dentro da bbox").
+   *
+   * Texto ALTERADO: usa a técnica de proporção preservada por altura
+   * (mesma correção já validada nos Efeitos 1/2/8) — ancorado na
+   * mesma posição X/Y da bbox original, mas sem espremer/distorcer
+   * palavras de tamanho diferente da original.
+   */
+  function _renderFrameEfeito10Style(ctx, tpl, texts, frameIdx) {
+    const f = tpl.motionData.framesData[frameIdx];
+    if (!f) return false;
+    const papeis = ['KELVIN', 'RAISE', 'TILL', 'OFF'];
+    const todasPalavras = (texts && texts._linhas && texts._linhas[0]) || papeis.map(p => texts && texts[p]);
+    const contagemBate = todasPalavras.filter(w => (w || '').trim()).length === papeis.length;
+    const todosOriginais = papeis.every((p, i) => {
+      const texto = (todasPalavras[i] || '').trim();
+      return !texto || texto.toUpperCase() === (tpl.palavraOriginal[p] || '').toUpperCase();
+    });
+
+    if (todosOriginais && contagemBate) {
+      papeis.forEach(papel => {
+        const bbox = f[papel];
+        if (!bbox) return;
+        const texto = (texts && texts[papel] || '').trim();
+        if (!texto) return;
+        const st = tpl.styles[papel];
+        drawStretched(ctx, texto, st.fontFamily, st.color, bbox, 'xywh');
+      });
+      return true;
+    }
+
+    // Quantidade OU conteúdo alterado: reflow em fileira — mesma
+    // técnica do Efeito 8 (referência de altura/posição pelas bboxes
+    // originais ativas nesse quadro, encolhe se não couber).
+    const referencias = papeis.map(p => f[p]).filter(Boolean);
+    if (!referencias.length) return true;
+    const alturaRef = Math.max(...referencias.map(b => b[3]));
+    const centroYOriginal = referencias.reduce((s, b) => s + (b[1] + b[3] / 2), 0) / referencias.length;
+    const stLinha = tpl.styles.OFF;
+
+    const ativos = todasPalavras
+      .map(texto => ({ texto: (texto || '').trim(), st: stLinha }))
+      .filter(o => o.texto);
+    if (!ativos.length) return true;
+
+    const larguraCanvas = tpl.logicalWidth || tpl.motionData.width;
+    const GAP_RATIO = 0.28;
+    const MARGEM = 0.94;
+    let itens = _efeito8MedirItensGrupo(ativos, alturaRef);
+    if (itens.length) {
+      let larguraTotal = _efeito8LarguraTotal(itens, GAP_RATIO);
+      const larguraMax = larguraCanvas * MARGEM;
+      if (larguraTotal > larguraMax) {
+        const fator = larguraMax / larguraTotal;
+        itens = _efeito8MedirItensGrupo(ativos, alturaRef * fator);
+        larguraTotal = _efeito8LarguraTotal(itens, GAP_RATIO);
+      }
+      const gaps = itens.map(it => it.h * GAP_RATIO);
+      const centroCanvas = larguraCanvas / 2;
+      let x = centroCanvas - larguraTotal / 2;
+      itens.forEach((it, i) => {
+        if (i > 0) x += gaps[i];
+        const y = centroYOriginal - it.h / 2;
+        ctx.drawImage(it.img, x, y, it.w, it.h);
+        x += it.w;
+      });
+    }
+    return true;
   }
 
   // Palavras ORIGINAIS por papel — usadas pra decidir se o recorte de
@@ -40558,7 +40691,28 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     if (tpl && tpl.layout === 'efeito-8-style') {
       return _readTextsEfeito8Style(stanza, tpl);
     }
+    if (tpl && tpl.layout === 'efeito-10-style') {
+      return _readTextsEfeito10Style(stanza);
+    }
     return _readTextsKineticScaleStack(stanza);
+  }
+
+  /**
+   * Efeito 10: 1 linha do editor → 4 papéis (KELVIN/RAISE/TILL/OFF),
+   * mapeamento posicional. Também devolve a lista COMPLETA de palavras
+   * da linha (_linhas[0]) — mesma prevenção já aplicada no Efeito 8
+   * pro bug de "palavra extra desaparece": se o usuário digitar mais
+   * ou menos de 4 palavras, o renderer sabe usar a fileira recalculada
+   * em vez de simplesmente descartar o que não tem papel fixo.
+   */
+  function _readTextsEfeito10Style(stanza) {
+    const lines = (stanza && stanza.lines) || [];
+    const palavras = (lines[0]?.words || []).map(w => w.text);
+    return {
+      KELVIN: palavras[0] || '', RAISE: palavras[1] || '',
+      TILL: palavras[2] || '', OFF: palavras[3] || '',
+      _linhas: [palavras],
+    };
   }
 
   /**
