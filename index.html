@@ -40381,7 +40381,16 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     const g = c.getContext('2d');
     const size = 700;
     g.font = `700 ${size}px "${fontFamily}"`;
-    const m = g.measureText('AEIMNORSTUXBCDFGHJKLPQVWYZ0123456789');
+    // BUG REAL CORRIGIDO ("Glória" perdia o acento): a amostra de
+    // referência não tinha nenhuma letra acentuada — a moldura de
+    // recorte (baseada só nessa amostra) não reservava espaço pro
+    // acento, então ele saía cortado em qualquer palavra acentuada.
+    // Acrescentei as acentuadas mais comuns do português (Á À Â Ã É Ê
+    // Í Ó Ô Õ Ú Ç) na amostra — agora a referência já é alta o
+    // suficiente pra caber o acento, então ele aparece normalmente E a
+    // altura continua consistente entre palavras vizinhas (o ganho
+    // original dessa correção).
+    const m = g.measureText('AÁÀÂÃEÉÊIÍMNOÓÔÕRSTUÚXBCÇDFGHJKLPQVWYZ0123456789');
     const asc = m.actualBoundingBoxAscent || size * 0.75;
     const desc = m.actualBoundingBoxDescent || size * 0.2;
     cache[fontFamily] = { alturaPx: asc + desc, ascPx: asc, descPx: desc, size };
