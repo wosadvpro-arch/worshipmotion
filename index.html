@@ -40182,46 +40182,61 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     // pequeno (validado: 91px de altura numa tela de 1080px, batendo
     // quase exato com a referência real) — mas o usuário prefere um
     // texto maior/mais impactante, mesmo fugindo do tamanho real do
-    // vídeo fonte. Escala TODAS as bboxes desse quadro em torno do
-    // centro do conjunto (união das palavras ativas) por um fator
-    // fixo — preserva o timing de entrada de cada palavra e o
-    // movimento relativo entre elas (a "forma" da animação continua
-    // igual), só que tudo maior e ainda centralizado no mesmo ponto.
+    // vídeo fonte. Escala TODAS as bboxes por um fator fixo — preserva
+    // o timing de entrada de cada palavra e o movimento relativo entre
+    // elas, só que tudo maior.
+    //
+    // BUG REAL CORRIGIDO ("ainda não está fielmente igual" — comparei
+    // quadro a quadro com a referência real): o centro de ancoragem da
+    // escala era recalculado a cada quadro, usando só as palavras
+    // ATIVAS naquele momento — então quando uma palavra nova entrava
+    // (ex: RAISE se juntando a KELVIN), o centro do conjunto mudava, e
+    // a palavra que JÁ estava visível (KELVIN) "pulava" de posição em
+    // vez de ficar parada como no vídeo original. Corrigido: o centro
+    // de ancoragem agora é calculado UMA VEZ (a partir do quadro em
+    // que TODAS as 4 palavras já estão visíveis — a composição mais
+    // larga) e reaproveitado em todo quadro — cada palavra escala de
+    // forma consistente ao redor do MESMO ponto do início ao fim,
+    // igual ao comportamento do vídeo original.
     const ESCALA_EXTRA_PEDIDA = tpl.escalaExtra || 1;
     let f = fOriginal;
     if (ESCALA_EXTRA_PEDIDA !== 1) {
-      const ativas = papeis.map(p => fOriginal[p]).filter(Boolean);
-      if (ativas.length) {
-        const minX = Math.min(...ativas.map(b => b[0]));
-        const maxX = Math.max(...ativas.map(b => b[0] + b[2]));
-        const minY = Math.min(...ativas.map(b => b[1]));
-        const maxY = Math.max(...ativas.map(b => b[1] + b[3]));
-        const cx = (minX + maxX) / 2;
-        const cy = (minY + maxY) / 2;
-        // BUG REAL CORRIGIDO (testado antes de entregar): com as 4
-        // palavras juntas, escalar por 3.5x sem limite fazia o texto
-        // vazar pra fora da tela dos dois lados. Limita a escala
-        // efetiva desse quadro pra que a largura total do grupo nunca
-        // ultrapasse 92% da largura do canvas — em quadros com só 1-2
-        // palavras (largura menor) a escala pedida cabe inteira; só
-        // encolhe quando teria vazado.
-        const larguraCanvas = tpl.logicalWidth || tpl.motionData.width;
-        const larguraUniao = maxX - minX;
-        const escalaMaxima = (larguraCanvas * 0.92) / larguraUniao;
-        const ESCALA_EXTRA = Math.min(ESCALA_EXTRA_PEDIDA, escalaMaxima);
-        f = {};
-        papeis.forEach(p => {
-          const b = fOriginal[p];
-          if (!b) { f[p] = null; return; }
-          const w2 = b[2] * ESCALA_EXTRA;
-          const h2 = b[3] * ESCALA_EXTRA;
-          const cxB = b[0] + b[2] / 2;
-          const cyB = b[1] + b[3] / 2;
-          const cxB2 = cx + (cxB - cx) * ESCALA_EXTRA;
-          const cyB2 = cy + (cyB - cy) * ESCALA_EXTRA;
-          f[p] = [cxB2 - w2 / 2, cyB2 - h2 / 2, w2, h2];
+      if (!tpl._efeito10Ancoragem) {
+        // acha o quadro mais "cheio" (maior largura de união) pra
+        // servir de referência fixa de ancoragem e limite de escala.
+        let melhorUniao = null;
+        tpl.motionData.framesData.forEach(fr => {
+          const ativas = papeis.map(p => fr[p]).filter(Boolean);
+          if (!ativas.length) return;
+          const minX = Math.min(...ativas.map(b => b[0]));
+          const maxX = Math.max(...ativas.map(b => b[0] + b[2]));
+          const minY = Math.min(...ativas.map(b => b[1]));
+          const maxY = Math.max(...ativas.map(b => b[1] + b[3]));
+          if (!melhorUniao || (maxX - minX) > melhorUniao.largura) {
+            melhorUniao = { minX, maxX, minY, maxY, largura: maxX - minX };
+          }
         });
+        const larguraCanvas = tpl.logicalWidth || tpl.motionData.width;
+        tpl._efeito10Ancoragem = {
+          cx: (melhorUniao.minX + melhorUniao.maxX) / 2,
+          cy: (melhorUniao.minY + melhorUniao.maxY) / 2,
+          escalaMaxima: (larguraCanvas * 0.92) / melhorUniao.largura,
+        };
       }
+      const { cx, cy, escalaMaxima } = tpl._efeito10Ancoragem;
+      const ESCALA_EXTRA = Math.min(ESCALA_EXTRA_PEDIDA, escalaMaxima);
+      f = {};
+      papeis.forEach(p => {
+        const b = fOriginal[p];
+        if (!b) { f[p] = null; return; }
+        const w2 = b[2] * ESCALA_EXTRA;
+        const h2 = b[3] * ESCALA_EXTRA;
+        const cxB = b[0] + b[2] / 2;
+        const cyB = b[1] + b[3] / 2;
+        const cxB2 = cx + (cxB - cx) * ESCALA_EXTRA;
+        const cyB2 = cy + (cyB - cy) * ESCALA_EXTRA;
+        f[p] = [cxB2 - w2 / 2, cyB2 - h2 / 2, w2, h2];
+      });
     }
 
     const todasPalavras = (texts && texts._linhas && texts._linhas[0]) || papeis.map(p => texts && texts[p]);
