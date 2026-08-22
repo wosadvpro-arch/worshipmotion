@@ -33337,7 +33337,21 @@ function initEditor() {
     const audio = audioElement;
     // No modo "bater no ritmo" não precisa de áudio (usa o cronômetro), mas
     // exige ter começado (Iniciar) pra não marcar tudo no tempo 0.
-    if (_tapMode) { if (!_tapRunning) return; }
+    //
+    // BUG REAL CORRIGIDO ("colocando música real, nenhuma marcação
+    // funcionava"): a condição sempre exigia _tapRunning=true quando
+    // _tapMode estava ativo — mas _tapRunning só é definido pelo fluxo
+    // de contagem regressiva SEM áudio; com áudio real carregado, o
+    // relógio já vem do próprio áudio (_markClock já tratava isso
+    // certo), só essa checagem de guarda que não sabia disso e
+    // bloqueava toda marcação. Corrigido: com áudio real, a condição
+    // de "está rodando" passa a ser "o áudio está tocando" (não
+    // pausado), não mais a variável _tapRunning (que é exclusiva do
+    // modo sem música).
+    if (_tapMode) {
+      if (_temAudioCarregado()) { if (audio.paused) return; }
+      else if (!_tapRunning) return;
+    }
     else if (!audio || !audio.duration) return;
     const parsed = engine?.parsed;
     if (!parsed) return;
@@ -40993,23 +41007,21 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     if (!f) return false;
     const grupos = tpl.linhasParaPapeis || [['want', 'it_1', 'out'], ['selfish', 'heart'], ['never', 'give']];
 
-    // MARCAÇÃO DE RITMO NO MODO REORGANIZADO — FASE 1: descobre quais
-    // linhas (no caminho de reflow) estão MARCADAS e VISÍVEIS agora,
-    // sem desenhar ainda.
+    // MARCAÇÃO DE RITMO — FASE 1: pra CADA grupo (linha), descobre se é
+    // fidelidade total (texto original) ou reflow (texto alterado), e
+    // calcula a caixa delimitadora (topo/base) que esse grupo ocupa
+    // nesse quadro — sem desenhar ainda. Isso cobre os dois caminhos
+    // com a MESMA proteção contra sobreposição.
     //
-    // BUG REAL CORRIGIDO ("primeira palavra não centralizada / segunda
-    // pequena / sobrepuseram"): cada linha antes usava a posição Y
-    // ORIGINAL dela (pensada pro vídeo fonte mostrar uma frase de cada
-    // vez, nunca duas juntas) — com a marcação segurando várias linhas
-    // visíveis ao mesmo tempo, elas ficavam empilhadas na MESMA faixa
-    // vertical, se sobrepondo. Corrigido: quando há marcação de ritmo,
-    // recalcula a posição Y de cada linha visível como uma pilha limpa
-    // e espaçada, na ordem original das linhas — só entram no
-    // reposicionamento as linhas que estão no modo reflow E têm
-    // marcação; linhas com fidelidade total ou sem marcação nenhuma
-    // continuam exatamente como antes.
-    const infoReflow = [];
-    let temAlgumaMarcacao = false;
+    // BUG REAL CORRIGIDO ("com música real e letra original, as linhas
+    // se sobrepunham"): a proteção contra sobreposição só existia no
+    // caminho de REFLOW (texto alterado) — o caminho de FIDELIDADE
+    // TOTAL (texto igual ao original, o caso mais comum de uso real —
+    // é a letra de verdade do efeito) desenhava cada palavra direto na
+    // própria bbox, sem nenhuma checagem de colisão entre linhas.
+    // Unificado: agora as duas passam pela mesma fase de prevenção de
+    // sobreposição antes de desenhar.
+    const infoGrupos = [];
 
     grupos.forEach((papeis, grupoIndex) => {
       const todosOriginais = papeis.every(p => {
@@ -41018,13 +41030,36 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       });
       const todasPalavras = (texts && texts._linhas && texts._linhas[grupoIndex]) || papeis.map(p => texts && texts[p]);
       const contagemBate = todasPalavras.filter(w => (w || '').trim()).length === papeis.length;
-      if (todosOriginais && contagemBate) return; // fidelidade total tratada na FASE 2
+      const ehFidelidade = todosOriginais && contagemBate;
 
+      if (ehFidelidade) {
+        // Fidelidade total: cada papel resolve o PRÓPRIO quadro (pode
+        // ter marcação individual, já que no modo "Palavra" cada
+        // palavra pode ter tempo diferente) — a caixa do grupo é a
+        // união das bboxes de todos os papéis atualmente visíveis.
+        const partes = [];
+        papeis.forEach(papel => {
+          const frameDessePapel = _resolverFrameComRitmo(tpl, papel, frameIdx, elapsedMs, texts);
+          if (frameDessePapel === null) return;
+          const fPapel = frameDessePapel === frameIdx ? f : tpl.motionData.framesData[frameDessePapel];
+          const bbox = fPapel && fPapel[papel];
+          if (!bbox) return;
+          const texto = (texts && texts[papel] || '').trim();
+          if (!texto) return;
+          partes.push({ papel, bbox, texto });
+        });
+        if (!partes.length) return;
+        const topo = Math.min(...partes.map(p => p.bbox[1]));
+        const base = Math.max(...partes.map(p => p.bbox[1] + p.bbox[3]));
+        infoGrupos.push({ grupoIndex, ehFidelidade: true, topo, base, altura: base - topo, partes, deslocY: 0 });
+        return;
+      }
+
+      // Reflow: mesma lógica de antes, agrupada pra entrar na mesma
+      // prevenção de colisão.
       const papelRepresentativo = papeis[0];
-      const temMarcacao = !!(texts && texts._tStarts && (papelRepresentativo in texts._tStarts));
-      if (temMarcacao) temAlgumaMarcacao = true;
       const frameGrupo = _resolverFrameComRitmo(tpl, papelRepresentativo, frameIdx, elapsedMs, texts);
-      if (frameGrupo === null) return; // marcado, mas ainda não chegou a vez dessa linha
+      if (frameGrupo === null) return;
       const fGrupo = frameGrupo === frameIdx ? f : tpl.motionData.framesData[frameGrupo];
       if (!fGrupo) return;
 
@@ -41039,86 +41074,91 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
         .filter(o => o.texto);
       if (!ativos.length) return;
 
-      infoReflow.push({ grupoIndex, temMarcacao, alturaRef, centroYOriginal, ativos });
+      infoGrupos.push({
+        grupoIndex, ehFidelidade: false,
+        topo: centroYOriginal - alturaRef / 2, base: centroYOriginal + alturaRef / 2,
+        altura: alturaRef, alturaRef, centroYOriginal, ativos, deslocY: 0,
+      });
     });
 
-    // FASE 2: quando existe marcação de ritmo ativa nessa estrofe,
-    // recalcula a posição Y de TODAS as linhas em reflow visíveis
-    // agora como uma pilha vertical limpa e igualmente espaçada,
-    // centralizada no canvas, na ORDEM ORIGINAL das linhas (não na
-    // ordem em que apareceram). Sem marcação nenhuma, cada linha usa
-    // sua própria centroYOriginal, exatamente como antes.
-    //
-    // BUG REAL CORRIGIDO ("TESTANDO sumiu, só apareceram as 2
-    // últimas"): o espaçamento entre linhas era calculado só a partir
-    // da altura NATURAL de cada palavra (sem olhar quantas linhas
-    // cabiam na tela) — com 3 linhas de fonte grande, a pilha total
-    // ultrapassava a altura do canvas, empurrando a primeira linha pra
-    // fora da borda de cima (invisível, mesmo "desenhada"). Corrigido:
-    // o espaçamento agora é limitado pra pilha inteira sempre caber
-    // dentro de 92% da altura do canvas — encolhe o tamanho de cada
-    // linha proporcionalmente se precisar, igual à técnica de
-    // "encolher pra caber" já usada horizontalmente.
-    if (temAlgumaMarcacao && infoReflow.length) {
-      const alturaCanvas = tpl.logicalHeight || tpl.motionData.height || 1080;
-      const n = infoReflow.length;
-      const alturaMediaLinha = infoReflow.reduce((s, o) => s + o.alturaRef, 0) / n;
-      let espacamento = alturaMediaLinha * 1.35;
-      const alturaMaxPilha = alturaCanvas * 0.92;
-      const alturaTotalPilha = espacamento * Math.max(1, n - 1) + alturaMediaLinha;
-      if (alturaTotalPilha > alturaMaxPilha && alturaTotalPilha > 0) {
-        const fatorEncolher = alturaMaxPilha / alturaTotalPilha;
-        espacamento *= fatorEncolher;
-        infoReflow.forEach(o => { o.alturaRef *= fatorEncolher; });
+    // MARCAÇÃO DE RITMO — FASE 2: prevenção de sobreposição. Cada
+    // grupo usa a posição/tamanho ORIGINAIS sempre que possível — só
+    // empurra pra baixo o MÍNIMO necessário quando colidiria com o
+    // grupo anterior (o vídeo original nunca mostra 2+ linhas juntas,
+    // então não existe uma posição "correta" pronta pra esse caso).
+    // Se o empurrão total não couber na tela, comprime tudo
+    // proporcionalmente até caber, preservando a ordem.
+    infoGrupos.sort((a, b) => a.grupoIndex - b.grupoIndex);
+    const margem = 0.12;
+    let limiteInferiorOcupado = null;
+    infoGrupos.forEach(o => {
+      if (limiteInferiorOcupado !== null && o.topo < limiteInferiorOcupado) {
+        o.deslocY = limiteInferiorOcupado - o.topo;
       }
-      const alturaTotalFinal = espacamento * Math.max(1, n - 1);
-      const yInicial = alturaCanvas / 2 - alturaTotalFinal / 2;
-      infoReflow.forEach((o, i) => { o.centroYOriginal = yInicial + espacamento * i; });
+      limiteInferiorOcupado = (o.base + o.deslocY) + o.altura * margem;
+    });
+
+    if (infoGrupos.length) {
+      const alturaCanvas = tpl.logicalHeight || tpl.motionData.height || 1080;
+      const alturaMaxPilha = alturaCanvas * 0.92;
+      // topoFinal/baseFinal rastreiam a posicao REAL (ja com o
+      // deslocamento da FASE 2a aplicado) -- mais simples que tentar
+      // reconstruir a partir de fatorEscala espalhado depois.
+      infoGrupos.forEach(o => {
+        o.topoFinal = o.topo + o.deslocY;
+        o.baseFinal = o.base + o.deslocY;
+        o.fatorEscala = 1;
+      });
+      let topoConjunto = Math.min(...infoGrupos.map(o => o.topoFinal));
+      let baseConjunto = Math.max(...infoGrupos.map(o => o.baseFinal));
+      const alturaConjunto = baseConjunto - topoConjunto;
+      if (alturaConjunto > alturaMaxPilha && alturaConjunto > 0) {
+        const fatorEscala = alturaMaxPilha / alturaConjunto;
+        const centroConjunto = (topoConjunto + baseConjunto) / 2;
+        infoGrupos.forEach(o => {
+          const centroGrupo = (o.topoFinal + o.baseFinal) / 2;
+          const novoCentroGrupo = centroConjunto + (centroGrupo - centroConjunto) * fatorEscala;
+          const metadeAlturaEscalada = (o.baseFinal - o.topoFinal) / 2 * fatorEscala;
+          o.topoFinal = novoCentroGrupo - metadeAlturaEscalada;
+          o.baseFinal = novoCentroGrupo + metadeAlturaEscalada;
+          o.fatorEscala = fatorEscala;
+        });
+        topoConjunto = Math.min(...infoGrupos.map(o => o.topoFinal));
+        baseConjunto = Math.max(...infoGrupos.map(o => o.baseFinal));
+      }
+      const margemCanvas = alturaCanvas * 0.02;
+      let deslocamento = 0;
+      if (baseConjunto > alturaCanvas - margemCanvas) deslocamento = (alturaCanvas - margemCanvas) - baseConjunto;
+      if (topoConjunto + deslocamento < margemCanvas) deslocamento = margemCanvas - topoConjunto;
+      if (deslocamento !== 0) infoGrupos.forEach(o => { o.topoFinal += deslocamento; o.baseFinal += deslocamento; });
+      infoGrupos.forEach(o => { o.deslocY = o.topoFinal - o.topo; });
     }
 
-    infoReflow.forEach(o => {
-      _desenharGrupoReflowEfeito8(ctx, tpl, o.ativos, o.alturaRef, o.centroYOriginal);
-    });
-
-    // FASE 2b: linhas com fidelidade total (texto igual ao original),
-    // desenhadas exatamente como sempre.
-    grupos.forEach((papeis, grupoIndex) => {
-      const todosOriginais = papeis.every(p => {
-        const texto = (texts && texts[p] || '').trim();
-        return !texto || texto.toUpperCase() === EFEITO8_PALAVRA_ORIGINAL[p];
-      });
-      const todasPalavras = (texts && texts._linhas && texts._linhas[grupoIndex]) || papeis.map(p => texts && texts[p]);
-      const contagemBate = todasPalavras.filter(w => (w || '').trim()).length === papeis.length;
-      if (!(todosOriginais && contagemBate)) return;
-
-      // Fidelidade total: cada papel com sua bbox e recorte de
-      // tamanho natural, exatamente como medido no MP4 original.
-      // MARCAÇÃO DE RITMO (Premium): se esse papel tem tStart
-      // próprio, usa o quadro LOCAL dele (recomeçando a animação da
-      // palavra no instante marcado) em vez do quadro global
-      // compartilhado por toda a estrofe.
-      papeis.forEach(papel => {
-        const frameDessePapel = _resolverFrameComRitmo(tpl, papel, frameIdx, elapsedMs, texts);
-        if (frameDessePapel === null) return; // marcado, mas ainda não chegou a vez
-        const fPapel = frameDessePapel === frameIdx ? f : tpl.motionData.framesData[frameDessePapel];
-        const bbox = fPapel && fPapel[papel];
-        if (!bbox) return;
-        const texto = (texts && texts[papel] || '').trim();
-        if (!texto) return;
-        const st = tpl.styles[papel];
-        const nat = EFEITO8_NATURAL[papel];
-        const img = makeBitmap(texto, st.fontFamily, st.color);
-        if (!img || !nat) return;
-        const [bx, by, bw, bh] = bbox;
-        const drawX = (nat.ax === 'd') ? (bx + bw - nat.w) : bx;
-        const drawY = (nat.ay === 'b') ? (by + bh - nat.h) : by;
-        ctx.save();
-        ctx.beginPath();
-        ctx.rect(bx, by, bw, bh);
-        ctx.clip();
-        ctx.drawImage(img, drawX, drawY, nat.w, nat.h);
-        ctx.restore();
-      });
+    // MARCAÇÃO DE RITMO — FASE 3: desenha cada grupo com o
+    // deslocamento/escala calculados.
+    infoGrupos.forEach(o => {
+      const escala = o.fatorEscala || 1;
+      if (o.ehFidelidade) {
+        o.partes.forEach(({ papel, bbox, texto }) => {
+          const st = tpl.styles[papel];
+          const nat = EFEITO8_NATURAL[papel];
+          const img = makeBitmap(texto, st.fontFamily, st.color);
+          if (!img || !nat) return;
+          let [bx, by, bw, bh] = bbox;
+          by += o.deslocY;
+          if (escala !== 1) { bh *= escala; }
+          const drawX = (nat.ax === 'd') ? (bx + bw - nat.w * escala) : bx;
+          const drawY = (nat.ay === 'b') ? (by + bh - nat.h * escala) : by;
+          ctx.save();
+          ctx.beginPath();
+          ctx.rect(bx, by, bw, bh);
+          ctx.clip();
+          ctx.drawImage(img, drawX, drawY, nat.w * escala, nat.h * escala);
+          ctx.restore();
+        });
+      } else {
+        _desenharGrupoReflowEfeito8(ctx, tpl, o.ativos, o.alturaRef * escala, o.centroYOriginal + o.deslocY);
+      }
     });
     return true;
   }
