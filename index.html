@@ -32203,9 +32203,10 @@ function initEditor() {
     if (wordObjs && wordObjs.length) _markHistory.push(wordObjs);
   }
   function getStanzaMarkMode(si) {
-    // Padrão = 'line'. No uso real, marcar por linha é o caso comum;
-    // marcar palavra-a-palavra é a exceção pra momentos específicos.
-    return _stanzaMarkMode[si] === 'word' ? 'word' : 'line';
+    // Padrão = 'word'. Cada palavra ganha seu próprio tempo ao bater no
+    // ritmo; marcar a linha inteira de uma vez é a exceção (o usuário
+    // ativa manualmente o modo "Linha" quando quiser esse comportamento).
+    return _stanzaMarkMode[si] === 'line' ? 'line' : 'word';
   }
   function setStanzaMarkMode(si, mode) {
     _stanzaMarkMode[si] = (mode === 'word') ? 'word' : 'line';
@@ -40719,13 +40720,44 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     });
 
     if (todosOriginais && contagemBate) {
+      // FADE-IN DE ENTRADA: os dados de movimento originais já trazem a
+      // bbox de cada palavra "pronta" assim que ela aparece (sem rampa de
+      // opacidade) — então, sem esse tratamento, a palavra pipoca na tela
+      // a 100% de opacidade no exato quadro em que a bbox deixa de ser
+      // null (a 1ª palavra, inclusive, já nasce assim no quadro 0). Aqui
+      // a gente acha, uma única vez por template, o primeiro quadro em
+      // que cada papel tem bbox (usando fOriginal, não a versão já
+      // escalada, já que a escala não muda em qual quadro ela "nasce") e
+      // aplica uma rampa de opacidade curta a partir dali.
+      if (!tpl._efeito10PrimeiroFrame) {
+        const primeiro = {};
+        papeis.forEach(p => { primeiro[p] = null; });
+        tpl.motionData.framesData.forEach((fr, idx) => {
+          papeis.forEach(p => {
+            if (primeiro[p] === null && fr[p]) primeiro[p] = idx;
+          });
+        });
+        tpl._efeito10PrimeiroFrame = primeiro;
+      }
+      const FADE_FRAMES = 5;
       papeis.forEach(papel => {
         const bbox = f[papel];
         if (!bbox) return;
         const texto = (texts && texts[papel] || '').trim();
         if (!texto) return;
         const st = tpl.styles[papel];
-        drawStretched(ctx, texto, st.fontFamily, st.color, bbox, 'xywh');
+        const primeiroFrame = tpl._efeito10PrimeiroFrame[papel];
+        const alpha = (primeiroFrame === null)
+          ? 1
+          : Math.max(0, Math.min(1, (frameIdx - primeiroFrame) / FADE_FRAMES));
+        if (alpha < 1) {
+          const prevAlpha = ctx.globalAlpha;
+          ctx.globalAlpha = prevAlpha * alpha;
+          drawStretched(ctx, texto, st.fontFamily, st.color, bbox, 'xywh');
+          ctx.globalAlpha = prevAlpha;
+        } else {
+          drawStretched(ctx, texto, st.fontFamily, st.color, bbox, 'xywh');
+        }
       });
       return true;
     }
