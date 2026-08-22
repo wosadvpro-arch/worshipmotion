@@ -40937,20 +40937,26 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     for (let i = inicio; i < frames.length; i++) {
       if (frames[i][papel]) ultimoVisivel = i; else break;
     }
-    // varre do início até o fim da janela visível, procurando onde a
-    // largura da bbox para de mudar mais que ~3% de um quadro pro
-    // seguinte, de forma sustentada até o fim dessa janela (não é só
-    // uma pausa passageira no meio da entrada, tipo a do Efeito 10).
-    let assentado = ultimoVisivel; // padrão: se nunca estabiliza, usa o último quadro visível
+    // BUG REAL CORRIGIDO ("segunda palavra apareceu pequena"): a
+    // versão anterior comparava só quadro-a-quadro (delta < 3%) — mas
+    // algumas palavras crescem devagar e CONTINUAMENTE ao longo de
+    // dezenas de quadros (cada passo pequeno, mas a soma é grande:
+    // ex. largura foi de 687 pra 760, quase 11%, ao longo de 40+
+    // quadros) — a comparação vizinho-a-vizinho nunca via um "salto"
+    // grande o bastante e travava logo no início da janela visível,
+    // bem antes do tamanho final de verdade. Corrigido: usa o maior
+    // tamanho JÁ ATINGIDO na janela toda como referência, e acha o
+    // primeiro quadro que chega a pelo menos 97% dele — captura
+    // crescimento sustentado, não só saltos bruscos entre vizinhos.
+    let larguraMax = 0;
     for (let i = inicio; i <= ultimoVisivel; i++) {
-      let estavel = true;
-      for (let j = i; j < ultimoVisivel; j++) {
-        const a = frames[j][papel], b = frames[j + 1][papel];
-        if (!a || !b) { estavel = false; break; }
-        const delta = Math.abs(b[2] - a[2]) / Math.max(1, a[2]);
-        if (delta > 0.03) { estavel = false; break; }
-      }
-      if (estavel) { assentado = i; break; }
+      const b = frames[i][papel];
+      if (b && b[2] > larguraMax) larguraMax = b[2];
+    }
+    let assentado = ultimoVisivel;
+    for (let i = inicio; i <= ultimoVisivel; i++) {
+      const b = frames[i][papel];
+      if (b && larguraMax > 0 && b[2] >= larguraMax * 0.97) { assentado = i; break; }
     }
     tpl._cacheQuadroAssentado[papel] = assentado;
     return assentado;
@@ -40987,6 +40993,24 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     if (!f) return false;
     const grupos = tpl.linhasParaPapeis || [['want', 'it_1', 'out'], ['selfish', 'heart'], ['never', 'give']];
 
+    // MARCAÇÃO DE RITMO NO MODO REORGANIZADO — FASE 1: descobre quais
+    // linhas (no caminho de reflow) estão MARCADAS e VISÍVEIS agora,
+    // sem desenhar ainda.
+    //
+    // BUG REAL CORRIGIDO ("primeira palavra não centralizada / segunda
+    // pequena / sobrepuseram"): cada linha antes usava a posição Y
+    // ORIGINAL dela (pensada pro vídeo fonte mostrar uma frase de cada
+    // vez, nunca duas juntas) — com a marcação segurando várias linhas
+    // visíveis ao mesmo tempo, elas ficavam empilhadas na MESMA faixa
+    // vertical, se sobrepondo. Corrigido: quando há marcação de ritmo,
+    // recalcula a posição Y de cada linha visível como uma pilha limpa
+    // e espaçada, na ordem original das linhas — só entram no
+    // reposicionamento as linhas que estão no modo reflow E têm
+    // marcação; linhas com fidelidade total ou sem marcação nenhuma
+    // continuam exatamente como antes.
+    const infoReflow = [];
+    let temAlgumaMarcacao = false;
+
     grupos.forEach((papeis, grupoIndex) => {
       const todosOriginais = papeis.every(p => {
         const texto = (texts && texts[p] || '').trim();
@@ -40994,61 +41018,11 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       });
       const todasPalavras = (texts && texts._linhas && texts._linhas[grupoIndex]) || papeis.map(p => texts && texts[p]);
       const contagemBate = todasPalavras.filter(w => (w || '').trim()).length === papeis.length;
+      if (todosOriginais && contagemBate) return; // fidelidade total tratada na FASE 2
 
-      if (todosOriginais && contagemBate) {
-        // Fidelidade total: cada papel com sua bbox e recorte de
-        // tamanho natural, exatamente como medido no MP4 original.
-        // MARCAÇÃO DE RITMO (Premium): se esse papel tem tStart
-        // próprio, usa o quadro LOCAL dele (recomeçando a animação da
-        // palavra no instante marcado) em vez do quadro global
-        // compartilhado por toda a estrofe.
-        papeis.forEach(papel => {
-          const frameDessePapel = _resolverFrameComRitmo(tpl, papel, frameIdx, elapsedMs, texts);
-          if (frameDessePapel === null) return; // marcado, mas ainda não chegou a vez
-          const fPapel = frameDessePapel === frameIdx ? f : tpl.motionData.framesData[frameDessePapel];
-          const bbox = fPapel && fPapel[papel];
-          if (!bbox) return;
-          const texto = (texts && texts[papel] || '').trim();
-          if (!texto) return;
-          const st = tpl.styles[papel];
-          const nat = EFEITO8_NATURAL[papel];
-          const img = makeBitmap(texto, st.fontFamily, st.color);
-          if (!img || !nat) return;
-          const [bx, by, bw, bh] = bbox;
-          const drawX = (nat.ax === 'd') ? (bx + bw - nat.w) : bx;
-          const drawY = (nat.ay === 'b') ? (by + bh - nat.h) : by;
-          ctx.save();
-          ctx.beginPath();
-          ctx.rect(bx, by, bw, bh);
-          ctx.clip();
-          ctx.drawImage(img, drawX, drawY, nat.w, nat.h);
-          ctx.restore();
-        });
-        return;
-      }
-
-      // Texto (ou quantidade de palavras) alterado nessa linha: reflow
-      // em fileira. Usa as bboxes dos papéis ORIGINAIS que estão
-      // ativos nesse quadro pra saber SE a linha deve aparecer agora
-      // (timing) e pra que tamanho/posição de referência usar — mas
-      // desenha TODAS as palavras que o usuário digitou nessa linha
-      // (não só até a quantidade original de papéis).
-      //
-      // BUG REAL CORRIGIDO ("não consigo adicionar mais palavras"): o
-      // código antes só olhava pra `papeis` (3, 2 ou 2 nomes fixos) —
-      // uma 4ª palavra na linha 1 não tinha papel nenhum pra ler o
-      // texto dela, então sumia. Agora usa `todasPalavras` (a lista
-      // INTEIRA de palavras da linha, sem limite).
-      //
-      // MARCAÇÃO DE RITMO NO MODO REORGANIZADO (Premium): igual ao
-      // caminho de fidelidade, mas a nível de GRUPO (linha) inteiro —
-      // faz sentido aqui porque a reorganização já trata a linha como
-      // um bloco só (não tem "animação original" pra tocar palavra por
-      // palavra quando o texto é livre). Usa o tStart da PRIMEIRA
-      // palavra do grupo como referência do grupo inteiro (no modo
-      // "linha", que é o padrão da ferramenta, todas as palavras da
-      // linha já recebem o mesmo tStart de qualquer forma).
       const papelRepresentativo = papeis[0];
+      const temMarcacao = !!(texts && texts._tStarts && (papelRepresentativo in texts._tStarts));
+      if (temMarcacao) temAlgumaMarcacao = true;
       const frameGrupo = _resolverFrameComRitmo(tpl, papelRepresentativo, frameIdx, elapsedMs, texts);
       if (frameGrupo === null) return; // marcado, mas ainda não chegou a vez dessa linha
       const fGrupo = frameGrupo === frameIdx ? f : tpl.motionData.framesData[frameGrupo];
@@ -41060,12 +41034,96 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       const centroYOriginal = referencias.reduce((s, b) => s + (b[1] + b[3] / 2), 0) / referencias.length;
       const ultimoPapel = papeis[papeis.length - 1];
       const stLinha = tpl.styles[ultimoPapel];
-
       const ativos = todasPalavras
         .map(texto => ({ texto: (texto || '').trim(), st: stLinha }))
         .filter(o => o.texto);
       if (!ativos.length) return;
 
+      infoReflow.push({ grupoIndex, temMarcacao, alturaRef, centroYOriginal, ativos });
+    });
+
+    // FASE 2: quando existe marcação de ritmo ativa nessa estrofe,
+    // recalcula a posição Y de TODAS as linhas em reflow visíveis
+    // agora como uma pilha vertical limpa e igualmente espaçada,
+    // centralizada no canvas, na ORDEM ORIGINAL das linhas (não na
+    // ordem em que apareceram). Sem marcação nenhuma, cada linha usa
+    // sua própria centroYOriginal, exatamente como antes.
+    //
+    // BUG REAL CORRIGIDO ("TESTANDO sumiu, só apareceram as 2
+    // últimas"): o espaçamento entre linhas era calculado só a partir
+    // da altura NATURAL de cada palavra (sem olhar quantas linhas
+    // cabiam na tela) — com 3 linhas de fonte grande, a pilha total
+    // ultrapassava a altura do canvas, empurrando a primeira linha pra
+    // fora da borda de cima (invisível, mesmo "desenhada"). Corrigido:
+    // o espaçamento agora é limitado pra pilha inteira sempre caber
+    // dentro de 92% da altura do canvas — encolhe o tamanho de cada
+    // linha proporcionalmente se precisar, igual à técnica de
+    // "encolher pra caber" já usada horizontalmente.
+    if (temAlgumaMarcacao && infoReflow.length) {
+      const alturaCanvas = tpl.logicalHeight || tpl.motionData.height || 1080;
+      const n = infoReflow.length;
+      const alturaMediaLinha = infoReflow.reduce((s, o) => s + o.alturaRef, 0) / n;
+      let espacamento = alturaMediaLinha * 1.35;
+      const alturaMaxPilha = alturaCanvas * 0.92;
+      const alturaTotalPilha = espacamento * Math.max(1, n - 1) + alturaMediaLinha;
+      if (alturaTotalPilha > alturaMaxPilha && alturaTotalPilha > 0) {
+        const fatorEncolher = alturaMaxPilha / alturaTotalPilha;
+        espacamento *= fatorEncolher;
+        infoReflow.forEach(o => { o.alturaRef *= fatorEncolher; });
+      }
+      const alturaTotalFinal = espacamento * Math.max(1, n - 1);
+      const yInicial = alturaCanvas / 2 - alturaTotalFinal / 2;
+      infoReflow.forEach((o, i) => { o.centroYOriginal = yInicial + espacamento * i; });
+    }
+
+    infoReflow.forEach(o => {
+      _desenharGrupoReflowEfeito8(ctx, tpl, o.ativos, o.alturaRef, o.centroYOriginal);
+    });
+
+    // FASE 2b: linhas com fidelidade total (texto igual ao original),
+    // desenhadas exatamente como sempre.
+    grupos.forEach((papeis, grupoIndex) => {
+      const todosOriginais = papeis.every(p => {
+        const texto = (texts && texts[p] || '').trim();
+        return !texto || texto.toUpperCase() === EFEITO8_PALAVRA_ORIGINAL[p];
+      });
+      const todasPalavras = (texts && texts._linhas && texts._linhas[grupoIndex]) || papeis.map(p => texts && texts[p]);
+      const contagemBate = todasPalavras.filter(w => (w || '').trim()).length === papeis.length;
+      if (!(todosOriginais && contagemBate)) return;
+
+      // Fidelidade total: cada papel com sua bbox e recorte de
+      // tamanho natural, exatamente como medido no MP4 original.
+      // MARCAÇÃO DE RITMO (Premium): se esse papel tem tStart
+      // próprio, usa o quadro LOCAL dele (recomeçando a animação da
+      // palavra no instante marcado) em vez do quadro global
+      // compartilhado por toda a estrofe.
+      papeis.forEach(papel => {
+        const frameDessePapel = _resolverFrameComRitmo(tpl, papel, frameIdx, elapsedMs, texts);
+        if (frameDessePapel === null) return; // marcado, mas ainda não chegou a vez
+        const fPapel = frameDessePapel === frameIdx ? f : tpl.motionData.framesData[frameDessePapel];
+        const bbox = fPapel && fPapel[papel];
+        if (!bbox) return;
+        const texto = (texts && texts[papel] || '').trim();
+        if (!texto) return;
+        const st = tpl.styles[papel];
+        const nat = EFEITO8_NATURAL[papel];
+        const img = makeBitmap(texto, st.fontFamily, st.color);
+        if (!img || !nat) return;
+        const [bx, by, bw, bh] = bbox;
+        const drawX = (nat.ax === 'd') ? (bx + bw - nat.w) : bx;
+        const drawY = (nat.ay === 'b') ? (by + bh - nat.h) : by;
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(bx, by, bw, bh);
+        ctx.clip();
+        ctx.drawImage(img, drawX, drawY, nat.w, nat.h);
+        ctx.restore();
+      });
+    });
+    return true;
+  }
+
+  function _desenharGrupoReflowEfeito8(ctx, tpl, ativos, alturaRef, centroYOriginal) {
       const larguraCanvas = tpl.logicalWidth || tpl.motionData.width;
       const GAP_RATIO = 0.28;
       const MARGEM = 0.94;
@@ -41096,8 +41154,6 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
           x += it.w;
         });
       }
-    });
-    return true;
   }
 
   function _efeito8MedirItensGrupo(ativos, altura) {
