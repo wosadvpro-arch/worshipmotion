@@ -32812,7 +32812,28 @@ function initEditor() {
     panel.addEventListener('click', (ev) => {
       if (ev.target.closest('#mini-play-btn')) {
         ev.preventDefault();
-        toggleAudioPlayback();
+        // BUG REAL CORRIGIDO ("Marcar no ritmo" não funcionava pra
+        // NENHUMA estrofe, não só frame-exact — confirmado testando com
+        // texto normal também): toggleAudioPlayback() tem
+        // `if (!audio || !audio.src) return;` — sem música carregada,
+        // clicar em "Iniciar" não fazia absolutamente nada, mesmo a
+        // própria dica da ferramenta prometendo "sem música, você ouve
+        // por fora e vai batendo". O botão nunca acionava a contagem
+        // regressiva (_tapStartCountdown) nesse caso — só funcionava
+        // com áudio de verdade carregado. Corrigido: quando não há
+        // áudio, esse mesmo botão agora aciona o fluxo de bater sem
+        // música (a mesma lógica do botão grande "MARCAR": inicia a
+        // contagem se ainda não começou, pausa se está rodando, ou
+        // retoma se está pausado).
+        if (_temAudioCarregado()) {
+          toggleAudioPlayback();
+        } else if (_tapPaused) {
+          _tapResume();
+        } else if (_tapRunning) {
+          _tapPause();
+        } else {
+          _tapStartCountdown();
+        }
       } else if (ev.target.closest('#mini-back5-btn')) {
         ev.preventDefault();
         seekAudioBy(-5);
