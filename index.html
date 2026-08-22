@@ -41007,23 +41007,54 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     if (!f) return false;
     const grupos = tpl.linhasParaPapeis || [['want', 'it_1', 'out'], ['selfish', 'heart'], ['never', 'give']];
 
-    // MARCAÇÃO DE RITMO — FASE 1: pra CADA grupo (linha), descobre se é
-    // fidelidade total (texto original) ou reflow (texto alterado), e
-    // calcula a caixa delimitadora (topo/base) que esse grupo ocupa
-    // nesse quadro — sem desenhar ainda. Isso cobre os dois caminhos
-    // com a MESMA proteção contra sobreposição.
+    // MARCACAO DE RITMO -- COMPORTAMENTO CORRIGIDO ("o certo e aparecer
+    // uma palavra por vez"): o video original mostra UM grupo de cada
+    // vez, revezando -- a marcacao de ritmo deve preservar exatamente
+    // esse comportamento, so trocando QUANDO cada revezamento acontece
+    // (pelo tempo marcado, nao mais pelo tempo fixo do video original).
+    // Tentativas anteriores (empilhar visualmente, evitar sobreposicao)
+    // partiam de uma leitura errada do pedido -- a correcao real e mais
+    // simples: cada grupo marcado fica visivel do PROPRIO instante
+    // marcado ATE o instante em que o PROXIMO grupo marcado comeca (sem
+    // reproduzir o ciclo de saida original, que e curto demais pra
+    // musica de verdade) -- so um por vez, igual ao video original,
+    // nunca dois ao mesmo tempo.
     //
-    // BUG REAL CORRIGIDO ("com música real e letra original, as linhas
-    // se sobrepunham"): a proteção contra sobreposição só existia no
-    // caminho de REFLOW (texto alterado) — o caminho de FIDELIDADE
-    // TOTAL (texto igual ao original, o caso mais comum de uso real —
-    // é a letra de verdade do efeito) desenhava cada palavra direto na
-    // própria bbox, sem nenhuma checagem de colisão entre linhas.
-    // Unificado: agora as duas passam pela mesma fase de prevenção de
-    // sobreposição antes de desenhar.
-    const infoGrupos = [];
+    // Primeiro, calcula o atraso (tStart relativo) de cada grupo, se
+    // tiver marcacao -- usa o papel representativo de cada grupo.
+    const temMarcacaoStanza = !!(texts && texts._tStarts && texts._referenciaTStart != null);
+    const gruposComAtraso = grupos.map((papeis, grupoIndex) => {
+      const papelRepresentativo = papeis[0];
+      const tStarts = texts && texts._tStarts;
+      const referencia = texts && texts._referenciaTStart;
+      const temMarcacaoProprio = !!(tStarts && referencia != null && (papelRepresentativo in tStarts));
+      const atraso = temMarcacaoProprio ? Math.max(0, (tStarts[papelRepresentativo] - referencia) * 1000) : null;
+      return { papeis, grupoIndex, atraso };
+    });
+
+    // Se ALGUM grupo da estrofe tem marcacao, decide qual grupo esta
+    // "no ar" agora: o de MAIOR atraso que ja passou (o mais recente a
+    // comecar) -- so ELE e desenhado, nenhum outro, igual ao video
+    // original (nunca dois grupos juntos).
+    let grupoAtivoAgora = null;
+    if (temMarcacaoStanza) {
+      const marcados = gruposComAtraso.filter(g => g.atraso !== null && g.atraso <= elapsedMs);
+      if (marcados.length) {
+        grupoAtivoAgora = marcados.reduce((a, b) => (b.atraso > a.atraso ? b : a));
+      }
+    }
 
     grupos.forEach((papeis, grupoIndex) => {
+      // Com marcacao de ritmo ativa na estrofe, so desenha o grupo que
+      // esta "no ar" agora (um por vez) -- os outros grupos MARCADOS
+      // ficam ocultos (foram substituidos ou ainda nao chegou a vez).
+      // Grupos SEM marcacao propria continuam no comportamento
+      // original (raro, mas evita quebrar uso parcial).
+      const infoAtraso = gruposComAtraso[grupoIndex];
+      if (temMarcacaoStanza && infoAtraso.atraso !== null) {
+        if (!grupoAtivoAgora || grupoAtivoAgora.grupoIndex !== grupoIndex) return;
+      }
+
       const todosOriginais = papeis.every(p => {
         const texto = (texts && texts[p] || '').trim();
         return !texto || texto.toUpperCase() === EFEITO8_PALAVRA_ORIGINAL[p];
@@ -41033,11 +41064,10 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       const ehFidelidade = todosOriginais && contagemBate;
 
       if (ehFidelidade) {
-        // Fidelidade total: cada papel resolve o PRÓPRIO quadro (pode
-        // ter marcação individual, já que no modo "Palavra" cada
-        // palavra pode ter tempo diferente) — a caixa do grupo é a
-        // união das bboxes de todos os papéis atualmente visíveis.
-        const partes = [];
+        // Fidelidade total: cada papel com sua bbox e recorte de
+        // tamanho natural, exatamente como medido no MP4 original --
+        // usa o quadro LOCAL (marcado) se esse papel tiver marcacao,
+        // senao o quadro global de sempre.
         papeis.forEach(papel => {
           const frameDessePapel = _resolverFrameComRitmo(tpl, papel, frameIdx, elapsedMs, texts);
           if (frameDessePapel === null) return;
@@ -41046,17 +41076,27 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
           if (!bbox) return;
           const texto = (texts && texts[papel] || '').trim();
           if (!texto) return;
-          partes.push({ papel, bbox, texto });
+          const st = tpl.styles[papel];
+          const nat = EFEITO8_NATURAL[papel];
+          const img = makeBitmap(texto, st.fontFamily, st.color);
+          if (!img || !nat) return;
+          const [bx, by, bw, bh] = bbox;
+          const drawX = (nat.ax === 'd') ? (bx + bw - nat.w) : bx;
+          const drawY = (nat.ay === 'b') ? (by + bh - nat.h) : by;
+          ctx.save();
+          ctx.beginPath();
+          ctx.rect(bx, by, bw, bh);
+          ctx.clip();
+          ctx.drawImage(img, drawX, drawY, nat.w, nat.h);
+          ctx.restore();
         });
-        if (!partes.length) return;
-        const topo = Math.min(...partes.map(p => p.bbox[1]));
-        const base = Math.max(...partes.map(p => p.bbox[1] + p.bbox[3]));
-        infoGrupos.push({ grupoIndex, ehFidelidade: true, topo, base, altura: base - topo, partes, deslocY: 0 });
         return;
       }
 
-      // Reflow: mesma lógica de antes, agrupada pra entrar na mesma
-      // prevenção de colisão.
+      // Reflow (texto alterado): mesma tecnica de sempre -- usa o
+      // quadro local (marcado) do papel representativo pra saber
+      // posicao/tamanho de referencia, desenha TODAS as palavras
+      // digitadas em fileira.
       const papelRepresentativo = papeis[0];
       const frameGrupo = _resolverFrameComRitmo(tpl, papelRepresentativo, frameIdx, elapsedMs, texts);
       if (frameGrupo === null) return;
@@ -41074,91 +41114,7 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
         .filter(o => o.texto);
       if (!ativos.length) return;
 
-      infoGrupos.push({
-        grupoIndex, ehFidelidade: false,
-        topo: centroYOriginal - alturaRef / 2, base: centroYOriginal + alturaRef / 2,
-        altura: alturaRef, alturaRef, centroYOriginal, ativos, deslocY: 0,
-      });
-    });
-
-    // MARCAÇÃO DE RITMO — FASE 2: prevenção de sobreposição. Cada
-    // grupo usa a posição/tamanho ORIGINAIS sempre que possível — só
-    // empurra pra baixo o MÍNIMO necessário quando colidiria com o
-    // grupo anterior (o vídeo original nunca mostra 2+ linhas juntas,
-    // então não existe uma posição "correta" pronta pra esse caso).
-    // Se o empurrão total não couber na tela, comprime tudo
-    // proporcionalmente até caber, preservando a ordem.
-    infoGrupos.sort((a, b) => a.grupoIndex - b.grupoIndex);
-    const margem = 0.12;
-    let limiteInferiorOcupado = null;
-    infoGrupos.forEach(o => {
-      if (limiteInferiorOcupado !== null && o.topo < limiteInferiorOcupado) {
-        o.deslocY = limiteInferiorOcupado - o.topo;
-      }
-      limiteInferiorOcupado = (o.base + o.deslocY) + o.altura * margem;
-    });
-
-    if (infoGrupos.length) {
-      const alturaCanvas = tpl.logicalHeight || tpl.motionData.height || 1080;
-      const alturaMaxPilha = alturaCanvas * 0.92;
-      // topoFinal/baseFinal rastreiam a posicao REAL (ja com o
-      // deslocamento da FASE 2a aplicado) -- mais simples que tentar
-      // reconstruir a partir de fatorEscala espalhado depois.
-      infoGrupos.forEach(o => {
-        o.topoFinal = o.topo + o.deslocY;
-        o.baseFinal = o.base + o.deslocY;
-        o.fatorEscala = 1;
-      });
-      let topoConjunto = Math.min(...infoGrupos.map(o => o.topoFinal));
-      let baseConjunto = Math.max(...infoGrupos.map(o => o.baseFinal));
-      const alturaConjunto = baseConjunto - topoConjunto;
-      if (alturaConjunto > alturaMaxPilha && alturaConjunto > 0) {
-        const fatorEscala = alturaMaxPilha / alturaConjunto;
-        const centroConjunto = (topoConjunto + baseConjunto) / 2;
-        infoGrupos.forEach(o => {
-          const centroGrupo = (o.topoFinal + o.baseFinal) / 2;
-          const novoCentroGrupo = centroConjunto + (centroGrupo - centroConjunto) * fatorEscala;
-          const metadeAlturaEscalada = (o.baseFinal - o.topoFinal) / 2 * fatorEscala;
-          o.topoFinal = novoCentroGrupo - metadeAlturaEscalada;
-          o.baseFinal = novoCentroGrupo + metadeAlturaEscalada;
-          o.fatorEscala = fatorEscala;
-        });
-        topoConjunto = Math.min(...infoGrupos.map(o => o.topoFinal));
-        baseConjunto = Math.max(...infoGrupos.map(o => o.baseFinal));
-      }
-      const margemCanvas = alturaCanvas * 0.02;
-      let deslocamento = 0;
-      if (baseConjunto > alturaCanvas - margemCanvas) deslocamento = (alturaCanvas - margemCanvas) - baseConjunto;
-      if (topoConjunto + deslocamento < margemCanvas) deslocamento = margemCanvas - topoConjunto;
-      if (deslocamento !== 0) infoGrupos.forEach(o => { o.topoFinal += deslocamento; o.baseFinal += deslocamento; });
-      infoGrupos.forEach(o => { o.deslocY = o.topoFinal - o.topo; });
-    }
-
-    // MARCAÇÃO DE RITMO — FASE 3: desenha cada grupo com o
-    // deslocamento/escala calculados.
-    infoGrupos.forEach(o => {
-      const escala = o.fatorEscala || 1;
-      if (o.ehFidelidade) {
-        o.partes.forEach(({ papel, bbox, texto }) => {
-          const st = tpl.styles[papel];
-          const nat = EFEITO8_NATURAL[papel];
-          const img = makeBitmap(texto, st.fontFamily, st.color);
-          if (!img || !nat) return;
-          let [bx, by, bw, bh] = bbox;
-          by += o.deslocY;
-          if (escala !== 1) { bh *= escala; }
-          const drawX = (nat.ax === 'd') ? (bx + bw - nat.w * escala) : bx;
-          const drawY = (nat.ay === 'b') ? (by + bh - nat.h * escala) : by;
-          ctx.save();
-          ctx.beginPath();
-          ctx.rect(bx, by, bw, bh);
-          ctx.clip();
-          ctx.drawImage(img, drawX, drawY, nat.w * escala, nat.h * escala);
-          ctx.restore();
-        });
-      } else {
-        _desenharGrupoReflowEfeito8(ctx, tpl, o.ativos, o.alturaRef * escala, o.centroYOriginal + o.deslocY);
-      }
+      _desenharGrupoReflowEfeito8(ctx, tpl, ativos, alturaRef, centroYOriginal);
     });
     return true;
   }
