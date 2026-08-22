@@ -40965,7 +40965,22 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       // uma 4ª palavra na linha 1 não tinha papel nenhum pra ler o
       // texto dela, então sumia. Agora usa `todasPalavras` (a lista
       // INTEIRA de palavras da linha, sem limite).
-      const referencias = papeis.map(p => f[p]).filter(Boolean);
+      //
+      // MARCAÇÃO DE RITMO NO MODO REORGANIZADO (Premium): igual ao
+      // caminho de fidelidade, mas a nível de GRUPO (linha) inteiro —
+      // faz sentido aqui porque a reorganização já trata a linha como
+      // um bloco só (não tem "animação original" pra tocar palavra por
+      // palavra quando o texto é livre). Usa o tStart da PRIMEIRA
+      // palavra do grupo como referência do grupo inteiro (no modo
+      // "linha", que é o padrão da ferramenta, todas as palavras da
+      // linha já recebem o mesmo tStart de qualquer forma).
+      const papelRepresentativo = papeis[0];
+      const frameGrupo = _resolverFrameComRitmo(tpl, papelRepresentativo, frameIdx, elapsedMs, texts);
+      if (frameGrupo === null) return; // marcado, mas ainda não chegou a vez dessa linha
+      const fGrupo = frameGrupo === frameIdx ? f : tpl.motionData.framesData[frameGrupo];
+      if (!fGrupo) return;
+
+      const referencias = papeis.map(p => fGrupo[p]).filter(Boolean);
       if (!referencias.length) return;
       const alturaRef = Math.max(...referencias.map(b => b[3]));
       const centroYOriginal = referencias.reduce((s, b) => s + (b[1] + b[3] / 2), 0) / referencias.length;
