@@ -20895,6 +20895,34 @@ class VideoExporter {
         totalDurMs = slideStarts[slideStarts.length - 1];
       }
 
+      // BUG REAL CORRIGIDO ("ficou só na primeira palavra, na
+      // exportação também"): nem o modo SYNC (marcação de ritmo) nem o
+      // modo antigo sabiam que uma estrofe frame-exact com marcação
+      // POR PALAVRA pode precisar de mais tempo do que a duração
+      // original do template — se a última palavra marcada (ex: 15s
+      // depois da primeira) precisa de tempo pra entrar e assentar, e
+      // a duração calculada pra esse slide for menor que isso, a
+      // exportação corta a estrofe antes da palavra tardia aparecer.
+      // Garante o mínimo necessário pra cada slide frame-exact,
+      // preservando os DEMAIS tempos (não desloca outras estrofes).
+      {
+        const R_FE = window.WM_FRAME_EXACT_RENDERER;
+        if (R_FE) {
+          for (let i = 0; i < this.slides.length; i++) {
+            const s = this.slides[i];
+            if (s.stanza && s.stanza.frameExactTemplateId) {
+              const minimoComRitmo = R_FE.getDurationMsComRitmo(s.stanza.frameExactTemplateId, s.stanza);
+              if (minimoComRitmo > slideDurations[i]) {
+                const extra = minimoComRitmo - slideDurations[i];
+                slideDurations[i] = minimoComRitmo;
+                for (let j = i + 1; j < slideStarts.length; j++) slideStarts[j] += extra;
+                totalDurMs += extra;
+              }
+            }
+          }
+        }
+      }
+
       const totalFrames = Math.ceil((totalDurMs / 1000) * this.fps);
 
       if (typeof window.WM_EXPORT_LOG === 'function') {
@@ -22496,7 +22524,7 @@ class RenderEngineV2 {
     const st = this.parsed?.stanzas?.[this.currentStanzaIndex];
     if (!R || !st || !st.frameExactTemplateId) return;
     if (!this.canvas.querySelector(`[data-stanza-id="${st.id}"]`)) return;
-    const durationMs = R.getDurationMs(st.frameExactTemplateId);
+    const durationMs = R.getDurationMsComRitmo(st.frameExactTemplateId, st);
     const stanzaId = st.id;
     // BUG REAL CORRIGIDO: editar o texto dispara playFrameExact() várias
     // vezes em sequência rápida (reparse → re-render → auto-espaçamento
@@ -41383,6 +41411,47 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
   }
 
   /**
+   * Duração EFETIVA de uma estrofe frame-exact, considerando marcação
+   * de ritmo — se nenhuma palavra tem tStart, devolve a duração normal
+   * (getDurationMs). Se houver marcação, estica a duração até dar
+   * tempo da ÚLTIMA palavra marcada entrar e assentar.
+   *
+   * BUG REAL CORRIGIDO ("ficou só na primeira palavra, tanto no
+   * preview quanto na exportação"): a duração da estrofe (usada tanto
+   * pelo loop de preview quanto pelo cálculo de duração na exportação)
+   * sempre usava getDurationMs() — um valor FIXO do vídeo original
+   * (ex: ~3s pro Efeito 8). Com marcações reais de música espalhadas
+   * por vários segundos (o usuário marcou em 6s/11s/15s), a
+   * reprodução/exportação TERMINAVA antes mesmo da 2ª e 3ª palavra
+   * marcada chegarem no tempo delas — parecia que "travou na
+   * primeira", mas na verdade a estrofe inteira já tinha acabado.
+   */
+  function getDurationMsComRitmo(templateId, stanza) {
+    const tpl = TEMPLATES_FRAME_EXACT[templateId];
+    if (!tpl) return 0;
+    const duracaoBase = getDurationMs(templateId);
+    if (!stanza) return duracaoBase;
+    const texts = readTextsFromStanza(stanza, templateId);
+    const tStarts = texts && texts._tStarts;
+    const referencia = texts && texts._referenciaTStart;
+    if (!tStarts || referencia === null || referencia === undefined) return duracaoBase;
+    const fps = tpl.motionData.fps;
+    let maiorFim = duracaoBase;
+    Object.keys(tStarts).forEach(papel => {
+      const atrasoMs = Math.max(0, (tStarts[papel] - referencia) * 1000);
+      const quadroInicial = _primeiroQuadroVisivel(tpl, papel);
+      const quadroAssentado = _quadroAssentado(tpl, papel);
+      const tempoParaAssentar = (quadroAssentado - quadroInicial) * (1000 / fps);
+      // pequena folga depois de assentar, pra garantir que fica visível
+      // um instante antes da estrofe acabar (não corta bem na hora que
+      // termina de entrar).
+      const fimDessaPalavra = atrasoMs + tempoParaAssentar + 500;
+      if (fimDessaPalavra > maiorFim) maiorFim = fimDessaPalavra;
+    });
+    return maiorFim;
+  }
+
+  /**
    * Lê o texto atual de top/red/be/my/soul a partir das linhas da
    * estrofe (editor existente): linha 1 → top (todas as palavras
    * juntas), linha 2 → red, linha 3 → be/my/soul por posição. Função
@@ -41609,6 +41678,7 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     getFrameIndex,
     getTemplate,
     getDurationMs,
+    getDurationMsComRitmo,
     readTextsFromStanza,
     clearBitmapCache,
   };
