@@ -40884,14 +40884,60 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
   }
 
   /**
+   * Acha o QUADRO ASSENTADO de um papel — o primeiro quadro, depois da
+   * entrada, onde a bbox já parou de mudar de forma significativa
+   * (a animação de entrada terminou, ainda não começou a sair). Usado
+   * pela marcação de ritmo pra SEGURAR a palavra ali indefinidamente,
+   * em vez de deixar ela seguir o ciclo de vida completo original
+   * (que eventualmente sai de novo, seguindo o tempo do vídeo fonte).
+   *
+   * BUG REAL CORRIGIDO ("só apareceu a primeira palavra e o resto não
+   * apareceu mais" / "que elas não somem até aparecer a próxima"): sem
+   * isso, cada palavra marcada reproduzia o ciclo de vida ORIGINAL
+   * inteiro (entrada E saída) a partir do instante marcado — se o
+   * intervalo real entre duas marcações fosse maior que a janela de
+   * vida original da palavra (comum: marcações de música ficam
+   * segundos afastadas, a janela original é de menos de 1s), a tela
+   * ficava vazia no meio, parecendo que "sumiu e não voltou".
+   */
+  function _quadroAssentado(tpl, papel) {
+    tpl._cacheQuadroAssentado = tpl._cacheQuadroAssentado || {};
+    if (papel in tpl._cacheQuadroAssentado) return tpl._cacheQuadroAssentado[papel];
+    const frames = tpl.motionData.framesData;
+    const inicio = _primeiroQuadroVisivel(tpl, papel);
+    let ultimoVisivel = inicio;
+    for (let i = inicio; i < frames.length; i++) {
+      if (frames[i][papel]) ultimoVisivel = i; else break;
+    }
+    // varre do início até o fim da janela visível, procurando onde a
+    // largura da bbox para de mudar mais que ~3% de um quadro pro
+    // seguinte, de forma sustentada até o fim dessa janela (não é só
+    // uma pausa passageira no meio da entrada, tipo a do Efeito 10).
+    let assentado = ultimoVisivel; // padrão: se nunca estabiliza, usa o último quadro visível
+    for (let i = inicio; i <= ultimoVisivel; i++) {
+      let estavel = true;
+      for (let j = i; j < ultimoVisivel; j++) {
+        const a = frames[j][papel], b = frames[j + 1][papel];
+        if (!a || !b) { estavel = false; break; }
+        const delta = Math.abs(b[2] - a[2]) / Math.max(1, a[2]);
+        if (delta > 0.03) { estavel = false; break; }
+      }
+      if (estavel) { assentado = i; break; }
+    }
+    tpl._cacheQuadroAssentado[papel] = assentado;
+    return assentado;
+  }
+
+  /**
    * Resolve o ÍNDICE DE QUADRO a usar pra um papel específico nesse
    * instante — se esse papel tem marcação de ritmo própria (em
    * texts._tStarts[papel]), calcula um quadro LOCAL (recomeçando a
-   * animação daquele papel no instante marcado); senão devolve
-   * frameIdxGlobal sem mudança nenhuma (comportamento de sempre).
-   * Devolve null se o papel tem marcação mas ainda não chegou a vez
-   * dele tocar (elapsedMs antes do instante marcado) — o chamador
-   * deve tratar como "ainda não visível".
+   * animação daquele papel no instante marcado), mas SEGURA no quadro
+   * assentado (não deixa seguir pro ciclo de saída original) — assim a
+   * palavra fica visível continuamente até a próxima entrar, em vez de
+   * sumir no meio do caminho. Sem marcação, devolve frameIdxGlobal sem
+   * mudança nenhuma (comportamento de sempre). Devolve null se o papel
+   * tem marcação mas ainda não chegou a vez dele tocar.
    */
   function _resolverFrameComRitmo(tpl, papel, frameIdxGlobal, elapsedMs, texts) {
     const tStarts = texts && texts._tStarts;
@@ -40903,9 +40949,9 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     if (elapsedMs < atrasoMs) return null; // ainda não chegou a vez dessa palavra
     const fps = tpl.motionData.fps;
     const quadroInicial = _primeiroQuadroVisivel(tpl, papel);
+    const quadroAssentado = _quadroAssentado(tpl, papel);
     const quadrosPassados = Math.floor((elapsedMs - atrasoMs) / (1000 / fps));
-    const ultimoQuadro = tpl.motionData.frames - 1;
-    return Math.min(quadroInicial + quadrosPassados, ultimoQuadro);
+    return Math.min(quadroInicial + quadrosPassados, quadroAssentado);
   }
 
   function _renderFrameEfeito8Style(ctx, tpl, texts, frameIdx, elapsedMs) {
