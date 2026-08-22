@@ -40387,7 +40387,7 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       return _renderFrameEfeito7Style(ctx, tpl, texts, frameIdx);
     }
     if (tpl.layout === 'efeito-8-style') {
-      return _renderFrameEfeito8Style(ctx, tpl, texts, frameIdx);
+      return _renderFrameEfeito8Style(ctx, tpl, texts, frameIdx, elapsedMs);
     }
     if (tpl.layout === 'efeito-10-style') {
       return _renderFrameEfeito10Style(ctx, tpl, texts, frameIdx);
@@ -40831,7 +40831,63 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
    * quadro como área de referência, palavras com espaçamento
    * calculado) — mesma técnica já usada no Efeito 2.
    */
-  function _renderFrameEfeito8Style(ctx, tpl, texts, frameIdx) {
+  /**
+   * MARCAÇÃO DE RITMO POR PALAVRA (recurso Premium) — infraestrutura
+   * genérica, reutilizável por qualquer efeito frame-exact organizado
+   * por papéis (want/it_1/out, top_put/top_off, etc).
+   *
+   * Ideia: hoje toda palavra de uma estrofe frame-exact usa o MESMO
+   * relógio (elapsedMs desde o início da estrofe) pra saber em que
+   * quadro do vídeo original está — a entrada de cada palavra fica
+   * fixa no tempo relativo em que ela aparece no vídeo de origem.
+   * Marcar o ritmo numa palavra específica faz a animação DAQUELA
+   * palavra (a sequência própria dela: entrada, assentamento etc.)
+   * recomeçar do zero exatamente no instante marcado, em vez de
+   * esperar o tempo original — sem mudar a "textura" do movimento em
+   * si, só ANTECIPANDO ou ATRASANDO quando ele começa.
+   *
+   * _primeiroQuadroVisivel(tpl, papel): quadro em que esse papel
+   * aparece pela primeira vez na animação ORIGINAL (não-marcada) —
+   * cacheado no próprio tpl na primeira vez que é calculado.
+   */
+  function _primeiroQuadroVisivel(tpl, papel) {
+    tpl._cachePrimeiroQuadro = tpl._cachePrimeiroQuadro || {};
+    if (papel in tpl._cachePrimeiroQuadro) return tpl._cachePrimeiroQuadro[papel];
+    const frames = tpl.motionData.framesData;
+    let achou = 0;
+    for (let i = 0; i < frames.length; i++) {
+      if (frames[i][papel]) { achou = i; break; }
+    }
+    tpl._cachePrimeiroQuadro[papel] = achou;
+    return achou;
+  }
+
+  /**
+   * Resolve o ÍNDICE DE QUADRO a usar pra um papel específico nesse
+   * instante — se esse papel tem marcação de ritmo própria (em
+   * texts._tStarts[papel]), calcula um quadro LOCAL (recomeçando a
+   * animação daquele papel no instante marcado); senão devolve
+   * frameIdxGlobal sem mudança nenhuma (comportamento de sempre).
+   * Devolve null se o papel tem marcação mas ainda não chegou a vez
+   * dele tocar (elapsedMs antes do instante marcado) — o chamador
+   * deve tratar como "ainda não visível".
+   */
+  function _resolverFrameComRitmo(tpl, papel, frameIdxGlobal, elapsedMs, texts) {
+    const tStarts = texts && texts._tStarts;
+    const referencia = texts && texts._referenciaTStart;
+    if (!tStarts || referencia === null || referencia === undefined || !(papel in tStarts)) {
+      return frameIdxGlobal;
+    }
+    const atrasoMs = Math.max(0, (tStarts[papel] - referencia) * 1000);
+    if (elapsedMs < atrasoMs) return null; // ainda não chegou a vez dessa palavra
+    const fps = tpl.motionData.fps;
+    const quadroInicial = _primeiroQuadroVisivel(tpl, papel);
+    const quadrosPassados = Math.floor((elapsedMs - atrasoMs) / (1000 / fps));
+    const ultimoQuadro = tpl.motionData.frames - 1;
+    return Math.min(quadroInicial + quadrosPassados, ultimoQuadro);
+  }
+
+  function _renderFrameEfeito8Style(ctx, tpl, texts, frameIdx, elapsedMs) {
     const f = tpl.motionData.framesData[frameIdx];
     if (!f) return false;
     const grupos = tpl.linhasParaPapeis || [['want', 'it_1', 'out'], ['selfish', 'heart'], ['never', 'give']];
@@ -40847,8 +40903,15 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       if (todosOriginais && contagemBate) {
         // Fidelidade total: cada papel com sua bbox e recorte de
         // tamanho natural, exatamente como medido no MP4 original.
+        // MARCAÇÃO DE RITMO (Premium): se esse papel tem tStart
+        // próprio, usa o quadro LOCAL dele (recomeçando a animação da
+        // palavra no instante marcado) em vez do quadro global
+        // compartilhado por toda a estrofe.
         papeis.forEach(papel => {
-          const bbox = f[papel];
+          const frameDessePapel = _resolverFrameComRitmo(tpl, papel, frameIdx, elapsedMs, texts);
+          if (frameDessePapel === null) return; // marcado, mas ainda não chegou a vez
+          const fPapel = frameDessePapel === frameIdx ? f : tpl.motionData.framesData[frameDessePapel];
+          const bbox = fPapel && fPapel[papel];
           if (!bbox) return;
           const texto = (texts && texts[papel] || '').trim();
           if (!texto) return;
@@ -41363,15 +41426,27 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
    * quantidade E mesmo texto do original) ou se precisa cair na
    * fileira recalculada (que já existia pra texto alterado, e agora
    * também cobre quantidade alterada).
+   *
+   * NOVO (marcação de ritmo por palavra — recurso Premium): também
+   * devolve out._tStarts[papel] = word.tStart (em segundos) quando o
+   * usuário marcou o ritmo naquela palavra especificamente, usando a
+   * ferramenta "Marcar no ritmo" — o renderer usa isso pra recalcular
+   * o instante de entrada de cada palavra dentro da animação.
    */
   function _readTextsEfeito8Style(stanza, tpl) {
     const lines = (stanza && stanza.lines) || [];
     const mapa = tpl.linhasParaPapeis || [];
-    const out = { _linhas: [] };
+    const out = { _linhas: [], _tStarts: {}, _referenciaTStart: null };
     mapa.forEach((papeis, li) => {
-      const palavras = (lines[li]?.words || []).map(w => w.text);
+      const palavrasObj = (lines[li]?.words || []);
+      const palavras = palavrasObj.map(w => w.text);
       papeis.forEach((papel, i) => {
         out[papel] = palavras[i] || '';
+        const w = palavrasObj[i];
+        if (w && typeof w.tStart === 'number') {
+          out._tStarts[papel] = w.tStart;
+          if (out._referenciaTStart === null) out._referenciaTStart = w.tStart;
+        }
       });
       out._linhas.push(palavras);
     });
