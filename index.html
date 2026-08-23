@@ -41105,20 +41105,32 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
         // esta ativa. So aplica esse deslocamento quando ESSE grupo
         // tem marcacao propria (nao mexe na reproducao original
         // sem marcacao nenhuma).
+        //
+        // BUG REAL CORRIGIDO ("animacao de baixo pra cima parou ao
+        // trocar de linha"): a 1a versao recalculava o deslocamento a
+        // CADA quadro, usando a bbox DAQUELE quadro especifico -- isso
+        // forcava TODO quadro individual a ficar exatamente em 540px,
+        // cancelando qualquer movimento vertical natural da entrada
+        // (uma palavra que sobe de baixo pra cima virava uma palavra
+        // parada, ja que cada quadro dela era "puxado" pro mesmo
+        // centro). Corrigido: calcula o deslocamento UMA VEZ, usando a
+        // posicao ASSENTADA (fixa, a mesma sempre) como referencia --
+        // aplica esse MESMO deslocamento em todo quadro da entrada,
+        // preservando o movimento relativo (a "forma" da animacao
+        // continua a mesma, so a posicao final de descanso fica
+        // centralizada, nao mais cada quadro individual).
         let deslocYCentralizacao = 0;
         if (infoAtraso.atraso !== null) {
-          const bboxesAtivos = papeis
+          const bboxesAssentados = papeis
             .map(papel => {
-              const fr = _resolverFrameComRitmo(tpl, papel, frameIdx, elapsedMs, texts);
-              if (fr === null) return null;
-              const fp = fr === frameIdx ? f : tpl.motionData.framesData[fr];
-              return fp && fp[papel];
+              const qa = _quadroAssentado(tpl, papel);
+              return tpl.motionData.framesData[qa] && tpl.motionData.framesData[qa][papel];
             })
             .filter(Boolean);
-          if (bboxesAtivos.length) {
-            const centroYAtual = bboxesAtivos.reduce((s, b) => s + (b[1] + b[3] / 2), 0) / bboxesAtivos.length;
+          if (bboxesAssentados.length) {
+            const centroYAssentado = bboxesAssentados.reduce((s, b) => s + (b[1] + b[3] / 2), 0) / bboxesAssentados.length;
             const alturaCanvas = tpl.logicalHeight || tpl.motionData.height || 1080;
-            deslocYCentralizacao = alturaCanvas / 2 - centroYAtual;
+            deslocYCentralizacao = alturaCanvas / 2 - centroYAssentado;
           }
         }
         papeis.forEach(papel => {
@@ -41164,9 +41176,26 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       // fidelidade acima, aplicada aqui quando esse grupo tem marcacao
       // propria -- sem marcacao, mantem a posicao natural do video
       // (comportamento de sempre).
+      //
+      // BUG REAL CORRIGIDO ("animacao de baixo pra cima parou"): igual
+      // ao caminho de fidelidade, forcar centroYOriginal pra 540 TODO
+      // quadro cancelava o movimento vertical natural da entrada.
+      // Corrigido: calcula um deslocamento FIXO (posicao assentada ->
+      // 540) uma vez, soma esse deslocamento na posicao NATURAL de
+      // cada quadro -- preserva o movimento relativo.
       let centroYOriginal = referencias.reduce((s, b) => s + (b[1] + b[3] / 2), 0) / referencias.length;
       if (infoAtraso.atraso !== null) {
-        centroYOriginal = (tpl.logicalHeight || tpl.motionData.height || 1080) / 2;
+        const bboxesAssentados = papeis
+          .map(papel => {
+            const qa = _quadroAssentado(tpl, papel);
+            return tpl.motionData.framesData[qa] && tpl.motionData.framesData[qa][papel];
+          })
+          .filter(Boolean);
+        if (bboxesAssentados.length) {
+          const centroYAssentado = bboxesAssentados.reduce((s, b) => s + (b[1] + b[3] / 2), 0) / bboxesAssentados.length;
+          const alturaCanvas = tpl.logicalHeight || tpl.motionData.height || 1080;
+          centroYOriginal += (alturaCanvas / 2 - centroYAssentado);
+        }
       }
       const ultimoPapel = papeis[papeis.length - 1];
       const stLinha = tpl.styles[ultimoPapel];
