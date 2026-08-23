@@ -18157,8 +18157,24 @@ const CanvasRenderer = {
     // do travamento já corrigido antes pra outras cenas — ver PATCH V4
     // logo abaixo). Enquanto a duração própria do template não passou,
     // nunca é estático.
+    //
+    // BUG REAL CORRIGIDO ("só aparece a primeira palavra e fica" na
+    // exportação): usava getDurationMs() — a duração FIXA do template
+    // original (~3s pro Efeito 8) — mesmo quando a estrofe tem
+    // marcação de ritmo ESTENDENDO a duração de verdade bem além disso
+    // (uma marcação em 9s pode precisar de bem mais que 3s de duração
+    // total). Passado esse tempo fixo, isSlideStatic dizia "nada mais
+    // muda" e o laço de exportação parava de redesenhar — mas com
+    // marcação ativa, a 2ª e 3ª linha ainda iam aparecer DEPOIS desse
+    // corte, e nunca eram desenhadas no vídeo final (o preview usa
+    // outro caminho, sem essa otimização, por isso só a exportação
+    // travava). Corrigido: usa getDurationMsComRitmo() quando existe,
+    // que já considera a marcação de ritmo pra saber a duração real.
     if (slide.stanza && slide.stanza.frameExactTemplateId && window.WM_FRAME_EXACT_RENDERER) {
-      const durFE = window.WM_FRAME_EXACT_RENDERER.getDurationMs(slide.stanza.frameExactTemplateId);
+      const R_FE = window.WM_FRAME_EXACT_RENDERER;
+      const durFE = R_FE.getDurationMsComRitmo
+        ? R_FE.getDurationMsComRitmo(slide.stanza.frameExactTemplateId, slide.stanza)
+        : R_FE.getDurationMs(slide.stanza.frameExactTemplateId);
       return elapsedMs >= durFE;
     }
 
