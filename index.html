@@ -40951,7 +40951,7 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     for (let i = inicio; i < frames.length; i++) {
       if (frames[i][papel]) ultimoVisivel = i; else break;
     }
-    // BUG REAL CORRIGIDO ("segunda palavra apareceu pequena"): a
+    // BUG REAL CORRIGIDO 1 ("segunda palavra apareceu pequena"): a
     // versão anterior comparava só quadro-a-quadro (delta < 3%) — mas
     // algumas palavras crescem devagar e CONTINUAMENTE ao longo de
     // dezenas de quadros (cada passo pequeno, mas a soma é grande:
@@ -40959,18 +40959,29 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     // quadros) — a comparação vizinho-a-vizinho nunca via um "salto"
     // grande o bastante e travava logo no início da janela visível,
     // bem antes do tamanho final de verdade. Corrigido: usa o maior
-    // tamanho JÁ ATINGIDO na janela toda como referência, e acha o
-    // primeiro quadro que chega a pelo menos 97% dele — captura
-    // crescimento sustentado, não só saltos bruscos entre vizinhos.
-    let larguraMax = 0;
+    // tamanho JÁ ATINGIDO na janela toda como referência.
+    //
+    // BUG REAL CORRIGIDO 2 ("primeira palavra descentralizada e menor"):
+    // só verificar a LARGURA não bastava — a palavra "want" tem largura
+    // quase constante do início ao fim (só ~3% de variação), mas a
+    // ALTURA varia bastante (389→470px, ~21%) e a posição Y desliza uns
+    // 150px ao longo da entrada. Como a largura já começava quase no
+    // valor final, o limiar de 97% disparava no quadro 2 (praticamente
+    // o início), travando a palavra pequena e fora do centro vertical
+    // que ela ocupa quando realmente assentada. Corrigido: agora exige
+    // 97% do máximo tanto de LARGURA quanto de ALTURA ao mesmo tempo.
+    let larguraMax = 0, alturaMax = 0;
     for (let i = inicio; i <= ultimoVisivel; i++) {
       const b = frames[i][papel];
-      if (b && b[2] > larguraMax) larguraMax = b[2];
+      if (!b) continue;
+      if (b[2] > larguraMax) larguraMax = b[2];
+      if (b[3] > alturaMax) alturaMax = b[3];
     }
     let assentado = ultimoVisivel;
     for (let i = inicio; i <= ultimoVisivel; i++) {
       const b = frames[i][papel];
-      if (b && larguraMax > 0 && b[2] >= larguraMax * 0.97) { assentado = i; break; }
+      if (b && larguraMax > 0 && alturaMax > 0
+          && b[2] >= larguraMax * 0.97 && b[3] >= alturaMax * 0.97) { assentado = i; break; }
     }
     tpl._cacheQuadroAssentado[papel] = assentado;
     return assentado;
