@@ -14048,3550 +14048,6 @@ const TEMPLATES = [
       },
     },
   },
-  // ====== TEMPLATES DO USUÁRIO (1 linha / 1 estrofe) ======
-  // Templates criados pelo usuário e marcados como definitivos.
-  // Cada um preserva parsed (IDs estáveis), wordOverrides (posições e
-  // estilos por palavra) e sceneOverrides (variações por estrofe).
-  {
-    id: 'tpl-user-1-linha-borrar',
-    name: '1 Linha — Borrar',
-    description: 'Uma palavra centralizada e grande com animação Borrar suave.',
-    tags: ['1 linha', 'borrar', 'minimalista'],
-    accent: '#60a5fa',
-    config: {
-      lyrics: 'Santo\n',
-      style: {
-        fontFamily: 'Antara Nodes',
-        fontSize: 61,
-        fontWeight: 400,
-        letterSpacing: 0.01,
-        lineHeight: 1,
-        color: '#f4f4f7',
-        textAlign: 'center',
-        glow: 0,
-        glowColor: '#60a5fa',
-        outline: 0,
-        outlineColor: '#000000',
-        shadow: 0,
-        shadowColor: '#000000',
-        shadowOffsetX: 4,
-        shadowOffsetY: 4,
-        shadowBlur: 8,
-        textTransform: 'uppercase',
-        backgroundType: 'gradient',
-        emphasisColor: '#fbbf24',
-        emphasisSizeScale: 1,
-        emphasisBold: false,
-        emphasisGlow: 0,
-        effects: {
-          echo:  { on: false, intensity: 0.41 },
-          bloom: { on: true,  intensity: 0.24 },
-          depth: { on: true,  intensity: 0.6 },
-          halo:  { on: true,  intensity: 0.6 },
-        },
-        cinemaPreset: 'stadium',
-      },
-      animConfig: {
-        entrance: 'fade-in-soft',
-        exit: 'fade-out-soft',
-        target: 'word',
-        stagger: 0.3,
-        transition: 'cut',
-        transitionDuration: 0.5,
-        duration: 1.2,
-      },
-      // bg neutro: o usuário escolhe o fundo que quiser depois
-      bg: 'black',
-      // aspect 16:9 padrão (1920×1080) — TV/projetor de igreja
-      aspect: '16:9',
-      parsed: {
-        stanzas: [
-          {
-            id: 'stz_izfexgk',
-            label: 'Estrofe 1',
-            lines: [
-              {
-                id: 'ln_xfcb17d',
-                words: [
-                  {
-                    id: 'w_mfltrbr',
-                    text: 'Santo',
-                    chars: [
-                      { id: 'ch_t2r10oa', text: 'S' },
-                      { id: 'ch_5wjkvkk', text: 'a' },
-                      { id: 'ch_9qi24t3', text: 'n' },
-                      { id: 'ch_nr800gw', text: 't' },
-                      { id: 'ch_kkdl9mc', text: 'o' },
-                    ],
-                    emphasized: false,
-                  },
-                ],
-              },
-            ],
-          },
-        ],
-      },
-      wordOverrides: {
-        w_mfltrbr: {
-          position: { x: 0.5, y: 0.5 },
-          style: { textTransform: 'capitalize', fontSizeScale: 4.477602381199272 },
-          entrance: 'blur-reveal',
-          durationScale: 3,
-        },
-      },
-      sceneOverrides: {},
-    },
-  },
-
-  {
-    id: 'tpl-user-1-linha-delicado',
-    name: '1 Linha — Delicado',
-    description: 'Uma palavra centralizada e grande em fonte cursiva, com animação Borrar suave.',
-    tags: ['1 linha', 'borrar', 'cursiva', 'delicado'],
-    accent: '#60a5fa',
-    config: {
-      lyrics: 'Santo\n',
-      style: {
-        fontFamily: 'Antara Nodes',
-        fontSize: 61,
-        fontWeight: 400,
-        letterSpacing: 0.01,
-        lineHeight: 1,
-        color: '#f4f4f7',
-        textAlign: 'center',
-        glow: 0,
-        glowColor: '#60a5fa',
-        outline: 0,
-        outlineColor: '#000000',
-        shadow: 0,
-        shadowColor: '#000000',
-        shadowOffsetX: 4,
-        shadowOffsetY: 4,
-        shadowBlur: 8,
-        textTransform: 'uppercase',
-        backgroundType: 'gradient',
-        emphasisColor: '#fbbf24',
-        emphasisSizeScale: 1,
-        emphasisBold: false,
-        emphasisGlow: 0,
-        effects: {
-          echo:  { on: false, intensity: 0.41 },
-          bloom: { on: true,  intensity: 0.24 },
-          depth: { on: true,  intensity: 0.6 },
-          halo:  { on: true,  intensity: 0.6 },
-        },
-        cinemaPreset: 'stadium',
-      },
-      animConfig: {
-        entrance: 'fade-in-soft',
-        exit: 'fade-out-soft',
-        target: 'word',
-        stagger: 0.3,
-        transition: 'cut',
-        transitionDuration: 0.5,
-        duration: 1.2,
-      },
-      bg: 'black',
-      aspect: '16:9',
-      parsed: {
-        stanzas: [
-          {
-            id: 'stz_izfexgk',
-            label: 'Estrofe 1',
-            lines: [
-              {
-                id: 'ln_xfcb17d',
-                words: [
-                  {
-                    id: 'w_mfltrbr',
-                    text: 'Santo',
-                    chars: [
-                      { id: 'ch_t2r10oa', text: 'S' },
-                      { id: 'ch_5wjkvkk', text: 'a' },
-                      { id: 'ch_9qi24t3', text: 'n' },
-                      { id: 'ch_nr800gw', text: 't' },
-                      { id: 'ch_kkdl9mc', text: 'o' },
-                    ],
-                    emphasized: false,
-                  },
-                ],
-              },
-            ],
-          },
-        ],
-      },
-      wordOverrides: {
-        w_mfltrbr: {
-          position: { x: 0.5, y: 0.5 },
-          style: {
-            textTransform: 'capitalize',
-            fontSizeScale: 4.477602381199272,
-            // Override de fonte por palavra — usa "Onlytime" (cursiva)
-            // só nessa palavra, mantendo o resto do estilo global.
-            fontFamily: 'Onlytime',
-          },
-          entrance: 'blur-reveal',
-          durationScale: 3,
-        },
-      },
-      sceneOverrides: {},
-    },
-  },
-
-  {
-    id: 'tpl-user-1-linha-brush',
-    name: '1 Linha — Brush',
-    description: 'Uma palavra centralizada e grande em fonte brush, com animação Borrar suave.',
-    tags: ['1 linha', 'borrar', 'brush'],
-    accent: '#60a5fa',
-    config: {
-      lyrics: 'Santo\n',
-      style: {
-        // Fonte global "There Brat" (brush). Quem não tiver, cai pro fallback.
-        fontFamily: 'There Brat',
-        fontSize: 61,
-        fontWeight: 400,
-        letterSpacing: 0.01,
-        lineHeight: 1,
-        color: '#f4f4f7',
-        textAlign: 'center',
-        glow: 0,
-        glowColor: '#60a5fa',
-        outline: 0,
-        outlineColor: '#000000',
-        shadow: 0,
-        shadowColor: '#000000',
-        shadowOffsetX: 4,
-        shadowOffsetY: 4,
-        shadowBlur: 8,
-        textTransform: 'uppercase',
-        backgroundType: 'gradient',
-        emphasisColor: '#fbbf24',
-        emphasisSizeScale: 1,
-        emphasisBold: false,
-        emphasisGlow: 0,
-        effects: {
-          echo:  { on: false, intensity: 0.41 },
-          bloom: { on: true,  intensity: 0.24 },
-          depth: { on: true,  intensity: 0.6 },
-          halo:  { on: true,  intensity: 0.6 },
-        },
-        cinemaPreset: 'stadium',
-      },
-      animConfig: {
-        entrance: 'fade-in-soft',
-        exit: 'fade-out-soft',
-        target: 'word',
-        stagger: 0.3,
-        transition: 'cut',
-        transitionDuration: 0.5,
-        duration: 1.2,
-      },
-      bg: 'black',
-      aspect: '16:9',
-      parsed: {
-        stanzas: [
-          {
-            id: 'stz_izfexgk',
-            label: 'Estrofe 1',
-            lines: [
-              {
-                id: 'ln_xfcb17d',
-                words: [
-                  {
-                    id: 'w_mfltrbr',
-                    text: 'Santo',
-                    chars: [
-                      { id: 'ch_t2r10oa', text: 'S' },
-                      { id: 'ch_5wjkvkk', text: 'a' },
-                      { id: 'ch_9qi24t3', text: 'n' },
-                      { id: 'ch_nr800gw', text: 't' },
-                      { id: 'ch_kkdl9mc', text: 'o' },
-                    ],
-                    emphasized: false,
-                  },
-                ],
-              },
-            ],
-          },
-        ],
-      },
-      wordOverrides: {
-        w_mfltrbr: {
-          position: { x: 0.5, y: 0.5 },
-          style: {
-            textTransform: 'capitalize',
-            fontSizeScale: 4.477602381199272,
-            // Override redundante (mesma fonte do global) — preservado
-            // do projeto original do usuário, sem efeito prático.
-            fontFamily: 'There Brat',
-          },
-          entrance: 'blur-reveal',
-          durationScale: 3,
-        },
-      },
-      sceneOverrides: {},
-    },
-  },
-
-  {
-    id: 'tpl-user-1-linha-caligrafia',
-    name: '1 Linha — Caligrafia',
-    description: 'Uma palavra centralizada em fonte caligráfica, com animação Borrar suave.',
-    tags: ['1 linha', 'borrar', 'caligrafia'],
-    accent: '#60a5fa',
-    config: {
-      lyrics: 'Santo\n',
-      style: {
-        fontFamily: 'Gistesy',
-        fontSize: 61,
-        fontWeight: 400,
-        letterSpacing: 0.01,
-        lineHeight: 1,
-        color: '#f4f4f7',
-        textAlign: 'center',
-        glow: 0,
-        glowColor: '#60a5fa',
-        outline: 0,
-        outlineColor: '#000000',
-        shadow: 0,
-        shadowColor: '#000000',
-        shadowOffsetX: 4,
-        shadowOffsetY: 4,
-        shadowBlur: 8,
-        textTransform: 'uppercase',
-        backgroundType: 'gradient',
-        emphasisColor: '#fbbf24',
-        emphasisSizeScale: 1,
-        emphasisBold: false,
-        emphasisGlow: 0,
-        effects: {
-          echo:  { on: false, intensity: 0.41 },
-          bloom: { on: true,  intensity: 0.24 },
-          depth: { on: true,  intensity: 0.6 },
-          halo:  { on: true,  intensity: 0.6 },
-        },
-        cinemaPreset: 'stadium',
-      },
-      animConfig: {
-        entrance: 'fade-in-soft',
-        exit: 'fade-out-soft',
-        target: 'word',
-        stagger: 0.3,
-        transition: 'cut',
-        transitionDuration: 0.5,
-        duration: 1.2,
-      },
-      bg: 'black',
-      aspect: '16:9',
-      parsed: {
-        stanzas: [
-          {
-            id: 'stz_izfexgk',
-            label: 'Estrofe 1',
-            lines: [
-              {
-                id: 'ln_xfcb17d',
-                words: [
-                  {
-                    id: 'w_mfltrbr',
-                    text: 'Santo',
-                    chars: [
-                      { id: 'ch_t2r10oa', text: 'S' },
-                      { id: 'ch_5wjkvkk', text: 'a' },
-                      { id: 'ch_9qi24t3', text: 'n' },
-                      { id: 'ch_nr800gw', text: 't' },
-                      { id: 'ch_kkdl9mc', text: 'o' },
-                    ],
-                    emphasized: false,
-                  },
-                ],
-              },
-            ],
-          },
-        ],
-      },
-      wordOverrides: {
-        w_mfltrbr: {
-          position: { x: 0.5, y: 0.5 },
-          style: {
-            textTransform: 'capitalize',
-            fontSizeScale: 4.477602381199272,
-            fontFamily: 'Gistesy',
-          },
-          entrance: 'blur-reveal',
-          durationScale: 3,
-        },
-      },
-      sceneOverrides: {},
-    },
-  },
-
-  {
-    id: 'tpl-user-1-linha-carton',
-    name: '1 Linha — Carton',
-    description: 'Uma palavra centralizada em fonte Carton Six (display), com animação Borrar suave.',
-    tags: ['1 linha', 'borrar', 'carton', 'display'],
-    accent: '#60a5fa',
-    config: {
-      lyrics: 'Santo\n',
-      style: {
-        fontFamily: 'Antara Nodes',
-        fontSize: 61,
-        fontWeight: 400,
-        letterSpacing: 0.01,
-        lineHeight: 1,
-        color: '#f4f4f7',
-        textAlign: 'center',
-        glow: 0,
-        glowColor: '#60a5fa',
-        outline: 0,
-        outlineColor: '#000000',
-        shadow: 0,
-        shadowColor: '#000000',
-        shadowOffsetX: 4,
-        shadowOffsetY: 4,
-        shadowBlur: 8,
-        textTransform: 'uppercase',
-        backgroundType: 'gradient',
-        emphasisColor: '#fbbf24',
-        emphasisSizeScale: 1,
-        emphasisBold: false,
-        emphasisGlow: 0,
-        effects: {
-          echo:  { on: false, intensity: 0.41 },
-          bloom: { on: true,  intensity: 0.24 },
-          depth: { on: true,  intensity: 0.6 },
-          halo:  { on: true,  intensity: 0.6 },
-        },
-        cinemaPreset: 'stadium',
-      },
-      animConfig: {
-        entrance: 'fade-in-soft',
-        exit: 'fade-out-soft',
-        target: 'word',
-        stagger: 0.3,
-        transition: 'cut',
-        transitionDuration: 0.5,
-        duration: 1.2,
-      },
-      bg: 'black',
-      // Aspect normalizado pra 16:9 (era 3072×1152 no original)
-      aspect: '16:9',
-      parsed: {
-        stanzas: [
-          {
-            id: 'stz_izfexgk',
-            label: 'Estrofe 1',
-            lines: [
-              {
-                id: 'ln_xfcb17d',
-                words: [
-                  {
-                    id: 'w_mfltrbr',
-                    text: 'Santo',
-                    chars: [
-                      { id: 'ch_t2r10oa', text: 'S' },
-                      { id: 'ch_5wjkvkk', text: 'a' },
-                      { id: 'ch_9qi24t3', text: 'n' },
-                      { id: 'ch_nr800gw', text: 't' },
-                      { id: 'ch_kkdl9mc', text: 'o' },
-                    ],
-                    emphasized: false,
-                  },
-                ],
-              },
-            ],
-          },
-        ],
-      },
-      wordOverrides: {
-        w_mfltrbr: {
-          // Posição original era ~0.5/0.5 com pequena variação de
-          // ponto flutuante; normalizada pra centro exato.
-          position: { x: 0.5, y: 0.5 },
-          style: {
-            textTransform: 'capitalize',
-            fontSizeScale: 4.477602381199272,
-            fontFamily: 'Carton Six',
-          },
-          entrance: 'blur-reveal',
-          durationScale: 3,
-        },
-      },
-      sceneOverrides: {},
-    },
-  },
-
-  // ====== TEMPLATES DO USUÁRIO (3 linhas / 1 estrofe com 3 linhas) ======
-  {
-    id: 'tpl-user-3-linhas-brush',
-    name: '3 Linhas — Brush',
-    description: 'Layout cinematográfico: palavra de força no centro grande, fragmentos contextuais acima/abaixo em fontes harmônicas distintas.',
-    tags: ['3 linhas', 'brush', 'cinematográfico', 'multifonte'],
-    accent: '#60a5fa',
-    config: {
-      lyrics: 'Tu és\nSanto\nem mim',
-      style: {
-        fontFamily: 'Peter Test Variable Italic Light',
-        fontSize: 61,
-        fontWeight: 400,
-        letterSpacing: 0.01,
-        lineHeight: 1,
-        color: '#f4f4f7',
-        textAlign: 'center',
-        glow: 0,
-        glowColor: '#60a5fa',
-        outline: 0,
-        outlineColor: '#000000',
-        shadow: 0,
-        shadowColor: '#000000',
-        shadowOffsetX: 4,
-        shadowOffsetY: 4,
-        shadowBlur: 8,
-        textTransform: 'uppercase',
-        backgroundType: 'gradient',
-        emphasisColor: '#fbbf24',
-        emphasisSizeScale: 1,
-        emphasisBold: false,
-        emphasisGlow: 0,
-        effects: {
-          echo:  { on: false, intensity: 0.41 },
-          bloom: { on: true,  intensity: 0.24 },
-          depth: { on: true,  intensity: 0.6 },
-          halo:  { on: true,  intensity: 0.6 },
-        },
-        cinemaPreset: 'stadium',
-      },
-      animConfig: {
-        entrance: 'fade-in-soft',
-        exit: 'fade-out-soft',
-        target: 'word',
-        stagger: 0.3,
-        transition: 'cut',
-        transitionDuration: 0.5,
-        duration: 1.2,
-      },
-      bg: 'black',
-      aspect: '16:9',
-      parsed: {
-        stanzas: [
-          {
-            id: 'stz_ch2nypd',
-            label: 'Estrofe 1',
-            lines: [
-              {
-                id: 'ln_02wszd9',
-                words: [
-                  { id: 'w_z8iy2vm', text: 'Tu', chars: [
-                    { id: 'ch_m4ca1z5', text: 'T' },
-                    { id: 'ch_mbambkg', text: 'u' }
-                  ], emphasized: false },
-                  { id: 'w_jc5h55l', text: 'és', chars: [
-                    { id: 'ch_fw73zbk', text: 'é' },
-                    { id: 'ch_5mld0vj', text: 's' }
-                  ], emphasized: false },
-                ],
-              },
-              {
-                id: 'ln_73wma0s',
-                words: [
-                  { id: 'w_ue95vsn', text: 'Santo', chars: [
-                    { id: 'ch_zaejvrz', text: 'S' },
-                    { id: 'ch_x6gle1q', text: 'a' },
-                    { id: 'ch_qtkiv5p', text: 'n' },
-                    { id: 'ch_x9w19ss', text: 't' },
-                    { id: 'ch_qix1cel', text: 'o' }
-                  ], emphasized: false },
-                ],
-              },
-              {
-                id: 'ln_h7fwuan',
-                words: [
-                  { id: 'w_glvkols', text: 'em', chars: [
-                    { id: 'ch_lb9lrhn', text: 'e' },
-                    { id: 'ch_aqdklhi', text: 'm' }
-                  ], emphasized: false },
-                  { id: 'w_l24q4d3', text: 'mim', chars: [
-                    { id: 'ch_rval9bg', text: 'm' },
-                    { id: 'ch_1dxe577', text: 'i' },
-                    { id: 'ch_l7e6du7', text: 'm' }
-                  ], emphasized: false },
-                ],
-              },
-            ],
-          },
-        ],
-      },
-      wordOverrides: {
-        // Linha 1 - "O meu" (topo, 24% da altura, fontes pequenas) — aproximadas
-        w_z8iy2vm: {
-          position: { x: 0.470, y: 0.24186863720429408 },
-          style: { fontFamily: 'Causten-Regular' },
-        },
-        w_jc5h55l: {
-          position: { x: 0.525, y: 0.24186863720429408 },
-          style: { fontFamily: 'Causten-Regular' },
-        },
-        // Linha 2 - "fôlego" (centro, palavra de força em Antara Rough escala 3.86)
-        w_ue95vsn: {
-          position: { x: 0.5, y: 0.4984056426864616 },
-          style: {
-            fontFamily: 'Antara Rough',
-            textTransform: 'capitalize',
-            fontSizeScale: 3.864858375368079,
-          },
-        },
-        // Linha 3 - "tu és" (76% da altura, oblique itálica) — aproximadas
-        w_glvkols: {
-          position: { x: 0.472, y: 0.7581313627957059 },
-          style: { fontFamily: 'Causten-LightOblique' },
-        },
-        w_l24q4d3: {
-          position: { x: 0.525, y: 0.7581313627957059 },
-          style: { fontFamily: 'Causten-LightOblique' },
-        },
-      },
-      sceneOverrides: {},
-    },
-  },
-
-  {
-    id: 'tpl-user-3-linhas-script',
-    name: '3 Linhas — Script',
-    description: 'Layout em 3 níveis mais compacto: "Em Teus" no topo, palavra de força no centro, frase cursiva embaixo.',
-    tags: ['3 linhas', 'script', 'cursiva', 'compacto'],
-    accent: '#60a5fa',
-    config: {
-      lyrics: 'No Teu\namor\neu sou de Ti',
-      style: {
-        fontFamily: 'Peter Test Variable Italic Light',
-        fontSize: 61,
-        fontWeight: 400,
-        letterSpacing: 0.01,
-        lineHeight: 1,
-        color: '#f4f4f7',
-        textAlign: 'center',
-        glow: 0,
-        glowColor: '#60a5fa',
-        outline: 0,
-        outlineColor: '#000000',
-        shadow: 0,
-        shadowColor: '#000000',
-        shadowOffsetX: 4,
-        shadowOffsetY: 4,
-        shadowBlur: 8,
-        textTransform: 'uppercase',
-        backgroundType: 'gradient',
-        emphasisColor: '#fbbf24',
-        emphasisSizeScale: 1,
-        emphasisBold: false,
-        emphasisGlow: 0,
-        effects: {
-          echo:  { on: false, intensity: 0.41 },
-          bloom: { on: true,  intensity: 0.24 },
-          depth: { on: true,  intensity: 0.6 },
-          halo:  { on: true,  intensity: 0.6 },
-        },
-        cinemaPreset: 'stadium',
-      },
-      animConfig: {
-        entrance: 'fade-in-soft',
-        exit: 'fade-out-soft',
-        target: 'word',
-        stagger: 0.3,
-        transition: 'cut',
-        transitionDuration: 0.5,
-        duration: 1.2,
-      },
-      bg: 'black',
-      aspect: '16:9',
-      parsed: {
-        stanzas: [
-          {
-            id: 'stz_3fkiafi',
-            label: 'Estrofe 1',
-            lines: [
-              {
-                id: 'ln_5fillm4',
-                words: [
-                  { id: 'w_e0gwr8s', text: 'No', chars: [
-                    { id: 'ch_xrguid6', text: 'N' },
-                    { id: 'ch_djbmfej', text: 'o' }
-                  ], emphasized: false },
-                  { id: 'w_3ip6a67', text: 'Teu', chars: [
-                    { id: 'ch_93lb3nl', text: 'T' },
-                    { id: 'ch_xqjw4vn', text: 'e' },
-                    { id: 'ch_0u83wvo', text: 'u' }
-                  ], emphasized: false },
-                ],
-              },
-              {
-                id: 'ln_w1q2ei3',
-                words: [
-                  { id: 'w_487awsh', text: 'amor', chars: [
-                    { id: 'ch_evcek0i', text: 'a' },
-                    { id: 'ch_7gypcaf', text: 'm' },
-                    { id: 'ch_z9g7117', text: 'o' },
-                    { id: 'ch_gy4thv1', text: 'r' }
-                  ], emphasized: false },
-                ],
-              },
-              {
-                id: 'ln_7o2mhir',
-                words: [
-                  { id: 'w_i3q4tao', text: 'eu', chars: [
-                    { id: 'ch_atuico1', text: 'e' },
-                    { id: 'ch_6lzfsdg', text: 'u' }
-                  ], emphasized: false },
-                  { id: 'w_ns6k9e6', text: 'sou', chars: [
-                    { id: 'ch_xobzcr3', text: 's' },
-                    { id: 'ch_dbisg0o', text: 'o' },
-                    { id: 'ch_17o403f', text: 'u' }
-                  ], emphasized: false },
-                  { id: 'w_apl3js6', text: 'de', chars: [
-                    { id: 'ch_e8y2xg2', text: 'd' },
-                    { id: 'ch_wsqw2e6', text: 'e' }
-                  ], emphasized: false },
-                  { id: 'w_eph9cch', text: 'Ti', chars: [
-                    { id: 'ch_6iztb4i', text: 'T' },
-                    { id: 'ch_hi9eeeg', text: 'i' }
-                  ], emphasized: false },
-                ],
-              },
-            ],
-          },
-        ],
-      },
-      wordOverrides: {
-        // Linha 1 - "Em Teus" (34% da altura, sem fontFamily override → usa global) — aproximadas
-        w_e0gwr8s: {
-          position: { x: 0.460, y: 0.3391262883726181 },
-        },
-        w_3ip6a67: {
-          position: { x: 0.530, y: 0.3391262883726181 },
-        },
-        // Linha 2 - "braços" (46%, palavra de força em Bacalisties escala 3.03)
-        w_487awsh: {
-          position: { x: 0.49975739977082356, y: 0.46173472503283125 },
-          style: {
-            fontFamily: 'Bacalisties',
-            textTransform: 'capitalize',
-            fontSizeScale: 3.0276358899916933,
-          },
-        },
-        // Linha 3 - "é o meu lugar" (66% da altura, GC Driver Company cursiva) — aproximadas
-        // 4 palavras centradas em torno de x=0.5 com espaçamento normal
-        w_i3q4tao: {
-          position: { x: 0.420, y: 0.6608737116273818 },
-          style: { fontFamily: 'GC Driver Company' },
-        },
-        w_ns6k9e6: {
-          position: { x: 0.470, y: 0.6608737116273818 },
-          style: { fontFamily: 'GC Driver Company' },
-        },
-        w_apl3js6: {
-          position: { x: 0.510, y: 0.6608737116273818 },
-          style: { fontFamily: 'GC Driver Company' },
-        },
-        w_eph9cch: {
-          position: { x: 0.575, y: 0.6608737116273818 },
-          style: { fontFamily: 'GC Driver Company' },
-        },
-      },
-      sceneOverrides: {},
-    },
-  },
-
-  // ====== TEMPLATE CINEMATOGRÁFICO (3 linhas, força em cima e embaixo) ======
-  {
-    id: 'tpl-user-3-linhas-cinematografico',
-    name: '3 Linhas — Cinematográfico',
-    description: 'Estilo épico de cinema: linhas de cima e de baixo GRANDES em Timber Slice, linha do meio menor em sans itálica. Força nas extremidades.',
-    tags: ['3 linhas', 'cinematográfico', 'timber slice', 'épico', 'multifonte'],
-    accent: '#fbbf24',
-    config: {
-      lyrics: 'REINAS\nEM TODA TERRA\nSEMPRE',
-      style: {
-        fontFamily: 'Causten-LightOblique',
-        fontSize: 61,
-        fontWeight: 400,
-        letterSpacing: 0.02,
-        lineHeight: 1.05,
-        color: '#f4f4f7',
-        textAlign: 'center',
-        glow: 0,
-        glowColor: '#fbbf24',
-        outline: 0,
-        outlineColor: '#000000',
-        shadow: 0.35,
-        shadowColor: '#000000',
-        shadowOffsetX: 2,
-        shadowOffsetY: 3,
-        shadowBlur: 10,
-        textTransform: 'uppercase',
-        backgroundType: 'gradient',
-        emphasisColor: '#fbbf24',
-        emphasisSizeScale: 1,
-        emphasisBold: false,
-        emphasisGlow: 0,
-        effects: {
-          echo:  { on: false, intensity: 0.4 },
-          bloom: { on: true,  intensity: 0.2 },
-          depth: { on: true,  intensity: 0.55 },
-          halo:  { on: false, intensity: 0.5 },
-        },
-        cinemaPreset: 'stadium',
-      },
-      animConfig: {
-        entrance: 'fade-in-soft',
-        exit: 'fade-out-soft',
-        target: 'word',
-        stagger: 0.3,
-        transition: 'cut',
-        transitionDuration: 0.5,
-        duration: 1.2,
-      },
-      bg: 'black',
-      aspect: '16:9',
-      parsed: {
-        stanzas: [
-          {
-            id: 'stz_cinema1',
-            label: 'Estrofe 1',
-            lines: [
-              {
-                id: 'ln_cin_l1',
-                words: [
-                  { id: 'w_cin_quando', text: 'REINAS', chars: [
-                    { id: 'ch_cq1', text: 'R' },
-                    { id: 'ch_cq2', text: 'E' },
-                    { id: 'ch_cq3', text: 'I' },
-                    { id: 'ch_cq4', text: 'N' },
-                    { id: 'ch_cq5', text: 'A' },
-                    { id: 'ch_cq6', text: 'S' }
-                  ], emphasized: false },
-                ],
-              },
-              {
-                id: 'ln_cin_l2',
-                words: [
-                  { id: 'w_cin_a', text: 'EM', chars: [
-                    { id: 'ch_ca1', text: 'E' },
-                    { id: 'ch_45a942p', text: 'M' }
-                  ], emphasized: false },
-                  { id: 'w_cin_meia', text: 'TODA', chars: [
-                    { id: 'ch_cm1', text: 'T' },
-                    { id: 'ch_cm2', text: 'O' },
-                    { id: 'ch_cm3', text: 'D' },
-                    { id: 'ch_cm4', text: 'A' }
-                  ], emphasized: false },
-                  { id: 'w_cin_noite', text: 'TERRA', chars: [
-                    { id: 'ch_cn1', text: 'T' },
-                    { id: 'ch_cn2', text: 'E' },
-                    { id: 'ch_cn3', text: 'R' },
-                    { id: 'ch_cn4', text: 'R' },
-                    { id: 'ch_cn5', text: 'A' }
-                  ], emphasized: false },
-                ],
-              },
-              {
-                id: 'ln_cin_l3',
-                words: [
-                  { id: 'w_cin_chegar', text: 'SEMPRE', chars: [
-                    { id: 'ch_cc1', text: 'S' },
-                    { id: 'ch_cc2', text: 'E' },
-                    { id: 'ch_cc3', text: 'M' },
-                    { id: 'ch_cc4', text: 'P' },
-                    { id: 'ch_cc5', text: 'R' },
-                    { id: 'ch_cc6', text: 'E' }
-                  ], emphasized: false },
-                ],
-              },
-            ],
-          },
-        ],
-      },
-      wordOverrides: {
-        // Linha 1 - "QUANDO" (topo, força grande em Timber Slice, dourado)
-        w_cin_quando: {
-          position: { x: 0.5, y: 0.22 },
-          style: {
-            fontFamily: 'Timber Slice',
-            fontSizeScale: 2.6,
-            color: '#fbbf24',
-          },
-        },
-        // Linha 2 - "A MEIA NOITE" (meio, menor, Causten-LightOblique itálica, branco)
-        w_cin_a: {
-          position: { x: 0.40, y: 0.5 },
-          style: { fontFamily: 'Causten-LightOblique' },
-        },
-        w_cin_meia: {
-          position: { x: 0.48, y: 0.5 },
-          style: { fontFamily: 'Causten-LightOblique' },
-        },
-        w_cin_noite: {
-          position: { x: 0.60, y: 0.5 },
-          style: { fontFamily: 'Causten-LightOblique' },
-        },
-        // Linha 3 - "CHEGAR" (base, força grande em Timber Slice, branco)
-        w_cin_chegar: {
-          position: { x: 0.5, y: 0.78 },
-          style: {
-            fontFamily: 'Timber Slice',
-            fontSizeScale: 2.6,
-            color: '#f4f4f7',
-          },
-        },
-      },
-      sceneOverrides: {},
-    },
-  },
-
-  // ====== TEMPLATE VERTICAL 5 LINHAS (força nas linhas 2 e 4, Montserrat) ======
-  {
-    id: 'tpl-user-5-linhas-vertical',
-    name: '5 Linhas — Vertical',
-    description: 'Composição vertical em 5 níveis com alternancia de pesos. Linhas 2 e 4 grossas em Montserrat Black Italic; linhas 1, 3 e 5 finas. Estilo cinematográfico/poético.',
-    tags: ['5 linhas', 'montserrat', 'vertical', 'poético', 'multifonte', 'cinematográfico'],
-    accent: '#fbbf24',
-    config: {
-      lyrics: 'TODA HONRA\nDEVE\nSER DO\nNOME\nSANTO',
-      style: {
-        fontFamily: 'Montserrat Light',
-        fontSize: 48,
-        fontWeight: 300,
-        letterSpacing: 0.02,
-        lineHeight: 1.05,
-        color: '#f4f4f7',
-        textAlign: 'center',
-        glow: 0,
-        glowColor: '#fbbf24',
-        outline: 0,
-        outlineColor: '#000000',
-        shadow: 0.3,
-        shadowColor: '#000000',
-        shadowOffsetX: 2,
-        shadowOffsetY: 3,
-        shadowBlur: 10,
-        textTransform: 'uppercase',
-        backgroundType: 'gradient',
-        emphasisColor: '#fbbf24',
-        emphasisSizeScale: 1,
-        emphasisBold: false,
-        emphasisGlow: 0,
-        effects: {
-          echo:  { on: false, intensity: 0.4 },
-          bloom: { on: true,  intensity: 0.2 },
-          depth: { on: true,  intensity: 0.55 },
-          halo:  { on: false, intensity: 0.5 },
-        },
-        cinemaPreset: 'stadium',
-      },
-      animConfig: {
-        entrance: 'fade-in-soft',
-        exit: 'fade-out-soft',
-        target: 'word',
-        stagger: 0.25,
-        transition: 'cut',
-        transitionDuration: 0.5,
-        duration: 1.2,
-      },
-      bg: 'black',
-      aspect: '16:9',
-      parsed: {
-        stanzas: [
-          {
-            id: 'stz_vert1',
-            label: 'Estrofe 1',
-            lines: [
-              {
-                id: 'ln_v5_l1',
-                words: [
-                  { id: 'w_v5_e', text: 'TODA', chars: [
-                    { id: 'ch_v5e1', text: 'T' },
-                    { id: 'ch_nxyjl4e', text: 'O' },
-                    { id: 'ch_q5zjb3p', text: 'D' },
-                    { id: 'ch_eh20k59', text: 'A' }
-                  ], emphasized: false },
-                  { id: 'w_v5_necessario', text: 'HONRA', chars: [
-                    { id: 'ch_v5n1', text: 'H' },
-                    { id: 'ch_v5n2', text: 'O' },
-                    { id: 'ch_v5n3', text: 'N' },
-                    { id: 'ch_v5n4', text: 'R' },
-                    { id: 'ch_v5n5', text: 'A' }
-                  ], emphasized: false },
-                ],
-              },
-              {
-                id: 'ln_v5_l2',
-                words: [
-                  { id: 'w_v5_estar', text: 'DEVE', chars: [
-                    { id: 'ch_v5es1', text: 'D' },
-                    { id: 'ch_v5es2', text: 'E' },
-                    { id: 'ch_v5es3', text: 'V' },
-                    { id: 'ch_v5es4', text: 'E' }
-                  ], emphasized: false },
-                ],
-              },
-              {
-                id: 'ln_v5_l3',
-                words: [
-                  { id: 'w_v5_com', text: 'SER', chars: [
-                    { id: 'ch_v5c1', text: 'S' },
-                    { id: 'ch_v5c2', text: 'E' },
-                    { id: 'ch_v5c3', text: 'R' }
-                  ], emphasized: false },
-                  { id: 'w_v5_a', text: 'DO', chars: [
-                    { id: 'ch_v5a1', text: 'D' },
-                    { id: 'ch_krurhhl', text: 'O' }
-                  ], emphasized: false },
-                ],
-              },
-              {
-                id: 'ln_v5_l4',
-                words: [
-                  { id: 'w_v5_chama', text: 'NOME', chars: [
-                    { id: 'ch_v5ch1', text: 'N' },
-                    { id: 'ch_v5ch2', text: 'O' },
-                    { id: 'ch_v5ch3', text: 'M' },
-                    { id: 'ch_v5ch4', text: 'E' }
-                  ], emphasized: false },
-                ],
-              },
-              {
-                id: 'ln_v5_l5',
-                words: [
-                  { id: 'w_v5_acesa', text: 'SANTO', chars: [
-                    { id: 'ch_v5ac1', text: 'S' },
-                    { id: 'ch_v5ac2', text: 'A' },
-                    { id: 'ch_v5ac3', text: 'N' },
-                    { id: 'ch_v5ac4', text: 'T' },
-                    { id: 'ch_v5ac5', text: 'O' }
-                  ], emphasized: false },
-                ],
-              },
-            ],
-          },
-        ],
-      },
-      wordOverrides: {
-        // Linha 1 - "É NECESSÁRIO" (média, fina itálica)
-        w_v5_e: {
-          position: { x: 0.44, y: 0.13 },
-          style: { fontFamily: 'Montserrat Light Italic' },
-        },
-        w_v5_necessario: {
-          position: { x: 0.56, y: 0.13 },
-          style: { fontFamily: 'Montserrat Light Italic' },
-        },
-        // Linha 2 - "ESTAR" (GRANDE, grossa itálica) - FORÇA
-        w_v5_estar: {
-          position: { x: 0.5, y: 0.30 },
-          style: {
-            fontFamily: 'Montserrat Black Italic',
-            fontSizeScale: 1.9,
-          },
-        },
-        // Linha 3 - "COM A" (GRANDE, fina reta)
-        w_v5_com: {
-          position: { x: 0.45, y: 0.50 },
-          style: {
-            fontFamily: 'Montserrat Light',
-            fontSizeScale: 1.6,
-          },
-        },
-        w_v5_a: {
-          position: { x: 0.56, y: 0.50 },
-          style: {
-            fontFamily: 'Montserrat Light',
-            fontSizeScale: 1.6,
-          },
-        },
-        // Linha 4 - "CHAMA" (GRANDE, grossa itálica) - FORÇA
-        w_v5_chama: {
-          position: { x: 0.5, y: 0.70 },
-          style: {
-            fontFamily: 'Montserrat Black Italic',
-            fontSizeScale: 1.9,
-          },
-        },
-        // Linha 5 - "ACESA" (GRANDE, fina itálica)
-        w_v5_acesa: {
-          position: { x: 0.5, y: 0.87 },
-          style: {
-            fontFamily: 'Montserrat Light Italic',
-            fontSizeScale: 1.4,
-          },
-        },
-      },
-      sceneOverrides: {},
-    },
-  },
-
-  // ====== TEMPLATE 4 LINHAS BLACKIRON (serifada grossa, lowercase, força na L2) ======
-  {
-    id: 'tpl-user-4-linhas-blackiron',
-    name: '4 Linhas — Blackiron',
-    description: 'Composição editorial em 4 níveis com fonte Blackiron serifada grossa. L1 menor (introdução), L2-L4 grandes. Tudo em minúsculas, estilo manifesto/poético.',
-    tags: ['4 linhas', 'blackiron', 'serifada', 'editorial', 'lowercase'],
-    accent: '#e5e7eb',
-    config: {
-      lyrics: 'fonte\neterna\nde toda\ngraça',
-      style: {
-        fontFamily: 'Blackiron',
-        fontSize: 54,
-        fontWeight: 900,
-        letterSpacing: 0,
-        lineHeight: 1.0,
-        color: '#f4f4f7',
-        textAlign: 'center',
-        glow: 0,
-        glowColor: '#8b5cf6',
-        outline: 0,
-        outlineColor: '#000000',
-        shadow: 0.4,
-        shadowColor: '#000000',
-        shadowOffsetX: 2,
-        shadowOffsetY: 3,
-        shadowBlur: 12,
-        textTransform: 'lowercase',
-        backgroundType: 'gradient',
-        emphasisColor: '#fbbf24',
-        emphasisSizeScale: 1,
-        emphasisBold: false,
-        emphasisGlow: 0,
-        effects: {
-          echo:  { on: false, intensity: 0.4 },
-          bloom: { on: true,  intensity: 0.15 },
-          depth: { on: true,  intensity: 0.5 },
-          halo:  { on: false, intensity: 0.5 },
-        },
-        cinemaPreset: 'stadium',
-      },
-      animConfig: {
-        entrance: 'fade-in-soft',
-        exit: 'fade-out-soft',
-        target: 'word',
-        stagger: 0.25,
-        transition: 'cut',
-        transitionDuration: 0.5,
-        duration: 1.2,
-      },
-      bg: 'black',
-      aspect: '16:9',
-      parsed: {
-        stanzas: [
-          {
-            id: 'stz_bi1',
-            label: 'Estrofe 1',
-            lines: [
-              {
-                id: 'ln_bi_l1',
-                words: [
-                  { id: 'w_bi_falsos', text: 'fonte', chars: [
-                    { id: 'ch_bif1', text: 'f' },
-                    { id: 'ch_bif2', text: 'o' },
-                    { id: 'ch_bif3', text: 'n' },
-                    { id: 'ch_bif4', text: 't' },
-                    { id: 'ch_bif5', text: 'e' }
-                  ], emphasized: false },
-                ],
-              },
-              {
-                id: 'ln_bi_l2',
-                words: [
-                  { id: 'w_bi_mestres', text: 'eterna', chars: [
-                    { id: 'ch_bim1', text: 'e' },
-                    { id: 'ch_bim2', text: 't' },
-                    { id: 'ch_bim3', text: 'e' },
-                    { id: 'ch_bim4', text: 'r' },
-                    { id: 'ch_bim5', text: 'n' },
-                    { id: 'ch_bim6', text: 'a' }
-                  ], emphasized: false },
-                ],
-              },
-              {
-                id: 'ln_bi_l3',
-                words: [
-                  { id: 'w_bi_pra', text: 'de', chars: [
-                    { id: 'ch_bip1', text: 'd' },
-                    { id: 'ch_bip2', text: 'e' }
-                  ], emphasized: false },
-                  { id: 'w_bi_si', text: 'toda', chars: [
-                    { id: 'ch_bis1', text: 't' },
-                    { id: 'ch_bis2', text: 'o' },
-                    { id: 'ch_82bufz1', text: 'd' },
-                    { id: 'ch_a7me0bm', text: 'a' }
-                  ], emphasized: false },
-                ],
-              },
-              {
-                id: 'ln_bi_l4',
-                words: [
-                  { id: 'w_bi_mesmos', text: 'graça', chars: [
-                    { id: 'ch_bimm1', text: 'g' },
-                    { id: 'ch_bimm2', text: 'r' },
-                    { id: 'ch_bimm3', text: 'a' },
-                    { id: 'ch_bimm4', text: 'ç' },
-                    { id: 'ch_bimm5', text: 'a' }
-                  ], emphasized: false },
-                ],
-              },
-            ],
-          },
-        ],
-      },
-      wordOverrides: {
-        // L1 "falsos" - menor, introdução
-        w_bi_falsos: {
-          position: { x: 0.5, y: 0.18 },
-          style: {
-            fontFamily: 'Blackiron',
-            fontSizeScale: 1.0,
-            textTransform: 'lowercase',
-          },
-        },
-        // L2 "mestres" - GRANDE força
-        w_bi_mestres: {
-          position: { x: 0.5, y: 0.40 },
-          style: {
-            fontFamily: 'Blackiron',
-            fontSizeScale: 2.2,
-            textTransform: 'lowercase',
-          },
-        },
-        // L3 "pra si" - GRANDE
-        w_bi_pra: {
-          position: { x: 0.43, y: 0.62 },
-          style: {
-            fontFamily: 'Blackiron',
-            fontSizeScale: 1.8,
-            textTransform: 'lowercase',
-          },
-        },
-        w_bi_si: {
-          position: { x: 0.58, y: 0.62 },
-          style: {
-            fontFamily: 'Blackiron',
-            fontSizeScale: 1.8,
-            textTransform: 'lowercase',
-          },
-        },
-        // L4 "mesmos" - GRANDE
-        w_bi_mesmos: {
-          position: { x: 0.5, y: 0.83 },
-          style: {
-            fontFamily: 'Blackiron',
-            fontSizeScale: 1.9,
-            textTransform: 'lowercase',
-          },
-        },
-      },
-      sceneOverrides: {},
-    },
-  },
-
-  // ====== TEMPLATE 2 LINHAS MONT + BLACKIRON (contraste sans+serifada) ======
-  {
-    id: 'tpl-user-2-linhas-mont-blackiron',
-    name: 'Mont + Blackiron',
-    description: 'Composição editorial em 2 níveis: linha de apoio em Montserrat pequena, linha principal em Blackiron grande. Contraste tipográfico sans+serifada.',
-    tags: ['2 linhas', 'montserrat', 'blackiron', 'editorial', 'contraste'],
-    accent: '#e5e7eb',
-    config: {
-      lyrics: 'SOBRE TODOS OS\nNOMES O TEU',
-      style: {
-        fontFamily: 'Montserrat',
-        fontSize: 48,
-        fontWeight: 400,
-        letterSpacing: 0.02,
-        lineHeight: 1.1,
-        color: '#f4f4f7',
-        textAlign: 'center',
-        glow: 0,
-        glowColor: '#8b5cf6',
-        outline: 0,
-        outlineColor: '#000000',
-        shadow: 0.35,
-        shadowColor: '#000000',
-        shadowOffsetX: 2,
-        shadowOffsetY: 3,
-        shadowBlur: 10,
-        textTransform: 'uppercase',
-        backgroundType: 'gradient',
-        emphasisColor: '#fbbf24',
-        emphasisSizeScale: 1,
-        emphasisBold: false,
-        emphasisGlow: 0,
-        effects: {
-          echo:  { on: false, intensity: 0.4 },
-          bloom: { on: true,  intensity: 0.15 },
-          depth: { on: true,  intensity: 0.5 },
-          halo:  { on: false, intensity: 0.5 },
-        },
-        cinemaPreset: 'stadium',
-      },
-      animConfig: {
-        entrance: 'fade-in-soft',
-        exit: 'fade-out-soft',
-        target: 'word',
-        stagger: 0.25,
-        transition: 'cut',
-        transitionDuration: 0.5,
-        duration: 1.2,
-      },
-      bg: 'black',
-      aspect: '16:9',
-      parsed: {
-        stanzas: [
-          {
-            id: 'stz_mb1',
-            label: 'Estrofe 1',
-            lines: [
-              {
-                id: 'ln_mb_l1',
-                words: [
-                  { id: 'w_mb_para', text: 'SOBRE', chars: [
-                    { id: 'ch_mbp1', text: 'S' },
-                    { id: 'ch_mbp2', text: 'O' },
-                    { id: 'ch_mbp3', text: 'B' },
-                    { id: 'ch_mbp4', text: 'R' },
-                    { id: 'ch_1nnw4xt', text: 'E' }
-                  ], emphasized: false },
-                  { id: 'w_mb_saciar', text: 'TODOS', chars: [
-                    { id: 'ch_mbs1', text: 'T' },
-                    { id: 'ch_mbs2', text: 'O' },
-                    { id: 'ch_mbs3', text: 'D' },
-                    { id: 'ch_mbs4', text: 'O' },
-                    { id: 'ch_mbs5', text: 'S' }
-                  ], emphasized: false },
-                  { id: 'w_mb_seus', text: 'OS', chars: [
-                    { id: 'ch_mbse1', text: 'O' },
-                    { id: 'ch_mbse2', text: 'S' }
-                  ], emphasized: false },
-                ],
-              },
-              {
-                id: 'ln_mb_l2',
-                words: [
-                  { id: 'w_mb_egos', text: 'NOMES', chars: [
-                    { id: 'ch_mbe1', text: 'N' },
-                    { id: 'ch_mbe2', text: 'O' },
-                    { id: 'ch_mbe3', text: 'M' },
-                    { id: 'ch_mbe4', text: 'E' },
-                    { id: 'ch_qqz16r6', text: 'S' }
-                  ], emphasized: false },
-                  { id: 'w_mb_e', text: 'O', chars: [
-                    { id: 'ch_mbeu1', text: 'O' }
-                  ], emphasized: false },
-                  { id: 'w_mb_desejos', text: 'TEU', chars: [
-                    { id: 'ch_mbd1', text: 'T' },
-                    { id: 'ch_mbd2', text: 'E' },
-                    { id: 'ch_mbd3', text: 'U' }
-                  ], emphasized: false },
-                ],
-              },
-            ],
-          },
-        ],
-      },
-      wordOverrides: {
-        // L1 "PARA SACIAR SEUS" - Montserrat pequena (apoio)
-        w_mb_para: {
-          position: { x: 0.34, y: 0.30 },
-          style: {
-            fontFamily: 'Montserrat',
-            fontSizeScale: 0.9,
-          },
-        },
-        w_mb_saciar: {
-          position: { x: 0.50, y: 0.30 },
-          style: {
-            fontFamily: 'Montserrat',
-            fontSizeScale: 0.9,
-          },
-        },
-        w_mb_seus: {
-          position: { x: 0.66, y: 0.30 },
-          style: {
-            fontFamily: 'Montserrat',
-            fontSizeScale: 0.9,
-          },
-        },
-        // L2 "EGOS E DESEJOS" - Blackiron GRANDE (toda preenchida)
-        w_mb_egos: {
-          position: { x: 0.32, y: 0.60 },
-          style: {
-            fontFamily: 'Blackiron',
-            fontSizeScale: 2.4,
-          },
-        },
-        w_mb_e: {
-          position: { x: 0.50, y: 0.60 },
-          style: {
-            fontFamily: 'Blackiron',
-            fontSizeScale: 2.4,
-          },
-        },
-        w_mb_desejos: {
-          position: { x: 0.68, y: 0.60 },
-          style: {
-            fontFamily: 'Blackiron',
-            fontSizeScale: 2.4,
-          },
-        },
-      },
-      sceneOverrides: {},
-    },
-  },
-
-  // ====== TEMPLATE 2 LINHAS BLACKIRON DUPLO (mesma fonte grande nas 2 linhas) ======
-  {
-    id: 'tpl-user-2-linhas-blackiron-duplo',
-    name: '2 Linhas — Blackiron Duplo',
-    description: 'Bloco tipográfico em 2 linhas com Blackiron grande e maiúsculas. Composição centralizada, espaçamento compacto, alto contraste.',
-    tags: ['2 linhas', 'blackiron', 'serifada', 'maiúsculas', 'duplo'],
-    accent: '#fbbf24',
-    config: {
-      lyrics: 'TODA HONRA E\nGLÓRIA AO REI',
-      style: {
-        fontFamily: 'Blackiron',
-        fontSize: 60,
-        fontWeight: 900,
-        letterSpacing: 0.02,
-        lineHeight: 1.05,
-        color: '#f4f4f7',
-        textAlign: 'center',
-        glow: 0,
-        glowColor: '#fbbf24',
-        outline: 0,
-        outlineColor: '#000000',
-        shadow: 0.4,
-        shadowColor: '#000000',
-        shadowOffsetX: 2,
-        shadowOffsetY: 3,
-        shadowBlur: 12,
-        textTransform: 'uppercase',
-        backgroundType: 'gradient',
-        emphasisColor: '#fbbf24',
-        emphasisSizeScale: 1,
-        emphasisBold: false,
-        emphasisGlow: 0,
-        effects: {
-          echo:  { on: false, intensity: 0.4 },
-          bloom: { on: true,  intensity: 0.2 },
-          depth: { on: true,  intensity: 0.55 },
-          halo:  { on: false, intensity: 0.5 },
-        },
-        cinemaPreset: 'stadium',
-      },
-      animConfig: {
-        entrance: 'fade-in-soft',
-        exit: 'fade-out-soft',
-        target: 'word',
-        stagger: 0.25,
-        transition: 'cut',
-        transitionDuration: 0.5,
-        duration: 1.2,
-      },
-      bg: 'black',
-      aspect: '16:9',
-      parsed: {
-        stanzas: [
-          {
-            id: 'stz_bd1',
-            label: 'Estrofe 1',
-            lines: [
-              {
-                id: 'ln_bd_l1',
-                words: [
-                  { id: 'w_bd_da', text: 'TODA', chars: [
-                    { id: 'ch_bdda1', text: 'T' },
-                    { id: 'ch_bdda2', text: 'O' },
-                    { id: 'ch_33yph03', text: 'D' },
-                    { id: 'ch_mw4ra4q', text: 'A' }
-                  ], emphasized: false },
-                  { id: 'w_bd_minha', text: 'HONRA', chars: [
-                    { id: 'ch_bdm1', text: 'H' },
-                    { id: 'ch_bdm2', text: 'O' },
-                    { id: 'ch_bdm3', text: 'N' },
-                    { id: 'ch_bdm4', text: 'R' },
-                    { id: 'ch_bdm5', text: 'A' }
-                  ], emphasized: false },
-                  { id: 'w_bd_alma', text: 'E', chars: [
-                    { id: 'ch_bdal1', text: 'E' }
-                  ], emphasized: false },
-                ],
-              },
-              {
-                id: 'ln_bd_l2',
-                words: [
-                  { id: 'w_bd_ate', text: 'GLÓRIA', chars: [
-                    { id: 'ch_bdat1', text: 'G' },
-                    { id: 'ch_bdat2', text: 'L' },
-                    { id: 'ch_bdat3', text: 'Ó' },
-                    { id: 'ch_lhe5spj', text: 'R' },
-                    { id: 'ch_je5xh1m', text: 'I' },
-                    { id: 'ch_p0i8jr0', text: 'A' }
-                  ], emphasized: false },
-                  { id: 'w_bd_a', text: 'AO', chars: [
-                    { id: 'ch_bda1', text: 'A' },
-                    { id: 'ch_55pun19', text: 'O' }
-                  ], emphasized: false },
-                  { id: 'w_bd_deus', text: 'REI', chars: [
-                    { id: 'ch_bdd1', text: 'R' },
-                    { id: 'ch_bdd2', text: 'E' },
-                    { id: 'ch_bdd3', text: 'I' }
-                  ], emphasized: false },
-                ],
-              },
-            ],
-          },
-        ],
-      },
-      wordOverrides: {
-        // L1 "DA MINHA ALMA" - Blackiron GRANDE
-        w_bd_da: {
-          position: { x: 0.30, y: 0.38 },
-          style: {
-            fontFamily: 'Blackiron',
-            fontSizeScale: 2.4,
-          },
-        },
-        w_bd_minha: {
-          position: { x: 0.50, y: 0.38 },
-          style: {
-            fontFamily: 'Blackiron',
-            fontSizeScale: 2.4,
-          },
-        },
-        w_bd_alma: {
-          position: { x: 0.70, y: 0.38 },
-          style: {
-            fontFamily: 'Blackiron',
-            fontSizeScale: 2.4,
-          },
-        },
-        // L2 "ATÉ A DEUS" - Blackiron GRANDE
-        w_bd_ate: {
-          position: { x: 0.32, y: 0.62 },
-          style: {
-            fontFamily: 'Blackiron',
-            fontSizeScale: 2.4,
-          },
-        },
-        w_bd_a: {
-          position: { x: 0.50, y: 0.62 },
-          style: {
-            fontFamily: 'Blackiron',
-            fontSizeScale: 2.4,
-          },
-        },
-        w_bd_deus: {
-          position: { x: 0.68, y: 0.62 },
-          style: {
-            fontFamily: 'Blackiron',
-            fontSizeScale: 2.4,
-          },
-        },
-      },
-      sceneOverrides: {},
-    },
-  },
-
-  // ====== TEMPLATE 3 LINHAS MONTANHAS (Montserrat + Blackiron, hierarquia ascendente) ======
-  {
-    id: 'tpl-user-3-linhas-montanhas',
-    name: '3 Linhas — Montanhas',
-    description: 'Composição vertical com hierarquia ascendente. L1 Montserrat grossa, L2 Montserrat fina (conector), L3 Blackiron muito grande (destaque). Tudo em maiúsculas.',
-    tags: ['3 linhas', 'montserrat', 'blackiron', 'multifonte', 'hierarquia'],
-    accent: '#e5e7eb',
-    config: {
-      lyrics: 'REINA SOBRE\nOS\nCÉUS',
-      style: {
-        fontFamily: 'Montserrat',
-        fontSize: 52,
-        fontWeight: 400,
-        letterSpacing: 0.02,
-        lineHeight: 1.05,
-        color: '#f4f4f7',
-        textAlign: 'center',
-        glow: 0,
-        glowColor: '#fbbf24',
-        outline: 0,
-        outlineColor: '#000000',
-        shadow: 0.35,
-        shadowColor: '#000000',
-        shadowOffsetX: 2,
-        shadowOffsetY: 3,
-        shadowBlur: 10,
-        textTransform: 'uppercase',
-        backgroundType: 'gradient',
-        emphasisColor: '#fbbf24',
-        emphasisSizeScale: 1,
-        emphasisBold: false,
-        emphasisGlow: 0,
-        effects: {
-          echo:  { on: false, intensity: 0.4 },
-          bloom: { on: true,  intensity: 0.2 },
-          depth: { on: true,  intensity: 0.55 },
-          halo:  { on: false, intensity: 0.5 },
-        },
-        cinemaPreset: 'stadium',
-      },
-      animConfig: {
-        entrance: 'fade-in-soft',
-        exit: 'fade-out-soft',
-        target: 'word',
-        stagger: 0.25,
-        transition: 'cut',
-        transitionDuration: 0.5,
-        duration: 1.2,
-      },
-      bg: 'black',
-      aspect: '16:9',
-      parsed: {
-        stanzas: [
-          {
-            id: 'stz_mt1',
-            label: 'Estrofe 1',
-            lines: [
-              {
-                id: 'ln_mt_l1',
-                words: [
-                  { id: 'w_mt_vem', text: 'REINA', chars: [
-                    { id: 'ch_mtv1', text: 'R' },
-                    { id: 'ch_mtv2', text: 'E' },
-                    { id: 'ch_mtv3', text: 'I' },
-                    { id: 'ch_v5508tg', text: 'N' },
-                    { id: 'ch_5f8byhe', text: 'A' }
-                  ], emphasized: false },
-                  { id: 'w_mt_sobre', text: 'SOBRE', chars: [
-                    { id: 'ch_mts1', text: 'S' },
-                    { id: 'ch_mts2', text: 'O' },
-                    { id: 'ch_mts3', text: 'B' },
-                    { id: 'ch_mts4', text: 'R' },
-                    { id: 'ch_mts5', text: 'E' }
-                  ], emphasized: false },
-                ],
-              },
-              {
-                id: 'ln_mt_l2',
-                words: [
-                  { id: 'w_mt_as', text: 'OS', chars: [
-                    { id: 'ch_mtas1', text: 'O' },
-                    { id: 'ch_mtas2', text: 'S' }
-                  ], emphasized: false },
-                ],
-              },
-              {
-                id: 'ln_mt_l3',
-                words: [
-                  { id: 'w_mt_montanhas', text: 'CÉUS', chars: [
-                    { id: 'ch_mtm1', text: 'C' },
-                    { id: 'ch_mtm2', text: 'É' },
-                    { id: 'ch_mtm3', text: 'U' },
-                    { id: 'ch_mtm4', text: 'S' }
-                  ], emphasized: false },
-                ],
-              },
-            ],
-          },
-        ],
-      },
-      wordOverrides: {
-        // L1 "VEM SOBRE" - Montserrat Black GRANDE
-        w_mt_vem: {
-          position: { x: 0.42, y: 0.22 },
-          style: {
-            fontFamily: 'Montserrat Black',
-            fontSizeScale: 1.8,
-          },
-        },
-        w_mt_sobre: {
-          position: { x: 0.58, y: 0.22 },
-          style: {
-            fontFamily: 'Montserrat Black',
-            fontSizeScale: 1.8,
-          },
-        },
-        // L2 "AS" - Montserrat Light média (conector entre L1 e L3)
-        w_mt_as: {
-          position: { x: 0.5, y: 0.43 },
-          style: {
-            fontFamily: 'Montserrat Light',
-            fontSizeScale: 1.0,
-          },
-        },
-        // L3 "MONTANHAS" - Blackiron MUITO GRANDE (destaque principal)
-        w_mt_montanhas: {
-          position: { x: 0.5, y: 0.72 },
-          style: {
-            fontFamily: 'Blackiron',
-            fontSizeScale: 2.8,
-          },
-        },
-      },
-      sceneOverrides: {},
-    },
-  },
-
-  // ====== TEMPLATE 1 LINHA MARAVILHOSO (Candlescript grande, branco) ======
-  {
-    id: 'tpl-user-1-linha-maravilhoso',
-    name: '1 Linha — Maravilhoso',
-    description: 'Linha única com fonte cursiva Candlescript em destaque, capitalizada. Composição minimalista focada em uma palavra principal.',
-    tags: ['1 linha', 'candlescript', 'cursiva', 'minimalista'],
-    accent: '#f4f4f7',
-    config: {
-      lyrics: 'Maravilhoso',
-      style: {
-        fontFamily: 'Candlescript',
-        fontSize: 96,
-        fontWeight: 400,
-        letterSpacing: 0,
-        lineHeight: 1.05,
-        color: '#f4f4f7',
-        textAlign: 'center',
-        glow: 0,
-        glowColor: '#fbbf24',
-        outline: 0,
-        outlineColor: '#000000',
-        shadow: 0.3,
-        shadowColor: '#000000',
-        shadowOffsetX: 2,
-        shadowOffsetY: 3,
-        shadowBlur: 10,
-        textTransform: 'capitalize',
-        backgroundType: 'gradient',
-        emphasisColor: '#fbbf24',
-        emphasisSizeScale: 1,
-        emphasisBold: false,
-        emphasisGlow: 0,
-        effects: {
-          echo:  { on: false, intensity: 0.4 },
-          bloom: { on: true,  intensity: 0.2 },
-          depth: { on: true,  intensity: 0.5 },
-          halo:  { on: false, intensity: 0.5 },
-        },
-        cinemaPreset: 'stadium',
-      },
-      animConfig: {
-        entrance: 'fade-in-soft',
-        exit: 'fade-out-soft',
-        target: 'word',
-        stagger: 0.3,
-        transition: 'cut',
-        transitionDuration: 0.5,
-        duration: 1.2,
-      },
-      bg: 'black',
-      aspect: '16:9',
-      parsed: {
-        stanzas: [
-          {
-            id: 'stz_mv1',
-            label: 'Estrofe 1',
-            lines: [
-              {
-                id: 'ln_mv_l1',
-                words: [
-                  { id: 'w_mv_maravilhoso', text: 'Maravilhoso', chars: [
-                    { id: 'ch_mv1', text: 'M' },
-                    { id: 'ch_mv2', text: 'a' },
-                    { id: 'ch_mv3', text: 'r' },
-                    { id: 'ch_mv4', text: 'a' },
-                    { id: 'ch_mv5', text: 'v' },
-                    { id: 'ch_mv6', text: 'i' },
-                    { id: 'ch_mv7', text: 'l' },
-                    { id: 'ch_mv8', text: 'h' },
-                    { id: 'ch_mv9', text: 'o' },
-                    { id: 'ch_mv10', text: 's' },
-                    { id: 'ch_mv11', text: 'o' },
-                  ], emphasized: false },
-                ],
-              },
-            ],
-          },
-        ],
-      },
-      wordOverrides: {
-        w_mv_maravilhoso: {
-          position: { x: 0.5, y: 0.5 },
-          style: {
-            fontFamily: 'Candlescript',
-            fontSizeScale: 2.8,
-            textTransform: 'capitalize',
-          },
-        },
-      },
-      sceneOverrides: {},
-    },
-  },
-
-  // ====== TEMPLATE 4 LINHAS A FONTE DA VIDA (Mont + Blackiron alternados) ======
-  {
-    id: 'tpl-user-4-linhas-fonte-vida',
-    name: '4 Linhas — A Fonte da Vida',
-    description: 'Composição tipográfica em 4 níveis alternando Montserrat e Blackiron. L1 apoio, L2 destaque grande, L3 conector fino, L4 fechamento minúsculas.',
-    tags: ['4 linhas', 'montserrat', 'blackiron', 'multifonte', 'editorial'],
-    accent: '#f4f4f7',
-    config: {
-      lyrics: 'DEUS QUE É\nSANTO\nFOI QUE\ncriou',
-      style: {
-        fontFamily: 'Montserrat',
-        fontSize: 48,
-        fontWeight: 400,
-        letterSpacing: 0.02,
-        lineHeight: 1.05,
-        color: '#f4f4f7',
-        textAlign: 'center',
-        glow: 0,
-        glowColor: '#fbbf24',
-        outline: 0,
-        outlineColor: '#000000',
-        shadow: 0.35,
-        shadowColor: '#000000',
-        shadowOffsetX: 2,
-        shadowOffsetY: 3,
-        shadowBlur: 10,
-        textTransform: 'none',
-        backgroundType: 'gradient',
-        emphasisColor: '#fbbf24',
-        emphasisSizeScale: 1,
-        emphasisBold: false,
-        emphasisGlow: 0,
-        effects: {
-          echo:  { on: false, intensity: 0.4 },
-          bloom: { on: true,  intensity: 0.15 },
-          depth: { on: true,  intensity: 0.5 },
-          halo:  { on: false, intensity: 0.5 },
-        },
-        cinemaPreset: 'stadium',
-      },
-      animConfig: {
-        entrance: 'fade-in-soft',
-        exit: 'fade-out-soft',
-        target: 'word',
-        stagger: 0.25,
-        transition: 'cut',
-        transitionDuration: 0.5,
-        duration: 1.2,
-      },
-      bg: 'black',
-      aspect: '16:9',
-      parsed: {
-        stanzas: [
-          {
-            id: 'stz_fv1',
-            label: 'Estrofe 1',
-            lines: [
-              {
-                id: 'ln_fv_l1',
-                words: [
-                  { id: 'w_fv_a', text: 'DEUS', chars: [
-                    { id: 'ch_fva1', text: 'D' },
-                    { id: 'ch_g6zimli', text: 'E' },
-                    { id: 'ch_d84kjor', text: 'U' },
-                    { id: 'ch_kmaueo2', text: 'S' }
-                  ], emphasized: false },
-                  { id: 'w_fv_fonte', text: 'QUE', chars: [
-                    { id: 'ch_fvf1', text: 'Q' },
-                    { id: 'ch_fvf2', text: 'U' },
-                    { id: 'ch_fvf3', text: 'E' }
-                  ], emphasized: false },
-                  { id: 'w_fv_da', text: 'É', chars: [
-                    { id: 'ch_fvd1', text: 'É' }
-                  ], emphasized: false },
-                ],
-              },
-              {
-                id: 'ln_fv_l2',
-                words: [
-                  { id: 'w_fv_vida', text: 'SANTO', chars: [
-                    { id: 'ch_fvv1', text: 'S' },
-                    { id: 'ch_fvv2', text: 'A' },
-                    { id: 'ch_fvv3', text: 'N' },
-                    { id: 'ch_fvv4', text: 'T' },
-                    { id: 'ch_t0hiwyi', text: 'O' }
-                  ], emphasized: false },
-                ],
-              },
-              {
-                id: 'ln_fv_l3',
-                words: [
-                  { id: 'w_fv_que', text: 'FOI', chars: [
-                    { id: 'ch_fvq1', text: 'F' },
-                    { id: 'ch_fvq2', text: 'O' },
-                    { id: 'ch_fvq3', text: 'I' }
-                  ], emphasized: false },
-                  { id: 'w_fv_me', text: 'QUE', chars: [
-                    { id: 'ch_fvm1', text: 'Q' },
-                    { id: 'ch_fvm2', text: 'U' },
-                    { id: 'ch_nxwozzp', text: 'E' }
-                  ], emphasized: false },
-                ],
-              },
-              {
-                id: 'ln_fv_l4',
-                words: [
-                  { id: 'w_fv_encontrou', text: 'criou', chars: [
-                    { id: 'ch_fve1', text: 'c' },
-                    { id: 'ch_fve2', text: 'r' },
-                    { id: 'ch_fve3', text: 'i' },
-                    { id: 'ch_fve4', text: 'o' },
-                    { id: 'ch_fve5', text: 'u' }
-                  ], emphasized: false },
-                ],
-              },
-            ],
-          },
-        ],
-      },
-      wordOverrides: {
-        // L1 "A FONTE DA" - Montserrat normal, média, MAIÚSCULAS
-        w_fv_a: {
-          position: { x: 0.35, y: 0.15 },
-          style: { fontFamily: 'Montserrat', fontSizeScale: 1.0, textTransform: 'uppercase' },
-        },
-        w_fv_fonte: {
-          position: { x: 0.50, y: 0.15 },
-          style: { fontFamily: 'Montserrat', fontSizeScale: 1.0, textTransform: 'uppercase' },
-        },
-        w_fv_da: {
-          position: { x: 0.65, y: 0.15 },
-          style: { fontFamily: 'Montserrat', fontSizeScale: 1.0, textTransform: 'uppercase' },
-        },
-        // L2 "VIDA" - Blackiron MUITO GRANDE (destaque)
-        w_fv_vida: {
-          position: { x: 0.5, y: 0.40 },
-          style: {
-            fontFamily: 'Blackiron',
-            fontSizeScale: 3.0,
-            textTransform: 'uppercase',
-          },
-        },
-        // L3 "QUE ME" - Montserrat Light fina, média, MAIÚSCULAS
-        w_fv_que: {
-          position: { x: 0.43, y: 0.62 },
-          style: { fontFamily: 'Montserrat Light', fontSizeScale: 1.0, textTransform: 'uppercase' },
-        },
-        w_fv_me: {
-          position: { x: 0.57, y: 0.62 },
-          style: { fontFamily: 'Montserrat Light', fontSizeScale: 1.0, textTransform: 'uppercase' },
-        },
-        // L4 "encontrou" - Blackiron grossa, GRANDE, minúsculas
-        w_fv_encontrou: {
-          position: { x: 0.5, y: 0.83 },
-          style: {
-            fontFamily: 'Blackiron',
-            fontSizeScale: 1.8,
-            textTransform: 'lowercase',
-          },
-        },
-      },
-      sceneOverrides: {},
-    },
-  },
-
-  // ====== TEMPLATE 4 LINHAS TRONOS (Mont + Blackiron, destaque central) ======
-  {
-    id: 'tpl-user-4-linhas-tronos',
-    name: '4 Linhas — Tronos',
-    description: 'Composição em 4 níveis com destaque central. L1 apoio, L2 Blackiron muito grande (destaque), L3 conector, L4 fechamento Montserrat grossa. Tudo em maiúsculas.',
-    tags: ['4 linhas', 'montserrat', 'blackiron', 'multifonte', 'central'],
-    accent: '#f4f4f7',
-    config: {
-      lyrics: 'REINA NOS\nCÉUS\nE NA\nTERRA',
-      style: {
-        fontFamily: 'Montserrat',
-        fontSize: 48,
-        fontWeight: 400,
-        letterSpacing: 0.02,
-        lineHeight: 1.05,
-        color: '#f4f4f7',
-        textAlign: 'center',
-        glow: 0,
-        glowColor: '#fbbf24',
-        outline: 0,
-        outlineColor: '#000000',
-        shadow: 0.35,
-        shadowColor: '#000000',
-        shadowOffsetX: 2,
-        shadowOffsetY: 3,
-        shadowBlur: 10,
-        textTransform: 'uppercase',
-        backgroundType: 'gradient',
-        emphasisColor: '#fbbf24',
-        emphasisSizeScale: 1,
-        emphasisBold: false,
-        emphasisGlow: 0,
-        effects: {
-          echo:  { on: false, intensity: 0.4 },
-          bloom: { on: true,  intensity: 0.15 },
-          depth: { on: true,  intensity: 0.5 },
-          halo:  { on: false, intensity: 0.5 },
-        },
-        cinemaPreset: 'stadium',
-      },
-      animConfig: {
-        entrance: 'fade-in-soft',
-        exit: 'fade-out-soft',
-        target: 'word',
-        stagger: 0.25,
-        transition: 'cut',
-        transitionDuration: 0.5,
-        duration: 1.2,
-      },
-      bg: 'black',
-      aspect: '16:9',
-      parsed: {
-        stanzas: [
-          {
-            id: 'stz_tr1',
-            label: 'Estrofe 1',
-            lines: [
-              {
-                id: 'ln_tr_l1',
-                words: [
-                  { id: 'w_tr_veja', text: 'REINA', chars: [
-                    { id: 'ch_trv1', text: 'R' },
-                    { id: 'ch_trv2', text: 'E' },
-                    { id: 'ch_trv3', text: 'I' },
-                    { id: 'ch_trv4', text: 'N' },
-                    { id: 'ch_uqdo7ql', text: 'A' }
-                  ], emphasized: false },
-                  { id: 'w_tr_os', text: 'NOS', chars: [
-                    { id: 'ch_tros1', text: 'N' },
-                    { id: 'ch_tros2', text: 'O' },
-                    { id: 'ch_b5zke28', text: 'S' }
-                  ], emphasized: false },
-                ],
-              },
-              {
-                id: 'ln_tr_l2',
-                words: [
-                  { id: 'w_tr_tronos', text: 'CÉUS', chars: [
-                    { id: 'ch_trt1', text: 'C' },
-                    { id: 'ch_trt2', text: 'É' },
-                    { id: 'ch_trt3', text: 'U' },
-                    { id: 'ch_trt4', text: 'S' }
-                  ], emphasized: false },
-                ],
-              },
-              {
-                id: 'ln_tr_l3',
-                words: [
-                  { id: 'w_tr_de', text: 'E', chars: [
-                    { id: 'ch_trde1', text: 'E' }
-                  ], emphasized: false },
-                  { id: 'w_tr_outros', text: 'NA', chars: [
-                    { id: 'ch_tro1', text: 'N' },
-                    { id: 'ch_tro2', text: 'A' }
-                  ], emphasized: false },
-                ],
-              },
-              {
-                id: 'ln_tr_l4',
-                words: [
-                  { id: 'w_tr_reis', text: 'TERRA', chars: [
-                    { id: 'ch_trr1', text: 'T' },
-                    { id: 'ch_trr2', text: 'E' },
-                    { id: 'ch_trr3', text: 'R' },
-                    { id: 'ch_trr4', text: 'R' },
-                    { id: 'ch_ybqvano', text: 'A' }
-                  ], emphasized: false },
-                ],
-              },
-            ],
-          },
-        ],
-      },
-      wordOverrides: {
-        // L1 "VEJA OS" - Montserrat normal, média (apoio)
-        w_tr_veja: {
-          position: { x: 0.42, y: 0.18 },
-          style: { fontFamily: 'Montserrat', fontSizeScale: 1.0 },
-        },
-        w_tr_os: {
-          position: { x: 0.58, y: 0.18 },
-          style: { fontFamily: 'Montserrat', fontSizeScale: 1.0 },
-        },
-        // L2 "TRONOS" - Blackiron MUITO GRANDE (destaque principal)
-        w_tr_tronos: {
-          position: { x: 0.5, y: 0.42 },
-          style: {
-            fontFamily: 'Blackiron',
-            fontSizeScale: 3.0,
-          },
-        },
-        // L3 "DE OUTROS" - Montserrat normal, média (conector)
-        w_tr_de: {
-          position: { x: 0.42, y: 0.65 },
-          style: { fontFamily: 'Montserrat', fontSizeScale: 1.0 },
-        },
-        w_tr_outros: {
-          position: { x: 0.58, y: 0.65 },
-          style: { fontFamily: 'Montserrat', fontSizeScale: 1.0 },
-        },
-        // L4 "REIS" - Montserrat Black GRANDE (fechamento)
-        w_tr_reis: {
-          position: { x: 0.5, y: 0.85 },
-          style: {
-            fontFamily: 'Montserrat Black',
-            fontSizeScale: 1.7,
-          },
-        },
-      },
-      sceneOverrides: {},
-    },
-  },
-
-  // ====== TEMPLATE 1 PALAVRA ANTARAS (Antara Nodes, palavra única gigante) ======
-  {
-    id: 'tpl-user-1-linha-antaras',
-    name: '1 Palavra — Antaras',
-    description: 'Linha única com fonte Antara Nodes em destaque máximo (scale 4.5). Animação de entrada "borrar" com duração aumentada. Estilo cinematográfico com halo ativo.',
-    tags: ['1 linha', 'antara nodes', 'destaque', 'cinematográfico', 'borrar'],
-    accent: '#60a5fa',
-    config: {
-      lyrics: 'Santo',
-      style: {
-        fontFamily: 'Antara Nodes',
-        fontSize: 61,
-        fontWeight: 400,
-        letterSpacing: 0.01,
-        lineHeight: 1,
-        color: '#f4f4f7',
-        textAlign: 'center',
-        glow: 0,
-        glowColor: '#60a5fa',
-        outline: 0,
-        outlineColor: '#000000',
-        shadow: 0,
-        shadowColor: '#000000',
-        shadowOffsetX: 4,
-        shadowOffsetY: 4,
-        shadowBlur: 8,
-        textTransform: 'uppercase',
-        backgroundType: 'gradient',
-        emphasisColor: '#fbbf24',
-        emphasisSizeScale: 1,
-        emphasisBold: false,
-        emphasisGlow: 0,
-        effects: {
-          echo:  { on: false, intensity: 0.41 },
-          bloom: { on: true,  intensity: 0.24 },
-          depth: { on: true,  intensity: 0.6 },
-          halo:  { on: true,  intensity: 0.6 },
-        },
-        cinemaPreset: 'stadium',
-      },
-      animConfig: {
-        entrance: 'fade-in-soft',
-        exit: 'fade-out-soft',
-        target: 'word',
-        stagger: 0.3,
-        transition: 'cut',
-        transitionDuration: 0.5,
-        duration: 1.2,
-      },
-      bg: 'black',
-      aspect: '16:9',
-      parsed: {
-        stanzas: [
-          {
-            id: 'stz_ant1',
-            label: 'Estrofe 1',
-            lines: [
-              {
-                id: 'ln_ant_l1',
-                words: [
-                  { id: 'w_ant_santo', text: 'Santo', chars: [
-                    { id: 'ch_ants1', text: 'S' },
-                    { id: 'ch_ants2', text: 'a' },
-                    { id: 'ch_ants3', text: 'n' },
-                    { id: 'ch_ants4', text: 't' },
-                    { id: 'ch_ants5', text: 'o' },
-                  ], emphasized: false },
-                ],
-              },
-            ],
-          },
-        ],
-      },
-      wordOverrides: {
-        w_ant_santo: {
-          position: { x: 0.5, y: 0.5 },
-          style: {
-            fontFamily: 'Antara Nodes',
-            textTransform: 'capitalize',
-            fontSizeScale: 4.477602381199272,
-          },
-          entrance: 'blur-reveal',
-          durationScale: 3,
-        },
-      },
-      sceneOverrides: {},
-    },
-  },
-
-  // ====== TEMPLATES DO USUÁRIO (2 linhas) ======
-  {
-    id: 'tpl-user-2-linhas-tipografia',
-    name: '2 Linhas — Tipografia',
-    description: 'Jogo tipográfico: linha 1 em sans-serif moderna, linha 2 em cursiva manuscrita. Composição elegante centrada.',
-    tags: ['2 linhas', 'tipografia', 'contraste', 'cursiva'],
-    accent: '#60a5fa',
-    config: {
-      lyrics: 'Glória\nSenhor',
-      style: {
-        fontFamily: 'Peter Test Variable Italic Light',
-        fontSize: 61,
-        fontWeight: 400,
-        letterSpacing: 0.01,
-        lineHeight: 1,
-        color: '#f4f4f7',
-        textAlign: 'center',
-        glow: 0,
-        glowColor: '#60a5fa',
-        outline: 0,
-        outlineColor: '#000000',
-        shadow: 0,
-        shadowColor: '#000000',
-        shadowOffsetX: 4,
-        shadowOffsetY: 4,
-        shadowBlur: 8,
-        textTransform: 'uppercase',
-        backgroundType: 'gradient',
-        emphasisColor: '#fbbf24',
-        emphasisSizeScale: 1,
-        emphasisBold: false,
-        emphasisGlow: 0,
-        effects: {
-          echo:  { on: false, intensity: 0.41 },
-          bloom: { on: true,  intensity: 0.24 },
-          depth: { on: true,  intensity: 0.6 },
-          halo:  { on: true,  intensity: 0.6 },
-        },
-        cinemaPreset: 'stadium',
-      },
-      animConfig: {
-        entrance: 'fade-in-soft',
-        exit: 'fade-out-soft',
-        target: 'word',
-        stagger: 0.3,
-        transition: 'cut',
-        transitionDuration: 0.5,
-        duration: 1.2,
-      },
-      bg: 'black',
-      aspect: '16:9',
-      parsed: {
-        stanzas: [
-          {
-            id: 'stz_whvbxxp',
-            label: 'Estrofe 1',
-            lines: [
-              {
-                id: 'ln_2uex8o4',
-                words: [
-                  { id: 'w_u0tigg3', text: 'Glória', chars: [
-                    { id: 'ch_c56h664', text: 'G' },
-                    { id: 'ch_bwcf2td', text: 'l' },
-                    { id: 'ch_cz0w4ta', text: 'ó' },
-                    { id: 'ch_vi4e5ri', text: 'r' },
-                    { id: 'ch_ovdzmo1', text: 'i' },
-                    { id: 'ch_6vegdci', text: 'a' }
-                  ], emphasized: false },
-                ],
-              },
-              {
-                id: 'ln_bfzodcb',
-                words: [
-                  { id: 'w_eosl00s', text: 'Senhor', chars: [
-                    { id: 'ch_4eyiduk', text: 'S' },
-                    { id: 'ch_37otaod', text: 'e' },
-                    { id: 'ch_3fw7itw', text: 'n' },
-                    { id: 'ch_9qgif6u', text: 'h' },
-                    { id: 'ch_4cnazvn', text: 'o' },
-                    { id: 'ch_0vfoiqt', text: 'r' }
-                  ], emphasized: false },
-                ],
-              },
-            ],
-          },
-        ],
-      },
-      wordOverrides: {
-        // Linha 1 - "Estou" (44%, Montserrat sans-serif moderna)
-        w_u0tigg3: {
-          position: { x: 0.49999182209367465, y: 0.43869579079305315 },
-          style: { fontFamily: 'Montserrat' },
-        },
-        // Linha 2 - "aqui" (56%, GC Driver Company cursiva manuscrita)
-        w_eosl00s: {
-          position: { x: 0.4999917922291354, y: 0.5613041970427338 },
-          style: { fontFamily: 'GC Driver Company' },
-        },
-      },
-      sceneOverrides: {},
-    },
-  },
-  // ====== TEMPLATES OFICIAIS ======
-  {
-    id: 'tpl-oficial-duplo-impacto-1-linha-msdevk3f',
-    name: 'Duplo Impacto — 1 linha',
-    description: 'Uma única palavra em destaque, com tipografia ampla e centralizada para criar força, presença e impacto visual.',
-    tags: ['1 linha', 'Impactante', 'Pro Plus'],
-    isOfficial: true,
-    isPremium: true,
-    requiredPlan: 'pro_plus',
-    isActive: true,
-    accent: '#8b5cf6',
-    config: {
-      style: {},
-      animConfig: {},
-      aspect: '1:1',
-      parsed: {
-        stanzas: [
-          {
-            id: 'stz_9lmfon0',
-            label: 'Estrofe 1',
-            lines: [
-              {
-                id: 'ln_hqanxeb',
-                words: [
-                  {
-                    id: 'w_z9yhulm',
-                    text: 'SEU',
-                    chars: [
-                      { id: 'ch_pl7191o', text: 'S' },
-                      { id: 'ch_qa2x8v9', text: 'E' },
-                      { id: 'ch_hn4t61b', text: 'U' },
-                    ],
-                    tStart: 175.108224,
-                    emphasized: false,
-                  },
-                  {
-                    id: 'w_nurr8mf',
-                    text: 'TEXTO',
-                    chars: [
-                      { id: 'ch_l5o9l0d', text: 'T' },
-                      { id: 'ch_pw2k21y', text: 'E' },
-                      { id: 'ch_ipy0slw', text: 'X' },
-                      { id: 'ch_ft83jd2', text: 'T' },
-                      { id: 'ch_wm7k0e5', text: 'O' },
-                    ],
-                    tStart: 175.108224,
-                    emphasized: false,
-                  },
-                ],
-              },
-            ],
-          },
-        ],
-      },
-      wordOverrides: {
-        w_z9yhulm: {
-          style: { fontFamily: 'Bebas Neue', fontWeight: 700, fontSizeScale: 5.9483597040000005 },
-          entrance: 'typewriter-blur-fast',
-          position: { x: 0.28059794398642707, y: 0.5388838193666418 },
-        },
-        w_nurr8mf: {
-          style: { fontFamily: 'Bebas Neue', fontWeight: 700, fontSizeScale: 5.9483597040000005 },
-          entrance: 'typewriter-blur-fast',
-          position: { x: 0.6019657488543884, y: 0.5388838193666418 },
-        },
-      },
-      sceneOverrides: { stz_9lmfon0: {} },
-    },
-  },
-  {
-    id: 'tpl-oficial-bebas-neue-1-linha-2-palavras-mse6ucll',
-    name: 'Bebas Neue · 1 linha - 2 Palavras',
-    description: 'Composição moderno para 1 linha.',
-    tags: ['1 linha', 'Moderno', 'Pro Plus'],
-    isOfficial: true,
-    isPremium: true,
-    requiredPlan: 'pro_plus',
-    isActive: true,
-    accent: '#8b5cf6',
-    config: {
-      style: {},
-      animConfig: {},
-      aspect: '16:9',
-      parsed: {
-        stanzas: [
-          {
-            id: 'stz_2sm2nrk',
-            label: 'Estrofe 2',
-            lines: [
-              {
-                id: 'ln_nwk3p0s',
-                words: [
-                  {
-                    id: 'w_7eq0guv',
-                    text: 'SEU',
-                    chars: [
-                      { id: 'ch_9vfueef', text: 'P' },
-                      { id: 'ch_4mhqvib', text: 'O' },
-                      { id: 'ch_mzq9cwg', text: 'R' },
-                    ],
-                    tStart: 178.056857,
-                    emphasized: false,
-                  },
-                  {
-                    id: 'w_smee4h7',
-                    text: 'TEXTO',
-                    chars: [
-                      { id: 'ch_cug1xfe', text: 'E' },
-                      { id: 'ch_4lulvwf', text: 'L' },
-                      { id: 'ch_q03zwp7', text: 'E' },
-                    ],
-                    tStart: 178.056857,
-                    emphasized: false,
-                  },
-                ],
-              },
-            ],
-          },
-        ],
-      },
-      wordOverrides: {
-        w_7eq0guv: {
-          style: { fontFamily: 'Bebas Neue', fontWeight: 700, fontSizeScale: 5.4073349098496 },
-          position: { x: 0.31934636078140677, y: 0.500899414863767 },
-        },
-        w_smee4h7: {
-          style: { fontFamily: 'Bebas Neue', fontWeight: 700, fontSizeScale: 5.4073349098496 },
-          position: { x: 0.6945867604069711, y: 0.500899414863767 },
-        },
-      },
-      sceneOverrides: {
-        stz_2sm2nrk: {
-          style: { fontSize: 55 },
-          entrance: 'film-fade',
-        },
-      },
-    },
-  },
-  {
-    id: 'tpl-oficial-antara-2-linhas-msfhgver',
-    name: 'Antara - 2 Linhas',
-    description: 'Composição moderno para 2 linhas.',
-    tags: ['2 linhas', 'Moderno', 'Pro Plus'],
-    isOfficial: true,
-    isPremium: true,
-    requiredPlan: 'pro_plus',
-    isActive: true,
-    accent: '#8b5cf6',
-    config: {
-      style: {},
-      animConfig: {},
-      aspect: '16:9',
-      parsed: {
-        stanzas: [
-          {
-            id: 'stz_2ym3mza',
-            label: 'Estrofe 1',
-            lines: [
-              {
-                id: 'ln_25ggelp',
-                words: [
-                  {
-                    id: 'w_7g3reqg',
-                    text: 'PRIMEIRA',
-                    chars: [
-                      { id: 'ch_2bmh6ys', text: 'Q' },
-                      { id: 'ch_02xzhps', text: 'u' },
-                      { id: 'ch_5tho5is', text: 'e' },
-                      { id: 'ch_z6vhuqa', text: 'm' },
-                    ],
-                    tStart: 23.400889,
-                    emphasized: false,
-                  },
-                  {
-                    id: 'w_xhr5i3x',
-                    text: 'LINHA',
-                    chars: [
-                      { id: 'ch_ml6trb5', text: 'f' },
-                      { id: 'ch_ursf8sg', text: 'o' },
-                      { id: 'ch_k5tuyaf', text: 'i' },
-                    ],
-                    tStart: 23.400889,
-                    emphasized: false,
-                  },
-                  {
-                    id: 'w_i70pmqp',
-                    text: 'LINHA',
-                    chars: [
-                      { id: 'ch_b9gh290', text: 'm' },
-                      { id: 'ch_jmr65h1', text: 'u' },
-                      { id: 'ch_7hdxmn7', text: 'i' },
-                      { id: 'ch_2aujvhx', text: 't' },
-                      { id: 'ch_ouwkus9', text: 'o' },
-                    ],
-                    tStart: 23.400889,
-                    emphasized: false,
-                  },
-                ],
-              },
-              {
-                id: 'ln_0pzl54z',
-                words: [
-                  {
-                    id: 'w_e018161',
-                    text: 'SEGUNDA',
-                    chars: [
-                      { id: 'ch_g37zaa6', text: 'p' },
-                      { id: 'ch_b4kp1yi', text: 'e' },
-                      { id: 'ch_zynojur', text: 'r' },
-                      { id: 'ch_316pkib', text: 'd' },
-                      { id: 'ch_eh2xndq', text: 'o' },
-                      { id: 'ch_q19zg0c', text: 'a' },
-                      { id: 'ch_xdjmpat', text: 'd' },
-                      { id: 'ch_787xc3j', text: 'o' },
-                    ],
-                    tStart: 24.426033,
-                    emphasized: false,
-                  },
-                ],
-              },
-            ],
-          },
-        ],
-      },
-      wordOverrides: {
-        w_7g3reqg: {
-          style: { fontSizeScale: 1.302 },
-          position: { x: 0.2550271986721696, y: 0.27656693611196226 },
-        },
-        w_xhr5i3x: {
-          style: { scaleY: 1.0971822305517744, fontSizeScale: 1.302 },
-          position: { x: 0.5, y: 0.28297527722275595 },
-          rotation: 0.24163158797132667,
-        },
-        w_i70pmqp: {
-          style: { fontSizeScale: 1.302 },
-          position: { x: 0.7559627372541418, y: 0.2797972201331438 },
-        },
-        w_e018161: {
-          style: { fontFamily: 'Antara Rough', fontSizeScale: 3.6456, textTransform: 'lowercase' },
-          entrance: 'glory-flash',
-          position: { x: 0.49999999999999994, y: 0.5889082800077563 },
-        },
-      },
-      sceneOverrides: {
-        stz_2ym3mza: {
-          style: { fontSize: 69 },
-        },
-      },
-    },
-  },
-  {
-    id: 'tpl-oficial-montserrat-2-linhas-msfhp361',
-    name: 'Montserrat - 2 Linhas',
-    description: 'Composição moderno para 2 linhas.',
-    tags: ['2 linhas', 'Moderno', 'Pro Plus'],
-    isOfficial: true,
-    isPremium: true,
-    requiredPlan: 'pro_plus',
-    isActive: true,
-    accent: '#8b5cf6',
-    config: {
-      style: {},
-      animConfig: {},
-      aspect: '16:9',
-      parsed: {
-        stanzas: [
-          {
-            id: 'stz_8etbg46',
-            label: 'Estrofe 2',
-            lines: [
-              {
-                id: 'ln_ybk3ebk',
-                words: [
-                  {
-                    id: 'w_92a2y16',
-                    text: 'PRIMEIRA',
-                    chars: [
-                      { id: 'ch_xz4rbvk', text: 'D' },
-                      { id: 'ch_rh4eq4j', text: 'e' },
-                      { id: 'ch_3gwusz7', text: 'v' },
-                      { id: 'ch_ucs74m7', text: 'e' },
-                      { id: 'ch_uq0pbih', text: 'r' },
-                      { id: 'ch_o430j3t', text: 'i' },
-                      { id: 'ch_xqa2ja8', text: 'a' },
-                    ],
-                    tStart: 27.122405,
-                    emphasized: false,
-                  },
-                  {
-                    id: 'w_k5twj8y',
-                    text: 'LINHA',
-                    chars: [
-                      { id: 'ch_v7de3bu', text: 's' },
-                      { id: 'ch_jx06g89', text: 'a' },
-                      { id: 'ch_wsnai3r', text: 'b' },
-                      { id: 'ch_5l3kjwo', text: 'e' },
-                      { id: 'ch_pi2sfme', text: 'r' },
-                    ],
-                    tStart: 27.122405,
-                    emphasized: false,
-                  },
-                  {
-                    id: 'w_swfr6k0',
-                    text: 'LINHA',
-                    chars: [
-                      { id: 'ch_76zxema', text: 'o' },
-                    ],
-                    tStart: 27.122405,
-                    emphasized: false,
-                  },
-                ],
-              },
-              {
-                id: 'ln_96ktnmc',
-                words: [
-                  {
-                    id: 'w_proyx71',
-                    text: 'SEGUNDA',
-                    chars: [
-                      { id: 'ch_xbq9ux3', text: 'v' },
-                      { id: 'ch_qh77ywf', text: 'a' },
-                      { id: 'ch_w97va67', text: 'l' },
-                      { id: 'ch_wdn7tuu', text: 'o' },
-                      { id: 'ch_i4z6tob', text: 'r' },
-                    ],
-                    tStart: 29.384139,
-                    emphasized: false,
-                  },
-                  {
-                    id: 'w_vpp9hjx',
-                    text: 'LINHA',
-                    chars: [
-                      { id: 'ch_gyh0k9r', text: 'd' },
-                      { id: 'ch_763lke7', text: 'e' },
-                    ],
-                    tStart: 29.384139,
-                    emphasized: false,
-                  },
-                  {
-                    id: 'w_jytwl96',
-                    text: 'LINHA',
-                    chars: [
-                      { id: 'ch_7u0nyem', text: 's' },
-                      { id: 'ch_qegpi2o', text: 'e' },
-                      { id: 'ch_dlu1b8y', text: 'r' },
-                    ],
-                    tStart: 29.384139,
-                    emphasized: false,
-                  },
-                  {
-                    id: 'w_nvuvpoj',
-                    text: 'LINHA',
-                    chars: [
-                      { id: 'ch_mdbns4s', text: 'a' },
-                      { id: 'ch_a6txbgx', text: 'm' },
-                      { id: 'ch_rfkmyl8', text: 'a' },
-                      { id: 'ch_w5e05yr', text: 'd' },
-                      { id: 'ch_59rjfmj', text: 'o' },
-                    ],
-                    tStart: 29.384139,
-                    emphasized: false,
-                  },
-                ],
-              },
-            ],
-          },
-        ],
-      },
-      wordOverrides: {
-        w_92a2y16: {
-          position: { x: 0.3066303471773669, y: 0.4095082158966553 },
-        },
-        w_k5twj8y: {
-          position: { x: 0.6410539088949021, y: 0.4095082158966553 },
-        },
-        w_swfr6k0: {
-          position: { x: 0.8289927605467932, y: 0.4095082158966553 },
-        },
-        w_proyx71: {
-          style: { fontStyle: 'italic', fontWeight: 700 },
-          entrance: 'gold-reveal',
-          position: { x: 0.1677037669282878, y: 0.5910371176988782 },
-        },
-        w_vpp9hjx: {
-          style: { fontStyle: 'italic', fontWeight: 700 },
-          entrance: 'gold-reveal',
-          position: { x: 0.3904133339568311, y: 0.5910371176988782 },
-        },
-        w_jytwl96: {
-          style: { fontStyle: 'italic', fontWeight: 700 },
-          entrance: 'gold-reveal',
-          position: { x: 0.5490390656323523, y: 0.5910371176988782 },
-        },
-        w_nvuvpoj: {
-          style: { fontStyle: 'italic', fontWeight: 700 },
-          entrance: 'gold-reveal',
-          position: { x: 0.8131349674533228, y: 0.5910371176988782 },
-        },
-      },
-      sceneOverrides: {
-        stz_8etbg46: {
-          style: { fontSize: 82 },
-        },
-      },
-    },
-  },
-  {
-    id: 'tpl-oficial-montserrat-2-linha-bold-superior-msfips32',
-    name: 'Montserrat - 2 Linha Bold Superior',
-    description: 'Composição moderno para 2 linhas.',
-    tags: ['2 linhas', 'Moderno', 'Pro Plus'],
-    isOfficial: true,
-    isPremium: true,
-    requiredPlan: 'pro_plus',
-    isActive: true,
-    accent: '#8b5cf6',
-    config: {
-      style: {},
-      animConfig: {},
-      aspect: '16:9',
-      parsed: {
-        stanzas: [
-          {
-            id: 'stz_hx4f2um',
-            label: 'Estrofe 6',
-            lines: [
-              {
-                id: 'ln_b7ztd43',
-                words: [
-                  {
-                    id: 'w_bat6012',
-                    text: 'PRIMEIRA',
-                    chars: [
-                      { id: 'ch_vut31s9', text: 'E' },
-                    ],
-                    tStart: 39.88575,
-                    emphasized: false,
-                  },
-                  {
-                    id: 'w_hahhto1',
-                    text: 'LINHA',
-                    chars: [
-                      { id: 'ch_scorzla', text: 'd' },
-                      { id: 'ch_4i89gp0', text: 'e' },
-                      { id: 'ch_hlifgk2', text: 'p' },
-                      { id: 'ch_q7fbddi', text: 'e' },
-                      { id: 'ch_jo045po', text: 'n' },
-                      { id: 'ch_zrhfz5p', text: 'd' },
-                      { id: 'ch_7569jx7', text: 'e' },
-                      { id: 'ch_kr5zejw', text: 'n' },
-                      { id: 'ch_z1q4yml', text: 'd' },
-                      { id: 'ch_5bsryt6', text: 'o' },
-                    ],
-                    tStart: 39.88575,
-                    emphasized: false,
-                  },
-                ],
-              },
-              {
-                id: 'ln_wwgj6fo',
-                words: [
-                  {
-                    id: 'w_gui8pyq',
-                    text: 'SEGUNDA',
-                    chars: [
-                      { id: 'ch_d33nv1h', text: 'd' },
-                      { id: 'ch_3ff3xm4', text: 'o' },
-                    ],
-                    tStart: 41.081566,
-                    emphasized: false,
-                  },
-                  {
-                    id: 'w_prq68iq',
-                    text: 'LINHA',
-                    chars: [
-                      { id: 'ch_o5tz53z', text: 'p' },
-                      { id: 'ch_223jxnx', text: 'e' },
-                      { id: 'ch_zjjgbjy', text: 'c' },
-                      { id: 'ch_ujwfrh3', text: 'a' },
-                      { id: 'ch_9k7d9aa', text: 'd' },
-                      { id: 'ch_cp0xk3j', text: 'o' },
-                    ],
-                    tStart: 41.081566,
-                    emphasized: false,
-                  },
-                ],
-              },
-            ],
-          },
-        ],
-      },
-      wordOverrides: {
-        w_bat6012: {
-          style: { fontStyle: 'italic', fontWeight: 700 },
-          entrance: 'heart-pulse',
-          position: { x: 0.2666430821155905, y: 0.4291324005043334 },
-        },
-        w_hahhto1: {
-          style: { fontStyle: 'italic', fontWeight: 700 },
-          entrance: 'heart-pulse',
-          position: { x: 0.5361969639246481, y: 0.4291324005043334 },
-        },
-        w_gui8pyq: {
-          position: { x: 0.36001916858572997, y: 0.5708134945938732 },
-        },
-        w_prq68iq: {
-          position: { x: 0.5613527828198752, y: 0.5708134945938732 },
-        },
-      },
-      sceneOverrides: {},
-    },
-  },
-  {
-    id: 'tpl-oficial-antara-3-linhas-msfis7z2',
-    name: 'Antara - 3 Linhas',
-    description: 'Composição moderno para 3 linhas.',
-    tags: ['3 linhas', 'Moderno', 'Pro Plus'],
-    isOfficial: true,
-    isPremium: true,
-    requiredPlan: 'pro_plus',
-    isActive: true,
-    accent: '#8b5cf6',
-    config: {
-      style: {},
-      animConfig: {},
-      aspect: '16:9',
-      parsed: {
-        stanzas: [
-          {
-            id: 'stz_wtmempg',
-            label: 'Estrofe 12',
-            lines: [
-              {
-                id: 'ln_k0ekrgh',
-                words: [
-                  {
-                    id: 'w_ltyaxyw',
-                    text: 'PRIMEIRA',
-                    chars: [
-                      { id: 'ch_h5we2t6', text: 'S' },
-                      { id: 'ch_njj0t5p', text: 'e' },
-                    ],
-                    tStart: 62.020027,
-                    emphasized: false,
-                  },
-                  {
-                    id: 'w_qsy017a',
-                    text: 'LINHA',
-                    chars: [
-                      { id: 'ch_8tgkgu6', text: 'd' },
-                      { id: 'ch_3r72pmw', text: 'e' },
-                    ],
-                    tStart: 62.020027,
-                    emphasized: false,
-                  },
-                  {
-                    id: 'w_xg2kpwr',
-                    text: 'LINHA',
-                    chars: [
-                      { id: 'ch_85vjp62', text: 'T' },
-                      { id: 'ch_b4wwtc4', text: 'i' },
-                    ],
-                    tStart: 62.020027,
-                    emphasized: false,
-                  },
-                ],
-              },
-              {
-                id: 'ln_gh8vy10',
-                words: [
-                  {
-                    id: 'w_7ud5z5j',
-                    text: 'SEGUNDA',
-                    chars: [
-                      { id: 'ch_5raa9wj', text: 'e' },
-                      { id: 'ch_89rkaqn', text: 'u' },
-                    ],
-                    tStart: 62.968174,
-                    emphasized: false,
-                  },
-                  {
-                    id: 'w_ueas7kr',
-                    text: 'LINHA',
-                    chars: [
-                      { id: 'ch_9anj8bj', text: 'r' },
-                      { id: 'ch_c02t8xl', text: 'e' },
-                      { id: 'ch_9lykpo1', text: 'c' },
-                      { id: 'ch_9sdii0w', text: 'e' },
-                      { id: 'ch_271t5as', text: 'b' },
-                      { id: 'ch_x8bnlsk', text: 'i' },
-                    ],
-                    tStart: 62.968174,
-                    emphasized: false,
-                  },
-                ],
-              },
-              {
-                id: 'ln_xkngp2r',
-                words: [
-                  {
-                    id: 'w_lqaz9zv',
-                    text: 'TERCEIRA',
-                    chars: [
-                      { id: 'ch_tww0ryg', text: 'p' },
-                      { id: 'ch_1be424t', text: 'e' },
-                      { id: 'ch_zkyc2di', text: 'r' },
-                      { id: 'ch_4mxp6b0', text: 'd' },
-                      { id: 'ch_ucj26r8', text: 'ã' },
-                      { id: 'ch_ez2fioz', text: 'o' },
-                    ],
-                    tStart: 64.085234,
-                    emphasized: false,
-                  },
-                ],
-              },
-            ],
-          },
-        ],
-      },
-      wordOverrides: {
-        w_ltyaxyw: {
-          position: { x: 0.4098537977531405, y: 0.2905396799283913 },
-        },
-        w_qsy017a: {
-          position: { x: 0.509410636631751, y: 0.2905396799283913 },
-        },
-        w_xg2kpwr: {
-          position: { x: 0.5976044250220561, y: 0.2905396799283913 },
-        },
-        w_7ud5z5j: {
-          style: { fontStyle: 'italic', fontWeight: 700 },
-          entrance: 'whisper-elegant',
-          position: { x: 0.37485062365415645, y: 0.4322207740179312 },
-        },
-        w_ueas7kr: {
-          style: { fontStyle: 'italic', fontWeight: 700 },
-          entrance: 'whisper-elegant',
-          position: { x: 0.554358883468875, y: 0.4322207740179312 },
-        },
-        w_lqaz9zv: {
-          style: { fontFamily: 'Antara Rough', fontSizeScale: 2.7, textTransform: 'lowercase' },
-          entrance: 'gala-arrival',
-          position: { x: 0.4980616648815739, y: 0.6085639788224134 },
-        },
-      },
-      sceneOverrides: {},
-    },
-  },
-  {
-    id: 'tpl-oficial-antara-2-linhas-superior-msfitjtw',
-    name: 'Antara - 2 Linhas (Superior)',
-    description: 'Composição moderno para 2 linhas.',
-    tags: ['2 linhas', 'Moderno', 'Pro Plus'],
-    isOfficial: true,
-    isPremium: true,
-    requiredPlan: 'pro_plus',
-    isActive: true,
-    accent: '#8b5cf6',
-    config: {
-      style: {},
-      animConfig: {},
-      aspect: '16:9',
-      parsed: {
-        stanzas: [
-          {
-            id: 'stz_d5inf6c',
-            label: 'Estrofe 16',
-            lines: [
-              {
-                id: 'ln_lwjacza',
-                words: [
-                  {
-                    id: 'w_44ozn1u',
-                    text: 'PRIMEIRA',
-                    chars: [
-                      { id: 'ch_21dz8bx', text: 'A' },
-                      { id: 'ch_z7mepmk', text: 't' },
-                      { id: 'ch_4rdft1r', text: 'é' },
-                    ],
-                    tStart: 76.980199,
-                    emphasized: false,
-                  },
-                  {
-                    id: 'w_p44x9ti',
-                    text: 'LINHA',
-                    chars: [
-                      { id: 'ch_p4xynir', text: 'a' },
-                      { id: 'ch_01zaoxf', text: 'm' },
-                      { id: 'ch_xz1w96t', text: 'e' },
-                      { id: 'ch_29hewqx', text: 'i' },
-                    ],
-                    tStart: 76.980199,
-                    emphasized: false,
-                  },
-                ],
-              },
-              {
-                id: 'ln_jalmjkm',
-                words: [
-                  {
-                    id: 'w_k8dsceg',
-                    text: 'SEGUNDA',
-                    chars: [
-                      { id: 'ch_c908ttp', text: 'o' },
-                      { id: 'ch_xfmdvzt', text: 's' },
-                    ],
-                    tStart: 78.368852,
-                    emphasized: false,
-                  },
-                  {
-                    id: 'w_6jyee0g',
-                    text: 'LINHA',
-                    chars: [
-                      { id: 'ch_13k6k1f', text: 'm' },
-                      { id: 'ch_8hdxjdu', text: 'e' },
-                      { id: 'ch_ygzh5a1', text: 'u' },
-                      { id: 'ch_yc0tlv3', text: 's' },
-                    ],
-                    tStart: 78.368852,
-                    emphasized: false,
-                  },
-                  {
-                    id: 'w_3g1s6bf',
-                    text: 'LINHA',
-                    chars: [
-                      { id: 'ch_az30z3r', text: 'a' },
-                      { id: 'ch_kdror12', text: 'm' },
-                      { id: 'ch_nlhkioo', text: 'i' },
-                      { id: 'ch_vmbmr50', text: 'g' },
-                      { id: 'ch_7ryc8u4', text: 'o' },
-                      { id: 'ch_ngg2dat', text: 's' },
-                    ],
-                    tStart: 78.368852,
-                    emphasized: false,
-                  },
-                ],
-              },
-            ],
-          },
-        ],
-      },
-      wordOverrides: {
-        w_44ozn1u: {
-          style: { fontFamily: 'Antara Rough', fontSizeScale: 2.9, textTransform: 'lowercase' },
-          entrance: 'fade-down-elegant',
-          position: { x: 0.3547791533013893, y: 0.4731043894841411 },
-        },
-        w_p44x9ti: {
-          style: { fontFamily: 'Antara Rough', fontSizeScale: 2.9, textTransform: 'lowercase' },
-          entrance: 'fade-down-elegant',
-          position: { x: 0.6004299276707552, y: 0.4605835216895723 },
-        },
-        w_k8dsceg: {
-          position: { x: 0.26725025116664125, y: 0.6146945488646087 },
-        },
-        w_6jyee0g: {
-          position: { x: 0.4189956194149257, y: 0.6146945488646087 },
-        },
-        w_3g1s6bf: {
-          position: { x: 0.6545929498561135, y: 0.6146945488646087 },
-        },
-      },
-      sceneOverrides: {},
-    },
-  },
-  {
-    id: 'tpl-oficial-antara-1-linha-msfiv1u4',
-    name: 'Antara - 1 Linha',
-    description: 'Composição moderno para 1 linha.',
-    tags: ['1 linha', 'Moderno', 'Pro Plus'],
-    isOfficial: true,
-    isPremium: true,
-    requiredPlan: 'pro_plus',
-    isActive: true,
-    accent: '#8b5cf6',
-    config: {
-      style: {},
-      animConfig: {},
-      aspect: '16:9',
-      parsed: {
-        stanzas: [
-          {
-            id: 'stz_9vrpgyl',
-            label: 'Estrofe 26',
-            lines: [
-              {
-                id: 'ln_t5ni3ft',
-                words: [
-                  {
-                    id: 'w_p010i4w',
-                    text: 'SEU',
-                    chars: [
-                      { id: 'ch_392kr1u', text: 'A' },
-                      { id: 'ch_u5oqw68', text: 'h' },
-                      { id: 'ch_vcdhz03', text: ',' },
-                    ],
-                    tStart: 113.470591,
-                    emphasized: false,
-                  },
-                  {
-                    id: 'w_4nqc0rh',
-                    text: 'TEXTO',
-                    chars: [
-                      { id: 'ch_sygauqd', text: 'J' },
-                      { id: 'ch_omrdoft', text: 'e' },
-                      { id: 'ch_9jlh08f', text: 's' },
-                      { id: 'ch_p9rq4dj', text: 'u' },
-                      { id: 'ch_93k7mdc', text: 's' },
-                    ],
-                    tStart: 113.470591,
-                    emphasized: false,
-                  },
-                ],
-              },
-            ],
-          },
-        ],
-      },
-      wordOverrides: {
-        w_p010i4w: {
-          style: { fontFamily: 'Antara Rough', fontSizeScale: 3.2, textTransform: 'capitalize' },
-          entrance: 'typewriter-blur-strong',
-          position: { x: 0.2611356915193008, y: 0.5028529900158247 },
-        },
-        w_4nqc0rh: {
-          style: { fontFamily: 'Antara Rough', fontSizeScale: 3.2, textTransform: 'capitalize' },
-          entrance: 'typewriter-blur-strong',
-          position: { x: 0.7044921723446065, y: 0.4929291867741576 },
-        },
-      },
-      sceneOverrides: {
-        stz_9vrpgyl: {
-          style: { fontSize: 94 },
-        },
-      },
-    },
-  },
-  {
-    id: 'tpl-oficial-back-to-demo-2-linhas-inferior-msfj66sx',
-    name: 'Back to Demo - 2 Linhas (Inferior)',
-    description: 'Composição moderno para 2 linhas.',
-    tags: ['2 linhas', 'Moderno', 'Pro Plus'],
-    isOfficial: true,
-    isPremium: true,
-    requiredPlan: 'pro_plus',
-    isActive: true,
-    accent: '#8b5cf6',
-    config: {
-      style: {},
-      animConfig: {},
-      aspect: '16:9',
-      parsed: {
-        stanzas: [
-          {
-            id: 'stz_1wb7ciz',
-            label: 'Estrofe 3',
-            lines: [
-              {
-                id: 'ln_mj3ws7i',
-                words: [
-                  {
-                    id: 'w_4sm2xxw',
-                    text: 'PRIMEIRA',
-                    chars: [{ id: 'ch_ohgz5e9', text: 'e' }],
-                    tStart: 92.709141,
-                    emphasized: false,
-                  },
-                  {
-                    id: 'w_jkiq7bq',
-                    text: 'LINHA',
-                    chars: [
-                      { id: 'ch_s5djp6r', text: 'n' },
-                      { id: 'ch_xwuju9b', text: 'ã' },
-                      { id: 'ch_266k083', text: 'o' },
-                    ],
-                    tStart: 93.000775,
-                    emphasized: false,
-                  },
-                  {
-                    id: 'w_ng1ffk4',
-                    text: 'LINHA',
-                    chars: [
-                      { id: 'ch_3vh6p5z', text: 'm' },
-                      { id: 'ch_vci6jc4', text: 'e' },
-                    ],
-                    tStart: 93.581473,
-                    emphasized: false,
-                  },
-                ],
-              },
-              {
-                id: 'ln_iolyu5z',
-                words: [
-                  {
-                    id: 'w_8so2xbe',
-                    text: 'SEGUNDA',
-                    chars: [
-                      { id: 'ch_ciquhif', text: 'c' },
-                      { id: 'ch_9v5qyfo', text: 'o' },
-                      { id: 'ch_w9a5p0s', text: 'n' },
-                      { id: 'ch_shjwpyo', text: 'd' },
-                      { id: 'ch_sdrawmw', text: 'e' },
-                      { id: 'ch_9faaavj', text: 'n' },
-                      { id: 'ch_l06povu', text: 'o' },
-                      { id: 'ch_laf37xi', text: 'u' },
-                    ],
-                    tStart: 94.001416,
-                    emphasized: false,
-                  },
-                ],
-              },
-            ],
-          },
-        ],
-      },
-      wordOverrides: {
-        w_4sm2xxw: {
-          style: { glow: 0, shadowBlur: 30, fontSizeScale: 1.362 },
-          position: { x: 0.32158968871714366, y: 0.32152557309686325 },
-        },
-        w_jkiq7bq: {
-          style: { glow: 0, shadowBlur: 30, fontSizeScale: 1.362 },
-          position: { x: 0.46179891010974056, y: 0.32152557309686325 },
-        },
-        w_ng1ffk4: {
-          style: { glow: 0, shadowBlur: 30, fontSizeScale: 1.362 },
-          position: { x: 0.6402093339330519, y: 0.32152557309686325 },
-        },
-        w_8so2xbe: {
-          style: {
-            glow: 0,
-            fontFamily: 'Back to Demo',
-            shadowBlur: 30,
-            fontSizeScale: 3.1416352573575055,
-            textTransform: 'capitalize',
-          },
-          position: { x: 0.5, y: 0.5670957204659542 },
-        },
-      },
-      sceneOverrides: {},
-    },
-  },
-  {
-    id: 'tpl-oficial-actively-2-linhas-inferior-msfj79lv',
-    name: 'Actively - 2 Linhas (Inferior)',
-    description: 'Composição moderno para 2 linhas.',
-    tags: ['2 linhas', 'Moderno', 'Pro Plus'],
-    isOfficial: true,
-    isPremium: true,
-    requiredPlan: 'pro_plus',
-    isActive: true,
-    accent: '#8b5cf6',
-    config: {
-      style: {},
-      animConfig: {},
-      aspect: '16:9',
-      parsed: {
-        stanzas: [
-          {
-            id: 'stz_vw9su9e',
-            label: 'Estrofe 1',
-            lines: [
-              {
-                id: 'ln_abicu00',
-                words: [
-                  {
-                    id: 'w_hwf2vcm',
-                    text: 'PRIMEIRA',
-                    chars: [
-                      { id: 'ch_hc53d5k', text: 'Q' },
-                      { id: 'ch_ruv073x', text: 'u' },
-                      { id: 'ch_k5y2o7x', text: 'e' },
-                      { id: 'ch_8hg4lfx', text: 'm' },
-                    ],
-                    tStart: 86.172163,
-                    emphasized: false,
-                  },
-                  {
-                    id: 'w_oid54cz',
-                    text: 'LINHA',
-                    chars: [{ id: 'ch_n50evwt', text: 'é' }],
-                    tStart: 86.589176,
-                    emphasized: false,
-                  },
-                ],
-              },
-              {
-                id: 'ln_045a01r',
-                words: [
-                  {
-                    id: 'w_gigo9q3',
-                    text: 'SEGUNDA',
-                    chars: [
-                      { id: 'ch_ba8i9wa', text: 'e' },
-                      { id: 'ch_ykea9c3', text: 's' },
-                      { id: 'ch_cp2yze5', text: 's' },
-                      { id: 'ch_yg1d0ou', text: 'e' },
-                      { id: 'ch_c87q1u0', text: '?' },
-                    ],
-                    tStart: 87.118859,
-                    emphasized: false,
-                  },
-                ],
-              },
-            ],
-          },
-        ],
-      },
-      wordOverrides: {
-        w_hwf2vcm: {
-          style: { outline: 0, shadowBlur: 30, fontSizeScale: 1.384 },
-          position: { x: 0.537090642792498, y: 0.24807106146386954 },
-        },
-        w_oid54cz: {
-          style: { outline: 0, shadowBlur: 30, fontSizeScale: 1.384 },
-          position: { x: 0.7177830424685403, y: 0.24807106146386954 },
-        },
-        w_gigo9q3: {
-          style: {
-            glow: 0,
-            outline: 0,
-            fontFamily: 'Actively',
-            shadowBlur: 30,
-            fontSizeScale: 6.635812047844779,
-            textTransform: 'capitalize',
-          },
-          position: { x: 0.5, y: 0.5012227258298664 },
-        },
-      },
-      sceneOverrides: {
-        stz_vw9su9e: {},
-      },
-    },
-  },
-  {
-    id: 'tpl-oficial-back-to-demo-2-linhas-superior-msh258v7',
-    name: 'Back to Demo - 2 Linhas (superior)',
-    description: 'Composição moderno para 2 linhas.',
-    tags: ['2 linhas', 'Moderno', 'Pro Plus'],
-    isOfficial: true,
-    isPremium: true,
-    requiredPlan: 'pro_plus',
-    isActive: true,
-    accent: '#8b5cf6',
-    config: {
-      style: {},
-      animConfig: {},
-      aspect: '16:9',
-      parsed: {
-        stanzas: [
-          {
-            id: 'stz_awt9e9q',
-            label: 'Estrofe 5',
-            lines: [
-              {
-                id: 'ln_0yu31dc',
-                words: [
-                  {
-                    id: 'w_yd0lkc7',
-                    text: 'PRIMEIRA',
-                    chars: [
-                      { id: 'ch_oyi8bz1', text: 'v' },
-                      { id: 'ch_814j5ov', text: 'i' },
-                      { id: 'ch_4bqv5oz', text: 'd' },
-                      { id: 'ch_kdbr75m', text: 'a' },
-                    ],
-                    tStart: 100.506485,
-                    emphasized: false,
-                  },
-                ],
-              },
-              {
-                id: 'ln_4ls2nx3',
-                words: [
-                  {
-                    id: 'w_udcogmk',
-                    text: 'SEGUNDA',
-                    chars: [
-                      { id: 'ch_zh1hzyv', text: 'm' },
-                      { id: 'ch_d8ju1mn', text: 'e' },
-                    ],
-                    tStart: 101.423225,
-                    emphasized: false,
-                  },
-                  {
-                    id: 'w_nlmv36b',
-                    text: 'LINHA',
-                    chars: [
-                      { id: 'ch_r3h4ugg', text: 'o' },
-                      { id: 'ch_il0ieom', text: 'f' },
-                      { id: 'ch_wqkgah1', text: 'e' },
-                      { id: 'ch_4mjflqc', text: 'r' },
-                      { id: 'ch_qupxxzv', text: 't' },
-                      { id: 'ch_9rinfzc', text: 'o' },
-                      { id: 'ch_ty3w2cx', text: 'u' },
-                    ],
-                    tStart: 102.335762,
-                    emphasized: false,
-                  },
-                ],
-              },
-            ],
-          },
-        ],
-      },
-      wordOverrides: {
-        w_yd0lkc7: {
-          style: {
-            glow: 0,
-            fontFamily: 'Back to Demo',
-            shadowBlur: 30,
-            fontSizeScale: 3.633105905878482,
-            textTransform: 'capitalize',
-          },
-          position: { x: 0.5, y: 0.4221472659600204 },
-        },
-        w_udcogmk: {
-          style: { glow: 0, shadowBlur: 30, fontSizeScale: 1.3820000000000001 },
-          position: { x: 0.28631002674987327, y: 0.7149906787072586 },
-        },
-        w_nlmv36b: {
-          style: { glow: 0, shadowBlur: 30, fontSizeScale: 1.3820000000000001 },
-          position: { x: 0.5755283514783966, y: 0.7149906787072586 },
-        },
-      },
-      sceneOverrides: {},
-    },
-  },
-  {
-    id: 'tpl-oficial-actively-2-linhas-superior-msh27vcc',
-    name: 'Actively - 2 Linhas (superior)',
-    description: 'Composição moderno para 2 linhas.',
-    tags: ['2 linhas', 'Moderno', 'Pro Plus'],
-    isOfficial: true,
-    isPremium: true,
-    requiredPlan: 'pro_plus',
-    isActive: true,
-    accent: '#8b5cf6',
-    config: {
-      style: {},
-      animConfig: {},
-      aspect: '16:9',
-      parsed: {
-        stanzas: [
-          {
-            id: 'stz_pa489xq',
-            label: 'Estrofe 6',
-            lines: [
-              {
-                id: 'ln_4s7ibm9',
-                words: [
-                  {
-                    id: 'w_8nyekex',
-                    text: 'PRIMEIRA',
-                    chars: [
-                      { id: 'ch_jaext0g', text: 'O' },
-                    ],
-                    tStart: 105.855134,
-                    emphasized: false,
-                  },
-                  {
-                    id: 'w_tvhv2pc',
-                    text: 'LINHA',
-                    chars: [
-                      { id: 'ch_i5p6lmn', text: 'C' },
-                      { id: 'ch_epg8zz6', text: 'o' },
-                      { id: 'ch_r5uqlvf', text: 'r' },
-                      { id: 'ch_fcw1dim', text: 'd' },
-                      { id: 'ch_fch4ntr', text: 'e' },
-                      { id: 'ch_07gxyqz', text: 'i' },
-                      { id: 'ch_4tnv2qd', text: 'r' },
-                      { id: 'ch_x057krg', text: 'o' },
-                    ],
-                    tStart: 106.270356,
-                    emphasized: false,
-                  },
-                ],
-              },
-              {
-                id: 'ln_a6yvibz',
-                words: [
-                  {
-                    id: 'w_4yh6eim',
-                    text: 'SEGUNDA',
-                    chars: [
-                      { id: 'ch_n33338h', text: 'q' },
-                      { id: 'ch_i3pvltx', text: 'u' },
-                      { id: 'ch_io0g1nt', text: 'e' },
-                    ],
-                    tStart: 107.335477,
-                    emphasized: false,
-                  },
-                  {
-                    id: 'w_xyfxe5v',
-                    text: 'LINHA',
-                    chars: [
-                      { id: 'ch_vu0oyiq', text: 'p' },
-                      { id: 'ch_eooh0l4', text: 'o' },
-                      { id: 'ch_igm6yex', text: 'r' },
-                    ],
-                    tStart: 107.94322,
-                    emphasized: false,
-                  },
-                  {
-                    id: 'w_2mcj8g2',
-                    text: 'LINHA',
-                    chars: [
-                      { id: 'ch_3eje6w9', text: 'm' },
-                      { id: 'ch_9haakpr', text: 'i' },
-                      { id: 'ch_svzlzfr', text: 'm' },
-                    ],
-                    tStart: 108.597599,
-                    emphasized: false,
-                  },
-                ],
-              },
-            ],
-          },
-        ],
-      },
-      wordOverrides: {
-        w_8nyekex: {
-          style: { glow: 0, fontFamily: 'Actively', shadowBlur: 30, fontSizeScale: 3.3268479999999996 },
-          position: { x: 0.23923260428211976, y: 0.4093607012146656 },
-        },
-        w_tvhv2pc: {
-          style: {
-            glow: 0,
-            fontFamily: 'Actively',
-            shadowBlur: 30,
-            fontSizeScale: 3.3268479999999996,
-            textTransform: 'capitalize',
-          },
-          position: { x: 0.6032043682629586, y: 0.4093607012146656 },
-        },
-        w_4yh6eim: {
-          style: { glow: 0, shadowBlur: 30, fontSizeScale: 1.504 },
-          position: { x: 0.27981917878850693, y: 0.6567725632549026 },
-        },
-        w_xyfxe5v: {
-          style: { glow: 0, shadowBlur: 30, fontSizeScale: 1.504 },
-          position: { x: 0.5028713222360737, y: 0.6567725632549026 },
-        },
-        w_2mcj8g2: {
-          style: { glow: 0, shadowBlur: 30, fontSizeScale: 1.504 },
-          position: { x: 0.7219559593702898, y: 0.6567725632549026 },
-        },
-      },
-      sceneOverrides: {},
-    },
-  },
 ];
 
 function getTemplateById(id) {
@@ -40460,27 +36916,27 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       return _renderFrameEfeito2Style(ctx, tpl, texts, frameIdx);
     }
     if (tpl.layout === 'efeito-6-style') {
-      return _renderFrameEfeito6Style(ctx, tpl, texts, frameIdx);
+      return _renderFrameEfeito6Style(ctx, tpl, texts, frameIdx, elapsedMs);
     }
     if (tpl.layout === 'efeito-7-style') {
-      return _renderFrameEfeito7Style(ctx, tpl, texts, frameIdx);
+      return _renderFrameEfeito7Style(ctx, tpl, texts, frameIdx, elapsedMs);
     }
     if (tpl.layout === 'efeito-8-style') {
       return _renderFrameEfeito8Style(ctx, tpl, texts, frameIdx, elapsedMs);
     }
     if (tpl.layout === 'efeito-10-style') {
-      return _renderFrameEfeito10Style(ctx, tpl, texts, frameIdx);
+      return _renderFrameEfeito10Style(ctx, tpl, texts, frameIdx, elapsedMs);
     }
     if (tpl.layout === 'efeito-11-style') {
-      return _renderFrameEfeito11Style(ctx, tpl, texts, frameIdx);
+      return _renderFrameEfeito11Style(ctx, tpl, texts, frameIdx, elapsedMs);
     }
     if (tpl.layout === 'efeito-12-style') {
-      return _renderFrameEfeito12Style(ctx, tpl, texts, frameIdx);
+      return _renderFrameEfeito12Style(ctx, tpl, texts, frameIdx, elapsedMs);
     }
     if (tpl.layout === 'efeito-13-style') {
-      return _renderFrameEfeito13Style(ctx, tpl, texts, frameIdx);
+      return _renderFrameEfeito13Style(ctx, tpl, texts, frameIdx, elapsedMs);
     }
-    return _renderFrameKineticScaleStack(ctx, tpl, texts, frameIdx);
+    return _renderFrameKineticScaleStack(ctx, tpl, texts, frameIdx, elapsedMs);
   }
 
   /**
@@ -40494,11 +36950,19 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
    * Texto alterado: reflow em fileira por linha, mesma técnica já
    * validada nos Efeitos 8, 10 e 12.
    */
-  function _renderFrameEfeito13Style(ctx, tpl, texts, frameIdx) {
+  function _renderFrameEfeito13Style(ctx, tpl, texts, frameIdx, elapsedMs) {
     const f = tpl.motionData.framesData[frameIdx];
     if (!f) return false;
     const grupos = tpl.linhasParaPapeis;
 
+    // MARCAÇÃO DE RITMO (Premium): Efeito 13 é do tipo "acumula" — as
+    // 3 linhas ficam visíveis JUNTAS boa parte do tempo (confirmei
+    // medindo: top[0-66], mid[21-65], bot[42-62], sobrepondo bastante,
+    // bem diferente do revezamento estrito do Efeito 8) — cada palavra
+    // resolve o PRÓPRIO quadro via _resolverFrameComRitmo (marcado ou
+    // não), sem lógica de "um por vez", preservando o efeito cascata
+    // interno de cada linha (ex: PUT→OFF→HOTTED entrando em sequência
+    // rápida a partir do instante em que a linha foi marcada).
     grupos.forEach((papeis, grupoIndex) => {
       const todasPalavras = (texts && texts._linhas && texts._linhas[grupoIndex]) || papeis.map(p => texts && texts[p]);
       const contagemBate = todasPalavras.filter(w => (w || '').trim()).length === papeis.length;
@@ -40509,7 +36973,10 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
 
       if (todosOriginais && contagemBate) {
         papeis.forEach((papel, i) => {
-          const bbox = f[papel];
+          const frameDessePapel = _resolverFrameComRitmo(tpl, papel, frameIdx, elapsedMs, texts);
+          if (frameDessePapel === null) return;
+          const fPapel = frameDessePapel === frameIdx ? f : tpl.motionData.framesData[frameDessePapel];
+          const bbox = fPapel && fPapel[papel];
           if (!bbox) return;
           const texto = (todasPalavras[i] || '').trim();
           if (!texto) return;
@@ -40520,8 +36987,15 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       }
 
       // Texto (ou quantidade) alterado: reflow em fileira — mesma
-      // técnica já validada nos Efeitos 8, 10 e 12.
-      const referencias = papeis.map(p => f[p]).filter(Boolean);
+      // técnica já validada nos Efeitos 8, 10 e 12. Usa o papel
+      // representativo (primeiro da linha) pra saber posição/tempo.
+      const papelRepresentativo = papeis[0];
+      const frameGrupo = _resolverFrameComRitmo(tpl, papelRepresentativo, frameIdx, elapsedMs, texts);
+      if (frameGrupo === null) return;
+      const fGrupo = frameGrupo === frameIdx ? f : tpl.motionData.framesData[frameGrupo];
+      if (!fGrupo) return;
+
+      const referencias = papeis.map(p => fGrupo[p]).filter(Boolean);
       if (!referencias.length) return;
       const alturaRef = Math.max(...referencias.map(b => b[3]));
       const centroYOriginal = referencias.reduce((s, b) => s + (b[1] + b[3] / 2), 0) / referencias.length;
@@ -40566,18 +37040,9 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
    * e por fim now_i_loose + control aparecem JUNTOS (2 linhas
    * simultâneas) até o final, comprimindo lado a lado.
    */
-  function _renderFrameEfeito11Style(ctx, tpl, texts, frameIdx) {
-    const f = tpl.motionData.framesData[frameIdx];
-    if (!f) return false;
-    ['be_my_soul', 'monster', 'part', 'or_me_but', 'now_i_loose', 'control'].forEach(papel => {
-      const bbox = f[papel];
-      if (!bbox) return;
-      const texto = (texts && texts[papel] || '').trim();
-      if (!texto) return;
-      const st = tpl.styles[papel];
-      drawStretched(ctx, texto, st.fontFamily, st.color, bbox, 'xywh');
-    });
-    return true;
+  function _renderFrameEfeito11Style(ctx, tpl, texts, frameIdx, elapsedMs) {
+    return _renderComRitmoPapeisIndependentes(ctx, tpl, texts, frameIdx, elapsedMs,
+      ['be_my_soul', 'monster', 'part', 'or_me_but', 'now_i_loose', 'control'], { umPorVez: true });
   }
 
   /**
@@ -40598,7 +37063,98 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
    * Canvas 2D não tem warp nativo (só afim) — cada quadrilátero vira
    * 2 triângulos, cada um com sua própria transformação afim exata.
    */
-  function _renderFrameEfeito12Style(ctx, tpl, texts, frameIdx) {
+  /**
+   * MARCAÇÃO DE RITMO — variantes pro Efeito 12 (deformação de malha),
+   * que usa quadriláteros de 4 cantos [tl,tr,br,bl] em vez de bbox
+   * retangular simples. "Largura"/"altura" aproximadas pela média dos
+   * dois lados opostos correspondentes — mesma técnica de platô já
+   * validada nos outros efeitos, só adaptada pra essa geometria.
+   */
+  function _tamanhoQuad(q) {
+    const [tl, tr, br, bl] = q;
+    const larg = (Math.hypot(tr[0] - tl[0], tr[1] - tl[1]) + Math.hypot(br[0] - bl[0], br[1] - bl[1])) / 2;
+    const alt = (Math.hypot(bl[0] - tl[0], bl[1] - tl[1]) + Math.hypot(br[0] - tr[0], br[1] - tr[1])) / 2;
+    return [larg, alt];
+  }
+
+  function _primeiroQuadroVisivelQuad(tpl, papel) {
+    tpl._cachePrimeiroQuadroQ = tpl._cachePrimeiroQuadroQ || {};
+    if (papel in tpl._cachePrimeiroQuadroQ) return tpl._cachePrimeiroQuadroQ[papel];
+    const frames = tpl.motionData.framesData;
+    let achou = 0;
+    for (let i = 0; i < frames.length; i++) {
+      if (frames[i][papel]) { achou = i; break; }
+    }
+    tpl._cachePrimeiroQuadroQ[papel] = achou;
+    return achou;
+  }
+
+  function _quadroAssentadoQuad(tpl, papel) {
+    tpl._cacheQuadroAssentadoQ = tpl._cacheQuadroAssentadoQ || {};
+    if (papel in tpl._cacheQuadroAssentadoQ) return tpl._cacheQuadroAssentadoQ[papel];
+    const frames = tpl.motionData.framesData;
+    const inicio = _primeiroQuadroVisivelQuad(tpl, papel);
+    let ultimoVisivel = inicio;
+    for (let i = inicio; i < frames.length; i++) {
+      if (frames[i][papel]) ultimoVisivel = i;
+    }
+    const janela = 5;
+    let melhorInicioJanela = null, menorVelocidadeMedia = Infinity;
+    for (let ini = inicio; ini + janela - 1 <= ultimoVisivel; ini++) {
+      let soma = 0, contagem = 0;
+      for (let i = ini; i < ini + janela - 1; i++) {
+        const a = frames[i][papel], b = frames[i + 1][papel];
+        if (!a || !b) continue;
+        const [la, ha] = _tamanhoQuad(a), [lb, hb] = _tamanhoQuad(b);
+        soma += Math.abs(lb - la) + Math.abs(hb - ha);
+        contagem++;
+      }
+      if (contagem === 0) continue;
+      const vel = soma / contagem;
+      if (vel < menorVelocidadeMedia) { menorVelocidadeMedia = vel; melhorInicioJanela = ini; }
+    }
+    let assentado = null;
+    if (melhorInicioJanela !== null) {
+      assentado = Math.min(ultimoVisivel, melhorInicioJanela + Math.floor(janela / 2));
+      if (!frames[assentado][papel]) assentado = null;
+    }
+    if (assentado != null) {
+      const bAssentado = frames[assentado][papel], bFinal = frames[ultimoVisivel][papel];
+      if (bAssentado && bFinal) {
+        const [la, ha] = _tamanhoQuad(bAssentado), [lf, hf] = _tamanhoQuad(bFinal);
+        const areaAssentado = la * ha, areaFinal = lf * hf;
+        if (areaFinal > 0 && areaAssentado < areaFinal * 0.55) assentado = ultimoVisivel;
+      }
+    }
+    if (assentado == null) {
+      let maiorArea = -1;
+      assentado = ultimoVisivel;
+      for (let i = inicio; i <= ultimoVisivel; i++) {
+        const b = frames[i][papel];
+        if (!b) continue;
+        const [l, h] = _tamanhoQuad(b);
+        const area = l * h;
+        if (area > maiorArea) { maiorArea = area; assentado = i; }
+      }
+    }
+    tpl._cacheQuadroAssentadoQ[papel] = assentado;
+    return assentado;
+  }
+
+  function _resolverFrameComRitmoQuad(tpl, papel, frameIdxGlobal, elapsedMs, texts) {
+    const tStarts = texts && texts._tStarts;
+    const referencia = texts && texts._referenciaTStart;
+    if (!tStarts || referencia == null || !(papel in tStarts)) return frameIdxGlobal;
+    const atrasoMs = Math.max(0, (tStarts[papel] - referencia) * 1000);
+    if (elapsedMs < atrasoMs) return null;
+    const fps = tpl.motionData.fps;
+    const quadroInicial = _primeiroQuadroVisivelQuad(tpl, papel);
+    const quadroAssentado = _quadroAssentadoQuad(tpl, papel);
+    const quadrosPassados = Math.floor((elapsedMs - atrasoMs) / (1000 / fps));
+    return Math.min(quadroInicial + quadrosPassados, quadroAssentado);
+  }
+
+  function _renderFrameEfeito12Style(ctx, tpl, texts, frameIdx, elapsedMs) {
     const f = tpl.motionData.framesData[frameIdx];
     if (!f) return false;
     const grupos = tpl.linhasParaPapeis;
@@ -40612,9 +37168,15 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       });
 
       if (todosOriginais && contagemBate) {
-        // Fidelidade total: cada palavra no próprio quadrilátero medido.
+        // MARCAÇÃO DE RITMO (Premium): acumula (confirmei medindo:
+        // line1[1-49], line2[15-49], line3[35-49], todas terminando
+        // juntas — sem revezamento). Cada palavra resolve o PRÓPRIO
+        // quadro (e o próprio quadrilátero) quando marcada.
         papeis.forEach((papel, i) => {
-          const quad = f[papel];
+          const frameDessePapel = _resolverFrameComRitmoQuad(tpl, papel, frameIdx, elapsedMs, texts);
+          if (frameDessePapel === null) return;
+          const fPapel = frameDessePapel === frameIdx ? f : tpl.motionData.framesData[frameDessePapel];
+          const quad = fPapel && fPapel[papel];
           if (!quad) return;
           const texto = (todasPalavras[i] || '').trim();
           if (!texto) return;
@@ -40627,10 +37189,15 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       }
 
       // Texto (ou quantidade) alterado: reflow em fileira, reaproveitando
-      // a mesma técnica já validada nos Efeitos 8 e 10 — usa as bboxes
-      // originais ativas nesse quadro como referência de altura/posição,
-      // encolhe se não couber.
-      const referencias = papeis.map(p => f[p]).filter(Boolean);
+      // a mesma técnica já validada nos Efeitos 8 e 10 — usa o papel
+      // representativo (primeiro do grupo) pra saber posição/tempo.
+      const papelRepresentativo = papeis[0];
+      const frameGrupo = _resolverFrameComRitmoQuad(tpl, papelRepresentativo, frameIdx, elapsedMs, texts);
+      if (frameGrupo === null) return;
+      const fGrupo = frameGrupo === frameIdx ? f : tpl.motionData.framesData[frameGrupo];
+      if (!fGrupo) return;
+
+      const referencias = papeis.map(p => fGrupo[p]).filter(Boolean);
       if (!referencias.length) return;
       const alturasRef = referencias.map(q => (Math.hypot(q[3][0]-q[0][0], q[3][1]-q[0][1]) + Math.hypot(q[2][0]-q[1][0], q[2][1]-q[1][1])) / 2);
       const alturaRef = Math.max(...alturasRef);
@@ -40724,71 +37291,61 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
    * mesma posição X/Y da bbox original, mas sem espremer/distorcer
    * palavras de tamanho diferente da original.
    */
-  function _renderFrameEfeito10Style(ctx, tpl, texts, frameIdx) {
+  /**
+   * Efeito 10: calcula a bbox ESCALADA (âncora fixa) de um papel num
+   * quadro ESPECÍFICO — fatorado do render pra poder ser chamado com
+   * qualquer índice de quadro (não só o "atual"), necessário pra
+   * marcação de ritmo resolver cada palavra no PRÓPRIO quadro marcado.
+   * Mesma lógica de âncora única já validada (calculada uma vez, a
+   * partir do quadro mais "cheio", reaproveitada sempre).
+   */
+  function _efeito10BboxEscalado(tpl, frameIdx, papel) {
     const fOriginal = tpl.motionData.framesData[frameIdx];
-    if (!fOriginal) return false;
+    if (!fOriginal) return null;
+    const papeis = ['KELVIN', 'RAISE', 'TILL', 'OFF'];
+    const ESCALA_EXTRA_PEDIDA = tpl.escalaExtra || 1;
+    if (ESCALA_EXTRA_PEDIDA === 1) return fOriginal[papel] || null;
+    if (!tpl._efeito10Ancoragem) {
+      let melhorUniao = null;
+      tpl.motionData.framesData.forEach(fr => {
+        const ativas = papeis.map(p => fr[p]).filter(Boolean);
+        if (!ativas.length) return;
+        const minX = Math.min(...ativas.map(b => b[0]));
+        const maxX = Math.max(...ativas.map(b => b[0] + b[2]));
+        const minY = Math.min(...ativas.map(b => b[1]));
+        const maxY = Math.max(...ativas.map(b => b[1] + b[3]));
+        if (!melhorUniao || (maxX - minX) > melhorUniao.largura) {
+          melhorUniao = { minX, maxX, minY, maxY, largura: maxX - minX };
+        }
+      });
+      const larguraCanvas = tpl.logicalWidth || tpl.motionData.width;
+      tpl._efeito10Ancoragem = {
+        cx: (melhorUniao.minX + melhorUniao.maxX) / 2,
+        cy: (melhorUniao.minY + melhorUniao.maxY) / 2,
+        escalaMaxima: (larguraCanvas * 0.92) / melhorUniao.largura,
+      };
+    }
+    const { cx, cy, escalaMaxima } = tpl._efeito10Ancoragem;
+    const ESCALA_EXTRA = Math.min(ESCALA_EXTRA_PEDIDA, escalaMaxima);
+    const b = fOriginal[papel];
+    if (!b) return null;
+    const w2 = b[2] * ESCALA_EXTRA;
+    const h2 = b[3] * ESCALA_EXTRA;
+    const cxB = b[0] + b[2] / 2;
+    const cyB = b[1] + b[3] / 2;
+    const cxB2 = cx + (cxB - cx) * ESCALA_EXTRA;
+    const cyB2 = cy + (cyB - cy) * ESCALA_EXTRA;
+    return [cxB2 - w2 / 2, cyB2 - h2 / 2, w2, h2];
+  }
+
+  function _renderFrameEfeito10Style(ctx, tpl, texts, frameIdx, elapsedMs) {
+    if (!tpl.motionData.framesData[frameIdx]) return false;
     const papeis = ['KELVIN', 'RAISE', 'TILL', 'OFF'];
 
-    // A PEDIDO EXPLÍCITO: o tamanho do texto no MP4 original é bem
-    // pequeno (validado: 91px de altura numa tela de 1080px, batendo
-    // quase exato com a referência real) — mas o usuário prefere um
-    // texto maior/mais impactante, mesmo fugindo do tamanho real do
-    // vídeo fonte. Escala TODAS as bboxes por um fator fixo — preserva
-    // o timing de entrada de cada palavra e o movimento relativo entre
-    // elas, só que tudo maior.
-    //
-    // BUG REAL CORRIGIDO ("ainda não está fielmente igual" — comparei
-    // quadro a quadro com a referência real): o centro de ancoragem da
-    // escala era recalculado a cada quadro, usando só as palavras
-    // ATIVAS naquele momento — então quando uma palavra nova entrava
-    // (ex: RAISE se juntando a KELVIN), o centro do conjunto mudava, e
-    // a palavra que JÁ estava visível (KELVIN) "pulava" de posição em
-    // vez de ficar parada como no vídeo original. Corrigido: o centro
-    // de ancoragem agora é calculado UMA VEZ (a partir do quadro em
-    // que TODAS as 4 palavras já estão visíveis — a composição mais
-    // larga) e reaproveitado em todo quadro — cada palavra escala de
-    // forma consistente ao redor do MESMO ponto do início ao fim,
-    // igual ao comportamento do vídeo original.
-    const ESCALA_EXTRA_PEDIDA = tpl.escalaExtra || 1;
-    let f = fOriginal;
-    if (ESCALA_EXTRA_PEDIDA !== 1) {
-      if (!tpl._efeito10Ancoragem) {
-        // acha o quadro mais "cheio" (maior largura de união) pra
-        // servir de referência fixa de ancoragem e limite de escala.
-        let melhorUniao = null;
-        tpl.motionData.framesData.forEach(fr => {
-          const ativas = papeis.map(p => fr[p]).filter(Boolean);
-          if (!ativas.length) return;
-          const minX = Math.min(...ativas.map(b => b[0]));
-          const maxX = Math.max(...ativas.map(b => b[0] + b[2]));
-          const minY = Math.min(...ativas.map(b => b[1]));
-          const maxY = Math.max(...ativas.map(b => b[1] + b[3]));
-          if (!melhorUniao || (maxX - minX) > melhorUniao.largura) {
-            melhorUniao = { minX, maxX, minY, maxY, largura: maxX - minX };
-          }
-        });
-        const larguraCanvas = tpl.logicalWidth || tpl.motionData.width;
-        tpl._efeito10Ancoragem = {
-          cx: (melhorUniao.minX + melhorUniao.maxX) / 2,
-          cy: (melhorUniao.minY + melhorUniao.maxY) / 2,
-          escalaMaxima: (larguraCanvas * 0.92) / melhorUniao.largura,
-        };
-      }
-      const { cx, cy, escalaMaxima } = tpl._efeito10Ancoragem;
-      const ESCALA_EXTRA = Math.min(ESCALA_EXTRA_PEDIDA, escalaMaxima);
-      f = {};
-      papeis.forEach(p => {
-        const b = fOriginal[p];
-        if (!b) { f[p] = null; return; }
-        const w2 = b[2] * ESCALA_EXTRA;
-        const h2 = b[3] * ESCALA_EXTRA;
-        const cxB = b[0] + b[2] / 2;
-        const cyB = b[1] + b[3] / 2;
-        const cxB2 = cx + (cxB - cx) * ESCALA_EXTRA;
-        const cyB2 = cy + (cyB - cy) * ESCALA_EXTRA;
-        f[p] = [cxB2 - w2 / 2, cyB2 - h2 / 2, w2, h2];
-      });
-    }
+    // Constrói o "quadro efetivo" (f) já escalado, igual sempre — usado
+    // pelas referências de posição/tamanho do caminho de reflow abaixo.
+    const f = {};
+    papeis.forEach(p => { f[p] = _efeito10BboxEscalado(tpl, frameIdx, p); });
 
     const todasPalavras = (texts && texts._linhas && texts._linhas[0]) || papeis.map(p => texts && texts[p]);
     const contagemBate = todasPalavras.filter(w => (w || '').trim()).length === papeis.length;
@@ -40798,8 +37355,14 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     });
 
     if (todosOriginais && contagemBate) {
+      // MARCAÇÃO DE RITMO (Premium): acumula (confirmei medindo:
+      // KELVIN[0-30], RAISE[4-30], TILL[6-30], OFF[6-30], todas
+      // terminando juntas — sem revezamento). Cada papel resolve o
+      // PRÓPRIO quadro (já escalado pela âncora fixa) quando marcado.
       papeis.forEach(papel => {
-        const bbox = f[papel];
+        const frameDessePapel = _resolverFrameComRitmo(tpl, papel, frameIdx, elapsedMs, texts);
+        if (frameDessePapel === null) return;
+        const bbox = _efeito10BboxEscalado(tpl, frameDessePapel, papel);
         if (!bbox) return;
         const texto = (texts && texts[papel] || '').trim();
         if (!texto) return;
@@ -40963,9 +37526,19 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     if (papel in tpl._cacheQuadroAssentado) return tpl._cacheQuadroAssentado[papel];
     const frames = tpl.motionData.framesData;
     const inicio = _primeiroQuadroVisivel(tpl, papel);
+    // BUG REAL CORRIGIDO ("A não aparecia"): essa varredura parava no
+    // PRIMEIRO buraco (quadro sem bbox) — alguns papéis têm
+    // visibilidade com LACUNAS (visível, some por um instante,
+    // aparece de novo mais tarde — ex: Efeito 7, onde "whiteTop" só
+    // tinha 2 quadros contínuos antes do primeiro buraco) — parar aí
+    // deixava a janela de busca (5 quadros) maior que o trecho
+    // contínuo disponível, e a busca de platô nem rodava, caindo num
+    // quadro quase arbitrário e pequeno demais. Corrigido: acha o
+    // ÚLTIMO quadro com bbox em TODA a extensão (ignora buracos no
+    // meio, não para no primeiro).
     let ultimoVisivel = inicio;
     for (let i = inicio; i < frames.length; i++) {
-      if (frames[i][papel]) ultimoVisivel = i; else break;
+      if (frames[i][papel]) ultimoVisivel = i;
     }
     // HISTÓRICO DE CORREÇÕES NESSA FUNÇÃO (documentado porque já
     // tentei 2 abordagens mais simples e as duas quebraram em casos
@@ -40995,7 +37568,7 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     // encontra o "descanso" certo em vez de ser enganada por um pico
     // de valor que aconteceu durante uma transição.
     const janela = 5; // tamanho da janela de comparação, em quadros
-    let melhorInicioJanela = inicio;
+    let melhorInicioJanela = null;
     let menorVelocidadeMedia = Infinity;
     for (let ini = inicio; ini + janela - 1 <= ultimoVisivel; ini++) {
       let somaVelocidade = 0, contagem = 0;
@@ -41012,9 +37585,45 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
         melhorInicioJanela = ini;
       }
     }
-    // usa o quadro do MEIO da janela mais estável encontrada.
-    let assentado = Math.min(ultimoVisivel, melhorInicioJanela + Math.floor(janela / 2));
-    if (!frames[assentado][papel]) assentado = ultimoVisivel; // salvaguarda
+    let assentado;
+    if (melhorInicioJanela !== null) {
+      // usa o quadro do MEIO da janela mais estável encontrada.
+      assentado = Math.min(ultimoVisivel, melhorInicioJanela + Math.floor(janela / 2));
+      if (!frames[assentado][papel]) assentado = null;
+    }
+    // BUG REAL CORRIGIDO ("BOWL pequena e sobreposta com as outras",
+    // achado no Kinetic Scale Stack, mesma lógica aplicada aqui por
+    // consistência/robustez): alguns papéis têm um pequeno respiro de
+    // velocidade logo após a entrada que não é o "descanso" de
+    // verdade — o papel continua crescendo bastante depois. Se a área
+    // do quadro do platô for menos de 55% da área do ÚLTIMO quadro
+    // visível, usa o último quadro em vez do platô.
+    if (assentado != null) {
+      const bAssentado = frames[assentado][papel];
+      const bFinal = frames[ultimoVisivel][papel];
+      if (bAssentado && bFinal) {
+        const areaAssentado = bAssentado[2] * bAssentado[3];
+        const areaFinal = bFinal[2] * bFinal[3];
+        if (areaFinal > 0 && areaAssentado < areaFinal * 0.55) assentado = ultimoVisivel;
+      }
+    }
+    if (assentado == null) {
+      // BUG REAL CORRIGIDO: quando o trecho contínuo é mais curto que
+      // a janela de busca (efeitos rápidos, tipo o de 800ms/20 quadros
+      // do Efeito 7), a busca de platô acima nunca roda — em vez de
+      // cair num quadro arbitrário e pequeno, usa o quadro com a MAIOR
+      // ÁREA (largura×altura) dentro de toda a extensão visível —
+      // aproximação razoável de "maior/mais completo" quando não há
+      // platô de verdade pra achar.
+      let maiorArea = -1;
+      assentado = ultimoVisivel;
+      for (let i = inicio; i <= ultimoVisivel; i++) {
+        const b = frames[i][papel];
+        if (!b) continue;
+        const area = b[2] * b[3];
+        if (area > maiorArea) { maiorArea = area; assentado = i; }
+      }
+    }
     tpl._cacheQuadroAssentado[papel] = assentado;
     return assentado;
   }
@@ -41278,11 +37887,52 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
    * A ORDEM de desenho importa: red é desenhado por último (por cima
    * das brancas), igual ao "elementOrder" da referência original.
    */
-  function _renderFrameEfeito7Style(ctx, tpl, texts, frameIdx) {
+  /**
+   * MARCAÇÃO DE RITMO — helper genérico reutilizável pra efeitos com
+   * "papéis independentes" (cada papel é uma frase/palavra inteira com
+   * sua própria janela de quadros ativos, desenhados com drawStretched
+   * direto na bbox 'xywh' — padrão usado pelos Efeitos 6, 7, 11 e
+   * variações). Dois modos:
+   *
+   * - umPorVez=true: revezamento (igual ao Efeito 8) — só o papel de
+   *   MAIOR atraso (entre os já marcados que passaram) fica visível;
+   *   papéis que compartilham o MESMO atraso (marcados juntos) ficam
+   *   visíveis ao mesmo tempo, como um grupo.
+   * - umPorVez=false: acumula — cada papel marcado entra no próprio
+   *   tempo e permanece (não sai quando o próximo entra).
+   *
+   * Papéis SEM marcação própria continuam no comportamento original
+   * (elapsedMs global), preservando uso parcial/misto.
+   */
+  function _renderComRitmoPapeisIndependentes(ctx, tpl, texts, frameIdx, elapsedMs, papeis, opcoes) {
     const f = tpl.motionData.framesData[frameIdx];
     if (!f) return false;
-    (tpl.ordemDesenho || Object.keys(tpl.styles)).forEach(papel => {
-      const bbox = f[papel];
+    const umPorVez = !!(opcoes && opcoes.umPorVez);
+    const tStarts = texts && texts._tStarts;
+    const referencia = texts && texts._referenciaTStart;
+    const temMarcacao = !!(tStarts && referencia != null);
+
+    let atrasoAtivoAgora = null;
+    if (temMarcacao && umPorVez) {
+      let maior = -1;
+      papeis.forEach(p => {
+        if (tStarts && (p in tStarts)) {
+          const atraso = Math.max(0, (tStarts[p] - referencia) * 1000);
+          if (atraso <= elapsedMs && atraso > maior) maior = atraso;
+        }
+      });
+      atrasoAtivoAgora = maior;
+    }
+
+    papeis.forEach(papel => {
+      if (temMarcacao && umPorVez && atrasoAtivoAgora !== null && tStarts && (papel in tStarts)) {
+        const atraso = Math.max(0, (tStarts[papel] - referencia) * 1000);
+        if (atraso !== atrasoAtivoAgora) return; // marcado, mas não é o ativo agora
+      }
+      const frameDessePapel = _resolverFrameComRitmo(tpl, papel, frameIdx, elapsedMs, texts);
+      if (frameDessePapel === null) return;
+      const fPapel = frameDessePapel === frameIdx ? f : tpl.motionData.framesData[frameDessePapel];
+      const bbox = fPapel && fPapel[papel];
       if (!bbox) return;
       const texto = (texts && texts[papel] || '').trim();
       if (!texto) return;
@@ -41290,6 +37940,11 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       drawStretched(ctx, texto, st.fontFamily, st.color, bbox, 'xywh');
     });
     return true;
+  }
+
+  function _renderFrameEfeito7Style(ctx, tpl, texts, frameIdx, elapsedMs) {
+    const papeis = tpl.ordemDesenho || Object.keys(tpl.styles);
+    return _renderComRitmoPapeisIndependentes(ctx, tpl, texts, frameIdx, elapsedMs, papeis, { umPorVez: false });
   }
 
   /**
@@ -41301,22 +37956,122 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
    * quadro é null, esse papel simplesmente não é desenhado — é assim
    * que a transição staggered (revezamento) funciona.
    */
-  function _renderFrameEfeito6Style(ctx, tpl, texts, frameIdx) {
-    const f = tpl.motionData.framesData[frameIdx];
-    if (!f) return false;
-    ['primaryRed', 'secondaryWhite', 'cashRed'].forEach(papel => {
-      const bbox = f[papel];
-      if (!bbox) return;
-      const texto = (texts && texts[papel] || '').trim();
-      if (!texto) return;
-      const st = tpl.styles[papel];
-      drawStretched(ctx, texto, st.fontFamily, st.color, bbox, 'xywh');
-    });
-    return true;
+  function _renderFrameEfeito6Style(ctx, tpl, texts, frameIdx, elapsedMs) {
+    return _renderComRitmoPapeisIndependentes(ctx, tpl, texts, frameIdx, elapsedMs,
+      ['primaryRed', 'secondaryWhite', 'cashRed'], { umPorVez: true });
   }
 
-  function _renderFrameKineticScaleStack(ctx, tpl, texts, frameIdx) {
+  /**
+   * MARCAÇÃO DE RITMO — variantes pra Kinetic Scale Stack (Efeitos 1/3),
+   * que usa uma estrutura de dados DIFERENTE dos outros efeitos:
+   * tpl.motionData.motion[quadro][papel] em vez de framesData, e bbox
+   * em formato de CANTOS [x0,y0,x1,y1] em vez de [x,y,largura,altura].
+   * Mesma técnica de platô (menor velocidade média) já validada nos
+   * outros efeitos, só adaptada pra essa estrutura.
+   */
+  function _primeiroQuadroVisivelMotion(tpl, papel) {
+    tpl._cachePrimeiroQuadroM = tpl._cachePrimeiroQuadroM || {};
+    if (papel in tpl._cachePrimeiroQuadroM) return tpl._cachePrimeiroQuadroM[papel];
+    const frames = tpl.motionData.motion;
+    let achou = 0;
+    for (let i = 0; i < frames.length; i++) {
+      if (frames[i][papel]) { achou = i; break; }
+    }
+    tpl._cachePrimeiroQuadroM[papel] = achou;
+    return achou;
+  }
+
+  function _quadroAssentadoMotion(tpl, papel) {
+    tpl._cacheQuadroAssentadoM = tpl._cacheQuadroAssentadoM || {};
+    if (papel in tpl._cacheQuadroAssentadoM) return tpl._cacheQuadroAssentadoM[papel];
+    const frames = tpl.motionData.motion;
+    const inicio = _primeiroQuadroVisivelMotion(tpl, papel);
+    let ultimoVisivel = inicio;
+    for (let i = inicio; i < frames.length; i++) {
+      if (frames[i][papel]) ultimoVisivel = i;
+    }
+    const larg = b => b[2] - b[0], alt = b => b[3] - b[1];
+    const janela = 5;
+    let melhorInicioJanela = null, menorVelocidadeMedia = Infinity;
+    for (let ini = inicio; ini + janela - 1 <= ultimoVisivel; ini++) {
+      let soma = 0, contagem = 0;
+      for (let i = ini; i < ini + janela - 1; i++) {
+        const a = frames[i][papel], b = frames[i + 1][papel];
+        if (!a || !b) continue;
+        soma += Math.abs(larg(b) - larg(a)) + Math.abs(alt(b) - alt(a));
+        contagem++;
+      }
+      if (contagem === 0) continue;
+      const vel = soma / contagem;
+      if (vel < menorVelocidadeMedia) { menorVelocidadeMedia = vel; melhorInicioJanela = ini; }
+    }
+    let assentado = null;
+    if (melhorInicioJanela !== null) {
+      assentado = Math.min(ultimoVisivel, melhorInicioJanela + Math.floor(janela / 2));
+      if (!frames[assentado][papel]) assentado = null;
+    }
+    // BUG REAL CORRIGIDO ("BOWL pequena e sobreposta com as outras"):
+    // alguns papéis (Kinetic Scale Stack, efeito de ZOOM CONTÍNUO —
+    // "top" cresce de largura 715 até 2738 do início ao fim, quase 4x,
+    // sem nunca parar de verdade) têm um pequeno respiro de velocidade
+    // logo após a entrada (ex: quadro 5→10, quase sem mudar) que o
+    // platô pega achando que é o "descanso" — mas o papel continua
+    // crescendo bastante depois disso. Segurar aí deixava esse papel
+    // MINÚSCULO comparado aos outros que entraram depois (e por isso
+    // "descansam" mais tarde, já bem maiores, no mesmo zoom
+    // progressivo). Corrigido: se a área do quadro do platô for menos
+    // de 55% da área do ÚLTIMO quadro visível, usa o último quadro em
+    // vez do platô — indica que o papel ainda estava crescendo bastante
+    // ali, não genuinamente descansado.
+    if (assentado != null) {
+      const bAssentado = frames[assentado][papel];
+      const bFinal = frames[ultimoVisivel][papel];
+      if (bAssentado && bFinal) {
+        const areaAssentado = larg(bAssentado) * alt(bAssentado);
+        const areaFinal = larg(bFinal) * alt(bFinal);
+        if (areaFinal > 0 && areaAssentado < areaFinal * 0.55) assentado = ultimoVisivel;
+      }
+    }
+    if (assentado == null) {
+      let maiorArea = -1;
+      assentado = ultimoVisivel;
+      for (let i = inicio; i <= ultimoVisivel; i++) {
+        const b = frames[i][papel];
+        if (!b) continue;
+        const area = larg(b) * alt(b);
+        if (area > maiorArea) { maiorArea = area; assentado = i; }
+      }
+    }
+    tpl._cacheQuadroAssentadoM[papel] = assentado;
+    return assentado;
+  }
+
+  function _resolverFrameComRitmoMotion(tpl, papel, frameIdxGlobal, elapsedMs, texts) {
+    const tStarts = texts && texts._tStarts;
+    const referencia = texts && texts._referenciaTStart;
+    if (!tStarts || referencia == null || !(papel in tStarts)) return frameIdxGlobal;
+    const atrasoMs = Math.max(0, (tStarts[papel] - referencia) * 1000);
+    if (elapsedMs < atrasoMs) return null;
+    const fps = tpl.motionData.fps;
+    const quadroInicial = _primeiroQuadroVisivelMotion(tpl, papel);
+    const quadroAssentado = _quadroAssentadoMotion(tpl, papel);
+    const quadrosPassados = Math.floor((elapsedMs - atrasoMs) / (1000 / fps));
+    return Math.min(quadroInicial + quadrosPassados, quadroAssentado);
+  }
+
+  function _renderFrameKineticScaleStack(ctx, tpl, texts, frameIdx, elapsedMs) {
     const m = tpl.motionData.motion[frameIdx];
+
+    // MARCAÇÃO DE RITMO (Premium): Kinetic Scale Stack acumula (cada
+    // papel entra e fica) — confirmei medindo: top[5-85], red[35-85],
+    // be[71-85], my[74-85], soul[75-85], todos terminando junto no
+    // último quadro (nunca somem). Cada papel resolve o PRÓPRIO
+    // quadro via _resolverFrameComRitmoMotion quando marcado.
+    function bboxDoPapel(key) {
+      const fr = _resolverFrameComRitmoMotion(tpl, key, frameIdx, elapsedMs, texts);
+      if (fr === null) return null;
+      return (fr === frameIdx ? m : tpl.motionData.motion[fr])[key];
+    }
 
     // CORREÇÃO (linha 3 com quantidade de palavras ≠ 3): desenha o
     // texto combinado (line3Combined) na caixa UNIÃO (be+my+soul, pré-
@@ -41324,13 +38079,18 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     // linhas 1/2, em vez de ficar pequeno/mal posicionado em papéis
     // individuais que não fazem sentido pra essa quantidade de palavras.
     if (texts.line3Combined) {
-      const bboxUniao = tpl.singleWordBboxes[frameIdx];
       ['top', 'red'].forEach(key => {
-        const bbox = m[key];
+        const bbox = bboxDoPapel(key);
         if (!bbox) return;
         const st = tpl.styles[key];
         drawStretched(ctx, texts[key], st.fontFamily, st.color, bbox);
       });
+      // "my" é o papel representativo da linha 3 combinada pra fins de
+      // marcação de ritmo — usa o MESMO quadro resolvido dele, mas com
+      // a caixa união pré-calculada (não a bbox individual do "my").
+      const frameLinha3 = _resolverFrameComRitmoMotion(tpl, 'my', frameIdx, elapsedMs, texts);
+      const bboxUniao = frameLinha3 === null ? null
+        : tpl.singleWordBboxes[frameLinha3 === frameIdx ? frameIdx : frameLinha3];
       if (bboxUniao) {
         const st = tpl.styles.my;
         drawStretched(ctx, texts.line3Combined, st.fontFamily, st.color, bboxUniao);
@@ -41339,21 +38099,22 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     }
 
     ['top', 'red', 'be', 'my'].forEach(key => {
-      const bbox = m[key];
+      const bbox = bboxDoPapel(key);
       if (!bbox) return;
       const st = tpl.styles[key];
       drawStretched(ctx, texts[key], st.fontFamily, st.color, bbox);
     });
 
-    // SOUL: mesma bbox do frame (participa do zoom final igual aos
-    // outros), só que reduzida 92% ao redor do próprio centro.
-    if (m.soul) {
+    // SOUL: mesma bbox do quadro resolvido (participa do zoom final
+    // igual aos outros), só que reduzida 92% ao redor do próprio centro.
+    const bboxSoul = bboxDoPapel('soul');
+    if (bboxSoul) {
       const st = tpl.styles.soul;
       const scale = tpl.soulBaseScale;
-      const cx = (m.soul[0] + m.soul[2]) / 2;
-      const cy = (m.soul[1] + m.soul[3]) / 2;
-      const w = (m.soul[2] - m.soul[0]) * scale;
-      const h = (m.soul[3] - m.soul[1]) * scale;
+      const cx = (bboxSoul[0] + bboxSoul[2]) / 2;
+      const cy = (bboxSoul[1] + bboxSoul[3]) / 2;
+      const w = (bboxSoul[2] - bboxSoul[0]) * scale;
+      const h = (bboxSoul[3] - bboxSoul[1]) * scale;
       const adjusted = [cx - w / 2, cy - h / 2, cx + w / 2, cy + h / 2];
       drawStretched(ctx, texts.soul, st.fontFamily, st.color, adjusted);
     }
@@ -41594,11 +38355,20 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     const referencia = texts && texts._referenciaTStart;
     if (!tStarts || referencia === null || referencia === undefined) return duracaoBase;
     const fps = tpl.motionData.fps;
+    // Kinetic Scale Stack (Efeitos 1/3) usa uma estrutura de dados
+    // DIFERENTE (tpl.motionData.motion, não framesData) — usa as
+    // variantes "Motion" das funções de quadro inicial/assentado.
+    // Efeito 12 usa quadriláteros de 4 cantos (deformação de malha) —
+    // usa as variantes "Quad".
+    const ehMotion = !!tpl.motionData.motion;
+    const ehQuad = tpl.layout === 'efeito-12-style';
+    const primeiroQuadro = ehQuad ? _primeiroQuadroVisivelQuad : (ehMotion ? _primeiroQuadroVisivelMotion : _primeiroQuadroVisivel);
+    const quadroAssentadoFn = ehQuad ? _quadroAssentadoQuad : (ehMotion ? _quadroAssentadoMotion : _quadroAssentado);
     let maiorFim = duracaoBase;
     Object.keys(tStarts).forEach(papel => {
       const atrasoMs = Math.max(0, (tStarts[papel] - referencia) * 1000);
-      const quadroInicial = _primeiroQuadroVisivel(tpl, papel);
-      const quadroAssentado = _quadroAssentado(tpl, papel);
+      const quadroInicial = primeiroQuadro(tpl, papel);
+      const quadroAssentado = quadroAssentadoFn(tpl, papel);
       const tempoParaAssentar = (quadroAssentado - quadroInicial) * (1000 / fps);
       // pequena folga depois de assentar, pra garantir que fica visível
       // um instante antes da estrofe acabar (não corta bem na hora que
@@ -41649,20 +38419,31 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
   /**
    * Efeito 13: 3 linhas do editor → 10 papéis de palavra (3+3+4),
    * mapeamento posicional dentro de cada linha — igual ao Efeito 8/12.
+   *
+   * NOVO (marcação de ritmo): coleta _tStarts[papel] = word.tStart por
+   * PALAVRA (não por linha inteira) — cada papel é uma palavra
+   * específica, então usa o tStart daquela palavra exata.
    */
   function _readTextsEfeito13Style(stanza, tpl) {
     const lines = (stanza && stanza.lines) || [];
     const grupos = tpl.linhasParaPapeis;
-    const out = { _linhas: [] };
+    const out = { _linhas: [], _tStarts: {}, _referenciaTStart: null };
     grupos.forEach((papeis, li) => {
-      const palavras = (lines[li]?.words || []).map(w => w.text);
+      const palavrasObj = (lines[li]?.words || []);
+      const palavras = palavrasObj.map(w => w.text);
       papeis.forEach((papel, i) => {
         out[papel] = palavras[i] || '';
+        const w = palavrasObj[i];
+        if (w && typeof w.tStart === 'number') {
+          out._tStarts[papel] = w.tStart;
+          if (out._referenciaTStart === null) out._referenciaTStart = w.tStart;
+        }
       });
       out._linhas.push(palavras);
     });
     return out;
   }
+
 
   /**
    * Efeito 12: 3 linhas do editor → 10 papéis de palavra (3+3+4),
@@ -41673,11 +38454,17 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
   function _readTextsEfeito12Style(stanza, tpl) {
     const lines = (stanza && stanza.lines) || [];
     const grupos = tpl.linhasParaPapeis;
-    const out = { _linhas: [] };
+    const out = { _linhas: [], _tStarts: {}, _referenciaTStart: null };
     grupos.forEach((papeis, li) => {
-      const palavras = (lines[li]?.words || []).map(w => w.text);
+      const palavrasObj = (lines[li]?.words || []);
+      const palavras = palavrasObj.map(w => w.text);
       papeis.forEach((papel, i) => {
         out[papel] = palavras[i] || '';
+        const w = palavrasObj[i];
+        if (w && typeof w.tStart === 'number') {
+          out._tStarts[papel] = w.tStart;
+          if (out._referenciaTStart === null) out._referenciaTStart = w.tStart;
+        }
       });
       out._linhas.push(palavras);
     });
@@ -41689,14 +38476,33 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
    * UM texto só (todas as palavras daquela linha juntas) — igual ao
    * Efeito 6/7, agora com 6 linhas.
    */
-  function _readTextsEfeito11Style(stanza) {
+  /**
+   * MARCAÇÃO DE RITMO — leitura de texto genérica reutilizável pra
+   * efeitos onde cada LINHA do editor vira UM papel inteiro
+   * (posicional: linha i → papeis[i]) — padrão usado pelos Efeitos 6,
+   * 7, 11. Também coleta _tStarts[papel] a partir da 1ª palavra de
+   * cada linha (marcação de ritmo, modo "Linha" da ferramenta marca
+   * todas as palavras da linha com o mesmo tempo, então a 1ª já
+   * representa a linha toda).
+   */
+  function _lerTextosLinhaParaPapel(stanza, papeis) {
     const lines = (stanza && stanza.lines) || [];
-    const papeis = ['be_my_soul', 'monster', 'part', 'or_me_but', 'now_i_loose', 'control'];
-    const out = {};
+    const out = { _tStarts: {}, _referenciaTStart: null };
     papeis.forEach((papel, i) => {
-      out[papel] = (lines[i]?.words || []).map(w => w.text).join(' ');
+      const palavrasObj = (lines[i]?.words || []);
+      out[papel] = palavrasObj.map(w => w.text).join(' ');
+      const w = palavrasObj[0];
+      if (w && typeof w.tStart === 'number') {
+        out._tStarts[papel] = w.tStart;
+        if (out._referenciaTStart === null) out._referenciaTStart = w.tStart;
+      }
     });
     return out;
+  }
+
+  function _readTextsEfeito11Style(stanza) {
+    return _lerTextosLinhaParaPapel(stanza,
+      ['be_my_soul', 'monster', 'part', 'or_me_but', 'now_i_loose', 'control']);
   }
 
   /**
@@ -41709,13 +38515,23 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
    */
   function _readTextsEfeito10Style(stanza) {
     const lines = (stanza && stanza.lines) || [];
-    const palavras = (lines[0]?.words || []).map(w => w.text);
-    return {
+    const palavrasObj = (lines[0]?.words || []);
+    const palavras = palavrasObj.map(w => w.text);
+    const out = {
       KELVIN: palavras[0] || '', RAISE: palavras[1] || '',
       TILL: palavras[2] || '', OFF: palavras[3] || '',
-      _linhas: [palavras],
+      _linhas: [palavras], _tStarts: {}, _referenciaTStart: null,
     };
+    ['KELVIN', 'RAISE', 'TILL', 'OFF'].forEach((papel, i) => {
+      const w = palavrasObj[i];
+      if (w && typeof w.tStart === 'number') {
+        out._tStarts[papel] = w.tStart;
+        if (out._referenciaTStart === null) out._referenciaTStart = w.tStart;
+      }
+    });
+    return out;
   }
+
 
   /**
    * Efeito 8: cada linha do editor tem uma quantidade DIFERENTE de
@@ -41770,14 +38586,8 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
    * ordemDesenho no registro do template).
    */
   function _readTextsEfeito7Style(stanza) {
-    const lines = (stanza && stanza.lines) || [];
-    return {
-      whiteTop: (lines[0]?.words || []).map(w => w.text).join(' '),
-      whiteUpper: (lines[1]?.words || []).map(w => w.text).join(' '),
-      red: (lines[2]?.words || []).map(w => w.text).join(' '),
-      whiteLower: (lines[3]?.words || []).map(w => w.text).join(' '),
-      whiteBottom: (lines[4]?.words || []).map(w => w.text).join(' '),
-    };
+    return _lerTextosLinhaParaPapel(stanza,
+      ['whiteTop', 'whiteUpper', 'red', 'whiteLower', 'whiteBottom']);
   }
 
   /**
@@ -41786,12 +38596,7 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
    * como "top"/"red" já leem linha 1/2 no Kinetic Scale Stack.
    */
   function _readTextsEfeito6Style(stanza) {
-    const lines = (stanza && stanza.lines) || [];
-    return {
-      primaryRed: (lines[0]?.words || []).map(w => w.text).join(' '),
-      secondaryWhite: (lines[1]?.words || []).map(w => w.text).join(' '),
-      cashRed: (lines[2]?.words || []).map(w => w.text).join(' '),
-    };
+    return _lerTextosLinhaParaPapel(stanza, ['primaryRed', 'secondaryWhite', 'cashRed']);
   }
 
   function _readTextsKineticScaleStack(stanza) {
@@ -41806,12 +38611,25 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     // media bem pra EXATAMENTE "BE"/"MY"/"SOUL", palavras curtas
     // específicas) por um comportamento sempre consistente e bem
     // dimensionado com qualquer texto.
+    //
+    // NOVO (marcação de ritmo): coleta _tStarts a partir da 1ª palavra
+    // de cada linha — top/red/my (representante da linha 3 combinada,
+    // já que ela sempre usa esse caminho, nunca be/my/soul individuais).
     const out = {
       top: l1, red: l2, be: '', my: '', soul: '',
       line3Combined: l3words.map(w => w.text).join(' '),
+      _tStarts: {}, _referenciaTStart: null,
     };
+    const w1 = lines[0]?.words?.[0], w2 = lines[1]?.words?.[0], w3 = l3words[0];
+    [['top', w1], ['red', w2], ['my', w3]].forEach(([papel, w]) => {
+      if (w && typeof w.tStart === 'number') {
+        out._tStarts[papel] = w.tStart;
+        if (out._referenciaTStart === null) out._referenciaTStart = w.tStart;
+      }
+    });
     return out;
   }
+
 
   /**
    * Efeito 2: linha 1 → texto vermelho único; linha 2 → palavras
