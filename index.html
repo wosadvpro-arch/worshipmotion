@@ -41095,6 +41095,32 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
         // tamanho natural, exatamente como medido no MP4 original --
         // usa o quadro LOCAL (marcado) se esse papel tiver marcacao,
         // senao o quadro global de sempre.
+        //
+        // A PEDIDO EXPLICITO ("forcar centralizacao vertical exata,
+        // mesmo fugindo um pouco da posicao real do video"): medi e
+        // confirmei que o video original posiciona o texto de forma
+        // consistente uns 40-55px ABAIXO do centro geometrico exato
+        // (540px) -- nao eh bug, e a posicao real, mas o usuario
+        // prefere centralizacao perfeita quando a marcacao de ritmo
+        // esta ativa. So aplica esse deslocamento quando ESSE grupo
+        // tem marcacao propria (nao mexe na reproducao original
+        // sem marcacao nenhuma).
+        let deslocYCentralizacao = 0;
+        if (infoAtraso.atraso !== null) {
+          const bboxesAtivos = papeis
+            .map(papel => {
+              const fr = _resolverFrameComRitmo(tpl, papel, frameIdx, elapsedMs, texts);
+              if (fr === null) return null;
+              const fp = fr === frameIdx ? f : tpl.motionData.framesData[fr];
+              return fp && fp[papel];
+            })
+            .filter(Boolean);
+          if (bboxesAtivos.length) {
+            const centroYAtual = bboxesAtivos.reduce((s, b) => s + (b[1] + b[3] / 2), 0) / bboxesAtivos.length;
+            const alturaCanvas = tpl.logicalHeight || tpl.motionData.height || 1080;
+            deslocYCentralizacao = alturaCanvas / 2 - centroYAtual;
+          }
+        }
         papeis.forEach(papel => {
           const frameDessePapel = _resolverFrameComRitmo(tpl, papel, frameIdx, elapsedMs, texts);
           if (frameDessePapel === null) return;
@@ -41107,7 +41133,8 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
           const nat = EFEITO8_NATURAL[papel];
           const img = makeBitmap(texto, st.fontFamily, st.color);
           if (!img || !nat) return;
-          const [bx, by, bw, bh] = bbox;
+          const [bx, bwY, bw, bh] = bbox;
+          const by = bwY + deslocYCentralizacao;
           const drawX = (nat.ax === 'd') ? (bx + bw - nat.w) : bx;
           const drawY = (nat.ay === 'b') ? (by + bh - nat.h) : by;
           ctx.save();
@@ -41133,7 +41160,14 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       const referencias = papeis.map(p => fGrupo[p]).filter(Boolean);
       if (!referencias.length) return;
       const alturaRef = Math.max(...referencias.map(b => b[3]));
-      const centroYOriginal = referencias.reduce((s, b) => s + (b[1] + b[3] / 2), 0) / referencias.length;
+      // A PEDIDO EXPLICITO: mesma centralizacao forcada do caminho de
+      // fidelidade acima, aplicada aqui quando esse grupo tem marcacao
+      // propria -- sem marcacao, mantem a posicao natural do video
+      // (comportamento de sempre).
+      let centroYOriginal = referencias.reduce((s, b) => s + (b[1] + b[3] / 2), 0) / referencias.length;
+      if (infoAtraso.atraso !== null) {
+        centroYOriginal = (tpl.logicalHeight || tpl.motionData.height || 1080) / 2;
+      }
       const ultimoPapel = papeis[papeis.length - 1];
       const stLinha = tpl.styles[ultimoPapel];
       const ativos = todasPalavras
