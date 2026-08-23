@@ -40951,38 +40951,54 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     for (let i = inicio; i < frames.length; i++) {
       if (frames[i][papel]) ultimoVisivel = i; else break;
     }
-    // BUG REAL CORRIGIDO 1 ("segunda palavra apareceu pequena"): a
-    // versão anterior comparava só quadro-a-quadro (delta < 3%) — mas
-    // algumas palavras crescem devagar e CONTINUAMENTE ao longo de
-    // dezenas de quadros (cada passo pequeno, mas a soma é grande:
-    // ex. largura foi de 687 pra 760, quase 11%, ao longo de 40+
-    // quadros) — a comparação vizinho-a-vizinho nunca via um "salto"
-    // grande o bastante e travava logo no início da janela visível,
-    // bem antes do tamanho final de verdade. Corrigido: usa o maior
-    // tamanho JÁ ATINGIDO na janela toda como referência.
+    // HISTÓRICO DE CORREÇÕES NESSA FUNÇÃO (documentado porque já
+    // tentei 2 abordagens mais simples e as duas quebraram em casos
+    // diferentes — importante não voltar a essas):
     //
-    // BUG REAL CORRIGIDO 2 ("primeira palavra descentralizada e menor"):
-    // só verificar a LARGURA não bastava — a palavra "want" tem largura
-    // quase constante do início ao fim (só ~3% de variação), mas a
-    // ALTURA varia bastante (389→470px, ~21%) e a posição Y desliza uns
-    // 150px ao longo da entrada. Como a largura já começava quase no
-    // valor final, o limiar de 97% disparava no quadro 2 (praticamente
-    // o início), travando a palavra pequena e fora do centro vertical
-    // que ela ocupa quando realmente assentada. Corrigido: agora exige
-    // 97% do máximo tanto de LARGURA quanto de ALTURA ao mesmo tempo.
-    let larguraMax = 0, alturaMax = 0;
-    for (let i = inicio; i <= ultimoVisivel; i++) {
-      const b = frames[i][papel];
-      if (!b) continue;
-      if (b[2] > larguraMax) larguraMax = b[2];
-      if (b[3] > alturaMax) alturaMax = b[3];
+    // Tentativa 1 (delta vizinho-a-vizinho < 3%): quebrava em papéis
+    // que crescem devagar e CONTINUAMENTE por dezenas de quadros (ex:
+    // largura foi de 687 pra 760 ao longo de 40+ quadros) — nunca via
+    // um "salto" grande o bastante, travava logo no início.
+    //
+    // Tentativa 2 (primeiro quadro a atingir 97% da largura E altura
+    // MÁXIMAS): quebrava no sentido oposto — alguns papéis têm uma
+    // transição de SAÍDA caótica dentro da própria janela "visível"
+    // (ex: "selfish" fica bem estável nos quadros 33-47, então dispara
+    // numa saída dramática 48→59 onde a altura ironicamente ATINGE O
+    // PICO no meio do caos) — o critério de "maior valor já atingido"
+    // media o pico errado, travando a palavra numa pose de transição
+    // (ex: y=14, quase colada no topo da tela).
+    //
+    // Abordagem atual (mais robusta): acha o PLATÔ real — a janela de
+    // quadros com a MENOR velocidade média de mudança (largura+altura
+    // combinadas) — não o primeiro quadro "grande o suficiente", nem o
+    // quadro do valor de pico, mas a região onde o movimento realmente
+    // for mais lento/estável. Uma entrada em andamento e uma saída em
+    // andamento sempre têm velocidade ALTA; o platô do meio (quando
+    // existe) tem velocidade BAIXA — então essa métrica naturalmente
+    // encontra o "descanso" certo em vez de ser enganada por um pico
+    // de valor que aconteceu durante uma transição.
+    const janela = 5; // tamanho da janela de comparação, em quadros
+    let melhorInicioJanela = inicio;
+    let menorVelocidadeMedia = Infinity;
+    for (let ini = inicio; ini + janela - 1 <= ultimoVisivel; ini++) {
+      let somaVelocidade = 0, contagem = 0;
+      for (let i = ini; i < ini + janela - 1; i++) {
+        const a = frames[i][papel], b = frames[i + 1][papel];
+        if (!a || !b) continue;
+        somaVelocidade += Math.abs(b[2] - a[2]) + Math.abs(b[3] - a[3]);
+        contagem++;
+      }
+      if (contagem === 0) continue;
+      const velocidadeMedia = somaVelocidade / contagem;
+      if (velocidadeMedia < menorVelocidadeMedia) {
+        menorVelocidadeMedia = velocidadeMedia;
+        melhorInicioJanela = ini;
+      }
     }
-    let assentado = ultimoVisivel;
-    for (let i = inicio; i <= ultimoVisivel; i++) {
-      const b = frames[i][papel];
-      if (b && larguraMax > 0 && alturaMax > 0
-          && b[2] >= larguraMax * 0.97 && b[3] >= alturaMax * 0.97) { assentado = i; break; }
-    }
+    // usa o quadro do MEIO da janela mais estável encontrada.
+    let assentado = Math.min(ultimoVisivel, melhorInicioJanela + Math.floor(janela / 2));
+    if (!frames[assentado][papel]) assentado = ultimoVisivel; // salvaguarda
     tpl._cacheQuadroAssentado[papel] = assentado;
     return assentado;
   }
