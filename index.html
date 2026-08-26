@@ -24865,6 +24865,26 @@ function initEditor() {
         // centro. NÃO encolhe palavra por palavra no lugar (que deixava
         // tudo espaçado). Palavras em flow refluem naturalmente mais
         // juntas; palavras free escalam pelo ratio ao redor de 0.5.
+        //
+        // BUG REAL CORRIGIDO ("sem selecionar nenhuma palavra, o botão
+        // + não faz nada"): esse ramo grava o tamanho em
+        // sceneOverrides (estilo global da estrofe) e chama
+        // engine.renderStanza — que a renderização frame-exact ignora
+        // completamente (ela só lê fontSizeScale por PALAVRA, via
+        // wordOverrides). Pra frame-exact, "escalar a estrofe toda"
+        // vira "aplicar a mesma escala em TODAS as palavras" — usa a
+        // escala da primeira palavra como referência atual.
+        const stzElFE = (typeof getStanzaEl === 'function') ? getStanzaEl() : null;
+        if (stzElFE && stzElFE.classList.contains('is-frame-exact-stanza')) {
+          const idsFE = [...stzElFE.querySelectorAll('.lyric-word')].map(el => el.dataset.wordId).filter(Boolean);
+          const primeiraEscala = (idsFE[0] && engine.wordOverrides[idsFE[0]]
+            && engine.wordOverrides[idsFE[0]].style
+            && engine.wordOverrides[idsFE[0]].style.fontSizeScale) || 1;
+          const novaEscalaFE = Math.max(0.2, Math.round((primeiraEscala + delta * 0.1) * 100) / 100);
+          _aplicarFontScaleFrameExact(idsFE, novaEscalaFE === 1 ? null : novaEscalaFE);
+          requestAnimationFrame(syncCtxToolbar);
+          return;
+        }
         const st = engine.parsed && engine.parsed.stanzas[engine.currentStanzaIndex];
         if (!st) return;
         const cur = (engine.sceneOverrides[st.id] && engine.sceneOverrides[st.id].style) || {};
@@ -24939,6 +24959,15 @@ function initEditor() {
         if (typeof aplicarEstiloSensivel === 'function')
           aplicarEstiloSensivel('fontSizeScale', novaEscala === 1 ? null : novaEscala, { afetaLargura: true });
       } else {
+        const stzElFE = (typeof getStanzaEl === 'function') ? getStanzaEl() : null;
+        if (stzElFE && stzElFE.classList.contains('is-frame-exact-stanza')) {
+          const idsFE = [...stzElFE.querySelectorAll('.lyric-word')].map(el => el.dataset.wordId).filter(Boolean);
+          const globalFsFE = ((_ctxEstiloEfetivo().fontSize) || 64);
+          const novaEscalaFE = Math.max(0.1, Math.round((px / globalFsFE) * 100) / 100);
+          _aplicarFontScaleFrameExact(idsFE, novaEscalaFE === 1 ? null : novaEscalaFE);
+          requestAnimationFrame(syncCtxToolbar);
+          return;
+        }
         const st = engine.parsed && engine.parsed.stanzas[engine.currentStanzaIndex];
         if (!st) return;
         const cur = (engine.sceneOverrides[st.id] && engine.sceneOverrides[st.id].style) || {};
