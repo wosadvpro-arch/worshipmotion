@@ -3078,20 +3078,13 @@ body.timeline-collapsed .timeline-collapse-btn {
   -webkit-text-stroke: 0 !important;
 }
 /* BUG REAL CORRIGIDO (parte 2 — a caixa de seleção com as alças
-   cortava o meio do texto): a caixa de seleção usa a posição/tamanho
+   cortava o meio do texto): a caixa de seleção usava a posição/tamanho
    NATURAL do elemento .lyric-word (fluxo de texto normal, pequeno) —
-   nunca bate com o tamanho/posição real que o canvas frame-exact
-   desenha (medido do vídeo, normalmente bem maior). O texto em si já
-   está escondido (regra acima), mas a caixa+alças sozinhas, no
-   tamanho errado, ainda cortavam visualmente o texto grande desenhado
-   pelo canvas. Sem uma integração própria por efeito pra saber a
-   bbox real de cada papel, a posição correta não dá pra calcular —
-   esconde a caixa visual nesse caso (o painel de edição à direita
-   continua funcionando normalmente pra aplicar tamanho/cor/etc).
+   nunca batia com o tamanho/posição real que o canvas frame-exact
+   desenha (medido do vídeo, normalmente bem maior). Corrigido em
+   updateSelectionBox() (JS) — agora usa a posição REAL registrada
+   durante o desenho (R.acharBboxDaPalavra), não mais escondida via CSS.
 */
-.is-frame-exact-stanza .selection-box {
-  display: none !important;
-}
 /* Dentro do preview de card de animação: sem cursor/outline/hover */
 .anim-card-preview .lyric-word,
 .anim-card-preview .lyric-word:hover,
@@ -21994,6 +21987,50 @@ function initEditor() {
     const box = ensureSelectionBoxExists();
     if (!box) return;
 
+    // ESTROFE FRAME-EXACT: a posição do elemento DOM da palavra nunca
+    // bate com onde o canvas desenha de verdade (ver comentário na CSS
+    // .is-frame-exact-stanza) — usa a posição REAL registrada durante
+    // o desenho (acharBboxDaPalavra) em vez de wordEl.getBoundingClientRect().
+    if (stanza.classList.contains('is-frame-exact-stanza')) {
+      const R = window.WM_FRAME_EXACT_RENDERER;
+      const canvas = stanza.querySelector('.wm-frame-exact-canvas');
+      const st = engine.parsed?.stanzas?.[engine.currentStanzaIndex];
+      const tplId = st && st.frameExactTemplateId;
+      if (!R || !canvas || !tplId) { hideSelectionBox(); return; }
+      const rectCanvas = canvas.getBoundingClientRect();
+      if (rectCanvas.width === 0 || canvas.width === 0) { hideSelectionBox(); return; }
+      const escala = rectCanvas.width / canvas.width; // canvas é sempre proporcional (mesmo aspect ratio)
+      const stanzaRect = stanza.getBoundingClientRect();
+      const offCanvasX = rectCanvas.left - stanzaRect.left;
+      const offCanvasY = rectCanvas.top - stanzaRect.top;
+
+      const ids = selectedWordIds.size > 1 ? [...selectedWordIds] : [selectedWordId];
+      let minLeft = Infinity, minTop = Infinity, maxRight = -Infinity, maxBottom = -Infinity;
+      let count = 0;
+      ids.forEach(wid => {
+        const bbox = R.acharBboxDaPalavra(tplId, wid);
+        if (!bbox) return;
+        const left = offCanvasX + bbox.x * escala;
+        const top = offCanvasY + bbox.y * escala;
+        minLeft = Math.min(minLeft, left);
+        minTop = Math.min(minTop, top);
+        maxRight = Math.max(maxRight, left + bbox.w * escala);
+        maxBottom = Math.max(maxBottom, top + bbox.h * escala);
+        count++;
+      });
+      if (count === 0) { hideSelectionBox(); return; }
+
+      box.style.left = minLeft + 'px';
+      box.style.top = minTop + 'px';
+      box.style.width = (maxRight - minLeft) + 'px';
+      box.style.height = (maxBottom - minTop) + 'px';
+      box.style.transform = '';
+      box.style.transformOrigin = 'center center';
+      box.classList.toggle('is-multi', count > 1);
+      box.classList.add('is-visible');
+      return;
+    }
+
     // === MULTI: envolve todas as palavras selecionadas ===
     if (selectedWordIds.size > 1) {
       const stanzaRect = stanza.getBoundingClientRect();
@@ -38411,6 +38448,19 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     }
     return null;
   }
+  /** Acha a bbox (espaço lógico do template) de uma palavra pelo id —
+   * usa a última renderização, igual acharPalavraNoPonto. Usado pra
+   * posicionar a CAIXA de seleção (com as alças) na posição real, em
+   * vez da posição errada do elemento DOM. */
+  function acharBboxDaPalavra(templateId, wordId) {
+    const tpl = TEMPLATES_FRAME_EXACT[templateId];
+    const regioes = tpl && tpl._ultimasRegioesClique;
+    if (!regioes || !wordId) return null;
+    for (let i = regioes.length - 1; i >= 0; i--) {
+      if (regioes[i].wordId === wordId) return regioes[i];
+    }
+    return null;
+  }
 
   function _renderFrameEfeito2Style(ctx, tpl, texts, frameIdx) {
     const f = tpl.motionData.framesData[frameIdx];
@@ -38892,6 +38942,7 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     readTextsFromStanza,
     clearBitmapCache,
     acharPalavraNoPonto,
+    acharBboxDaPalavra,
   };
 })();
 
