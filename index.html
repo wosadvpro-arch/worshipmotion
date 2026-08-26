@@ -18982,12 +18982,79 @@ class RenderEngineV2 {
       // só o GLIFO da palavra (cor transparente), sem desativar
       // clique/seleção (que continuam funcionando na posição do DOM).
       stanzaEl.classList.add('is-frame-exact-stanza');
+      // ARRASTAR PRA MOVER: mesmo princípio do clique — usa
+      // acharPalavraNoPonto pra saber qual palavra pegar no
+      // mousedown, e vai atualizando um deslocamento {dx,dy} (em
+      // pixels lógicos do template) durante o mousemove, aplicado por
+      // cima da posição real medida do vídeo (ver _deslocarBbox nos
+      // efeitos). O clique (abaixo) só troca a seleção se NÃO houve
+      // arrasto de verdade (mais que alguns pixels) — evita
+      // selecionar/desselecionar sem querer ao soltar depois de mover.
+      //
+      // BUG REAL CORRIGIDO (durante o desenvolvimento): esse código
+      // roda DENTRO de um método da própria engine — "this" já É a
+      // engine, não existe uma variável solta chamada "engine" aqui
+      // (essa só existe no outro módulo, onde ficam os botões da
+      // barra de ferramentas). Captura "this" numa variável local pra
+      // usar dentro das arrow functions dos listeners.
+      const engineRef = this;
+      let arrastando = null; // { wordId, startClientX, startClientY, offsetInicial }
+      let arrastouDeVerdade = false;
+      const LIMIAR_ARRASTO_PX = 4;
+      canvas.addEventListener('mousedown', (ev) => {
+        const rect = canvas.getBoundingClientRect();
+        if (rect.width === 0 || rect.height === 0) return;
+        const escalaX = canvas.width / rect.width;
+        const escalaY = canvas.height / rect.height;
+        const xLogico = (ev.clientX - rect.left) * escalaX;
+        const yLogico = (ev.clientY - rect.top) * escalaY;
+        const wordId = R.acharPalavraNoPonto(tplId, xLogico, yLogico);
+        if (!wordId) return;
+        const wo = engineRef.wordOverrides[wordId];
+        const offsetInicial = (wo && wo.style && wo.style.frameExactOffset) || { dx: 0, dy: 0 };
+        arrastando = { wordId, startClientX: ev.clientX, startClientY: ev.clientY, offsetInicial, escalaX, escalaY };
+        arrastouDeVerdade = false;
+        ev.preventDefault();
+      });
+      document.addEventListener('mousemove', (ev) => {
+        if (!arrastando) return;
+        const deltaClientX = ev.clientX - arrastando.startClientX;
+        const deltaClientY = ev.clientY - arrastando.startClientY;
+        if (!arrastouDeVerdade && Math.hypot(deltaClientX, deltaClientY) < LIMIAR_ARRASTO_PX) return;
+        arrastouDeVerdade = true;
+        const dxLogico = deltaClientX * arrastando.escalaX;
+        const dyLogico = deltaClientY * arrastando.escalaY;
+        const novoOffset = {
+          dx: arrastando.offsetInicial.dx + dxLogico,
+          dy: arrastando.offsetInicial.dy + dyLogico,
+        };
+        const wo = engineRef.wordOverrides[arrastando.wordId] || {};
+        engineRef.setWordOverride(arrastando.wordId, { style: { ...(wo.style || {}), frameExactOffset: novoOffset } });
+        const st = engineRef.parsed?.stanzas?.[engineRef.currentStanzaIndex];
+        if (st) {
+          const mapa = engineRef._frameExactUltimoElapsedPorStanza || {};
+          engineRef._renderFrameExactCanvas(stanzaEl, st, mapa[st.id] || 0);
+        }
+        if (typeof window.updateSelectionBox === 'function') window.updateSelectionBox();
+      });
+      document.addEventListener('mouseup', () => {
+        if (!arrastando) return;
+        if (arrastouDeVerdade) {
+          // Garante que a palavra arrastada fica selecionada (mesmo
+          // comportamento de soltar um arrasto normal) e persiste.
+          if (typeof window.selectWord === 'function') window.selectWord(arrastando.wordId);
+          if (typeof window.updateSelectionBox === 'function') window.updateSelectionBox();
+          if (engineRef.markDirty) engineRef.markDirty();
+        }
+        arrastando = null;
+      });
       // CLIQUE PRA SELECIONAR: usa acharPalavraNoPonto (posições reais
       // registradas durante o desenho) pra saber qual palavra está sob
       // o clique — não dá pra confiar na posição do elemento DOM (ver
       // comentário acima). Replica o comportamento normal de clique
       // em palavra: shift/ctrl adiciona à seleção, clique simples troca.
       canvas.addEventListener('click', (ev) => {
+        if (arrastouDeVerdade) { arrastouDeVerdade = false; return; } // já tratado no mouseup
         const rect = canvas.getBoundingClientRect();
         if (rect.width === 0 || rect.height === 0) return;
         const escalaX = canvas.width / rect.width;
@@ -38611,7 +38678,7 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     // PERSONALIZAÇÃO POR PALAVRA (fontFamily): usa a fonte customizada
     // se houver, senão a fonte fixa do template.
     const fontFamilyRed = texts._fontFamilyRed || stRed.fontFamily;
-    const bboxRedEscalado = _escalarBboxCentro(f.red, texts._fontScaleRed);
+    const bboxRedEscalado = _deslocarBbox(_escalarBboxCentro(f.red, texts._fontScaleRed), texts._offsetRed);
     const rectDesenhadoRed = _desenharAjustadoCentralizado(ctx, texts.red, fontFamilyRed, stRed.color, bboxRedEscalado, 'xywh');
     if (rectDesenhadoRed) _registrarRegiaoClique(tpl, texts._wordIdRed, rectDesenhadoRed[0], rectDesenhadoRed[1], rectDesenhadoRed[2], rectDesenhadoRed[3]);
 
@@ -38619,6 +38686,7 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     const whiteTexts = texts.white || [];
     const fontScaleWhite = texts._fontScaleWhite || [];
     const fontFamilyWhite = texts._fontFamilyWhite || [];
+    const offsetWhite = texts._offsetWhite || [];
     const wordIdsWhite = texts._wordIdsWhite || [];
     const stWhite = tpl.styles.white;
     const totalOriginal = (tpl.motionData.framesData[tpl.motionData.framesData.length - 1].white || []).length;
@@ -38632,7 +38700,7 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     if (whiteTexts.length === totalOriginal) {
       const n = Math.min(whiteBoxesFrame.length, whiteTexts.length);
       for (let i = 0; i < n; i++) {
-        const bbox = _escalarBboxCentro(whiteBoxesFrame[i], fontScaleWhite[i]);
+        const bbox = _deslocarBbox(_escalarBboxCentro(whiteBoxesFrame[i], fontScaleWhite[i]), offsetWhite[i]);
         drawStretched(ctx, whiteTexts[i], fontFamilyWhite[i] || stWhite.fontFamily, stWhite.color, bbox, 'xywh');
         if (bbox) _registrarRegiaoClique(tpl, wordIdsWhite[i], bbox[0], bbox[1], bbox[2], bbox[3]);
       }
@@ -38661,7 +38729,8 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       const alturaComEscala = bboxRef[3] * (fontScaleWhite[i] || 1);
       const img = _efeito2MakeBitmapAtHeight(texto, fontFamilyWhite[i] || stWhite.fontFamily, stWhite.color, alturaComEscala);
       if (!img) continue;
-      itens.push({ img, w: img.width, h: img.height, y: bboxRef[1], wordId: wordIdsWhite[i] });
+      const offset = offsetWhite[i];
+      itens.push({ img, w: img.width, h: img.height, y: bboxRef[1], wordId: wordIdsWhite[i], offset });
     }
     if (!itens.length) return true;
 
@@ -38673,8 +38742,9 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     let x = centroCanvas - larguraTotal / 2;
     itens.forEach((it, i) => {
       if (i > 0) x += gaps[i];
-      ctx.drawImage(it.img, x, it.y, it.w, it.h);
-      _registrarRegiaoClique(tpl, it.wordId, x, it.y, it.w, it.h);
+      const dx = (it.offset && it.offset.dx) || 0, dy = (it.offset && it.offset.dy) || 0;
+      ctx.drawImage(it.img, x + dx, it.y + dy, it.w, it.h);
+      _registrarRegiaoClique(tpl, it.wordId, x + dx, it.y + dy, it.w, it.h);
       x += it.w;
     });
 
@@ -39049,6 +39119,18 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     return [cx - w2 / 2, cy - h2 / 2, w2, h2];
   }
 
+  /**
+   * Desloca uma bbox [x,y,w,h] por um deslocamento {dx,dy} — usado pra
+   * aplicar a personalização de posição por palavra (arrastar) nos
+   * efeitos frame-exact, por cima da posição real medida do vídeo.
+   */
+  function _deslocarBbox(bbox, offset) {
+    if (!bbox || !offset) return bbox;
+    const dx = offset.dx || 0, dy = offset.dy || 0;
+    if (!dx && !dy) return bbox;
+    return [bbox[0] + dx, bbox[1] + dy, bbox[2], bbox[3]];
+  }
+
   function _readTextsEfeito2Style(stanza, wordOverrides) {
     const lines = (stanza && stanza.lines) || [];
     const linhaVermelha = lines[0]?.words || [];
@@ -39072,6 +39154,15 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       && wordOverrides[w.id].style && wordOverrides[w.id].style.fontFamily) || null;
     const fontFamilyRed = linhaVermelha.length ? fonte(linhaVermelha[0]) : null;
     const fontFamilyWhite = linhaBranca.map(fonte);
+    // PERSONALIZAÇÃO POR PALAVRA (arrastar): deslocamento em pixels
+    // lógicos do template, aplicado por cima da posição real medida
+    // do vídeo — {dx,dy} = null/0 significa "posição original, sem
+    // arrastar". Mesmo critério de representante (linha vermelha usa
+    // a primeira palavra, branca é por palavra).
+    const deslocamento = (w) => (w && w.id && wordOverrides && wordOverrides[w.id]
+      && wordOverrides[w.id].style && wordOverrides[w.id].style.frameExactOffset) || null;
+    const offsetRed = linhaVermelha.length ? deslocamento(linhaVermelha[0]) : null;
+    const offsetWhite = linhaBranca.map(deslocamento);
     // CLIQUE PRA SELECIONAR: guarda os IDs de palavra também, pra
     // depois relacionar "onde foi desenhado" (bbox real) com "qual
     // palavra é essa" (id) — ver _registrarRegiaoClique.
@@ -39080,6 +39171,7 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     return {
       red, white, _fontScaleRed: fontScaleRed, _fontScaleWhite: fontScaleWhite,
       _fontFamilyRed: fontFamilyRed, _fontFamilyWhite: fontFamilyWhite,
+      _offsetRed: offsetRed, _offsetWhite: offsetWhite,
       _wordIdRed: wordIdRed, _wordIdsWhite: wordIdsWhite,
     };
   }
