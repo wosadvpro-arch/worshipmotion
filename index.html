@@ -19010,10 +19010,25 @@ class RenderEngineV2 {
         const yLogico = (ev.clientY - rect.top) * escalaY;
         const wordId = R.acharPalavraNoPonto(tplId, xLogico, yLogico);
         if (!wordId) return;
+        // BUG REAL CORRIGIDO ("caixa extra aparecendo, arrastar não
+        // funciona"): esse mousedown BORBULHA pro container pai
+        // (#editor-canvas), que tem seu PRÓPRIO handler de
+        // mousedown (onCanvasMouseDown) — pensado pro modo normal,
+        // não sabe que essa palavra já foi "pega" aqui, então inicia
+        // uma seleção em RETÂNGULO (marquee) ao mesmo tempo — os dois
+        // rodavam juntos, conflitando (a caixa extra era essa seleção
+        // em retângulo, desenhada por cima). stopPropagation impede o
+        // evento de continuar subindo depois que uma palavra é
+        // encontrada aqui.
+        ev.stopPropagation();
         const wo = engineRef.wordOverrides[wordId];
         const offsetInicial = (wo && wo.style && wo.style.frameExactOffset) || { dx: 0, dy: 0 };
         arrastando = { wordId, startClientX: ev.clientX, startClientY: ev.clientY, offsetInicial, escalaX, escalaY };
         arrastouDeVerdade = false;
+        // Seleciona já no mousedown (não só ao soltar) — a caixa de
+        // seleção acompanha a palavra durante o arrasto inteiro, não
+        // só depois de largar o mouse.
+        if (typeof window.selectWord === 'function') window.selectWord(wordId);
         ev.preventDefault();
       });
       document.addEventListener('mousemove', (ev) => {
@@ -19063,6 +19078,7 @@ class RenderEngineV2 {
         const yLogico = (ev.clientY - rect.top) * escalaY;
         const wordId = R.acharPalavraNoPonto(tplId, xLogico, yLogico);
         if (!wordId) return;
+        ev.stopPropagation();
         if (ev.shiftKey || ev.ctrlKey || ev.metaKey) {
           if (typeof window.toggleWordInSelection === 'function') window.toggleWordInSelection(wordId);
         } else {
