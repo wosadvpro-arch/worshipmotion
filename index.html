@@ -3058,6 +3058,40 @@ body.timeline-collapsed .timeline-collapse-btn {
   outline: 1px dashed rgba(139, 92, 246, 0.45);
   outline-offset: 2px;
 }
+/* BUG REAL CORRIGIDO ("TESTE aparece duplicado/desalinhado ao
+   selecionar a palavra"): estrofes frame-exact desenham o texto num
+   <canvas> próprio, com posições customizadas medidas do vídeo real —
+   os elementos .lyric-word por baixo (usados pro clique/seleção,
+   mantidos no fluxo de texto NORMAL) nunca ficam na mesma posição
+   visual. Normalmente ficam cobertos pelo canvas, mas na hora de
+   selecionar, o GLIFO da própria palavra podia aparecer proeminente
+   numa posição diferente da que o canvas desenha, parecendo duas
+   cópias desalinhadas do texto. Corrigido: torna só a COR do glifo
+   transparente dentro de estrofes frame-exact (color: transparent) —
+   clique e seleção continuam funcionando normalmente (não afeta
+   pointer-events), só o texto em si nunca fica visualmente visível
+   por baixo do canvas.
+*/
+.is-frame-exact-stanza .lyric-word {
+  color: transparent !important;
+  text-shadow: none !important;
+  -webkit-text-stroke: 0 !important;
+}
+/* BUG REAL CORRIGIDO (parte 2 — a caixa de seleção com as alças
+   cortava o meio do texto): a caixa de seleção usa a posição/tamanho
+   NATURAL do elemento .lyric-word (fluxo de texto normal, pequeno) —
+   nunca bate com o tamanho/posição real que o canvas frame-exact
+   desenha (medido do vídeo, normalmente bem maior). O texto em si já
+   está escondido (regra acima), mas a caixa+alças sozinhas, no
+   tamanho errado, ainda cortavam visualmente o texto grande desenhado
+   pelo canvas. Sem uma integração própria por efeito pra saber a
+   bbox real de cada papel, a posição correta não dá pra calcular —
+   esconde a caixa visual nesse caso (o painel de edição à direita
+   continua funcionando normalmente pra aplicar tamanho/cor/etc).
+*/
+.is-frame-exact-stanza .selection-box {
+  display: none !important;
+}
 /* Dentro do preview de card de animação: sem cursor/outline/hover */
 .anim-card-preview .lyric-word,
 .anim-card-preview .lyric-word:hover,
@@ -18935,6 +18969,19 @@ class RenderEngineV2 {
       canvas.style.cssText = 'position:absolute; inset:0; width:100%; height:100%; display:block;';
       stanzaEl.style.position = stanzaEl.style.position || 'relative';
       stanzaEl.appendChild(canvas);
+      // BUG REAL CORRIGIDO ("TESTE aparece duplicado/desalinhado ao
+      // selecionar a palavra"): os elementos .lyric-word por baixo do
+      // canvas usam a posição NATURAL do fluxo de texto normal — que
+      // nunca bate com a posição customizada (medida do vídeo real)
+      // que o canvas frame-exact desenha. Normalmente ficam cobertos
+      // pelo canvas (por cima na ordem de pintura), mas ao selecionar
+      // uma palavra, a própria palavra (com o próprio texto/glifo)
+      // pode ficar visualmente proeminente numa posição DIFERENTE da
+      // que o canvas desenha — parecendo duas cópias desalinhadas do
+      // texto. Marca a estrofe como frame-exact pra CSS poder esconder
+      // só o GLIFO da palavra (cor transparente), sem desativar
+      // clique/seleção (que continuam funcionando na posição do DOM).
+      stanzaEl.classList.add('is-frame-exact-stanza');
     }
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -37770,15 +37817,27 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
           const nat = EFEITO8_NATURAL[papel];
           const img = makeBitmap(texto, st.fontFamily, st.color);
           if (!img || !nat) return;
+          // PERSONALIZAÇÃO POR PALAVRA (fontSizeScale): escala o
+          // tamanho NATURAL (não a bbox de recorte) — cresce/encolhe
+          // a partir do mesmo ponto de ancoragem (canto/base) que já
+          // era usado, sem distorcer (aqui já desenha no tamanho
+          // natural, nunca esticou).
+          const escala = (texts._fontScale && texts._fontScale[papel]) || 1;
+          const natW = nat.w * escala, natH = nat.h * escala;
           const [bx, bwY, bw, bh] = bbox;
           const by = bwY + deslocYCentralizacao;
-          const drawX = (nat.ax === 'd') ? (bx + bw - nat.w) : bx;
-          const drawY = (nat.ay === 'b') ? (by + bh - nat.h) : by;
+          const drawX = (nat.ax === 'd') ? (bx + bw - natW) : bx;
+          const drawY = (nat.ay === 'b') ? (by + bh - natH) : by;
+          // recorte também escalado (a partir do mesmo canto de
+          // ancoragem) — senão o texto aumentado fica cortado nas
+          // bordas da área original, pensada pro tamanho sem escala.
+          const clipX = (nat.ax === 'd') ? (bx + bw - bw * escala) : bx;
+          const clipY = (nat.ay === 'b') ? (by + bh - bh * escala) : by;
           ctx.save();
           ctx.beginPath();
-          ctx.rect(bx, by, bw, bh);
+          ctx.rect(clipX, clipY, bw * escala, bh * escala);
           ctx.clip();
-          ctx.drawImage(img, drawX, drawY, nat.w, nat.h);
+          ctx.drawImage(img, drawX, drawY, natW, natH);
           ctx.restore();
         });
         return;
@@ -37824,8 +37883,9 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       }
       const ultimoPapel = papeis[papeis.length - 1];
       const stLinha = tpl.styles[ultimoPapel];
+      const escalasLinha = (texts._fontScaleLinhas && texts._fontScaleLinhas[grupoIndex]) || [];
       const ativos = todasPalavras
-        .map(texto => ({ texto: (texto || '').trim(), st: stLinha }))
+        .map((texto, i) => ({ texto: (texto || '').trim(), st: stLinha, fatorCrescimento: escalasLinha[i] || 1 }))
         .filter(o => o.texto);
       if (!ativos.length) return;
 
@@ -37911,6 +37971,7 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     const tStarts = texts && texts._tStarts;
     const referencia = texts && texts._referenciaTStart;
     const temMarcacao = !!(tStarts && referencia != null);
+    const fontScale = (texts && texts._fontScale) || {};
 
     let atrasoAtivoAgora = null;
     if (temMarcacao && umPorVez) {
@@ -37937,7 +37998,15 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       const texto = (texts && texts[papel] || '').trim();
       if (!texto) return;
       const st = tpl.styles[papel];
-      drawStretched(ctx, texto, st.fontFamily, st.color, bbox, 'xywh');
+      // BUG REAL CORRIGIDO (mesma causa já achada e corrigida no Efeito
+      // 2 — "TESTE com letras espaçadas de forma estranha"):
+      // drawStretched sem preservar proporção distorce texto de
+      // substituição bem mais curto/longo que o original medido no
+      // vídeo. Troca por ajuste-e-centraliza (preserva proporção),
+      // igual à correção já validada. Também aplica a personalização
+      // de tamanho por palavra (fontSizeScale), se houver.
+      _desenharAjustadoCentralizado(ctx, texto, st.fontFamily, st.color,
+        _escalarBboxCentro(bbox, fontScale[papel]), 'xywh');
     });
     return true;
   }
@@ -38245,12 +38314,53 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     return c;
   }
 
+  /**
+   * Desenha texto AJUSTADO (preserva proporção) dentro de uma bbox,
+   * centralizado — em vez de esticar de forma não-uniforme pra
+   * preencher a largura exata (que distorce letras quando o texto de
+   * substituição é bem mais curto ou mais longo que o original medido
+   * no vídeo fonte). Ajusta pela ALTURA da bbox primeiro; se ainda
+   * assim ficar mais largo que a bbox, encolhe pra caber também na
+   * largura — nos dois casos, centraliza o resultado dentro da área
+   * original (preserva a posição/centro, só não distorce mais).
+   *
+   * BUG REAL CORRIGIDO ("TESTE com letras espaçadas de forma
+   * estranha"): a linha vermelha do Efeito 2 sempre usou
+   * drawStretched sem preservar proporção — funcionava bem quando o
+   * texto de substituição tinha comprimento parecido com o original
+   * ("PUT OFF HOTTED", 3 palavras), mas uma palavra curta como
+   * "teste" esticava horizontalmente demais, distorcendo cada letra
+   * de forma desigual (letras com formas internas complexas, tipo
+   * "S", esticam de um jeito visualmente bem diferente de letras com
+   * traços retos, tipo "T"/"E" — daí o espaçamento parecer estranho).
+   * Diferente da linha branca (que já tinha um modo "encolher pra
+   * caber" pro reflow), a vermelha nunca teve essa proteção.
+   */
+  function _desenharAjustadoCentralizado(ctx, text, fontFamily, color, bbox, bboxFormat) {
+    if (!bbox || !text) return;
+    const img = makeBitmap(text, fontFamily, color);
+    if (!img || !img.height) return;
+    let bx, by, bw, bh;
+    if (bboxFormat === 'xywh') { bx = bbox[0]; by = bbox[1]; bw = bbox[2]; bh = bbox[3]; }
+    else { bx = bbox[0]; by = bbox[1]; bw = bbox[2] - bbox[0]; bh = bbox[3] - bbox[1]; }
+    let drawH = bh;
+    let drawW = img.width * (drawH / img.height);
+    if (drawW > bw) { // ainda mais largo que a bbox -- encolhe tambem pela largura
+      const fator = bw / drawW;
+      drawW *= fator;
+      drawH *= fator;
+    }
+    const drawX = bx + (bw - drawW) / 2;
+    const drawY = by + (bh - drawH) / 2;
+    ctx.drawImage(img, drawX, drawY, drawW, drawH);
+  }
+
   function _renderFrameEfeito2Style(ctx, tpl, texts, frameIdx) {
     const f = tpl.motionData.framesData[frameIdx];
     if (!f) return false;
 
     const stRed = tpl.styles.red;
-    drawStretched(ctx, texts.red, stRed.fontFamily, stRed.color, _escalarBboxCentro(f.red, texts._fontScaleRed), 'xywh');
+    _desenharAjustadoCentralizado(ctx, texts.red, stRed.fontFamily, stRed.color, _escalarBboxCentro(f.red, texts._fontScaleRed), 'xywh');
 
     const whiteBoxesFrame = f.white || [];
     const whiteTexts = texts.white || [];
@@ -38399,27 +38509,27 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       return _readTextsEfeito2Style(stanza, wordOverrides);
     }
     if (tpl && tpl.layout === 'efeito-6-style') {
-      return _readTextsEfeito6Style(stanza);
+      return _readTextsEfeito6Style(stanza, tpl, wordOverrides);
     }
     if (tpl && tpl.layout === 'efeito-7-style') {
-      return _readTextsEfeito7Style(stanza);
+      return _readTextsEfeito7Style(stanza, tpl, wordOverrides);
     }
     if (tpl && tpl.layout === 'efeito-8-style') {
-      return _readTextsEfeito8Style(stanza, tpl);
+      return _readTextsEfeito8Style(stanza, tpl, wordOverrides);
     }
     if (tpl && tpl.layout === 'efeito-10-style') {
-      return _readTextsEfeito10Style(stanza);
+      return _readTextsEfeito10Style(stanza, wordOverrides);
     }
     if (tpl && tpl.layout === 'efeito-11-style') {
-      return _readTextsEfeito11Style(stanza);
+      return _readTextsEfeito11Style(stanza, tpl, wordOverrides);
     }
     if (tpl && tpl.layout === 'efeito-12-style') {
-      return _readTextsEfeito12Style(stanza, tpl);
+      return _readTextsEfeito12Style(stanza, tpl, wordOverrides);
     }
     if (tpl && tpl.layout === 'efeito-13-style') {
-      return _readTextsEfeito13Style(stanza, tpl);
+      return _readTextsEfeito13Style(stanza, tpl, wordOverrides);
     }
-    return _readTextsKineticScaleStack(stanza);
+    return _readTextsKineticScaleStack(stanza, wordOverrides);
   }
 
   /**
@@ -38491,9 +38601,9 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
    * todas as palavras da linha com o mesmo tempo, então a 1ª já
    * representa a linha toda).
    */
-  function _lerTextosLinhaParaPapel(stanza, papeis) {
+  function _lerTextosLinhaParaPapel(stanza, papeis, wordOverrides) {
     const lines = (stanza && stanza.lines) || [];
-    const out = { _tStarts: {}, _referenciaTStart: null };
+    const out = { _tStarts: {}, _referenciaTStart: null, _fontScale: {} };
     papeis.forEach((papel, i) => {
       const palavrasObj = (lines[i]?.words || []);
       out[papel] = palavrasObj.map(w => w.text).join(' ');
@@ -38502,13 +38612,20 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
         out._tStarts[papel] = w.tStart;
         if (out._referenciaTStart === null) out._referenciaTStart = w.tStart;
       }
+      // PERSONALIZAÇÃO POR PALAVRA (fontSizeScale): a linha inteira é
+      // um bloco só, usa a escala da PRIMEIRA palavra como
+      // representante (igual ao critério já usado pro tStart acima).
+      if (w && w.id && wordOverrides && wordOverrides[w.id]
+          && wordOverrides[w.id].style && wordOverrides[w.id].style.fontSizeScale) {
+        out._fontScale[papel] = wordOverrides[w.id].style.fontSizeScale;
+      }
     });
     return out;
   }
 
-  function _readTextsEfeito11Style(stanza) {
+  function _readTextsEfeito11Style(stanza, tpl, wordOverrides) {
     return _lerTextosLinhaParaPapel(stanza,
-      ['be_my_soul', 'monster', 'part', 'or_me_but', 'now_i_loose', 'control']);
+      ['be_my_soul', 'monster', 'part', 'or_me_but', 'now_i_loose', 'control'], wordOverrides);
   }
 
   /**
@@ -38564,10 +38681,10 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
    * ferramenta "Marcar no ritmo" — o renderer usa isso pra recalcular
    * o instante de entrada de cada palavra dentro da animação.
    */
-  function _readTextsEfeito8Style(stanza, tpl) {
+  function _readTextsEfeito8Style(stanza, tpl, wordOverrides) {
     const lines = (stanza && stanza.lines) || [];
     const mapa = tpl.linhasParaPapeis || [];
-    const out = { _linhas: [], _tStarts: {}, _referenciaTStart: null };
+    const out = { _linhas: [], _tStarts: {}, _referenciaTStart: null, _fontScale: {}, _fontScaleLinhas: [] };
     mapa.forEach((papeis, li) => {
       const palavrasObj = (lines[li]?.words || []);
       const palavras = palavrasObj.map(w => w.text);
@@ -38578,8 +38695,23 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
           out._tStarts[papel] = w.tStart;
           if (out._referenciaTStart === null) out._referenciaTStart = w.tStart;
         }
+        // PERSONALIZAÇÃO POR PALAVRA (fontSizeScale): cada papel é uma
+        // PALAVRA específica aqui (não a linha inteira), usa a escala
+        // da própria palavra.
+        if (w && w.id && wordOverrides && wordOverrides[w.id]
+            && wordOverrides[w.id].style && wordOverrides[w.id].style.fontSizeScale) {
+          out._fontScale[papel] = wordOverrides[w.id].style.fontSizeScale;
+        }
       });
       out._linhas.push(palavras);
+      // Mesma escala, mas indexada por POSIÇÃO na linha (não por nome
+      // de papel original) — necessário pro caminho de reflow (texto
+      // com quantidade de palavras diferente da original), onde as
+      // palavras digitadas não têm mais correspondência 1:1 com os
+      // papéis fixos.
+      out._fontScaleLinhas.push(palavrasObj.map(w =>
+        (w && w.id && wordOverrides && wordOverrides[w.id]
+          && wordOverrides[w.id].style && wordOverrides[w.id].style.fontSizeScale) || 1));
     });
     return out;
   }
@@ -38591,9 +38723,9 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
    * a ordem de DESENHO, que coloca red por cima, é outra coisa, ver
    * ordemDesenho no registro do template).
    */
-  function _readTextsEfeito7Style(stanza) {
+  function _readTextsEfeito7Style(stanza, tpl, wordOverrides) {
     return _lerTextosLinhaParaPapel(stanza,
-      ['whiteTop', 'whiteUpper', 'red', 'whiteLower', 'whiteBottom']);
+      ['whiteTop', 'whiteUpper', 'red', 'whiteLower', 'whiteBottom'], wordOverrides);
   }
 
   /**
@@ -38601,8 +38733,8 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
    * UM texto só (todas as palavras daquela linha juntas) — igual a
    * como "top"/"red" já leem linha 1/2 no Kinetic Scale Stack.
    */
-  function _readTextsEfeito6Style(stanza) {
-    return _lerTextosLinhaParaPapel(stanza, ['primaryRed', 'secondaryWhite', 'cashRed']);
+  function _readTextsEfeito6Style(stanza, tpl, wordOverrides) {
+    return _lerTextosLinhaParaPapel(stanza, ['primaryRed', 'secondaryWhite', 'cashRed'], wordOverrides);
   }
 
   function _readTextsKineticScaleStack(stanza) {
