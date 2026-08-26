@@ -18982,6 +18982,28 @@ class RenderEngineV2 {
       // só o GLIFO da palavra (cor transparente), sem desativar
       // clique/seleção (que continuam funcionando na posição do DOM).
       stanzaEl.classList.add('is-frame-exact-stanza');
+      // CLIQUE PRA SELECIONAR: usa acharPalavraNoPonto (posições reais
+      // registradas durante o desenho) pra saber qual palavra está sob
+      // o clique — não dá pra confiar na posição do elemento DOM (ver
+      // comentário acima). Replica o comportamento normal de clique
+      // em palavra: shift/ctrl adiciona à seleção, clique simples troca.
+      canvas.addEventListener('click', (ev) => {
+        const rect = canvas.getBoundingClientRect();
+        if (rect.width === 0 || rect.height === 0) return;
+        const escalaX = canvas.width / rect.width;
+        const escalaY = canvas.height / rect.height;
+        const xLogico = (ev.clientX - rect.left) * escalaX;
+        const yLogico = (ev.clientY - rect.top) * escalaY;
+        const wordId = R.acharPalavraNoPonto(tplId, xLogico, yLogico);
+        if (!wordId) return;
+        if (ev.shiftKey || ev.ctrlKey || ev.metaKey) {
+          if (typeof window.toggleWordInSelection === 'function') window.toggleWordInSelection(wordId);
+        } else {
+          if (typeof window.selectWord === 'function') window.selectWord(wordId);
+        }
+        const tab = document.querySelector('.panel-tab[data-rpanel="style"]');
+        if (tab) tab.click();
+      });
     }
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -25886,6 +25908,7 @@ function initEditor() {
 
   window.renderWordPanel = renderWordPanel;
   window.selectWord = selectWord;
+  window.toggleWordInSelection = toggleWordInSelection;
 
   function updateActiveStanzaInList(idx) {
     if (typeof syncCtxToolbar === 'function') syncCtxToolbar();
@@ -38355,16 +38378,54 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     ctx.drawImage(img, drawX, drawY, drawW, drawH);
   }
 
+  /**
+   * CLIQUE PRA SELECIONAR PALAVRA (frame-exact): os elementos DOM de
+   * palavra (usados pro clique no modo normal) ficam em posições que
+   * NUNCA batem com onde o canvas frame-exact desenha de verdade (ver
+   * comentário na CSS .is-frame-exact-stanza) — clicar no texto
+   * visível não selecionava nada. Corrigido registrando, a cada
+   * quadro desenhado, ONDE cada palavra foi desenhada de verdade (bbox
+   * real, em espaço lógico do template) — o clique real (handler no
+   * módulo do editor) usa essa lista pra achar qual palavra está sob o
+   * ponto clicado. Lista reiniciada a cada renderFrame.
+   */
+  function _limparRegioesClique(tpl) {
+    tpl._ultimasRegioesClique = [];
+  }
+  function _registrarRegiaoClique(tpl, wordId, bx, by, bw, bh) {
+    if (!wordId) return;
+    tpl._ultimasRegioesClique = tpl._ultimasRegioesClique || [];
+    tpl._ultimasRegioesClique.push({ wordId, x: bx, y: by, w: bw, h: bh });
+  }
+  /** Acha o wordId sob o ponto (x,y) em espaço lógico do template — usa
+   * a última renderização (por isso é preciso já ter desenhado pelo
+   * menos um quadro). Devolve null se nenhuma região contém o ponto. */
+  function acharPalavraNoPonto(templateId, x, y) {
+    const tpl = TEMPLATES_FRAME_EXACT[templateId];
+    const regioes = tpl && tpl._ultimasRegioesClique;
+    if (!regioes) return null;
+    // de trás pra frente: a última desenhada fica visualmente por cima.
+    for (let i = regioes.length - 1; i >= 0; i--) {
+      const r = regioes[i];
+      if (x >= r.x && x <= r.x + r.w && y >= r.y && y <= r.y + r.h) return r.wordId;
+    }
+    return null;
+  }
+
   function _renderFrameEfeito2Style(ctx, tpl, texts, frameIdx) {
     const f = tpl.motionData.framesData[frameIdx];
     if (!f) return false;
+    _limparRegioesClique(tpl);
 
     const stRed = tpl.styles.red;
-    _desenharAjustadoCentralizado(ctx, texts.red, stRed.fontFamily, stRed.color, _escalarBboxCentro(f.red, texts._fontScaleRed), 'xywh');
+    const bboxRedEscalado = _escalarBboxCentro(f.red, texts._fontScaleRed);
+    _desenharAjustadoCentralizado(ctx, texts.red, stRed.fontFamily, stRed.color, bboxRedEscalado, 'xywh');
+    if (bboxRedEscalado) _registrarRegiaoClique(tpl, texts._wordIdRed, bboxRedEscalado[0], bboxRedEscalado[1], bboxRedEscalado[2], bboxRedEscalado[3]);
 
     const whiteBoxesFrame = f.white || [];
     const whiteTexts = texts.white || [];
     const fontScaleWhite = texts._fontScaleWhite || [];
+    const wordIdsWhite = texts._wordIdsWhite || [];
     const stWhite = tpl.styles.white;
     const totalOriginal = (tpl.motionData.framesData[tpl.motionData.framesData.length - 1].white || []).length;
     if (!totalOriginal || !whiteTexts.length) return true;
@@ -38379,6 +38440,7 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       for (let i = 0; i < n; i++) {
         const bbox = _escalarBboxCentro(whiteBoxesFrame[i], fontScaleWhite[i]);
         drawStretched(ctx, whiteTexts[i], stWhite.fontFamily, stWhite.color, bbox, 'xywh');
+        if (bbox) _registrarRegiaoClique(tpl, wordIdsWhite[i], bbox[0], bbox[1], bbox[2], bbox[3]);
       }
       return true;
     }
@@ -38405,7 +38467,7 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       const alturaComEscala = bboxRef[3] * (fontScaleWhite[i] || 1);
       const img = _efeito2MakeBitmapAtHeight(texto, stWhite.fontFamily, stWhite.color, alturaComEscala);
       if (!img) continue;
-      itens.push({ img, w: img.width, h: img.height, y: bboxRef[1] });
+      itens.push({ img, w: img.width, h: img.height, y: bboxRef[1], wordId: wordIdsWhite[i] });
     }
     if (!itens.length) return true;
 
@@ -38418,6 +38480,7 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     itens.forEach((it, i) => {
       if (i > 0) x += gaps[i];
       ctx.drawImage(it.img, x, it.y, it.w, it.h);
+      _registrarRegiaoClique(tpl, it.wordId, x, it.y, it.w, it.h);
       x += it.w;
     });
 
@@ -38807,7 +38870,15 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       && wordOverrides[w.id].style && wordOverrides[w.id].style.fontSizeScale) || 1;
     const fontScaleRed = linhaVermelha.length ? escala(linhaVermelha[0]) : 1;
     const fontScaleWhite = linhaBranca.map(escala);
-    return { red, white, _fontScaleRed: fontScaleRed, _fontScaleWhite: fontScaleWhite };
+    // CLIQUE PRA SELECIONAR: guarda os IDs de palavra também, pra
+    // depois relacionar "onde foi desenhado" (bbox real) com "qual
+    // palavra é essa" (id) — ver _registrarRegiaoClique.
+    const wordIdRed = linhaVermelha[0]?.id || null;
+    const wordIdsWhite = linhaBranca.map(w => w.id || null);
+    return {
+      red, white, _fontScaleRed: fontScaleRed, _fontScaleWhite: fontScaleWhite,
+      _wordIdRed: wordIdRed, _wordIdsWhite: wordIdsWhite,
+    };
   }
 
   return {
@@ -38820,6 +38891,7 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     getDurationMsComRitmo,
     readTextsFromStanza,
     clearBitmapCache,
+    acharPalavraNoPonto,
   };
 })();
 
