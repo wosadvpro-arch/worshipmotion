@@ -37452,7 +37452,7 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     // as MESMAS peças compartilhadas (makeBitmap, drawStretched,
     // getFrameIndex, cache de bitmap, pré-carregamento de fonte).
     if (tpl.layout === 'efeito-2-style') {
-      return _renderFrameEfeito2Style(ctx, tpl, texts, frameIdx);
+      return _renderFrameEfeito2Style(ctx, tpl, texts, frameIdx, elapsedMs);
     }
     if (tpl.layout === 'efeito-6-style') {
       return _renderFrameEfeito6Style(ctx, tpl, texts, frameIdx, elapsedMs);
@@ -38899,18 +38899,29 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     return null;
   }
 
-  function _renderFrameEfeito2Style(ctx, tpl, texts, frameIdx) {
+  function _renderFrameEfeito2Style(ctx, tpl, texts, frameIdx, elapsedMs) {
     const f = tpl.motionData.framesData[frameIdx];
     if (!f) return false;
     _limparRegioesClique(tpl);
 
+    // MARCAÇÃO DE RITMO (Premium): acumula (confirmei medindo:
+    // red[1-65], white_0[24-65]...white_6[59-65], todas terminando
+    // juntas — sem revezamento). "red" resolve o próprio quadro como
+    // um papel nomeado comum; "white" é por ÍNDICE (ver
+    // _resolverFrameComRitmoIndice), já que essa linha usa um array,
+    // não papéis nomeados.
     const stRed = tpl.styles.red;
-    // PERSONALIZAÇÃO POR PALAVRA (fontFamily): usa a fonte customizada
-    // se houver, senão a fonte fixa do template.
-    const fontFamilyRed = texts._fontFamilyRed || stRed.fontFamily;
-    const bboxRedEscalado = _deslocarBbox(_escalarBboxCentro(f.red, texts._fontScaleRed), texts._offsetRed);
-    const rectDesenhadoRed = _desenharAjustadoCentralizado(ctx, texts.red, fontFamilyRed, stRed.color, bboxRedEscalado, 'xywh');
-    if (rectDesenhadoRed) _registrarRegiaoClique(tpl, texts._wordIdRed, rectDesenhadoRed[0], rectDesenhadoRed[1], rectDesenhadoRed[2], rectDesenhadoRed[3]);
+    const frameRed = _resolverFrameComRitmo(tpl, 'red', frameIdx, elapsedMs,
+      { _tStarts: { red: texts._tStartRed }, _referenciaTStart: texts._referenciaTStart });
+    if (frameRed !== null) {
+      const fRed = frameRed === frameIdx ? f : tpl.motionData.framesData[frameRed];
+      // PERSONALIZAÇÃO POR PALAVRA (fontFamily): usa a fonte customizada
+      // se houver, senão a fonte fixa do template.
+      const fontFamilyRed = texts._fontFamilyRed || stRed.fontFamily;
+      const bboxRedEscalado = _deslocarBbox(_escalarBboxCentro(fRed && fRed.red, texts._fontScaleRed), texts._offsetRed);
+      const rectDesenhadoRed = _desenharAjustadoCentralizado(ctx, texts.red, fontFamilyRed, stRed.color, bboxRedEscalado, 'xywh');
+      if (rectDesenhadoRed) _registrarRegiaoClique(tpl, texts._wordIdRed, rectDesenhadoRed[0], rectDesenhadoRed[1], rectDesenhadoRed[2], rectDesenhadoRed[3]);
+    }
 
     const whiteBoxesFrame = f.white || [];
     const whiteTexts = texts.white || [];
@@ -38918,6 +38929,8 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     const fontFamilyWhite = texts._fontFamilyWhite || [];
     const offsetWhite = texts._offsetWhite || [];
     const wordIdsWhite = texts._wordIdsWhite || [];
+    const tStartsWhite = texts._tStartsWhite || {};
+    const referenciaTStart = texts._referenciaTStart;
     const stWhite = tpl.styles.white;
     const totalOriginal = (tpl.motionData.framesData[tpl.motionData.framesData.length - 1].white || []).length;
     if (!totalOriginal || !whiteTexts.length) return true;
@@ -38928,33 +38941,41 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     // (o cálculo proporcional de espaçamento é uma ótima aproximação,
     // mas não bate 100% com os valores medidos originais).
     if (whiteTexts.length === totalOriginal) {
-      const n = Math.min(whiteBoxesFrame.length, whiteTexts.length);
-      for (let i = 0; i < n; i++) {
-        const bbox = _deslocarBbox(_escalarBboxCentro(whiteBoxesFrame[i], fontScaleWhite[i]), offsetWhite[i]);
+      for (let i = 0; i < totalOriginal; i++) {
+        const frameEssaPalavra = _resolverFrameComRitmoIndice(tpl, i, frameIdx, elapsedMs, tStartsWhite, referenciaTStart);
+        if (frameEssaPalavra === null) continue;
+        const fEssaPalavra = frameEssaPalavra === frameIdx ? whiteBoxesFrame
+          : (tpl.motionData.framesData[frameEssaPalavra].white || []);
+        const bboxOriginal = fEssaPalavra[i];
+        if (!bboxOriginal) continue;
+        const bbox = _deslocarBbox(_escalarBboxCentro(bboxOriginal, fontScaleWhite[i]), offsetWhite[i]);
         drawStretched(ctx, whiteTexts[i], fontFamilyWhite[i] || stWhite.fontFamily, stWhite.color, bbox, 'xywh');
         if (bbox) _registrarRegiaoClique(tpl, wordIdsWhite[i], bbox[0], bbox[1], bbox[2], bbox[3]);
       }
       return true;
     }
 
-    // Quantos slots originais já "ativaram" nesse quadro (0..totalOriginal).
-    const numAtivos = whiteBoxesFrame.length;
     const GAP_RATIO = 0.29; // espaçamento entre palavras, proporcional à altura (medido na referência: ~42px pra ~145px de altura)
 
     // Pra cada palavra do usuário, decide se já está visível nesse
-    // quadro (usando o timing do slot original correspondente) e
-    // renderiza o bitmap JÁ no tamanho certo (via altura de
-    // referência — ver _efeito2MakeBitmapAtHeight — não precisa de
-    // stretch posterior, o que evita a variação de métrica por
-    // palavra que causava tamanhos inconsistentes entre elas).
+    // quadro (usando o timing do slot original correspondente, OU a
+    // marcação de ritmo dela — se marcada) e renderiza o bitmap JÁ no
+    // tamanho certo (via altura de referência — ver
+    // _efeito2MakeBitmapAtHeight — não precisa de stretch posterior,
+    // o que evita a variação de métrica por palavra que causava
+    // tamanhos inconsistentes entre elas).
     // PERSONALIZAÇÃO POR PALAVRA: multiplica a altura de referência
     // pela escala da palavra ANTES de gerar o bitmap — assim o
     // recorte já sai no tamanho certo, sem esticar depois.
     const itens = [];
     for (let i = 0; i < whiteTexts.length; i++) {
       const slotRef = Math.min(i, totalOriginal - 1);
-      if (slotRef >= numAtivos) continue; // essa palavra ainda não "chegou" nesse quadro
-      const bboxRef = whiteBoxesFrame[slotRef];
+      const frameEssaPalavra = _resolverFrameComRitmoIndice(tpl, slotRef, frameIdx, elapsedMs, tStartsWhite, referenciaTStart);
+      if (frameEssaPalavra === null) continue; // marcada, mas ainda não chegou a vez dela
+      const fEssaPalavra = frameEssaPalavra === frameIdx ? whiteBoxesFrame
+        : (tpl.motionData.framesData[frameEssaPalavra].white || []);
+      const bboxRef = fEssaPalavra[slotRef];
+      if (!bboxRef) continue; // essa palavra ainda não "chegou" nesse quadro (sem marcação: comportamento original)
       const texto = whiteTexts[i];
       const alturaComEscala = bboxRef[3] * (fontScaleWhite[i] || 1);
       const img = _efeito2MakeBitmapAtHeight(texto, fontFamilyWhite[i] || stWhite.fontFamily, stWhite.color, alturaComEscala);
@@ -39024,10 +39045,36 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     const duracaoBase = getDurationMs(templateId);
     if (!stanza) return duracaoBase;
     const texts = readTextsFromStanza(stanza, templateId);
+    const fps = tpl.motionData.fps;
+
+    // Efeito 2: estrutura de marcação PRÓPRIA (_tStartRed +
+    // _tStartsWhite indexado, não _tStarts/_referenciaTStart no
+    // formato padrão dos outros efeitos) — calcula à parte.
+    if (tpl.layout === 'efeito-2-style') {
+      const referencia = texts && texts._referenciaTStart;
+      if (referencia === null || referencia === undefined) return duracaoBase;
+      let maiorFim = duracaoBase;
+      if (typeof texts._tStartRed === 'number') {
+        const atrasoMs = Math.max(0, (texts._tStartRed - referencia) * 1000);
+        const quadroInicial = _primeiroQuadroVisivel(tpl, 'red');
+        const quadroAssentado = _quadroAssentado(tpl, 'red');
+        const fim = atrasoMs + (quadroAssentado - quadroInicial) * (1000 / fps) + 500;
+        if (fim > maiorFim) maiorFim = fim;
+      }
+      Object.keys(texts._tStartsWhite || {}).forEach(indiceStr => {
+        const indice = Number(indiceStr);
+        const atrasoMs = Math.max(0, (texts._tStartsWhite[indice] - referencia) * 1000);
+        const quadroInicial = _primeiroQuadroVisivelIndice(tpl, indice);
+        const quadroAssentado = _quadroAssentadoIndice(tpl, indice);
+        const fim = atrasoMs + (quadroAssentado - quadroInicial) * (1000 / fps) + 500;
+        if (fim > maiorFim) maiorFim = fim;
+      });
+      return maiorFim;
+    }
+
     const tStarts = texts && texts._tStarts;
     const referencia = texts && texts._referenciaTStart;
     if (!tStarts || referencia === null || referencia === undefined) return duracaoBase;
-    const fps = tpl.motionData.fps;
     // Kinetic Scale Stack (Efeitos 1/3) usa uma estrutura de dados
     // DIFERENTE (tpl.motionData.motion, não framesData) — usa as
     // variantes "Motion" das funções de quadro inicial/assentado.
@@ -39361,6 +39408,85 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     return [bbox[0] + dx, bbox[1] + dy, bbox[2], bbox[3]];
   }
 
+  /**
+   * MARCAÇÃO DE RITMO — variantes pro Efeito 2, cuja linha "white" usa
+   * um ARRAY indexado (tpl.motionData.framesData[i].white[indice]),
+   * não papéis nomeados como os outros efeitos — mesma técnica de
+   * platô (menor velocidade média) já validada, só adaptada pra essa
+   * indexação. "red" usa as funções padrão normalmente (já é um papel
+   * nomeado, "red", igual aos outros efeitos).
+   */
+  function _primeiroQuadroVisivelIndice(tpl, indice) {
+    tpl._cachePrimeiroQuadroIdx = tpl._cachePrimeiroQuadroIdx || {};
+    if (indice in tpl._cachePrimeiroQuadroIdx) return tpl._cachePrimeiroQuadroIdx[indice];
+    const frames = tpl.motionData.framesData;
+    let achou = 0;
+    for (let i = 0; i < frames.length; i++) {
+      if (frames[i].white && frames[i].white[indice]) { achou = i; break; }
+    }
+    tpl._cachePrimeiroQuadroIdx[indice] = achou;
+    return achou;
+  }
+
+  function _quadroAssentadoIndice(tpl, indice) {
+    tpl._cacheQuadroAssentadoIdx = tpl._cacheQuadroAssentadoIdx || {};
+    if (indice in tpl._cacheQuadroAssentadoIdx) return tpl._cacheQuadroAssentadoIdx[indice];
+    const frames = tpl.motionData.framesData;
+    const inicio = _primeiroQuadroVisivelIndice(tpl, indice);
+    const get = (i) => frames[i].white && frames[i].white[indice];
+    let ultimoVisivel = inicio;
+    for (let i = inicio; i < frames.length; i++) { if (get(i)) ultimoVisivel = i; }
+    const janela = 5;
+    let melhorInicioJanela = null, menorVelocidadeMedia = Infinity;
+    for (let ini = inicio; ini + janela - 1 <= ultimoVisivel; ini++) {
+      let soma = 0, contagem = 0;
+      for (let i = ini; i < ini + janela - 1; i++) {
+        const a = get(i), b = get(i + 1);
+        if (!a || !b) continue;
+        soma += Math.abs(b[2] - a[2]) + Math.abs(b[3] - a[3]);
+        contagem++;
+      }
+      if (contagem === 0) continue;
+      const vel = soma / contagem;
+      if (vel < menorVelocidadeMedia) { menorVelocidadeMedia = vel; melhorInicioJanela = ini; }
+    }
+    let assentado = null;
+    if (melhorInicioJanela !== null) {
+      assentado = Math.min(ultimoVisivel, melhorInicioJanela + Math.floor(janela / 2));
+      if (!get(assentado)) assentado = null;
+    }
+    if (assentado != null) {
+      const bA = get(assentado), bF = get(ultimoVisivel);
+      if (bA && bF) {
+        const areaA = bA[2] * bA[3], areaF = bF[2] * bF[3];
+        if (areaF > 0 && areaA < areaF * 0.55) assentado = ultimoVisivel;
+      }
+    }
+    if (assentado == null) {
+      let maiorArea = -1;
+      assentado = ultimoVisivel;
+      for (let i = inicio; i <= ultimoVisivel; i++) {
+        const b = get(i);
+        if (!b) continue;
+        const area = b[2] * b[3];
+        if (area > maiorArea) { maiorArea = area; assentado = i; }
+      }
+    }
+    tpl._cacheQuadroAssentadoIdx[indice] = assentado;
+    return assentado;
+  }
+
+  function _resolverFrameComRitmoIndice(tpl, indice, frameIdxGlobal, elapsedMs, tStarts, referencia) {
+    if (!tStarts || referencia == null || !(indice in tStarts)) return frameIdxGlobal;
+    const atrasoMs = Math.max(0, (tStarts[indice] - referencia) * 1000);
+    if (elapsedMs < atrasoMs) return null;
+    const fps = tpl.motionData.fps;
+    const quadroInicial = _primeiroQuadroVisivelIndice(tpl, indice);
+    const quadroAssentado = _quadroAssentadoIndice(tpl, indice);
+    const quadrosPassados = Math.floor((elapsedMs - atrasoMs) / (1000 / fps));
+    return Math.min(quadroInicial + quadrosPassados, quadroAssentado);
+  }
+
   function _readTextsEfeito2Style(stanza, wordOverrides) {
     const lines = (stanza && stanza.lines) || [];
     const linhaVermelha = lines[0]?.words || [];
@@ -39393,6 +39519,23 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       && wordOverrides[w.id].style && wordOverrides[w.id].style.frameExactOffset) || null;
     const offsetRed = linhaVermelha.length ? deslocamento(linhaVermelha[0]) : null;
     const offsetWhite = linhaBranca.map(deslocamento);
+    // MARCAÇÃO DE RITMO: linha vermelha usa o tStart da PRIMEIRA
+    // palavra como representante da linha inteira (mesmo critério das
+    // outras personalizações); linha branca é POR ÍNDICE (cada
+    // posição tem seu próprio tStart) — usa _tStartsWhite (objeto
+    // indexado por posição) e uma referência ÚNICA (a primeira palavra
+    // marcada entre TODAS, linha 1 ou 2) pra manter os atrasos
+    // relativos entre as duas linhas consistentes.
+    let referenciaTStart = null;
+    const _atualizaReferencia = (t) => {
+      if (typeof t === 'number' && (referenciaTStart === null || t < referenciaTStart)) referenciaTStart = t;
+    };
+    const tStartRed = (linhaVermelha[0] && typeof linhaVermelha[0].tStart === 'number') ? linhaVermelha[0].tStart : null;
+    _atualizaReferencia(tStartRed);
+    const tStartsWhite = {};
+    linhaBranca.forEach((w, i) => {
+      if (w && typeof w.tStart === 'number') { tStartsWhite[i] = w.tStart; _atualizaReferencia(w.tStart); }
+    });
     // CLIQUE PRA SELECIONAR: guarda os IDs de palavra também, pra
     // depois relacionar "onde foi desenhado" (bbox real) com "qual
     // palavra é essa" (id) — ver _registrarRegiaoClique.
@@ -39403,6 +39546,7 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       _fontFamilyRed: fontFamilyRed, _fontFamilyWhite: fontFamilyWhite,
       _offsetRed: offsetRed, _offsetWhite: offsetWhite,
       _wordIdRed: wordIdRed, _wordIdsWhite: wordIdsWhite,
+      _tStartRed: tStartRed, _tStartsWhite: tStartsWhite, _referenciaTStart: referenciaTStart,
     };
   }
 
