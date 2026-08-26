@@ -19010,6 +19010,19 @@ class RenderEngineV2 {
         const yLogico = (ev.clientY - rect.top) * escalaY;
         const wordId = R.acharPalavraNoPonto(tplId, xLogico, yLogico);
         if (!wordId) return;
+        // BUG REAL CORRIGIDO ("depois de arrastar, tudo some"): a
+        // reprodução automática (autoplay) continua rodando por baixo
+        // durante o arrasto — o próprio laço de play chama
+        // _renderFrameExactCanvas repetidamente com o elapsedMs REAL
+        // (que segue avançando sozinho), competindo com os redesenhos
+        // do arrasto (que usam um elapsedMs "congelado" do último
+        // conhecido). Essa corrida entre os dois às vezes deixava o
+        // desenho final num instante onde nada tinha bbox visível.
+        // Pausa a reprodução ao pegar uma palavra pra arrastar —
+        // mesmo comportamento esperado de "pausar pra editar".
+        if (engineRef && engineRef._frameExactPlaying && typeof engineRef.pauseFrameExact === 'function') {
+          engineRef.pauseFrameExact();
+        }
         // BUG REAL CORRIGIDO ("caixa extra aparecendo, arrastar não
         // funciona"): esse mousedown BORBULHA pro container pai
         // (#editor-canvas), que tem seu PRÓPRIO handler de
@@ -23096,6 +23109,11 @@ function initEditor() {
     if (!R || !st || !tplId) return;
     const bboxInicial = R.acharBboxDaPalavra(tplId, wordId);
     if (!bboxInicial) return;
+    // BUG REAL CORRIGIDO (mesma causa do arrastar — "tudo some depois
+    // de mexer"): a reprodução automática continua rodando por baixo,
+    // competindo com os redesenhos do redimensionamento. Pausa ao
+    // pegar a bolinha.
+    if (engine._frameExactPlaying && typeof engine.pauseFrameExact === 'function') engine.pauseFrameExact();
 
     const canvas = stanzaEl.querySelector('.wm-frame-exact-canvas');
     const rectCanvas = canvas ? canvas.getBoundingClientRect() : null;
@@ -25128,6 +25146,10 @@ function initEditor() {
     const _aplicarFontScaleFrameExact = (ids, novaEscala) => {
       const stanzaEl = (typeof getStanzaEl === 'function') ? getStanzaEl() : null;
       if (!stanzaEl || !stanzaEl.classList.contains('is-frame-exact-stanza')) return false;
+      // Mesma causa raiz do arrastar/redimensionar — pausa a
+      // reprodução automática antes de aplicar, evitando que o laço
+      // de play sobrescreva o redesenho logo em seguida.
+      if (engine._frameExactPlaying && typeof engine.pauseFrameExact === 'function') engine.pauseFrameExact();
       ids.forEach(wid => {
         const wo = engine.wordOverrides[wid] || {};
         const ns = { ...(wo.style || {}) };
@@ -38459,11 +38481,15 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
   function _renderComRitmoPapeisIndependentes(ctx, tpl, texts, frameIdx, elapsedMs, papeis, opcoes) {
     const f = tpl.motionData.framesData[frameIdx];
     if (!f) return false;
+    _limparRegioesClique(tpl);
     const umPorVez = !!(opcoes && opcoes.umPorVez);
     const tStarts = texts && texts._tStarts;
     const referencia = texts && texts._referenciaTStart;
     const temMarcacao = !!(tStarts && referencia != null);
     const fontScale = (texts && texts._fontScale) || {};
+    const fontFamily = (texts && texts._fontFamily) || {};
+    const offset = (texts && texts._offset) || {};
+    const wordId = (texts && texts._wordId) || {};
 
     let atrasoAtivoAgora = null;
     if (temMarcacao && umPorVez) {
@@ -38495,10 +38521,11 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       // drawStretched sem preservar proporção distorce texto de
       // substituição bem mais curto/longo que o original medido no
       // vídeo. Troca por ajuste-e-centraliza (preserva proporção),
-      // igual à correção já validada. Também aplica a personalização
-      // de tamanho por palavra (fontSizeScale), se houver.
-      _desenharAjustadoCentralizado(ctx, texto, st.fontFamily, st.color,
-        _escalarBboxCentro(bbox, fontScale[papel]), 'xywh');
+      // igual à correção já validada. Também aplica as personalizações
+      // por palavra (tamanho, fonte, arrastar), se houver.
+      const bboxFinal = _deslocarBbox(_escalarBboxCentro(bbox, fontScale[papel]), offset[papel]);
+      const rect = _desenharAjustadoCentralizado(ctx, texto, fontFamily[papel] || st.fontFamily, st.color, bboxFinal, 'xywh');
+      if (rect) _registrarRegiaoClique(tpl, wordId[papel], rect[0], rect[1], rect[2], rect[3]);
     });
     return true;
   }
@@ -38911,8 +38938,21 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     // _resolverFrameComRitmoIndice), já que essa linha usa um array,
     // não papéis nomeados.
     const stRed = tpl.styles.red;
+    // BUG REAL CORRIGIDO ("a palavra da linha 1 aparece 100% pronta
+    // antes da animação começar, no quadro 0"): quando NÃO havia
+    // marcação nenhuma, o objeto temporário ainda incluía a chave
+    // "red" (só que com valor null) — e a checagem de
+    // _resolverFrameComRitmo pra saber "essa palavra está marcada?"
+    // usa `papel in tStarts`, que dá VERDADEIRO mesmo pra uma chave
+    // com valor null (a chave existe, só o valor é nulo). Isso fazia
+    // o sistema tratar "red" como se estivesse marcada com atraso
+    // ZERO mesmo sem marcação nenhuma — pulando direto pro estado
+    // assentado (100%) já no primeiro quadro, em vez de seguir a
+    // entrada natural da animação. Corrigido: só inclui a chave "red"
+    // no objeto quando realmente há uma marcação (número de verdade).
+    const tStartsRedTemp = (typeof texts._tStartRed === 'number') ? { red: texts._tStartRed } : {};
     const frameRed = _resolverFrameComRitmo(tpl, 'red', frameIdx, elapsedMs,
-      { _tStarts: { red: texts._tStartRed }, _referenciaTStart: texts._referenciaTStart });
+      { _tStarts: tStartsRedTemp, _referenciaTStart: texts._referenciaTStart });
     if (frameRed !== null) {
       const fRed = frameRed === frameIdx ? f : tpl.motionData.framesData[frameRed];
       // PERSONALIZAÇÃO POR PALAVRA (fontFamily): usa a fonte customizada
@@ -39207,22 +39247,23 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
    */
   function _lerTextosLinhaParaPapel(stanza, papeis, wordOverrides) {
     const lines = (stanza && stanza.lines) || [];
-    const out = { _tStarts: {}, _referenciaTStart: null, _fontScale: {} };
+    const out = { _tStarts: {}, _referenciaTStart: null, _fontScale: {}, _fontFamily: {}, _offset: {}, _wordId: {} };
     papeis.forEach((papel, i) => {
       const palavrasObj = (lines[i]?.words || []);
       out[papel] = palavrasObj.map(w => w.text).join(' ');
       const w = palavrasObj[0];
+      out._wordId[papel] = w?.id || null;
       if (w && typeof w.tStart === 'number') {
         out._tStarts[papel] = w.tStart;
         if (out._referenciaTStart === null) out._referenciaTStart = w.tStart;
       }
-      // PERSONALIZAÇÃO POR PALAVRA (fontSizeScale): a linha inteira é
-      // um bloco só, usa a escala da PRIMEIRA palavra como
+      // PERSONALIZAÇÃO POR PALAVRA (fontSizeScale/fontFamily/arrastar):
+      // a linha inteira é um bloco só, usa a PRIMEIRA palavra como
       // representante (igual ao critério já usado pro tStart acima).
-      if (w && w.id && wordOverrides && wordOverrides[w.id]
-          && wordOverrides[w.id].style && wordOverrides[w.id].style.fontSizeScale) {
-        out._fontScale[papel] = wordOverrides[w.id].style.fontSizeScale;
-      }
+      const wo = w && w.id && wordOverrides && wordOverrides[w.id];
+      if (wo && wo.style && wo.style.fontSizeScale) out._fontScale[papel] = wo.style.fontSizeScale;
+      if (wo && wo.style && wo.style.fontFamily) out._fontFamily[papel] = wo.style.fontFamily;
+      if (wo && wo.style && wo.style.frameExactOffset) out._offset[papel] = wo.style.frameExactOffset;
     });
     return out;
   }
