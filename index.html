@@ -24844,6 +24844,13 @@ function initEditor() {
         const mapa = engine._frameExactUltimoElapsedPorStanza || {};
         engine._renderFrameExactCanvas(stanzaEl, st, mapa[st.id] || 0);
       }
+      // BUG REAL CORRIGIDO ("a caixa não acompanha o aumento"): o
+      // redesenho acima atualiza as regiões de clique (posição real
+      // nova), mas a CAIXA de seleção visual só é recalculada quando
+      // algo chama updateSelectionBox() explicitamente — não
+      // acontecia aqui, então a caixa ficava parada no tamanho antigo
+      // enquanto o texto por baixo crescia.
+      if (typeof window.updateSelectionBox === 'function') window.updateSelectionBox();
       if (typeof markDirty === 'function') markDirty();
       return true;
     };
@@ -26904,6 +26911,31 @@ function initEditor() {
     // Se há palavra(s) selecionada(s), aplica como override SÓ nelas
     // Senão, aplica como estilo global (todas as estrofes)
     if (typeof selectedWordIds !== 'undefined' && selectedWordIds && selectedWordIds.size > 0) {
+      // BUG REAL CORRIGIDO ("troca de fonte some o texto, só volta com
+      // play"): mesma causa do tamanho — ensureWordIsFree mede a
+      // posição ERRADA (posição do DOM, que nunca bate com o canvas
+      // frame-exact) e engine.renderStanza reconstrói a estrofe inteira
+      // sem saber lidar com o canvas, apagando-o. Pra frame-exact, pula
+      // esse caminho inteiro: grava a fonte direto e redesenha o canvas.
+      const stzElFE = (typeof getStanzaEl === 'function') ? getStanzaEl() : null;
+      if (stzElFE && stzElFE.classList.contains('is-frame-exact-stanza')) {
+        selectedWordIds.forEach(wid => {
+          const wo = engine.wordOverrides[wid] || {};
+          engine.setWordOverride(wid, { style: { ...(wo.style || {}), fontFamily: family } });
+        });
+        const stFE = engine.parsed?.stanzas?.[engine.currentStanzaIndex];
+        if (stFE && typeof engine._renderFrameExactCanvas === 'function') {
+          const mapa = engine._frameExactUltimoElapsedPorStanza || {};
+          engine._renderFrameExactCanvas(stzElFE, stFE, mapa[stFE.id] || 0);
+        }
+        if (typeof window.updateSelectionBox === 'function') window.updateSelectionBox();
+        if (typeof markDirty === 'function') markDirty();
+        if (typeof showToast === 'function') {
+          const count = selectedWordIds.size;
+          showToast(`Fonte aplicada em ${count} ${count === 1 ? 'palavra' : 'palavras'}`);
+        }
+        return;
+      }
       // O diagnóstico provou: o bug "desce e acumula até sumir" tinha
       // DUAS causas, ambas aqui:
       //  1. engine.playFull() disparava a animação de entrada, que
@@ -38576,13 +38608,17 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     _limparRegioesClique(tpl);
 
     const stRed = tpl.styles.red;
+    // PERSONALIZAÇÃO POR PALAVRA (fontFamily): usa a fonte customizada
+    // se houver, senão a fonte fixa do template.
+    const fontFamilyRed = texts._fontFamilyRed || stRed.fontFamily;
     const bboxRedEscalado = _escalarBboxCentro(f.red, texts._fontScaleRed);
-    const rectDesenhadoRed = _desenharAjustadoCentralizado(ctx, texts.red, stRed.fontFamily, stRed.color, bboxRedEscalado, 'xywh');
+    const rectDesenhadoRed = _desenharAjustadoCentralizado(ctx, texts.red, fontFamilyRed, stRed.color, bboxRedEscalado, 'xywh');
     if (rectDesenhadoRed) _registrarRegiaoClique(tpl, texts._wordIdRed, rectDesenhadoRed[0], rectDesenhadoRed[1], rectDesenhadoRed[2], rectDesenhadoRed[3]);
 
     const whiteBoxesFrame = f.white || [];
     const whiteTexts = texts.white || [];
     const fontScaleWhite = texts._fontScaleWhite || [];
+    const fontFamilyWhite = texts._fontFamilyWhite || [];
     const wordIdsWhite = texts._wordIdsWhite || [];
     const stWhite = tpl.styles.white;
     const totalOriginal = (tpl.motionData.framesData[tpl.motionData.framesData.length - 1].white || []).length;
@@ -38597,7 +38633,7 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       const n = Math.min(whiteBoxesFrame.length, whiteTexts.length);
       for (let i = 0; i < n; i++) {
         const bbox = _escalarBboxCentro(whiteBoxesFrame[i], fontScaleWhite[i]);
-        drawStretched(ctx, whiteTexts[i], stWhite.fontFamily, stWhite.color, bbox, 'xywh');
+        drawStretched(ctx, whiteTexts[i], fontFamilyWhite[i] || stWhite.fontFamily, stWhite.color, bbox, 'xywh');
         if (bbox) _registrarRegiaoClique(tpl, wordIdsWhite[i], bbox[0], bbox[1], bbox[2], bbox[3]);
       }
       return true;
@@ -38623,7 +38659,7 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       const bboxRef = whiteBoxesFrame[slotRef];
       const texto = whiteTexts[i];
       const alturaComEscala = bboxRef[3] * (fontScaleWhite[i] || 1);
-      const img = _efeito2MakeBitmapAtHeight(texto, stWhite.fontFamily, stWhite.color, alturaComEscala);
+      const img = _efeito2MakeBitmapAtHeight(texto, fontFamilyWhite[i] || stWhite.fontFamily, stWhite.color, alturaComEscala);
       if (!img) continue;
       itens.push({ img, w: img.width, h: img.height, y: bboxRef[1], wordId: wordIdsWhite[i] });
     }
@@ -39028,6 +39064,14 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       && wordOverrides[w.id].style && wordOverrides[w.id].style.fontSizeScale) || 1;
     const fontScaleRed = linhaVermelha.length ? escala(linhaVermelha[0]) : 1;
     const fontScaleWhite = linhaBranca.map(escala);
+    // PERSONALIZAÇÃO POR PALAVRA (fontFamily): mesmo critério — linha
+    // vermelha usa a fonte da primeira palavra como representante,
+    // linha branca é por palavra. null = mantém a fonte original do
+    // template (não sobrescreve).
+    const fonte = (w) => (w && w.id && wordOverrides && wordOverrides[w.id]
+      && wordOverrides[w.id].style && wordOverrides[w.id].style.fontFamily) || null;
+    const fontFamilyRed = linhaVermelha.length ? fonte(linhaVermelha[0]) : null;
+    const fontFamilyWhite = linhaBranca.map(fonte);
     // CLIQUE PRA SELECIONAR: guarda os IDs de palavra também, pra
     // depois relacionar "onde foi desenhado" (bbox real) com "qual
     // palavra é essa" (id) — ver _registrarRegiaoClique.
@@ -39035,6 +39079,7 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     const wordIdsWhite = linhaBranca.map(w => w.id || null);
     return {
       red, white, _fontScaleRed: fontScaleRed, _fontScaleWhite: fontScaleWhite,
+      _fontFamilyRed: fontFamilyRed, _fontFamilyWhite: fontFamilyWhite,
       _wordIdRed: wordIdRed, _wordIdsWhite: wordIdsWhite,
     };
   }
