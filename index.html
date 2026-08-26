@@ -19039,16 +19039,57 @@ class RenderEngineV2 {
         arrastouDeVerdade = true;
         const dxLogico = deltaClientX * arrastando.escalaX;
         const dyLogico = deltaClientY * arrastando.escalaY;
-        const novoOffset = {
+        let novoOffset = {
           dx: arrastando.offsetInicial.dx + dxLogico,
           dy: arrastando.offsetInicial.dy + dyLogico,
         };
-        const wo = engineRef.wordOverrides[arrastando.wordId] || {};
-        engineRef.setWordOverride(arrastando.wordId, { style: { ...(wo.style || {}), frameExactOffset: novoOffset } });
+        // LINHAS DE CENTRALIZAÇÃO (guias): mesmo princípio do arrasto
+        // normal (applySnapDuringDrag/showGuide/hideGuide), mas usando
+        // a posição REAL renderizada (não a do elemento DOM, que não
+        // bate com o canvas frame-exact — ver comentários acima).
+        // Aplica o deslocamento, olha onde a palavra ficou desenhada
+        // de verdade (via acharBboxDaPalavra, já atualizado no
+        // redesenho abaixo) e, se o centro dela ficar perto do centro
+        // do template, encaixa exatamente e mostra a linha guia.
+        const wo0 = engineRef.wordOverrides[arrastando.wordId] || {};
+        engineRef.setWordOverride(arrastando.wordId, { style: { ...(wo0.style || {}), frameExactOffset: novoOffset } });
         const st = engineRef.parsed?.stanzas?.[engineRef.currentStanzaIndex];
         if (st) {
           const mapa = engineRef._frameExactUltimoElapsedPorStanza || {};
           engineRef._renderFrameExactCanvas(stanzaEl, st, mapa[st.id] || 0);
+        }
+        const bboxAtual = R.acharBboxDaPalavra(tplId, arrastando.wordId);
+        if (bboxAtual) {
+          const larguraLogica = tpl.logicalWidth || tpl.motionData.width;
+          const alturaLogica = tpl.logicalHeight || tpl.motionData.height;
+          const centroXAtual = bboxAtual.x + bboxAtual.w / 2;
+          const centroYAtual = bboxAtual.y + bboxAtual.h / 2;
+          // 6px = mesmo limiar do SNAP_THRESHOLD_PX (arrasto normal) —
+          // aquela constante vive em outro módulo, não acessível
+          // aqui, então repete o valor diretamente.
+          const LIMIAR_SNAP_PX = 6;
+          const limiarXLogico = LIMIAR_SNAP_PX * arrastando.escalaX;
+          const limiarYLogico = LIMIAR_SNAP_PX * arrastando.escalaY;
+          const distX = centroXAtual - larguraLogica / 2;
+          const distY = centroYAtual - alturaLogica / 2;
+          let mudouAposSnap = false;
+          if (Math.abs(distX) < limiarXLogico) { novoOffset = { ...novoOffset, dx: novoOffset.dx - distX }; mudouAposSnap = true; }
+          if (Math.abs(distY) < limiarYLogico) { novoOffset = { ...novoOffset, dy: novoOffset.dy - distY }; mudouAposSnap = true; }
+          if (mudouAposSnap) {
+            const wo1 = engineRef.wordOverrides[arrastando.wordId] || {};
+            engineRef.setWordOverride(arrastando.wordId, { style: { ...(wo1.style || {}), frameExactOffset: novoOffset } });
+            if (st) {
+              const mapa = engineRef._frameExactUltimoElapsedPorStanza || {};
+              engineRef._renderFrameExactCanvas(stanzaEl, st, mapa[st.id] || 0);
+            }
+          }
+          const snappedX = Math.abs(distX) < limiarXLogico;
+          const snappedY = Math.abs(distY) < limiarYLogico;
+          const ehPerfeito = snappedX && snappedY;
+          if (typeof window.showGuide === 'function' && typeof window.hideGuide === 'function') {
+            if (snappedX) window.showGuide('v', ehPerfeito); else window.hideGuide('v');
+            if (snappedY) window.showGuide('h', ehPerfeito); else window.hideGuide('h');
+          }
         }
         if (typeof window.updateSelectionBox === 'function') window.updateSelectionBox();
       });
@@ -19059,6 +19100,7 @@ class RenderEngineV2 {
           // comportamento de soltar um arrasto normal) e persiste.
           if (typeof window.selectWord === 'function') window.selectWord(arrastando.wordId);
           if (typeof window.updateSelectionBox === 'function') window.updateSelectionBox();
+          if (typeof window.hideAllGuides === 'function') window.hideAllGuides();
           if (engineRef.markDirty) engineRef.markDirty();
         }
         arrastando = null;
@@ -22204,6 +22246,9 @@ function initEditor() {
   }
 
   window.updateSelectionBox = updateSelectionBox;
+  window.showGuide = showGuide;
+  window.hideGuide = hideGuide;
+  window.hideAllGuides = hideAllGuides;
 
   /**
    * Garante que a palavra atual está em modo free (com position).
