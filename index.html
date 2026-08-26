@@ -18952,6 +18952,13 @@ class RenderEngineV2 {
     const tplId = stanza.frameExactTemplateId;
     const tpl = R.getTemplate(tplId);
     if (!tpl) return;
+    // Guarda o último elapsedMs usado por estrofe — não tem outro jeito
+    // de saber "em que quadro parou" depois de pausado (o tempo vivia
+    // só numa variável local do loop de play). Usado pro preview ao
+    // vivo (arrastar o controle de tamanho de fonte) redesenhar no
+    // MESMO instante em que a animação estava, sem voltar pro quadro 0.
+    this._frameExactUltimoElapsedPorStanza = this._frameExactUltimoElapsedPorStanza || {};
+    this._frameExactUltimoElapsedPorStanza[stanza.id] = elapsedMs;
 
     let canvas = stanzaEl.querySelector('.wm-frame-exact-canvas');
     if (!canvas) {
@@ -25551,12 +25558,40 @@ function initEditor() {
       sizeInput.addEventListener('input', () => {
         const val = parseFloat(sizeInput.value);
         if (sizeDisplay) sizeDisplay.textContent = val.toFixed(2) + '×';
-        // PREVIEW AO VIVO: aplica o tamanho direto no DOM da(s) palavra(s)
-        // enquanto arrasta — leve, instantâneo, sem re-render. O valor
-        // real é persistido no 'change'.
         const ids = (selectedWordIds && selectedWordIds.size > 0)
           ? [...selectedWordIds]
           : (selectedWordId ? [selectedWordId] : []);
+        // BUG REAL CORRIGIDO ("a fonte sumia ao aumentar, só aparecia
+        // maior depois de dar play"): pra estrofes frame-exact, o
+        // texto de cada palavra fica invisível no DOM de propósito (o
+        // canvas próprio desenha o texto de verdade — ver CSS
+        // .is-frame-exact-stanza) — então mudar o fontSize do elemento
+        // DOM invisível não tinha efeito nenhum visível. O canvas só
+        // era redesenhado no 'change' (ao soltar o controle), nunca
+        // durante o arraste. Corrigido: se a estrofe atual é
+        // frame-exact, aplica o valor TEMPORARIAMENTE em
+        // engine.wordOverrides (sem passar pelo pipeline completo de
+        // persistência/reflow — só pro preview instantâneo) e
+        // redesenha o canvas na hora — o 'change' abaixo continua
+        // sendo quem persiste de verdade.
+        const stanzaEl = getStanzaEl();
+        if (stanzaEl && stanzaEl.classList.contains('is-frame-exact-stanza')) {
+          ids.forEach(wid => {
+            const wo = engine.wordOverrides[wid] || {};
+            engine.wordOverrides[wid] = { ...wo, style: { ...(wo.style || {}), fontSizeScale: val } };
+          });
+          const st = engine.parsed?.stanzas?.[engine.currentStanzaIndex];
+          if (st && typeof engine._renderFrameExactCanvas === 'function') {
+            const mapa = engine._frameExactUltimoElapsedPorStanza || {};
+            const elapsed = mapa[st.id] || 0;
+            engine._renderFrameExactCanvas(stanzaEl, st, elapsed);
+          }
+          return;
+        }
+        // PREVIEW AO VIVO (texto normal, não frame-exact): aplica o
+        // tamanho direto no DOM da(s) palavra(s) enquanto arrasta —
+        // leve, instantâneo, sem re-render. O valor real é persistido
+        // no 'change'.
         ids.forEach(wid => {
           document.querySelectorAll(`.lyric-word[data-word-id="${wid}"]`).forEach(el => {
             el.style.fontSize = val + 'em';
@@ -38397,9 +38432,9 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
    * caber" pro reflow), a vermelha nunca teve essa proteção.
    */
   function _desenharAjustadoCentralizado(ctx, text, fontFamily, color, bbox, bboxFormat) {
-    if (!bbox || !text) return;
+    if (!bbox || !text) return null;
     const img = makeBitmap(text, fontFamily, color);
-    if (!img || !img.height) return;
+    if (!img || !img.height) return null;
     let bx, by, bw, bh;
     if (bboxFormat === 'xywh') { bx = bbox[0]; by = bbox[1]; bw = bbox[2]; bh = bbox[3]; }
     else { bx = bbox[0]; by = bbox[1]; bw = bbox[2] - bbox[0]; bh = bbox[3] - bbox[1]; }
@@ -38413,6 +38448,11 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     const drawX = bx + (bw - drawW) / 2;
     const drawY = by + (bh - drawH) / 2;
     ctx.drawImage(img, drawX, drawY, drawW, drawH);
+    // devolve o retângulo REAL desenhado (pode ser bem menor que a
+    // bbox recebida, já que ajusta-e-centraliza não estica pra
+    // preencher) — usado pra registrar a região de clique/seleção no
+    // tamanho visual de verdade, não no tamanho da caixa de origem.
+    return [drawX, drawY, drawW, drawH];
   }
 
   /**
@@ -38469,8 +38509,8 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
 
     const stRed = tpl.styles.red;
     const bboxRedEscalado = _escalarBboxCentro(f.red, texts._fontScaleRed);
-    _desenharAjustadoCentralizado(ctx, texts.red, stRed.fontFamily, stRed.color, bboxRedEscalado, 'xywh');
-    if (bboxRedEscalado) _registrarRegiaoClique(tpl, texts._wordIdRed, bboxRedEscalado[0], bboxRedEscalado[1], bboxRedEscalado[2], bboxRedEscalado[3]);
+    const rectDesenhadoRed = _desenharAjustadoCentralizado(ctx, texts.red, stRed.fontFamily, stRed.color, bboxRedEscalado, 'xywh');
+    if (rectDesenhadoRed) _registrarRegiaoClique(tpl, texts._wordIdRed, rectDesenhadoRed[0], rectDesenhadoRed[1], rectDesenhadoRed[2], rectDesenhadoRed[3]);
 
     const whiteBoxesFrame = f.white || [];
     const whiteTexts = texts.white || [];
