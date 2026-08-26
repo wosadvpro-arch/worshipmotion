@@ -24817,10 +24817,45 @@ function initEditor() {
       return (typeof s[chave] !== 'undefined') ? s[chave] : fallback;
     };
 
+    // BUG REAL CORRIGIDO ("aumentar fonte some o texto, só volta com
+    // play, aparecem caixas atrás"): os botões -/+ do topo passam por
+    // aplicarEstiloSensivel → ensureWordIsFree (mede a posição ERRADA
+    // da palavra pro caso frame-exact, usando a posição do elemento
+    // DOM, que nunca bate com o canvas) + engine.renderStanza
+    // (reconstrói a estrofe inteira sem saber lidar com o canvas
+    // frame-exact, apagando-o) — um caminho de código totalmente
+    // diferente do slider lateral, que eu já tinha corrigido antes.
+    // Helper compartilhado: se a estrofe atual é frame-exact, aplica
+    // a escala DIRETO em wordOverrides (sem congelar posição nem
+    // reconstruir a estrofe) e redesenha o canvas na hora. Devolve
+    // true se tratou (chamador não deve fazer mais nada nesse caso).
+    const _aplicarFontScaleFrameExact = (ids, novaEscala) => {
+      const stanzaEl = (typeof getStanzaEl === 'function') ? getStanzaEl() : null;
+      if (!stanzaEl || !stanzaEl.classList.contains('is-frame-exact-stanza')) return false;
+      ids.forEach(wid => {
+        const wo = engine.wordOverrides[wid] || {};
+        const ns = { ...(wo.style || {}) };
+        if (novaEscala === null || novaEscala === undefined) delete ns.fontSizeScale;
+        else ns.fontSizeScale = novaEscala;
+        engine.setWordOverride(wid, { style: ns });
+      });
+      const st = engine.parsed?.stanzas?.[engine.currentStanzaIndex];
+      if (st && typeof engine._renderFrameExactCanvas === 'function') {
+        const mapa = engine._frameExactUltimoElapsedPorStanza || {};
+        engine._renderFrameExactCanvas(stanzaEl, st, mapa[st.id] || 0);
+      }
+      if (typeof markDirty === 'function') markDirty();
+      return true;
+    };
+
     const aplicarTamanho = (delta) => {
       if (_ctxTemSelecao() && !_ctxSelecaoEhEstrofeInteira()) {
         const escalaAtual = (_ctxValorSelecao('fontSizeScale', 1) || 1);
         const nova = Math.max(0.2, Math.round((escalaAtual + delta * 0.1) * 100) / 100);
+        if (_aplicarFontScaleFrameExact([...selectedWordIds], nova === 1 ? null : nova)) {
+          requestAnimationFrame(syncCtxToolbar);
+          return;
+        }
         if (typeof aplicarEstiloSensivel === 'function')
           aplicarEstiloSensivel('fontSizeScale', nova === 1 ? null : nova, { afetaLargura: true });
       } else {
@@ -24897,6 +24932,10 @@ function initEditor() {
       if (_ctxTemSelecao() && !_ctxSelecaoEhEstrofeInteira()) {
         const globalFs = ((_ctxEstiloEfetivo().fontSize) || 64);
         const novaEscala = Math.max(0.1, Math.round((px / globalFs) * 100) / 100);
+        if (_aplicarFontScaleFrameExact([...selectedWordIds], novaEscala === 1 ? null : novaEscala)) {
+          requestAnimationFrame(syncCtxToolbar);
+          return;
+        }
         if (typeof aplicarEstiloSensivel === 'function')
           aplicarEstiloSensivel('fontSizeScale', novaEscala === 1 ? null : novaEscala, { afetaLargura: true });
       } else {
