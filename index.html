@@ -23010,12 +23010,116 @@ function initEditor() {
   }
 
 
+  /**
+   * Redimensionar/rotacionar pelas bolinhas da caixa de seleção, pra
+   * estrofes frame-exact — versão paralela de onHandleMouseDown/
+   * onHandleMouseMove/onHandleMouseUp, usando a bbox REAL (via
+   * R.acharBboxDaPalavra) em vez da posição do elemento DOM (que
+   * nunca bate com o canvas — mesma causa raiz de sempre).
+   *
+   * ESCOPO: rotação não é suportada pela renderização frame-exact
+   * ainda (fica pra depois) — o handle de rotação simplesmente não
+   * faz nada aqui, em vez de quebrar. Cantos e bordas SEMPRE mudam
+   * fontSizeScale (proporcional) — sem suporte a esticar só um eixo
+   * (scaleX/scaleY separados), já que a renderização não tem esse
+   * conceito pra frame-exact.
+   */
+  function _iniciarHandleFrameExact(ev, handle, wordId, stanzaEl) {
+    if (handle === 'rotate') return; // sem suporte ainda — não quebra, só ignora
+    const R = window.WM_FRAME_EXACT_RENDERER;
+    const st = engine.parsed?.stanzas?.[engine.currentStanzaIndex];
+    const tplId = st && st.frameExactTemplateId;
+    if (!R || !st || !tplId) return;
+    const bboxInicial = R.acharBboxDaPalavra(tplId, wordId);
+    if (!bboxInicial) return;
+
+    const canvas = stanzaEl.querySelector('.wm-frame-exact-canvas');
+    const rectCanvas = canvas ? canvas.getBoundingClientRect() : null;
+    if (!rectCanvas || rectCanvas.width === 0) return;
+    const escalaTela = rectCanvas.width / canvas.width; // canvas.width = resolução lógica
+
+    const wo = engine.wordOverrides[wordId] || {};
+    const escalaInicial = (wo.style && wo.style.fontSizeScale) || 1;
+    const _pt = wmEvtPoint(ev);
+
+    const estado = {
+      handle, wordId, stanzaEl, tplId,
+      larguraInicialTela: bboxInicial.w * escalaTela,
+      alturaInicialTela: bboxInicial.h * escalaTela,
+      escalaInicial,
+      mouseStartX: _pt.clientX,
+      mouseStartY: _pt.clientY,
+    };
+
+    if (selectionBoxEl) selectionBoxEl.classList.add('is-resizing');
+    document.body.style.cursor = window.getComputedStyle(ev.target).cursor;
+
+    const sign = {
+      nw: { x: -1, y: -1 }, n: { x: 0, y: -1 }, ne: { x: 1, y: -1 },
+      w:  { x: -1, y:  0 },                     e:  { x: 1, y:  0 },
+      sw: { x: -1, y:  1 }, s: { x: 0, y:  1 }, se: { x: 1, y:  1 },
+    }[handle] || { x: 0, y: 0 };
+
+    const mover = (evMove) => {
+      if (evMove.touches && evMove.cancelable) evMove.preventDefault();
+      const pt = wmEvtPoint(evMove);
+      const dx = (pt.clientX - estado.mouseStartX) * sign.x;
+      const dy = (pt.clientY - estado.mouseStartY) * sign.y;
+      const novaLargura = estado.larguraInicialTela + dx * 2;
+      const novaAltura = estado.alturaInicialTela + dy * 2;
+      const ratioW = novaLargura / estado.larguraInicialTela;
+      const ratioH = novaAltura / estado.alturaInicialTela;
+      // canto: usa o maior dos dois eixos (igual ao comportamento
+      // normal); borda simples (n/s/e/w): só o eixo que essa borda afeta.
+      const ratio = (sign.x !== 0 && sign.y !== 0) ? Math.max(ratioW, ratioH)
+        : (sign.x !== 0 ? ratioW : ratioH);
+      const novaEscala = Math.max(0.2, Math.min(8, estado.escalaInicial * ratio));
+
+      const woAtual = engine.wordOverrides[wordId] || {};
+      engine.setWordOverride(wordId, { style: { ...(woAtual.style || {}), fontSizeScale: novaEscala } });
+      const stAtual = engine.parsed?.stanzas?.[engine.currentStanzaIndex];
+      if (stAtual) {
+        const mapa = engine._frameExactUltimoElapsedPorStanza || {};
+        engine._renderFrameExactCanvas(stanzaEl, stAtual, mapa[stAtual.id] || 0);
+      }
+      if (typeof window.updateSelectionBox === 'function') window.updateSelectionBox();
+      if (typeof updateSizeLabel === 'function') updateSizeLabel(`${(novaEscala * 100).toFixed(0)}%`);
+    };
+    const soltar = () => {
+      document.removeEventListener('mousemove', mover);
+      document.removeEventListener('mouseup', soltar);
+      document.removeEventListener('touchmove', mover);
+      document.removeEventListener('touchend', soltar);
+      document.body.style.cursor = '';
+      if (selectionBoxEl) selectionBoxEl.classList.remove('is-resizing');
+      if (typeof hideSizeLabel === 'function') hideSizeLabel();
+      if (typeof markDirty === 'function') markDirty();
+    };
+    document.addEventListener('mousemove', mover);
+    document.addEventListener('mouseup', soltar);
+    document.addEventListener('touchmove', mover, { passive: false });
+    document.addEventListener('touchend', soltar);
+  }
+
   function onHandleMouseDown(ev) {
     ev.preventDefault();
     ev.stopPropagation();
     if (!selectedWordId) return;
     const handle = ev.target.dataset.handle;
     if (!handle) return;
+
+    // BUG REAL CORRIGIDO ("aumentar a fonte pelas bolinhas some as
+    // palavras"): esse fluxo (ensureWordIsFree + wordEl.getBoundingClientRect
+    // + engine.renderStanza) é o mesmo padrão problemático já
+    // corrigido nos outros controles — pra estrofes frame-exact, mede
+    // posição/tamanho ERRADOS (do DOM escondido) e quebra o canvas ao
+    // reconstruir a estrofe. Intercepta ANTES de tudo isso e usa um
+    // fluxo próprio, com a bbox REAL (medida durante o desenho).
+    const stanzaElFE = (typeof getStanzaEl === 'function') ? getStanzaEl() : null;
+    if (stanzaElFE && stanzaElFE.classList.contains('is-frame-exact-stanza')) {
+      if (selectedWordIds.size > 1) return; // multi-resize frame-exact: não suportado por ora
+      return _iniciarHandleFrameExact(ev, handle, selectedWordId, stanzaElFE);
+    }
 
     // MULTI: redimensiona todas proporcionalmente
     if (selectedWordIds.size > 1 && handle !== 'rotate') {
