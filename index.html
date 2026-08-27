@@ -37514,6 +37514,7 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
   function _renderFrameEfeito13Style(ctx, tpl, texts, frameIdx, elapsedMs) {
     const f = tpl.motionData.framesData[frameIdx];
     if (!f) return false;
+    _limparRegioesClique(tpl);
     const grupos = tpl.linhasParaPapeis;
 
     // MARCAÇÃO DE RITMO (Premium): Efeito 13 é do tipo "acumula" — as
@@ -37542,7 +37543,12 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
           const texto = (todasPalavras[i] || '').trim();
           if (!texto) return;
           const st = tpl.styles[papel];
-          drawStretched(ctx, texto, st.fontFamily, st.color, bbox, 'xywh');
+          const fontFamily = (texts._fontFamily && texts._fontFamily[papel]) || st.fontFamily;
+          const escala = (texts._fontScale && texts._fontScale[papel]) || 1;
+          const offset = (texts._offset && texts._offset[papel]) || null;
+          const bboxFinal = _deslocarBbox(_escalarBboxCentro(bbox, escala), offset);
+          const rect = _desenharAjustadoCentralizado(ctx, texto, fontFamily, st.color, bboxFinal, 'xywh');
+          if (rect) _registrarRegiaoClique(tpl, texts._wordId && texts._wordId[papel], rect[0], rect[1], rect[2], rect[3]);
         });
         return;
       }
@@ -37562,8 +37568,15 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       const centroYOriginal = referencias.reduce((s, b) => s + (b[1] + b[3] / 2), 0) / referencias.length;
       const stLinha = tpl.styles[papeis[papeis.length - 1]];
 
+      const escalasLinha = (texts._fontScaleLinhas && texts._fontScaleLinhas[grupoIndex]) || [];
+      const fontesLinha = (texts._fontFamilyLinhas && texts._fontFamilyLinhas[grupoIndex]) || [];
+      const offsetsLinha = (texts._offsetLinhas && texts._offsetLinhas[grupoIndex]) || [];
+      const wordIdsLinha = (texts._wordIdLinhas && texts._wordIdLinhas[grupoIndex]) || [];
       const ativos = todasPalavras
-        .map(texto => ({ texto: (texto || '').trim(), st: stLinha }))
+        .map((texto, i) => ({
+          texto: (texto || '').trim(), st: stLinha, fatorCrescimento: escalasLinha[i] || 1,
+          fontFamily: fontesLinha[i], offset: offsetsLinha[i], wordId: wordIdsLinha[i],
+        }))
         .filter(o => o.texto);
       if (!ativos.length) return;
 
@@ -37585,7 +37598,9 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
         itens.forEach((it, i) => {
           if (i > 0) x += gaps[i];
           const y = centroYOriginal - it.h / 2;
-          ctx.drawImage(it.img, x, y, it.w, it.h);
+          const dx = (it.offset && it.offset.dx) || 0, dy = (it.offset && it.offset.dy) || 0;
+          ctx.drawImage(it.img, x + dx, y + dy, it.w, it.h);
+          _registrarRegiaoClique(tpl, it.wordId, x + dx, y + dy, it.w, it.h);
           x += it.w;
         });
       }
@@ -37715,9 +37730,32 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     return Math.min(quadroInicial + quadrosPassados, quadroAssentado);
   }
 
+  /**
+   * Escala + desloca um QUADRILÁTERO [tl,tr,br,bl] (cada um [x,y]) em
+   * torno do próprio centro — equivalente a _escalarBboxCentro +
+   * _deslocarBbox, mas pra essa geometria (usada no Efeito 12, mesh
+   * warp). Escala cada canto proporcionalmente à distância até o
+   * centro (preserva a deformação/inclinação, só muda o tamanho).
+   */
+  function _ajustarQuad(quad, escala, offset) {
+    if (!quad) return quad;
+    let pontos = quad;
+    if (escala && escala !== 1) {
+      const cx = (quad[0][0] + quad[1][0] + quad[2][0] + quad[3][0]) / 4;
+      const cy = (quad[0][1] + quad[1][1] + quad[2][1] + quad[3][1]) / 4;
+      pontos = quad.map(([x, y]) => [cx + (x - cx) * escala, cy + (y - cy) * escala]);
+    }
+    if (offset) {
+      const dx = offset.dx || 0, dy = offset.dy || 0;
+      if (dx || dy) pontos = pontos.map(([x, y]) => [x + dx, y + dy]);
+    }
+    return pontos;
+  }
+
   function _renderFrameEfeito12Style(ctx, tpl, texts, frameIdx, elapsedMs) {
     const f = tpl.motionData.framesData[frameIdx];
     if (!f) return false;
+    _limparRegioesClique(tpl);
     const grupos = tpl.linhasParaPapeis;
 
     grupos.forEach((papeis, grupoIndex) => {
@@ -37742,9 +37780,20 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
           const texto = (todasPalavras[i] || '').trim();
           if (!texto) return;
           const st = tpl.styles[papel];
-          const img = makeBitmap(texto, st.fontFamily, st.color);
+          const fontFamily = (texts._fontFamily && texts._fontFamily[papel]) || st.fontFamily;
+          const img = makeBitmap(texto, fontFamily, st.color);
           if (!img) return;
-          _desenharQuadWarp(ctx, img, quad);
+          const escala = (texts._fontScale && texts._fontScale[papel]) || 1;
+          const offset = (texts._offset && texts._offset[papel]) || null;
+          const quadFinal = _ajustarQuad(quad, escala, offset);
+          _desenharQuadWarp(ctx, img, quadFinal);
+          // Região de clique: usa a caixa delimitadora (min/max) do
+          // quadrilátero como aproximação — suficiente pra detectar
+          // clique/arrasto, mesmo que a forma real seja deformada.
+          const xs = quadFinal.map(p => p[0]), ys = quadFinal.map(p => p[1]);
+          const minX = Math.min(...xs), maxX = Math.max(...xs);
+          const minY = Math.min(...ys), maxY = Math.max(...ys);
+          _registrarRegiaoClique(tpl, texts._wordId && texts._wordId[papel], minX, minY, maxX - minX, maxY - minY);
         });
         return;
       }
@@ -37768,8 +37817,15 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       }, 0) / referencias.length;
       const stLinha = tpl.styles[papeis[papeis.length - 1]];
 
+      const escalasLinha = (texts._fontScaleLinhas && texts._fontScaleLinhas[grupoIndex]) || [];
+      const fontesLinha = (texts._fontFamilyLinhas && texts._fontFamilyLinhas[grupoIndex]) || [];
+      const offsetsLinha = (texts._offsetLinhas && texts._offsetLinhas[grupoIndex]) || [];
+      const wordIdsLinha = (texts._wordIdLinhas && texts._wordIdLinhas[grupoIndex]) || [];
       const ativos = todasPalavras
-        .map(texto => ({ texto: (texto || '').trim(), st: stLinha }))
+        .map((texto, i) => ({
+          texto: (texto || '').trim(), st: stLinha, fatorCrescimento: escalasLinha[i] || 1,
+          fontFamily: fontesLinha[i], offset: offsetsLinha[i], wordId: wordIdsLinha[i],
+        }))
         .filter(o => o.texto);
       if (!ativos.length) return;
 
@@ -37791,7 +37847,9 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
         itens.forEach((it, i) => {
           if (i > 0) x += gaps[i];
           const y = centroYOriginal - it.h / 2;
-          ctx.drawImage(it.img, x, y, it.w, it.h);
+          const dx = (it.offset && it.offset.dx) || 0, dy = (it.offset && it.offset.dy) || 0;
+          ctx.drawImage(it.img, x + dx, y + dy, it.w, it.h);
+          _registrarRegiaoClique(tpl, it.wordId, x + dx, y + dy, it.w, it.h);
           x += it.w;
         });
       }
@@ -37901,6 +37959,7 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
 
   function _renderFrameEfeito10Style(ctx, tpl, texts, frameIdx, elapsedMs) {
     if (!tpl.motionData.framesData[frameIdx]) return false;
+    _limparRegioesClique(tpl);
     const papeis = ['KELVIN', 'RAISE', 'TILL', 'OFF'];
 
     // Constrói o "quadro efetivo" (f) já escalado, igual sempre — usado
@@ -37928,7 +37987,12 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
         const texto = (texts && texts[papel] || '').trim();
         if (!texto) return;
         const st = tpl.styles[papel];
-        drawStretched(ctx, texto, st.fontFamily, st.color, bbox, 'xywh');
+        const fontFamily = (texts._fontFamily && texts._fontFamily[papel]) || st.fontFamily;
+        const escala = (texts._fontScale && texts._fontScale[papel]) || 1;
+        const offset = (texts._offset && texts._offset[papel]) || null;
+        const bboxFinal = _deslocarBbox(_escalarBboxCentro(bbox, escala), offset);
+        const rect = _desenharAjustadoCentralizado(ctx, texto, fontFamily, st.color, bboxFinal, 'xywh');
+        if (rect) _registrarRegiaoClique(tpl, texts._wordId && texts._wordId[papel], rect[0], rect[1], rect[2], rect[3]);
       });
       return true;
     }
@@ -37968,8 +38032,16 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
           ? Math.min(1, (frameIdx - frameChegada) / FRAMES_CRESCIMENTO)
           : 1;
         // crescimento suave: começa em 55% da altura e vai até 100%
-        const fatorCrescimento = 0.55 + 0.45 * progresso;
-        return { texto: o.texto, st: stLinha, fatorCrescimento };
+        const fatorCrescimentoBase = 0.55 + 0.45 * progresso;
+        // PERSONALIZAÇÃO POR PALAVRA: multiplica o crescimento natural
+        // pela escala customizada da palavra (se houver).
+        const escalaCustom = (texts._fontScaleLinha && texts._fontScaleLinha[o.indice]) || 1;
+        return {
+          texto: o.texto, st: stLinha, fatorCrescimento: fatorCrescimentoBase * escalaCustom,
+          fontFamily: texts._fontFamilyLinha && texts._fontFamilyLinha[o.indice],
+          offset: texts._offsetLinha && texts._offsetLinha[o.indice],
+          wordId: texts._wordIdLinha && texts._wordIdLinha[o.indice],
+        };
       })
       .filter(Boolean);
     if (!ativos.length) return true;
@@ -37992,7 +38064,9 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       itens.forEach((it, i) => {
         if (i > 0) x += gaps[i];
         const y = centroYOriginal - it.h / 2;
-        ctx.drawImage(it.img, x, y, it.w, it.h);
+        const dx = (it.offset && it.offset.dx) || 0, dy = (it.offset && it.offset.dy) || 0;
+        ctx.drawImage(it.img, x + dx, y + dy, it.w, it.h);
+        _registrarRegiaoClique(tpl, it.wordId, x + dx, y + dy, it.w, it.h);
         x += it.w;
       });
     }
@@ -38218,6 +38292,7 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
   function _renderFrameEfeito8Style(ctx, tpl, texts, frameIdx, elapsedMs) {
     const f = tpl.motionData.framesData[frameIdx];
     if (!f) return false;
+    _limparRegioesClique(tpl);
     const grupos = tpl.linhasParaPapeis || [['want', 'it_1', 'out'], ['selfish', 'heart'], ['never', 'give']];
 
     // MARCACAO DE RITMO -- COMPORTAMENTO CORRIGIDO ("o certo e aparecer
@@ -38329,7 +38404,10 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
           if (!texto) return;
           const st = tpl.styles[papel];
           const nat = EFEITO8_NATURAL[papel];
-          const img = makeBitmap(texto, st.fontFamily, st.color);
+          // PERSONALIZAÇÃO POR PALAVRA (fontFamily): usa a fonte
+          // customizada se houver, senão a fonte fixa do template.
+          const fontFamilyPapel = (texts._fontFamily && texts._fontFamily[papel]) || st.fontFamily;
+          const img = makeBitmap(texto, fontFamilyPapel, st.color);
           if (!img || !nat) return;
           // PERSONALIZAÇÃO POR PALAVRA (fontSizeScale): escala o
           // tamanho NATURAL (não a bbox de recorte) — cresce/encolhe
@@ -38338,8 +38416,12 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
           // natural, nunca esticou).
           const escala = (texts._fontScale && texts._fontScale[papel]) || 1;
           const natW = nat.w * escala, natH = nat.h * escala;
-          const [bx, bwY, bw, bh] = bbox;
-          const by = bwY + deslocYCentralizacao;
+          // PERSONALIZAÇÃO POR PALAVRA (arrastar): deslocamento em
+          // pixels lógicos, aplicado por cima da posição real medida.
+          const offsetPapel = (texts._offset && texts._offset[papel]) || { dx: 0, dy: 0 };
+          const [bxOrig, byOrig, bw, bh] = bbox;
+          const bx = bxOrig + offsetPapel.dx;
+          const by = byOrig + deslocYCentralizacao + offsetPapel.dy;
           const drawX = (nat.ax === 'd') ? (bx + bw - natW) : bx;
           const drawY = (nat.ay === 'b') ? (by + bh - natH) : by;
           // recorte também escalado (a partir do mesmo canto de
@@ -38353,6 +38435,7 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
           ctx.clip();
           ctx.drawImage(img, drawX, drawY, natW, natH);
           ctx.restore();
+          _registrarRegiaoClique(tpl, texts._wordId && texts._wordId[papel], clipX, clipY, bw * escala, bh * escala);
         });
         return;
       }
@@ -38398,8 +38481,14 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       const ultimoPapel = papeis[papeis.length - 1];
       const stLinha = tpl.styles[ultimoPapel];
       const escalasLinha = (texts._fontScaleLinhas && texts._fontScaleLinhas[grupoIndex]) || [];
+      const fontesLinha = (texts._fontFamilyLinhas && texts._fontFamilyLinhas[grupoIndex]) || [];
+      const offsetsLinha = (texts._offsetLinhas && texts._offsetLinhas[grupoIndex]) || [];
+      const wordIdsLinha = (texts._wordIdLinhas && texts._wordIdLinhas[grupoIndex]) || [];
       const ativos = todasPalavras
-        .map((texto, i) => ({ texto: (texto || '').trim(), st: stLinha, fatorCrescimento: escalasLinha[i] || 1 }))
+        .map((texto, i) => ({
+          texto: (texto || '').trim(), st: stLinha, fatorCrescimento: escalasLinha[i] || 1,
+          fontFamily: fontesLinha[i], offset: offsetsLinha[i], wordId: wordIdsLinha[i],
+        }))
         .filter(o => o.texto);
       if (!ativos.length) return;
 
@@ -38435,7 +38524,11 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
         itens.forEach((it, i) => {
           if (i > 0) x += gaps[i];
           const y = centroYOriginal - it.h / 2;
-          ctx.drawImage(it.img, x, y, it.w, it.h);
+          // PERSONALIZAÇÃO POR PALAVRA (arrastar): deslocamento em
+          // pixels lógicos, aplicado por cima da posição calculada.
+          const dx = (it.offset && it.offset.dx) || 0, dy = (it.offset && it.offset.dy) || 0;
+          ctx.drawImage(it.img, x + dx, y + dy, it.w, it.h);
+          _registrarRegiaoClique(tpl, it.wordId, x + dx, y + dy, it.w, it.h);
           x += it.w;
         });
       }
@@ -38444,8 +38537,8 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
   function _efeito8MedirItensGrupo(ativos, altura) {
     return ativos.map(o => {
       const alturaItem = altura * (o.fatorCrescimento != null ? o.fatorCrescimento : 1);
-      const img = _efeito2MakeBitmapAtHeight(o.texto, o.st.fontFamily, o.st.color, alturaItem);
-      return img ? { img, w: img.width, h: img.height } : null;
+      const img = _efeito2MakeBitmapAtHeight(o.texto, o.fontFamily || o.st.fontFamily, o.st.color, alturaItem);
+      return img ? { img, w: img.width, h: img.height, offset: o.offset, wordId: o.wordId } : null;
     }).filter(Boolean);
   }
 
@@ -38647,8 +38740,30 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     return Math.min(quadroInicial + quadrosPassados, quadroAssentado);
   }
 
+  /**
+   * Escala + desloca uma bbox em formato de CANTOS [x0,y0,x1,y1] (usado
+   * pelo Kinetic Scale Stack) — equivalente a _escalarBboxCentro +
+   * _deslocarBbox, mas nesse formato em vez de [x,y,w,h].
+   */
+  function _ajustarBboxCantos(bbox, escala, offset) {
+    if (!bbox) return bbox;
+    let [x0, y0, x1, y1] = bbox;
+    if (escala && escala !== 1) {
+      const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
+      const w2 = (x1 - x0) * escala, h2 = (y1 - y0) * escala;
+      x0 = cx - w2 / 2; x1 = cx + w2 / 2;
+      y0 = cy - h2 / 2; y1 = cy + h2 / 2;
+    }
+    if (offset) {
+      const dx = offset.dx || 0, dy = offset.dy || 0;
+      x0 += dx; x1 += dx; y0 += dy; y1 += dy;
+    }
+    return [x0, y0, x1, y1];
+  }
+
   function _renderFrameKineticScaleStack(ctx, tpl, texts, frameIdx, elapsedMs) {
     const m = tpl.motionData.motion[frameIdx];
+    _limparRegioesClique(tpl);
 
     // MARCAÇÃO DE RITMO (Premium): Kinetic Scale Stack acumula (cada
     // papel entra e fica) — confirmei medindo: top[5-85], red[35-85],
@@ -38660,6 +38775,19 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       if (fr === null) return null;
       return (fr === frameIdx ? m : tpl.motionData.motion[fr])[key];
     }
+    // PERSONALIZAÇÃO POR PALAVRA (tamanho/fonte/arrastar) + registro de
+    // clique — usado nos dois blocos de desenho abaixo.
+    function desenhaPersonalizado(key, texto, bboxBase) {
+      if (!bboxBase) return;
+      const st = tpl.styles[key];
+      const fontFamily = (texts._fontFamily && texts._fontFamily[key]) || st.fontFamily;
+      const escala = (texts._fontScale && texts._fontScale[key]) || 1;
+      const offset = (texts._offset && texts._offset[key]) || null;
+      const bboxFinal = _ajustarBboxCantos(bboxBase, escala, offset);
+      drawStretched(ctx, texto, fontFamily, st.color, bboxFinal);
+      _registrarRegiaoClique(tpl, texts._wordId && texts._wordId[key],
+        bboxFinal[0], bboxFinal[1], bboxFinal[2] - bboxFinal[0], bboxFinal[3] - bboxFinal[1]);
+    }
 
     // CORREÇÃO (linha 3 com quantidade de palavras ≠ 3): desenha o
     // texto combinado (line3Combined) na caixa UNIÃO (be+my+soul, pré-
@@ -38667,44 +38795,41 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     // linhas 1/2, em vez de ficar pequeno/mal posicionado em papéis
     // individuais que não fazem sentido pra essa quantidade de palavras.
     if (texts.line3Combined) {
-      ['top', 'red'].forEach(key => {
-        const bbox = bboxDoPapel(key);
-        if (!bbox) return;
-        const st = tpl.styles[key];
-        drawStretched(ctx, texts[key], st.fontFamily, st.color, bbox);
-      });
+      ['top', 'red'].forEach(key => desenhaPersonalizado(key, texts[key], bboxDoPapel(key)));
       // "my" é o papel representativo da linha 3 combinada pra fins de
       // marcação de ritmo — usa o MESMO quadro resolvido dele, mas com
       // a caixa união pré-calculada (não a bbox individual do "my").
       const frameLinha3 = _resolverFrameComRitmoMotion(tpl, 'my', frameIdx, elapsedMs, texts);
       const bboxUniao = frameLinha3 === null ? null
         : tpl.singleWordBboxes[frameLinha3 === frameIdx ? frameIdx : frameLinha3];
-      if (bboxUniao) {
-        const st = tpl.styles.my;
-        drawStretched(ctx, texts.line3Combined, st.fontFamily, st.color, bboxUniao);
-      }
+      desenhaPersonalizado('my', texts.line3Combined, bboxUniao);
       return true;
     }
 
-    ['top', 'red', 'be', 'my'].forEach(key => {
-      const bbox = bboxDoPapel(key);
-      if (!bbox) return;
-      const st = tpl.styles[key];
-      drawStretched(ctx, texts[key], st.fontFamily, st.color, bbox);
-    });
+    ['top', 'red', 'be', 'my'].forEach(key => desenhaPersonalizado(key, texts[key], bboxDoPapel(key)));
 
     // SOUL: mesma bbox do quadro resolvido (participa do zoom final
-    // igual aos outros), só que reduzida 92% ao redor do próprio centro.
+    // igual aos outros), só que reduzida 92% ao redor do próprio centro
+    // — a personalização de tamanho do usuário multiplica esse fator.
     const bboxSoul = bboxDoPapel('soul');
     if (bboxSoul) {
       const st = tpl.styles.soul;
-      const scale = tpl.soulBaseScale;
+      const escalaCustom = (texts._fontScale && texts._fontScale.soul) || 1;
+      const scale = tpl.soulBaseScale * escalaCustom;
       const cx = (bboxSoul[0] + bboxSoul[2]) / 2;
       const cy = (bboxSoul[1] + bboxSoul[3]) / 2;
       const w = (bboxSoul[2] - bboxSoul[0]) * scale;
       const h = (bboxSoul[3] - bboxSoul[1]) * scale;
-      const adjusted = [cx - w / 2, cy - h / 2, cx + w / 2, cy + h / 2];
-      drawStretched(ctx, texts.soul, st.fontFamily, st.color, adjusted);
+      let adjusted = [cx - w / 2, cy - h / 2, cx + w / 2, cy + h / 2];
+      const offset = (texts._offset && texts._offset.soul) || null;
+      if (offset) {
+        adjusted = [adjusted[0] + (offset.dx || 0), adjusted[1] + (offset.dy || 0),
+          adjusted[2] + (offset.dx || 0), adjusted[3] + (offset.dy || 0)];
+      }
+      const fontFamily = (texts._fontFamily && texts._fontFamily.soul) || st.fontFamily;
+      drawStretched(ctx, texts.soul, fontFamily, st.color, adjusted);
+      _registrarRegiaoClique(tpl, texts._wordId && texts._wordId.soul,
+        adjusted[0], adjusted[1], adjusted[2] - adjusted[0], adjusted[3] - adjusted[1]);
     }
 
     return true;
@@ -39184,22 +39309,36 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
    * PALAVRA (não por linha inteira) — cada papel é uma palavra
    * específica, então usa o tStart daquela palavra exata.
    */
-  function _readTextsEfeito13Style(stanza, tpl) {
+  function _readTextsEfeito13Style(stanza, tpl, wordOverrides) {
     const lines = (stanza && stanza.lines) || [];
     const grupos = tpl.linhasParaPapeis;
-    const out = { _linhas: [], _tStarts: {}, _referenciaTStart: null };
+    const out = {
+      _linhas: [], _tStarts: {}, _referenciaTStart: null,
+      _fontScale: {}, _fontScaleLinhas: [], _fontFamily: {}, _fontFamilyLinhas: [],
+      _offset: {}, _offsetLinhas: [], _wordId: {}, _wordIdLinhas: [],
+    };
     grupos.forEach((papeis, li) => {
       const palavrasObj = (lines[li]?.words || []);
       const palavras = palavrasObj.map(w => w.text);
       papeis.forEach((papel, i) => {
         out[papel] = palavras[i] || '';
         const w = palavrasObj[i];
+        out._wordId[papel] = w?.id || null;
         if (w && typeof w.tStart === 'number') {
           out._tStarts[papel] = w.tStart;
           if (out._referenciaTStart === null) out._referenciaTStart = w.tStart;
         }
+        const wo = w && w.id && wordOverrides && wordOverrides[w.id];
+        if (wo && wo.style && wo.style.fontSizeScale) out._fontScale[papel] = wo.style.fontSizeScale;
+        if (wo && wo.style && wo.style.fontFamily) out._fontFamily[papel] = wo.style.fontFamily;
+        if (wo && wo.style && wo.style.frameExactOffset) out._offset[papel] = wo.style.frameExactOffset;
       });
       out._linhas.push(palavras);
+      const woDe = (w) => w && w.id && wordOverrides && wordOverrides[w.id];
+      out._fontScaleLinhas.push(palavrasObj.map(w => (woDe(w) && woDe(w).style && woDe(w).style.fontSizeScale) || 1));
+      out._fontFamilyLinhas.push(palavrasObj.map(w => (woDe(w) && woDe(w).style && woDe(w).style.fontFamily) || null));
+      out._offsetLinhas.push(palavrasObj.map(w => (woDe(w) && woDe(w).style && woDe(w).style.frameExactOffset) || null));
+      out._wordIdLinhas.push(palavrasObj.map(w => w?.id || null));
     });
     return out;
   }
@@ -39211,22 +39350,36 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
    * Também devolve a lista COMPLETA de palavras de cada linha
    * (_linhas), pra suportar quantidade diferente da original (reflow).
    */
-  function _readTextsEfeito12Style(stanza, tpl) {
+  function _readTextsEfeito12Style(stanza, tpl, wordOverrides) {
     const lines = (stanza && stanza.lines) || [];
     const grupos = tpl.linhasParaPapeis;
-    const out = { _linhas: [], _tStarts: {}, _referenciaTStart: null };
+    const out = {
+      _linhas: [], _tStarts: {}, _referenciaTStart: null,
+      _fontScale: {}, _fontScaleLinhas: [], _fontFamily: {}, _fontFamilyLinhas: [],
+      _offset: {}, _offsetLinhas: [], _wordId: {}, _wordIdLinhas: [],
+    };
     grupos.forEach((papeis, li) => {
       const palavrasObj = (lines[li]?.words || []);
       const palavras = palavrasObj.map(w => w.text);
       papeis.forEach((papel, i) => {
         out[papel] = palavras[i] || '';
         const w = palavrasObj[i];
+        out._wordId[papel] = w?.id || null;
         if (w && typeof w.tStart === 'number') {
           out._tStarts[papel] = w.tStart;
           if (out._referenciaTStart === null) out._referenciaTStart = w.tStart;
         }
+        const wo = w && w.id && wordOverrides && wordOverrides[w.id];
+        if (wo && wo.style && wo.style.fontSizeScale) out._fontScale[papel] = wo.style.fontSizeScale;
+        if (wo && wo.style && wo.style.fontFamily) out._fontFamily[papel] = wo.style.fontFamily;
+        if (wo && wo.style && wo.style.frameExactOffset) out._offset[papel] = wo.style.frameExactOffset;
       });
       out._linhas.push(palavras);
+      const woDe = (w) => w && w.id && wordOverrides && wordOverrides[w.id];
+      out._fontScaleLinhas.push(palavrasObj.map(w => (woDe(w) && woDe(w).style && woDe(w).style.fontSizeScale) || 1));
+      out._fontFamilyLinhas.push(palavrasObj.map(w => (woDe(w) && woDe(w).style && woDe(w).style.fontFamily) || null));
+      out._offsetLinhas.push(palavrasObj.map(w => (woDe(w) && woDe(w).style && woDe(w).style.frameExactOffset) || null));
+      out._wordIdLinhas.push(palavrasObj.map(w => w?.id || null));
     });
     return out;
   }
@@ -39281,7 +39434,7 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
    * ou menos de 4 palavras, o renderer sabe usar a fileira recalculada
    * em vez de simplesmente descartar o que não tem papel fixo.
    */
-  function _readTextsEfeito10Style(stanza) {
+  function _readTextsEfeito10Style(stanza, wordOverrides) {
     const lines = (stanza && stanza.lines) || [];
     const palavrasObj = (lines[0]?.words || []);
     const palavras = palavrasObj.map(w => w.text);
@@ -39289,14 +39442,28 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       KELVIN: palavras[0] || '', RAISE: palavras[1] || '',
       TILL: palavras[2] || '', OFF: palavras[3] || '',
       _linhas: [palavras], _tStarts: {}, _referenciaTStart: null,
+      _fontScale: {}, _fontFamily: {}, _offset: {}, _wordId: {},
     };
     ['KELVIN', 'RAISE', 'TILL', 'OFF'].forEach((papel, i) => {
       const w = palavrasObj[i];
+      out._wordId[papel] = w?.id || null;
       if (w && typeof w.tStart === 'number') {
         out._tStarts[papel] = w.tStart;
         if (out._referenciaTStart === null) out._referenciaTStart = w.tStart;
       }
+      const wo = w && w.id && wordOverrides && wordOverrides[w.id];
+      if (wo && wo.style && wo.style.fontSizeScale) out._fontScale[papel] = wo.style.fontSizeScale;
+      if (wo && wo.style && wo.style.fontFamily) out._fontFamily[papel] = wo.style.fontFamily;
+      if (wo && wo.style && wo.style.frameExactOffset) out._offset[papel] = wo.style.frameExactOffset;
     });
+    // Mesmas personalizações, mas indexadas por POSIÇÃO na linha —
+    // necessário pro caminho de reflow (mais/menos de 4 palavras
+    // digitadas, sem correspondência 1:1 com KELVIN/RAISE/TILL/OFF).
+    const woDe = (w) => w && w.id && wordOverrides && wordOverrides[w.id];
+    out._fontScaleLinha = palavrasObj.map(w => (woDe(w) && woDe(w).style && woDe(w).style.fontSizeScale) || 1);
+    out._fontFamilyLinha = palavrasObj.map(w => (woDe(w) && woDe(w).style && woDe(w).style.fontFamily) || null);
+    out._offsetLinha = palavrasObj.map(w => (woDe(w) && woDe(w).style && woDe(w).style.frameExactOffset) || null);
+    out._wordIdLinha = palavrasObj.map(w => w?.id || null);
     return out;
   }
 
@@ -39329,34 +39496,41 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
   function _readTextsEfeito8Style(stanza, tpl, wordOverrides) {
     const lines = (stanza && stanza.lines) || [];
     const mapa = tpl.linhasParaPapeis || [];
-    const out = { _linhas: [], _tStarts: {}, _referenciaTStart: null, _fontScale: {}, _fontScaleLinhas: [] };
+    const out = {
+      _linhas: [], _tStarts: {}, _referenciaTStart: null,
+      _fontScale: {}, _fontScaleLinhas: [], _fontFamily: {}, _fontFamilyLinhas: [],
+      _offset: {}, _offsetLinhas: [], _wordId: {}, _wordIdLinhas: [],
+    };
     mapa.forEach((papeis, li) => {
       const palavrasObj = (lines[li]?.words || []);
       const palavras = palavrasObj.map(w => w.text);
       papeis.forEach((papel, i) => {
         out[papel] = palavras[i] || '';
         const w = palavrasObj[i];
+        out._wordId[papel] = w?.id || null;
         if (w && typeof w.tStart === 'number') {
           out._tStarts[papel] = w.tStart;
           if (out._referenciaTStart === null) out._referenciaTStart = w.tStart;
         }
-        // PERSONALIZAÇÃO POR PALAVRA (fontSizeScale): cada papel é uma
-        // PALAVRA específica aqui (não a linha inteira), usa a escala
-        // da própria palavra.
-        if (w && w.id && wordOverrides && wordOverrides[w.id]
-            && wordOverrides[w.id].style && wordOverrides[w.id].style.fontSizeScale) {
-          out._fontScale[papel] = wordOverrides[w.id].style.fontSizeScale;
-        }
+        // PERSONALIZAÇÃO POR PALAVRA (tamanho/fonte/arrastar): cada
+        // papel é uma PALAVRA específica aqui (não a linha inteira),
+        // usa a personalização da própria palavra.
+        const wo = w && w.id && wordOverrides && wordOverrides[w.id];
+        if (wo && wo.style && wo.style.fontSizeScale) out._fontScale[papel] = wo.style.fontSizeScale;
+        if (wo && wo.style && wo.style.fontFamily) out._fontFamily[papel] = wo.style.fontFamily;
+        if (wo && wo.style && wo.style.frameExactOffset) out._offset[papel] = wo.style.frameExactOffset;
       });
       out._linhas.push(palavras);
-      // Mesma escala, mas indexada por POSIÇÃO na linha (não por nome
-      // de papel original) — necessário pro caminho de reflow (texto
-      // com quantidade de palavras diferente da original), onde as
-      // palavras digitadas não têm mais correspondência 1:1 com os
+      // Mesmas personalizações, mas indexadas por POSIÇÃO na linha (não
+      // por nome de papel original) — necessário pro caminho de reflow
+      // (texto com quantidade de palavras diferente da original), onde
+      // as palavras digitadas não têm mais correspondência 1:1 com os
       // papéis fixos.
-      out._fontScaleLinhas.push(palavrasObj.map(w =>
-        (w && w.id && wordOverrides && wordOverrides[w.id]
-          && wordOverrides[w.id].style && wordOverrides[w.id].style.fontSizeScale) || 1));
+      const woDe = (w) => w && w.id && wordOverrides && wordOverrides[w.id];
+      out._fontScaleLinhas.push(palavrasObj.map(w => (woDe(w) && woDe(w).style && woDe(w).style.fontSizeScale) || 1));
+      out._fontFamilyLinhas.push(palavrasObj.map(w => (woDe(w) && woDe(w).style && woDe(w).style.fontFamily) || null));
+      out._offsetLinhas.push(palavrasObj.map(w => (woDe(w) && woDe(w).style && woDe(w).style.frameExactOffset) || null));
+      out._wordIdLinhas.push(palavrasObj.map(w => w?.id || null));
     });
     return out;
   }
@@ -39382,7 +39556,7 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     return _lerTextosLinhaParaPapel(stanza, ['primaryRed', 'secondaryWhite', 'cashRed'], wordOverrides);
   }
 
-  function _readTextsKineticScaleStack(stanza) {
+  function _readTextsKineticScaleStack(stanza, wordOverrides) {
     const lines = (stanza && stanza.lines) || [];
     const l1 = (lines[0]?.words || []).map(w => w.text).join(' ');
     const l2 = (lines[1]?.words || []).map(w => w.text).join(' ');
@@ -39402,13 +39576,22 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       top: l1, red: l2, be: '', my: '', soul: '',
       line3Combined: l3words.map(w => w.text).join(' '),
       _tStarts: {}, _referenciaTStart: null,
+      _fontScale: {}, _fontFamily: {}, _offset: {}, _wordId: {},
     };
     const w1 = lines[0]?.words?.[0], w2 = lines[1]?.words?.[0], w3 = l3words[0];
     [['top', w1], ['red', w2], ['my', w3]].forEach(([papel, w]) => {
+      out._wordId[papel] = w?.id || null;
       if (w && typeof w.tStart === 'number') {
         out._tStarts[papel] = w.tStart;
         if (out._referenciaTStart === null) out._referenciaTStart = w.tStart;
       }
+      // PERSONALIZAÇÃO POR PALAVRA (tamanho/fonte/arrastar): cada
+      // linha inteira é um bloco só, usa a PRIMEIRA palavra como
+      // representante (igual ao critério já usado pro tStart acima).
+      const wo = w && w.id && wordOverrides && wordOverrides[w.id];
+      if (wo && wo.style && wo.style.fontSizeScale) out._fontScale[papel] = wo.style.fontSizeScale;
+      if (wo && wo.style && wo.style.fontFamily) out._fontFamily[papel] = wo.style.fontFamily;
+      if (wo && wo.style && wo.style.frameExactOffset) out._offset[papel] = wo.style.frameExactOffset;
     });
     return out;
   }
