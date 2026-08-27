@@ -39083,7 +39083,23 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       // PERSONALIZAÇÃO POR PALAVRA (fontFamily): usa a fonte customizada
       // se houver, senão a fonte fixa do template.
       const fontFamilyRed = texts._fontFamilyRed || stRed.fontFamily;
-      const bboxRedEscalado = _deslocarBbox(_escalarBboxCentro(fRed && fRed.red, texts._fontScaleRed), texts._offsetRed);
+      // BUG REAL CORRIGIDO ("a linha 1 não está centralizada"): medi a
+      // bbox crua da linha vermelha em vários quadros — o centro dela
+      // fica consistentemente em ~940px (não 960px, o centro exato de
+      // um canvas de 1920px) — é a posição real medida do vídeo
+      // original ("PUT OFF HOTTED"), não muda entre quadros (diferente
+      // do problema de Y do Efeito 8, que variava — aqui é seguro
+      // forçar sem risco de quebrar movimento natural). Corrige
+      // deslocando a bbox pra centralizar exatamente, antes de
+      // qualquer personalização do usuário (escala/arrastar) por cima.
+      let bboxRedBase = fRed && fRed.red;
+      if (bboxRedBase) {
+        const larguraCanvas = tpl.logicalWidth || tpl.motionData.width;
+        const centroXAtual = bboxRedBase[0] + bboxRedBase[2] / 2;
+        const ajusteX = larguraCanvas / 2 - centroXAtual;
+        bboxRedBase = [bboxRedBase[0] + ajusteX, bboxRedBase[1], bboxRedBase[2], bboxRedBase[3]];
+      }
+      const bboxRedEscalado = _deslocarBbox(_escalarBboxCentro(bboxRedBase, texts._fontScaleRed), texts._offsetRed);
       const rectDesenhadoRed = _desenharAjustadoCentralizado(ctx, texts.red, fontFamilyRed, stRed.color, bboxRedEscalado, 'xywh');
       if (rectDesenhadoRed) _registrarRegiaoClique(tpl, texts._wordIdRed, rectDesenhadoRed[0], rectDesenhadoRed[1], rectDesenhadoRed[2], rectDesenhadoRed[3]);
     }
