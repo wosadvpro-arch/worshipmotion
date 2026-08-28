@@ -37602,10 +37602,11 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
           const st = tpl.styles[papel];
           const fontFamily = (texts._fontFamily && texts._fontFamily[papel]) || st.fontFamily;
           const fontWeight = (texts._fontWeight && texts._fontWeight[papel]) || null;
+          const italic = (texts._italic && texts._italic[papel]) || false;
           const escala = (texts._fontScale && texts._fontScale[papel]) || 1;
           const offset = (texts._offset && texts._offset[papel]) || null;
           const bboxFinal = _deslocarBbox(_escalarBboxCentro(bbox, escala), offset);
-          const rect = _desenharAjustadoCentralizado(ctx, texto, fontFamily, st.color, bboxFinal, 'xywh', fontWeight);
+          const rect = _desenharAjustadoCentralizado(ctx, texto, fontFamily, st.color, bboxFinal, 'xywh', fontWeight, italic);
           if (rect) _registrarRegiaoClique(tpl, texts._wordId && texts._wordId[papel], rect[0], rect[1], rect[2], rect[3]);
         });
         return;
@@ -37629,12 +37630,13 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       const escalasLinha = (texts._fontScaleLinhas && texts._fontScaleLinhas[grupoIndex]) || [];
       const fontesLinha = (texts._fontFamilyLinhas && texts._fontFamilyLinhas[grupoIndex]) || [];
       const pesosLinha = (texts._fontWeightLinhas && texts._fontWeightLinhas[grupoIndex]) || [];
+      const italicosLinha = (texts._italicLinhas && texts._italicLinhas[grupoIndex]) || [];
       const offsetsLinha = (texts._offsetLinhas && texts._offsetLinhas[grupoIndex]) || [];
       const wordIdsLinha = (texts._wordIdLinhas && texts._wordIdLinhas[grupoIndex]) || [];
       const ativos = todasPalavras
         .map((texto, i) => ({
           texto: (texto || '').trim(), st: stLinha, fatorCrescimento: escalasLinha[i] || 1,
-          fontFamily: fontesLinha[i], fontWeight: pesosLinha[i], offset: offsetsLinha[i], wordId: wordIdsLinha[i],
+          fontFamily: fontesLinha[i], fontWeight: pesosLinha[i], italic: italicosLinha[i], offset: offsetsLinha[i], wordId: wordIdsLinha[i],
         }))
         .filter(o => o.texto);
       if (!ativos.length) return;
@@ -37841,7 +37843,8 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
           const st = tpl.styles[papel];
           const fontFamily = (texts._fontFamily && texts._fontFamily[papel]) || st.fontFamily;
           const fontWeight = (texts._fontWeight && texts._fontWeight[papel]) || null;
-          const img = makeBitmap(texto, fontFamily, st.color, fontWeight);
+          const italic = (texts._italic && texts._italic[papel]) || false;
+          const img = makeBitmap(texto, fontFamily, st.color, fontWeight, italic);
           if (!img) return;
           const escala = (texts._fontScale && texts._fontScale[papel]) || 1;
           const offset = (texts._offset && texts._offset[papel]) || null;
@@ -37880,12 +37883,13 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       const escalasLinha = (texts._fontScaleLinhas && texts._fontScaleLinhas[grupoIndex]) || [];
       const fontesLinha = (texts._fontFamilyLinhas && texts._fontFamilyLinhas[grupoIndex]) || [];
       const pesosLinha = (texts._fontWeightLinhas && texts._fontWeightLinhas[grupoIndex]) || [];
+      const italicosLinha = (texts._italicLinhas && texts._italicLinhas[grupoIndex]) || [];
       const offsetsLinha = (texts._offsetLinhas && texts._offsetLinhas[grupoIndex]) || [];
       const wordIdsLinha = (texts._wordIdLinhas && texts._wordIdLinhas[grupoIndex]) || [];
       const ativos = todasPalavras
         .map((texto, i) => ({
           texto: (texto || '').trim(), st: stLinha, fatorCrescimento: escalasLinha[i] || 1,
-          fontFamily: fontesLinha[i], fontWeight: pesosLinha[i], offset: offsetsLinha[i], wordId: wordIdsLinha[i],
+          fontFamily: fontesLinha[i], fontWeight: pesosLinha[i], italic: italicosLinha[i], offset: offsetsLinha[i], wordId: wordIdsLinha[i],
         }))
         .filter(o => o.texto);
       if (!ativos.length) return;
@@ -38050,10 +38054,11 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
         const st = tpl.styles[papel];
         const fontFamily = (texts._fontFamily && texts._fontFamily[papel]) || st.fontFamily;
         const fontWeight = (texts._fontWeight && texts._fontWeight[papel]) || null;
+        const italic = (texts._italic && texts._italic[papel]) || false;
         const escala = (texts._fontScale && texts._fontScale[papel]) || 1;
         const offset = (texts._offset && texts._offset[papel]) || null;
         const bboxFinal = _deslocarBbox(_escalarBboxCentro(bbox, escala), offset);
-        const rect = _desenharAjustadoCentralizado(ctx, texto, fontFamily, st.color, bboxFinal, 'xywh', fontWeight);
+        const rect = _desenharAjustadoCentralizado(ctx, texto, fontFamily, st.color, bboxFinal, 'xywh', fontWeight, italic);
         if (rect) _registrarRegiaoClique(tpl, texts._wordId && texts._wordId[papel], rect[0], rect[1], rect[2], rect[3]);
       });
       return true;
@@ -38102,6 +38107,7 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
           texto: o.texto, st: stLinha, fatorCrescimento: fatorCrescimentoBase * escalaCustom,
           fontFamily: texts._fontFamilyLinha && texts._fontFamilyLinha[o.indice],
           fontWeight: texts._fontWeightLinha && texts._fontWeightLinha[o.indice],
+          italic: texts._italicLinha && texts._italicLinha[o.indice],
           offset: texts._offsetLinha && texts._offsetLinha[o.indice],
           wordId: texts._wordIdLinha && texts._wordIdLinha[o.indice],
         };
@@ -38851,10 +38857,11 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       const st = tpl.styles[key];
       const fontFamily = (texts._fontFamily && texts._fontFamily[key]) || st.fontFamily;
       const fontWeight = (texts._fontWeight && texts._fontWeight[key]) || null;
+      const italic = (texts._italic && texts._italic[key]) || false;
       const escala = (texts._fontScale && texts._fontScale[key]) || 1;
       const offset = (texts._offset && texts._offset[key]) || null;
       const bboxFinal = _ajustarBboxCantos(bboxBase, escala, offset);
-      drawStretched(ctx, texto, fontFamily, st.color, bboxFinal, undefined, undefined, fontWeight);
+      drawStretched(ctx, texto, fontFamily, st.color, bboxFinal, undefined, undefined, fontWeight, italic);
       _registrarRegiaoClique(tpl, texts._wordId && texts._wordId[key],
         bboxFinal[0], bboxFinal[1], bboxFinal[2] - bboxFinal[0], bboxFinal[3] - bboxFinal[1]);
     }
@@ -38898,7 +38905,8 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       }
       const fontFamily = (texts._fontFamily && texts._fontFamily.soul) || st.fontFamily;
       const fontWeightSoul = (texts._fontWeight && texts._fontWeight.soul) || null;
-      drawStretched(ctx, texts.soul, fontFamily, st.color, adjusted, undefined, undefined, fontWeightSoul);
+      const italicSoul = (texts._italic && texts._italic.soul) || false;
+      drawStretched(ctx, texts.soul, fontFamily, st.color, adjusted, undefined, undefined, fontWeightSoul, italicSoul);
       _registrarRegiaoClique(tpl, texts._wordId && texts._wordId.soul,
         adjusted[0], adjusted[1], adjusted[2] - adjusted[0], adjusted[3] - adjusted[1]);
     }
@@ -39411,7 +39419,7 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     const out = {
       _linhas: [], _tStarts: {}, _referenciaTStart: null,
       _fontScale: {}, _fontScaleLinhas: [], _fontFamily: {}, _fontFamilyLinhas: [],
-      _fontWeight: {}, _fontWeightLinhas: [],
+      _fontWeight: {}, _fontWeightLinhas: [], _italic: {}, _italicLinhas: [],
       _offset: {}, _offsetLinhas: [], _wordId: {}, _wordIdLinhas: [],
     };
     grupos.forEach((papeis, li) => {
@@ -39429,6 +39437,7 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
         if (wo && wo.style && wo.style.fontSizeScale) out._fontScale[papel] = wo.style.fontSizeScale;
         if (wo && wo.style && wo.style.fontFamily) out._fontFamily[papel] = wo.style.fontFamily;
         if (wo && wo.style && wo.style.fontWeight) out._fontWeight[papel] = wo.style.fontWeight;
+        if (wo && wo.style && wo.style.fontStyle === 'italic') out._italic[papel] = true;
         if (wo && wo.style && wo.style.frameExactOffset) out._offset[papel] = wo.style.frameExactOffset;
       });
       out._linhas.push(palavras);
@@ -39436,6 +39445,7 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       out._fontScaleLinhas.push(palavrasObj.map(w => (woDe(w) && woDe(w).style && woDe(w).style.fontSizeScale) || 1));
       out._fontFamilyLinhas.push(palavrasObj.map(w => (woDe(w) && woDe(w).style && woDe(w).style.fontFamily) || null));
       out._fontWeightLinhas.push(palavrasObj.map(w => (woDe(w) && woDe(w).style && woDe(w).style.fontWeight) || null));
+      out._italicLinhas.push(palavrasObj.map(w => !!(woDe(w) && woDe(w).style && woDe(w).style.fontStyle === 'italic')));
       out._offsetLinhas.push(palavrasObj.map(w => (woDe(w) && woDe(w).style && woDe(w).style.frameExactOffset) || null));
       out._wordIdLinhas.push(palavrasObj.map(w => w?.id || null));
     });
@@ -39455,7 +39465,7 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     const out = {
       _linhas: [], _tStarts: {}, _referenciaTStart: null,
       _fontScale: {}, _fontScaleLinhas: [], _fontFamily: {}, _fontFamilyLinhas: [],
-      _fontWeight: {}, _fontWeightLinhas: [],
+      _fontWeight: {}, _fontWeightLinhas: [], _italic: {}, _italicLinhas: [],
       _offset: {}, _offsetLinhas: [], _wordId: {}, _wordIdLinhas: [],
     };
     grupos.forEach((papeis, li) => {
@@ -39473,6 +39483,7 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
         if (wo && wo.style && wo.style.fontSizeScale) out._fontScale[papel] = wo.style.fontSizeScale;
         if (wo && wo.style && wo.style.fontFamily) out._fontFamily[papel] = wo.style.fontFamily;
         if (wo && wo.style && wo.style.fontWeight) out._fontWeight[papel] = wo.style.fontWeight;
+        if (wo && wo.style && wo.style.fontStyle === 'italic') out._italic[papel] = true;
         if (wo && wo.style && wo.style.frameExactOffset) out._offset[papel] = wo.style.frameExactOffset;
       });
       out._linhas.push(palavras);
@@ -39480,6 +39491,7 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       out._fontScaleLinhas.push(palavrasObj.map(w => (woDe(w) && woDe(w).style && woDe(w).style.fontSizeScale) || 1));
       out._fontFamilyLinhas.push(palavrasObj.map(w => (woDe(w) && woDe(w).style && woDe(w).style.fontFamily) || null));
       out._fontWeightLinhas.push(palavrasObj.map(w => (woDe(w) && woDe(w).style && woDe(w).style.fontWeight) || null));
+      out._italicLinhas.push(palavrasObj.map(w => !!(woDe(w) && woDe(w).style && woDe(w).style.fontStyle === 'italic')));
       out._offsetLinhas.push(palavrasObj.map(w => (woDe(w) && woDe(w).style && woDe(w).style.frameExactOffset) || null));
       out._wordIdLinhas.push(palavrasObj.map(w => w?.id || null));
     });
@@ -39546,7 +39558,7 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       KELVIN: palavras[0] || '', RAISE: palavras[1] || '',
       TILL: palavras[2] || '', OFF: palavras[3] || '',
       _linhas: [palavras], _tStarts: {}, _referenciaTStart: null,
-      _fontScale: {}, _fontFamily: {}, _fontWeight: {}, _offset: {}, _wordId: {},
+      _fontScale: {}, _fontFamily: {}, _fontWeight: {}, _italic: {}, _offset: {}, _wordId: {},
     };
     ['KELVIN', 'RAISE', 'TILL', 'OFF'].forEach((papel, i) => {
       const w = palavrasObj[i];
@@ -39559,6 +39571,7 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       if (wo && wo.style && wo.style.fontSizeScale) out._fontScale[papel] = wo.style.fontSizeScale;
       if (wo && wo.style && wo.style.fontFamily) out._fontFamily[papel] = wo.style.fontFamily;
       if (wo && wo.style && wo.style.fontWeight) out._fontWeight[papel] = wo.style.fontWeight;
+      if (wo && wo.style && wo.style.fontStyle === 'italic') out._italic[papel] = true;
       if (wo && wo.style && wo.style.frameExactOffset) out._offset[papel] = wo.style.frameExactOffset;
     });
     // Mesmas personalizações, mas indexadas por POSIÇÃO na linha —
@@ -39568,6 +39581,7 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     out._fontScaleLinha = palavrasObj.map(w => (woDe(w) && woDe(w).style && woDe(w).style.fontSizeScale) || 1);
     out._fontFamilyLinha = palavrasObj.map(w => (woDe(w) && woDe(w).style && woDe(w).style.fontFamily) || null);
     out._fontWeightLinha = palavrasObj.map(w => (woDe(w) && woDe(w).style && woDe(w).style.fontWeight) || null);
+    out._italicLinha = palavrasObj.map(w => !!(woDe(w) && woDe(w).style && woDe(w).style.fontStyle === 'italic'));
     out._offsetLinha = palavrasObj.map(w => (woDe(w) && woDe(w).style && woDe(w).style.frameExactOffset) || null);
     out._wordIdLinha = palavrasObj.map(w => w?.id || null);
     return out;
@@ -39687,7 +39701,7 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       top: l1, red: l2, be: '', my: '', soul: '',
       line3Combined: l3words.map(w => w.text).join(' '),
       _tStarts: {}, _referenciaTStart: null,
-      _fontScale: {}, _fontFamily: {}, _fontWeight: {}, _offset: {}, _wordId: {},
+      _fontScale: {}, _fontFamily: {}, _fontWeight: {}, _italic: {}, _offset: {}, _wordId: {},
     };
     const w1 = lines[0]?.words?.[0], w2 = lines[1]?.words?.[0], w3 = l3words[0];
     [['top', w1], ['red', w2], ['my', w3]].forEach(([papel, w]) => {
@@ -39696,13 +39710,14 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
         out._tStarts[papel] = w.tStart;
         if (out._referenciaTStart === null) out._referenciaTStart = w.tStart;
       }
-      // PERSONALIZAÇÃO POR PALAVRA (tamanho/fonte/espessura/arrastar):
-      // cada linha inteira é um bloco só, usa a PRIMEIRA palavra como
-      // representante (igual ao critério já usado pro tStart acima).
+      // PERSONALIZAÇÃO POR PALAVRA (tamanho/fonte/espessura/itálico/
+      // arrastar): cada linha inteira é um bloco só, usa a PRIMEIRA
+      // palavra como representante (igual ao critério do tStart acima).
       const wo = w && w.id && wordOverrides && wordOverrides[w.id];
       if (wo && wo.style && wo.style.fontSizeScale) out._fontScale[papel] = wo.style.fontSizeScale;
       if (wo && wo.style && wo.style.fontFamily) out._fontFamily[papel] = wo.style.fontFamily;
       if (wo && wo.style && wo.style.fontWeight) out._fontWeight[papel] = wo.style.fontWeight;
+      if (wo && wo.style && wo.style.fontStyle === 'italic') out._italic[papel] = true;
       if (wo && wo.style && wo.style.frameExactOffset) out._offset[papel] = wo.style.frameExactOffset;
     });
     return out;
