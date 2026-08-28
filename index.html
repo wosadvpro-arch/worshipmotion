@@ -19004,25 +19004,29 @@ class RenderEngineV2 {
       canvas.addEventListener('mousedown', (ev) => {
         const rect = canvas.getBoundingClientRect();
         if (rect.width === 0 || rect.height === 0) return;
+        // BUG REAL CORRIGIDO ("ao clicar, às vezes não seleciona nada"):
+        // a mesma corrida encontrada no redimensionamento pelas
+        // bolinhas — a reprodução automática continua limpando e
+        // repopulando as regiões de clique a cada quadro. Buscar QUAL
+        // palavra foi clicada ANTES de pausar corria o risco de acertar
+        // o instante exato em que as regiões estavam vazias (recém
+        // limpas, ainda não redesenhadas), fazendo o clique não
+        // encontrar NENHUMA palavra mesmo clicando bem em cima do
+        // texto. Pausa e redesenha ANTES de tentar achar a palavra.
+        if (engineRef && engineRef._frameExactPlaying && typeof engineRef.pauseFrameExact === 'function') {
+          engineRef.pauseFrameExact();
+          const st0 = engineRef.parsed?.stanzas?.[engineRef.currentStanzaIndex];
+          if (st0 && typeof engineRef._renderFrameExactCanvas === 'function') {
+            const mapa0 = engineRef._frameExactUltimoElapsedPorStanza || {};
+            engineRef._renderFrameExactCanvas(stanzaEl, st0, mapa0[st0.id] || 0);
+          }
+        }
         const escalaX = canvas.width / rect.width;
         const escalaY = canvas.height / rect.height;
         const xLogico = (ev.clientX - rect.left) * escalaX;
         const yLogico = (ev.clientY - rect.top) * escalaY;
         const wordId = R.acharPalavraNoPonto(tplId, xLogico, yLogico);
         if (!wordId) return;
-        // BUG REAL CORRIGIDO ("depois de arrastar, tudo some"): a
-        // reprodução automática (autoplay) continua rodando por baixo
-        // durante o arrasto — o próprio laço de play chama
-        // _renderFrameExactCanvas repetidamente com o elapsedMs REAL
-        // (que segue avançando sozinho), competindo com os redesenhos
-        // do arrasto (que usam um elapsedMs "congelado" do último
-        // conhecido). Essa corrida entre os dois às vezes deixava o
-        // desenho final num instante onde nada tinha bbox visível.
-        // Pausa a reprodução ao pegar uma palavra pra arrastar —
-        // mesmo comportamento esperado de "pausar pra editar".
-        if (engineRef && engineRef._frameExactPlaying && typeof engineRef.pauseFrameExact === 'function') {
-          engineRef.pauseFrameExact();
-        }
         // BUG REAL CORRIGIDO ("caixa extra aparecendo, arrastar não
         // funciona"): esse mousedown BORBULHA pro container pai
         // (#editor-canvas), que tem seu PRÓPRIO handler de
@@ -23107,13 +23111,26 @@ function initEditor() {
     const st = engine.parsed?.stanzas?.[engine.currentStanzaIndex];
     const tplId = st && st.frameExactTemplateId;
     if (!R || !st || !tplId) return;
+    // BUG REAL CORRIGIDO ("ao clicar nas bolinhas, não consigo mais
+    // aumentar a fonte"): a reprodução automática continua rodando por
+    // baixo — o próprio laço de play limpa e repopula as regiões de
+    // clique a cada quadro (_limparRegioesClique + redesenho). Buscar
+    // a bbox da palavra ANTES de pausar corria o risco de pegar o
+    // instante exato em que as regiões tinham acabado de ser limpas
+    // mas ainda não repopuladas — retornando vazio e cancelando o
+    // redimensionamento inteiro antes mesmo de começar (a pausa só
+    // acontecia DEPOIS dessa checagem, tarde demais). Pausa PRIMEIRO,
+    // redesenha uma vez pra garantir que as regiões ficam estáveis, e
+    // só then busca a bbox.
+    if (engine._frameExactPlaying && typeof engine.pauseFrameExact === 'function') {
+      engine.pauseFrameExact();
+      const mapa = engine._frameExactUltimoElapsedPorStanza || {};
+      if (typeof engine._renderFrameExactCanvas === 'function') {
+        engine._renderFrameExactCanvas(stanzaEl, st, mapa[st.id] || 0);
+      }
+    }
     const bboxInicial = R.acharBboxDaPalavra(tplId, wordId);
     if (!bboxInicial) return;
-    // BUG REAL CORRIGIDO (mesma causa do arrastar — "tudo some depois
-    // de mexer"): a reprodução automática continua rodando por baixo,
-    // competindo com os redesenhos do redimensionamento. Pausa ao
-    // pegar a bolinha.
-    if (engine._frameExactPlaying && typeof engine.pauseFrameExact === 'function') engine.pauseFrameExact();
 
     const canvas = stanzaEl.querySelector('.wm-frame-exact-canvas');
     const rectCanvas = canvas ? canvas.getBoundingClientRect() : null;
