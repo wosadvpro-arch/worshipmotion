@@ -19195,6 +19195,18 @@ class RenderEngineV2 {
         if (arrastouDeVerdade) { arrastouDeVerdade = false; return; } // já tratado no mouseup
         const rect = canvas.getBoundingClientRect();
         if (rect.width === 0 || rect.height === 0) return;
+        // Mesma defesa do mousedown (ver comentário lá): na prática o
+        // mousedown já roda antes e já pausa, mas mantém aqui também
+        // por segurança/consistência (defesa em profundidade), caso
+        // esse handler algum dia seja usado sem passar por ali antes.
+        if (engineRef && engineRef._frameExactPlaying && typeof engineRef.pauseFrameExact === 'function') {
+          engineRef.pauseFrameExact();
+          const st0 = engineRef.parsed?.stanzas?.[engineRef.currentStanzaIndex];
+          if (st0 && typeof engineRef._renderFrameExactCanvas === 'function') {
+            const mapa0 = engineRef._frameExactUltimoElapsedPorStanza || {};
+            engineRef._renderFrameExactCanvas(stanzaEl, st0, mapa0[st0.id] || 0);
+          }
+        }
         const escalaX = canvas.width / rect.width;
         const escalaY = canvas.height / rect.height;
         const xLogico = (ev.clientX - rect.left) * escalaX;
@@ -25992,6 +26004,12 @@ function initEditor() {
           });
           const st = engine.parsed?.stanzas?.[engine.currentStanzaIndex];
           if (st && typeof engine._renderFrameExactCanvas === 'function') {
+            // Mesma causa raiz dos outros controles — pausa antes de
+            // redesenhar, evitando corrida com o laço de play ainda
+            // ativo (o slider dispara isso repetidamente durante o
+            // arraste, então mais motivo ainda pra não competir com a
+            // reprodução automática nesse meio tempo).
+            if (engine._frameExactPlaying && typeof engine.pauseFrameExact === 'function') engine.pauseFrameExact();
             const mapa = engine._frameExactUltimoElapsedPorStanza || {};
             const elapsed = mapa[st.id] || 0;
             engine._renderFrameExactCanvas(stanzaEl, st, elapsed);
@@ -27261,6 +27279,12 @@ function initEditor() {
         });
         const stFE = engine.parsed?.stanzas?.[engine.currentStanzaIndex];
         if (stFE && typeof engine._renderFrameExactCanvas === 'function') {
+          // Mesma causa raiz dos outros controles (tamanho/peso/itálico):
+          // pausa antes de redesenhar, evitando que o laço de play
+          // ainda ativo sobrescreva esse redesenho manual logo em
+          // seguida (corrida entre os dois, mesmo tipo já corrigido
+          // no clique/arrastar/redimensionar).
+          if (engine._frameExactPlaying && typeof engine.pauseFrameExact === 'function') engine.pauseFrameExact();
           const mapa = engine._frameExactUltimoElapsedPorStanza || {};
           engine._renderFrameExactCanvas(stzElFE, stFE, mapa[stFE.id] || 0);
         }
