@@ -37242,7 +37242,7 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       styles: {
         default: {
           fontFamily: 'GalanoGrotesque-ExtraBold',
-          corAtivaAzul: '#0A82F5', corInativaCinza: '#D8DADD', corAtivaBranca: '#FDFDFD',
+          corAtivaAzul: '#0A82F5', corInativaBranca50: 'rgba(255,255,255,0.5)', corAtivaBranca: '#FDFDFD',
         },
       },
     },
@@ -39434,7 +39434,13 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
    * divergência entre "corte começou" e "cor virou branca").
    */
   const EFEITO15_COR_ATIVA_AZUL = '#0A82F5';
-  const EFEITO15_COR_INATIVA_CINZA = '#D8DADD';
+  // BUG REAL CORRIGIDO ("o cinza ainda não ficou legal" — pedido do
+  // usuário depois de eu ter trocado por um cinza claro sólido):
+  // usa branco com 50% de opacidade (transparência de verdade, não
+  // uma cor sólida diferente) — deixa a palavra "passada" visível mas
+  // claramente menos destacada que a ativa, sem escolher um tom fixo
+  // que pudesse não combinar com o fundo.
+  const EFEITO15_COR_INATIVA_BRANCA_50 = 'rgba(255,255,255,0.5)';
   const EFEITO15_COR_ATIVA_BRANCA = '#FDFDFD';
 
   function _efeito15FrameData(tpl, frameIdx) {
@@ -39647,7 +39653,7 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
         cor = corteJaAconteceu ? EFEITO15_COR_ATIVA_BRANCA : EFEITO15_COR_ATIVA_AZUL;
         corGlow = 'rgba(10,130,245,0.70)'; alphaGlow = 34;
       } else {
-        cor = EFEITO15_COR_INATIVA_CINZA;
+        cor = EFEITO15_COR_INATIVA_BRANCA_50;
         corGlow = 'rgba(10,130,245,0.30)'; alphaGlow = 30;
       }
 
