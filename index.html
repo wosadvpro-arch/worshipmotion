@@ -39173,14 +39173,26 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     // natural, esticada horizontalmente pra caber exatamente na
     // largura da caixa) — depois desenha palavra por palavra, cada
     // uma podendo receber personalização própria por cima.
-
-    let cursor = bx;
+    //
+    // BUG REAL CORRIGIDO ("ao aumentar a fonte pelo +, a âncora não
+    // fica centralizada" — confirmado visualmente): o desenho usava
+    // um CURSOR que avançava da ESQUERDA pra direita, palavra por
+    // palavra — se QUALQUER palavra ficasse maior (escala custom), a
+    // fileira inteira crescia só pra DIREITA a partir da borda
+    // esquerda original (que nunca se movia), em vez de crescer pros
+    // dois lados a partir do centro. Agora faz DUAS passadas: a
+    // primeira só MEDE cada palavra (já considerando a escala própria
+    // de cada uma) pra saber a largura total REAL da fileira; só
+    // então calcula onde começar (centralizado no mesmo ponto central
+    // de sempre) — a segunda passada desenha, reaproveitando os
+    // bitmaps já gerados na primeira (não mede/gera de novo).
+    const centroX = bx + bw / 2;
+    const itens = [];
     for (let i = 0; i < n; i++) {
       const texto = shown[i];
-      if (!texto) continue;
+      if (!texto) { itens.push(null); continue; }
       const fontFamily = texts._fontFamily[i] || fontFamilyPadrao;
       const fontScale = texts._fontScale[i] || 1;
-      const offset = texts._offset[i] || { dx: 0, dy: 0 };
       // BUG REAL CORRIGIDO (mesma causa da seção 4.4 do guia: métrica
       // de fonte inconsistente entre palavras vizinhas): usar
       // makeBitmap aqui (mede o ascendente/descendente de CADA
@@ -39195,9 +39207,19 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       // calcular a escala manualmente depois.
       const alturaAlvo = alturaNatural * fontScale;
       const img = _efeito2MakeBitmapAtHeight(texto, fontFamily, '#FFFFFF', alturaAlvo, 800);
-      if (!img) continue;
-      const drawH = img.height;
-      const drawW = img.width * escalaHorizontal;
+      if (!img) { itens.push(null); continue; }
+      itens.push({ img, drawW: img.width * escalaHorizontal, drawH: img.height });
+    }
+    const larguraEspaco = medidor.measureText(' ').width * escalaHorizontal;
+    const larguraTotalReal = itens.reduce((s, it) => s + (it ? it.drawW : 0), 0)
+      + larguraEspaco * Math.max(0, itens.filter(Boolean).length - 1);
+    let cursor = centroX - larguraTotalReal / 2;
+
+    for (let i = 0; i < n; i++) {
+      const item = itens[i];
+      if (!item) continue;
+      const { img, drawW, drawH } = item;
+      const offset = texts._offset[i] || { dx: 0, dy: 0 };
       const drawX = cursor + offset.dx;
       const drawY = by + offset.dy;
 
@@ -39230,13 +39252,7 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       ctx.restore();
 
       _registrarRegiaoClique(tpl, texts._wordId[i], drawX, drawY, drawW, drawH);
-      cursor += drawW;
-      // Espaço entre palavras: mede o espaço natural (na fonte
-      // padrão) e aplica a mesma escala horizontal coletiva — senão
-      // as palavras ficam coladas ou com buracos ao trocar fonte por
-      // palavra.
-      const larguraEspaco = medidor.measureText(' ').width * escalaHorizontal;
-      cursor += larguraEspaco;
+      cursor += drawW + larguraEspaco;
     }
     return true;
   }
