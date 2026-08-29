@@ -14146,6 +14146,31 @@ const TEMPLATES = [
     },
   },
   {
+    id: "tpl-oficial-text-preset-08-frame-exact",
+    name: "Text Preset 08",
+    description: "Uma palavra por vez, substituindo a anterior, centralizada — começa maior e encolhe até o tamanho final. Brilho azul-claro sobre fundo preto.",
+    tags: ["Datilografia", "Frame-exact", "Pro Plus"],
+    isOfficial: true,
+    isPremium: true,
+    requiredPlan: "pro_plus",
+    isActive: true,
+    accent: "#9fd8ff",
+    config: {
+      type: "frame-exact",
+      frameExactTemplateId: "efeito-17",
+      style: {},
+      animConfig: {},
+      aspect: "16:9",
+      parsed: {
+        stanzas: [
+          { id: "stz_vqbi8ad", label: "Estrofe 1", lines: [
+            { id: "ln_hg9hz4j", words: [{ id: "w_7og0iko", text: 'We', chars: [{id:"ch_h9sfc2g",text:'W'}, {id:"ch_emg08j4",text:'e'}], emphasized: false }, { id: "w_4w5773p", text: 'can', chars: [{id:"ch_f0zp9al",text:'c'}, {id:"ch_ojew0q5",text:'a'}, {id:"ch_ecty152",text:'n'}], emphasized: false }, { id: "w_6ku9o3c", text: 'reach', chars: [{id:"ch_e6xhq0z",text:'r'}, {id:"ch_no6iy4d",text:'e'}, {id:"ch_fivniwg",text:'a'}, {id:"ch_t241bw2",text:'c'}, {id:"ch_sjfjx7w",text:'h'}], emphasized: false }, { id: "w_wwh1mdt", text: 'the', chars: [{id:"ch_ua564t6",text:'t'}, {id:"ch_e066guw",text:'h'}, {id:"ch_7295534",text:'e'}], emphasized: false }, { id: "w_su8vpsi", text: 'STARS', chars: [{id:"ch_411qzys",text:'S'}, {id:"ch_zt3imul",text:'T'}, {id:"ch_e6gt1df",text:'A'}, {id:"ch_ib0oi5m",text:'R'}, {id:"ch_tmmvhd9",text:'S'}], emphasized: false }, { id: "w_vywefmv", text: 'from', chars: [{id:"ch_rmf33rf",text:'f'}, {id:"ch_jlp34vk",text:'r'}, {id:"ch_5cwy3ka",text:'o'}, {id:"ch_5bigz94",text:'m'}], emphasized: false }, { id: "w_2nlpkpg", text: 'anywhere', chars: [{id:"ch_a2sqezv",text:'a'}, {id:"ch_w8m50aq",text:'n'}, {id:"ch_kqokm68",text:'y'}, {id:"ch_ha62ehw",text:'w'}, {id:"ch_24puz69",text:'h'}, {id:"ch_412gkzw",text:'e'}, {id:"ch_credxsy",text:'r'}, {id:"ch_d9k9dwj",text:'e'}], emphasized: false }, { id: "w_c4pz0w1", text: 'but...', chars: [{id:"ch_3vy7eom",text:'b'}, {id:"ch_cn8g27s",text:'u'}, {id:"ch_6w58jg9",text:'t'}, {id:"ch_qxnwwx8",text:'.'}, {id:"ch_iglxrx0",text:'.'}, {id:"ch_u5a1gc5",text:'.'}], emphasized: false }, { id: "w_sz3bnee", text: 'here', chars: [{id:"ch_o18g6fn",text:'h'}, {id:"ch_odkrr05",text:'e'}, {id:"ch_gbf9pal",text:'r'}, {id:"ch_3yyxe95",text:'e'}], emphasized: false }, { id: "w_ubwth88", text: 'are', chars: [{id:"ch_32y3h0y",text:'a'}, {id:"ch_y7301nl",text:'r'}, {id:"ch_66upu3f",text:'e'}], emphasized: false }, { id: "w_lyy3wnk", text: 'the', chars: [{id:"ch_kbdmslg",text:'t'}, {id:"ch_hotkn5x",text:'h'}, {id:"ch_n3er98u",text:'e'}], emphasized: false }, { id: "w_h93gesd", text: 'rules', chars: [{id:"ch_h7z05ib",text:'r'}, {id:"ch_ujuq0bu",text:'u'}, {id:"ch_5g1e54l",text:'l'}, {id:"ch_ri65egl",text:'e'}, {id:"ch_ed1b9mx",text:'s'}], emphasized: false }, { id: "w_5rilcs8", text: 'for', chars: [{id:"ch_65eg1hb",text:'f'}, {id:"ch_0m208za",text:'o'}, {id:"ch_zzm3wrm",text:'r'}], emphasized: false }, { id: "w_ieki2ub", text: 'everybody', chars: [{id:"ch_uxbizwd",text:'e'}, {id:"ch_u4sqmz8",text:'v'}, {id:"ch_9lpjrpq",text:'e'}, {id:"ch_zcv443q",text:'r'}, {id:"ch_muhvr8f",text:'y'}, {id:"ch_ts2crsk",text:'b'}, {id:"ch_6v7nrcd",text:'o'}, {id:"ch_7m6kt2a",text:'d'}, {id:"ch_5aduhjt",text:'y'}], emphasized: false }] },
+          ] },
+        ],
+      },
+    },
+  },
+  {
     id: "tpl-oficial-kinetic-scale-stack-frameexact",
     name: "Kinetic Scale Stack",
     description: "Tipografia cinética em três linhas, com compressão/expansão e zoom final, reproduzida por bounding boxes absolutas frame a frame (frame-exact).",
@@ -33482,6 +33507,7 @@ function initEditor() {
     if (tplFE.layout === 'efeito-14-style') return 1;
     if (tplFE.layout === 'efeito-15-style') return 1;
     if (tplFE.layout === 'efeito-16-style') return 1;
+    if (tplFE.layout === 'efeito-17-style') return 1;
     return 3;
   }
 
@@ -37263,6 +37289,33 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
   // Registro de templates frame-exact — motion-data ORIGINAL, sem
   // nenhuma alteração (mesmo JSON do ZIP, byte a byte).
   const TEMPLATES_FRAME_EXACT = {
+    'efeito-17': {
+      layout: 'efeito-17-style',
+      // Espaço lógico PRÓPRIO — 3840x2160, 24fps, 145 quadros.
+      logicalWidth: 3840,
+      logicalHeight: 2160,
+      // Estrutura de dados PRÓPRIA: UMA palavra visível por vez (não
+      // acumula, substitui a anterior — diferente de TODOS os outros
+      // efeitos) — cada palavra tem seu próprio intervalo de quadros
+      // ("estágio") e uma caixa que encolhe de grande pro tamanho
+      // final, sempre centralizada no mesmo ponto. Cada item de
+      // framesCompact é [x, y, width, height, fontWeight].
+      motionData: { fps: 24, frames: 145, framesCompact: [[1540,897,713,342,600],[1559,906,677,326,600],[1567,910,662,318,600],[1572,913,652,313,600],[1576,915,645,309,600],[1579,916,639,307,600],[1582,917,634,305,600],[1584,918,630,303,600],[1585,919,628,301,600],[1484,979,823,255,600],[1514,986,766,238,600],[1523,988,749,233,600],[1527,989,741,230,600],[1280,881,1249,352,600],[1325,895,1162,327,600],[1338,899,1137,320,600],[1344,901,1125,317,600],[1529,883,732,348,600],[1556,897,681,324,600],[1563,901,668,317,600],[1567,902,661,314,600],[1168,901,1469,329,900],[1198,908,1410,316,900],[1211,912,1384,309,900],[1221,914,1366,305,900],[1228,915,1352,303,900],[1233,917,1342,300,900],[1238,918,1333,298,900],[1241,919,1326,296,900],[1245,919,1319,295,900],[1247,920,1314,294,900],[1250,921,1309,293,900],[1252,921,1305,292,900],[1253,922,1302,291,900],[1255,922,1299,290,900],[1256,922,1297,290,900],[1258,923,1293,289,900],[1394,885,1001,339,600],[1431,898,931,316,600],[1441,902,912,309,600],[1446,904,902,306,600],[872,892,2061,402,600],[916,900,1976,385,600],[934,903,1940,378,600],[947,906,1914,373,600],[958,908,1893,369,600],[966,909,1876,366,600],[974,910,1862,363,600],[980,912,1850,360,600],[985,913,1840,358,600],[990,913,1830,357,600],[994,914,1822,355,600],[997,915,1815,354,600],[1001,916,1808,352,600],[1004,916,1802,351,600],[1007,917,1796,350,600],[1010,917,1790,349,600],[1013,918,1784,347,600],[1017,918,1777,346,600],[1020,919,1771,345,600],[1024,920,1763,343,600],[1027,920,1757,342,600],[1448,904,923,311,600],[1469,912,883,297,600],[1478,915,865,291,600],[1485,918,851,286,600],[1491,920,839,283,600],[1496,922,830,279,600],[1500,924,822,276,600],[1504,925,814,274,600],[1508,927,806,271,600],[1511,928,800,269,600],[1515,929,793,267,600],[1518,930,787,265,600],[1521,931,781,263,600],[1524,932,775,261,600],[1527,934,769,258,600],[1530,935,763,256,600],[1533,936,757,255,600],[1536,937,751,253,600],[1539,938,745,251,600],[1536,924,754,275,600],[1565,936,698,255,600],[1574,939,680,249,600],[1579,941,671,245,600],[1627,1004,558,192,600],[1648,1009,518,179,600],[1654,1011,507,175,600],[1658,1012,500,172,600],[1624,931,554,263,600],[1645,942,515,244,600],[1651,945,503,239,600],[1654,946,498,237,600],[1525,933,776,260,600],[1543,940,741,248,600],[1550,943,727,243,600],[1556,944,716,240,600],[1559,946,709,237,600],[1562,947,703,235,600],[1565,948,698,233,600],[1567,949,694,232,600],[1568,949,692,231,600],[1569,950,689,230,600],[1570,950,688,230,600],[1680,932,455,257,600],[1697,943,423,239,600],[1702,945,414,235,600],[1704,947,411,232,600],[1064,938,1692,304,600],[1098,943,1625,293,600],[1113,946,1596,287,600],[1123,947,1576,284,600],[1130,949,1562,281,600],[1136,950,1550,279,600],[1141,950,1541,278,600],[1144,951,1534,276,600],[1147,951,1528,276,600],[1150,952,1523,274,600],[1152,952,1519,274,600],[1153,953,1516,272,600],[1154,953,1514,272,600],[1155,953,1513,272,600],[1155,953,1512,272,600],[1156,953,1511,272,600],[1156,953,1510,272,600],[1157,953,1509,272,600],[1157,953,1508,272,600],[1158,953,1507,272,600],[1158,953,1506,272,600],[1159,953,1505,272,600],[1159,954,1504,270,600],[1160,954,1503,270,600],[1160,954,1503,270,600],[1160,954,1502,270,600],[1161,954,1501,270,600],[1161,954,1501,270,600],[1161,954,1500,270,600],[1162,954,1499,270,600],[1162,954,1499,270,600],[1162,954,1498,270,600],[1162,954,1498,270,600],[1163,954,1497,270,600],[1163,954,1497,270,600],[1163,954,1497,270,600],[1163,954,1496,270,600]] },
+      // [quadroInicial, quadroFinal, palavra] — mapeia cada palavra
+      // original ao seu intervalo de quadros.
+      estagios: [[0,8,"We"],[9,12,"can"],[13,16,"reach"],[17,20,"the"],[21,36,"STARS"],[37,40,"from"],[41,61,"anywhere"],[62,80,"but..."],[81,84,"here"],[85,88,"are"],[89,92,"the"],[93,103,"rules"],[104,107,"for"],[108,144,"everybody"]],
+      palavrasOriginais: ['We', 'can', 'reach', 'the', 'STARS', 'from', 'anywhere', 'but...', 'here', 'are', 'the', 'rules', 'for', 'everybody'],
+      // STARS usa peso Black (900) no vídeo original — as demais
+      // usam SemiBold (600, peso padrão).
+      pesosEspeciais: { 'STARS': 900 },
+      fontFamilyOptions: ['GalanoGrotesque-SemiBold', 'GalanoGrotesque-ExtraBold', 'GalanoGrotesque-Black'],
+      styles: {
+        default: {
+          fontFamily: 'GalanoGrotesque-SemiBold',
+          corPrincipal: '#F1FAFF', corBrilho: 'rgba(159,216,255,.45)',
+        },
+      },
+    },
     'efeito-16': {
       layout: 'efeito-16-style',
       // Espaço lógico PRÓPRIO — 3840x2160, 24fps, 120 quadros.
@@ -37855,6 +37908,9 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     }
     if (tpl.layout === 'efeito-16-style') {
       return _renderFrameEfeito16Style(ctx, tpl, texts, frameIdx, elapsedMs);
+    }
+    if (tpl.layout === 'efeito-17-style') {
+      return _renderFrameEfeito17Style(ctx, tpl, texts, frameIdx, elapsedMs);
     }
     return _renderFrameKineticScaleStack(ctx, tpl, texts, frameIdx, elapsedMs);
   }
@@ -40135,6 +40191,237 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     ctx.restore();
   }
 
+  /**
+   * Efeito 17 ("Text Preset 08"): UMA palavra visível por vez — cada
+   * palavra SUBSTITUI a anterior (não acumula, diferente de TODOS os
+   * outros efeitos frame-exact) — sempre centralizada no mesmo ponto,
+   * começando maior e encolhendo até um tamanho estável. O peso da
+   * fonte é PRÓPRIO de cada palavra no vídeo original (a palavra
+   * "STARS" usa peso Black/900, as demais usam SemiBold/600 padrão).
+   */
+  function _efeito17FrameData(tpl, frameIdx) {
+    const c = tpl.motionData.framesCompact[frameIdx];
+    if (!c) return null;
+    return { x: c[0], y: c[1], width: c[2], height: c[3], fontWeight: c[4] };
+  }
+
+  /** Acha em qual "estágio" (índice de palavra original) um quadro
+   * bruto do vídeo original cai — usado só no caminho de fidelidade. */
+  function _efeito17EstagioDoQuadro(tpl, frameIdx) {
+    const estagios = tpl.estagios;
+    for (let i = 0; i < estagios.length; i++) {
+      if (frameIdx >= estagios[i][0] && frameIdx <= estagios[i][1]) return i;
+    }
+    return estagios.length - 1;
+  }
+
+  /**
+   * Quadro em que a palavra de índice `indice` começa a aparecer —
+   * mesma técnica dos Efeitos 14/15/16 pra generalizar quando a
+   * contagem de palavras é diferente da original: fidelidade usa os
+   * quadros reais medidos; reflow distribui PROPORCIONALMENTE ao
+   * longo da mesma duração total, cada palavra com a MESMA fatia de
+   * tempo (diferente do vídeo original, onde cada palavra tem sua
+   * própria duração — não dá pra saber de antemão quanto tempo uma
+   * palavra NOVA, digitada pelo usuário, "deveria" durar).
+   */
+  function _efeito17QuadroInicioEstagio(tpl, indice, totalPalavras) {
+    const totalOriginal = tpl.palavrasOriginais.length;
+    if (totalPalavras === totalOriginal) return tpl.estagios[indice][0];
+    return Math.round(indice * tpl.motionData.frames / totalPalavras);
+  }
+  function _efeito17QuadroFimEstagio(tpl, indice, totalPalavras) {
+    const totalOriginal = tpl.palavrasOriginais.length;
+    if (totalPalavras === totalOriginal) return tpl.estagios[indice][1];
+    return Math.round((indice + 1) * tpl.motionData.frames / totalPalavras) - 1;
+  }
+
+  function _readTextsEfeito17Style(stanza, tpl, wordOverrides) {
+    const lines = (stanza && stanza.lines) || [];
+    const palavrasObj = (lines[0]?.words || []);
+    const palavras = palavrasObj.map(w => w.text);
+    const out = {
+      palavras, _tStarts: {}, _referenciaTStart: null,
+      _fontScale: {}, _fontFamily: {}, _offset: {}, _wordId: {},
+    };
+    palavrasObj.forEach((w, i) => {
+      out._wordId[i] = w?.id || null;
+      if (w && typeof w.tStart === 'number') {
+        out._tStarts[i] = w.tStart;
+        if (out._referenciaTStart === null) out._referenciaTStart = w.tStart;
+      }
+      const wo = w && w.id && wordOverrides && wordOverrides[w.id];
+      if (wo && wo.style && wo.style.fontSizeScale) out._fontScale[i] = wo.style.fontSizeScale;
+      if (wo && wo.style && wo.style.fontFamily) out._fontFamily[i] = wo.style.fontFamily;
+      if (wo && wo.style && wo.style.frameExactOffset) out._offset[i] = wo.style.frameExactOffset;
+    });
+    return out;
+  }
+
+  /** Altura de referência (ascendente+descendente reais) pro
+   * "fontSize: 500px" que o vídeo original mede — mesma técnica já
+   * usada nos outros efeitos, evita métrica inconsistente entre
+   * palavras vizinhas. */
+  function _efeito17AlturaNatural(fontFamily, weight) {
+    _efeito17AlturaNatural._cache = _efeito17AlturaNatural._cache || {};
+    const chave = fontFamily + '|' + weight;
+    if (chave in _efeito17AlturaNatural._cache) return _efeito17AlturaNatural._cache[chave];
+    const c = document.createElement('canvas').getContext('2d');
+    c.font = `${weight} 500px "${fontFamily}"`;
+    const m = c.measureText('AÁÀÂÃEÉÊIÍMNOÓÔÕRSTUÚXBCÇDFGHJKLPQVWYZ0123456789');
+    const altura = (m.actualBoundingBoxAscent || 400) + (m.actualBoundingBoxDescent || 20);
+    _efeito17AlturaNatural._cache[chave] = altura;
+    return altura;
+  }
+
+  function _renderFrameEfeito17Style(ctx, tpl, texts, frameIdx, elapsedMs) {
+    _limparRegioesClique(tpl);
+    const palavras = (texts && texts.palavras) || [];
+    const totalPalavras = palavras.filter(p => (p || '').trim()).length;
+    if (!totalPalavras) return true;
+
+    const totalOriginal = tpl.palavrasOriginais.length;
+    const palavrasOriginaisUpper = tpl.palavrasOriginais.map(p => p.toUpperCase());
+    const ehFidelidade = totalPalavras === totalOriginal
+      && palavras.slice(0, totalOriginal).every((p, i) => (p || '').trim().toUpperCase() === palavrasOriginaisUpper[i]);
+
+    const tStarts = texts._tStarts, referencia = texts._referenciaTStart;
+
+    // Acha qual palavra está "ativa" agora — cada uma ocupa sua
+    // própria fatia de tempo (não acumula, só uma por vez).
+    //
+    // BUG REAL CORRIGIDO ("marcar só 1 palavra no meio pula quase até
+    // o fim" — confirmado testando: marcar STARS pra 5s fazia a tela
+    // mostrar EVERYBODY, a ÚLTIMA palavra, em vez de STARS ou algo
+    // logo depois dela): cada palavra SEM marcação própria calculava
+    // sua hora de início contra o tempo NATURAL ABSOLUTO dela (ex:
+    // "from" sempre considerava sua hora natural ~1541ms) — se uma
+    // palavra ANTERIOR (STARS) fosse atrasada pra 5000ms, todas as
+    // palavras SEGUINTES sem marcação já tinham sua hora natural no
+    // passado bem antes desse ponto, e o laço simplesmente avançava
+    // por TODAS elas de uma vez, parando na ÚLTIMA. Agora cada
+    // palavra sem marcação própria herda o atraso ACUMULADO da
+    // palavra anterior — sua hora de início vira "quando a anterior
+    // começou + a mesma folga natural que sempre teve entre elas",
+    // não mais o tempo absoluto original. Isso propaga o atraso em
+    // cascata palavra a palavra, exatamente como esperado: atrasar
+    // uma palavra no meio atrasa tudo que vem depois dela também.
+    const msPorQuadro = 1000 / tpl.motionData.fps;
+    let indiceAtivo = 0;
+    let frameEfetivoNoEstagio = 0;
+    let quandoComecouAnterior = null; // tempo (ms, relativo ao início da estrofe) em que a palavra ANTERIOR de fato começou
+    let quadroInicioAnterior = null;
+    for (let i = 0; i < totalPalavras; i++) {
+      const quadroInicio = _efeito17QuadroInicioEstagio(tpl, i, totalPalavras);
+      let quandoComeca;
+      if (tStarts && referencia != null && (i in tStarts)) {
+        quandoComeca = Math.max(0, (tStarts[i] - referencia) * 1000);
+      } else if (quandoComecouAnterior === null) {
+        // Primeira palavra, sem marcação: usa o tempo natural dela
+        // mesma (geralmente 0, já que é a primeira do vídeo original).
+        quandoComeca = quadroInicio * msPorQuadro;
+      } else {
+        // Sem marcação própria: herda o atraso acumulado da anterior
+        // — começa quando a anterior começou, mais a MESMA folga
+        // natural que sempre existiu entre as duas no vídeo original.
+        const folgaNatural = (quadroInicio - quadroInicioAnterior) * msPorQuadro;
+        quandoComeca = quandoComecouAnterior + Math.max(0, folgaNatural);
+      }
+      if (elapsedMs - quandoComeca >= 0) {
+        indiceAtivo = i;
+        frameEfetivoNoEstagio = Math.floor((elapsedMs - quandoComeca) / msPorQuadro);
+      }
+      quandoComecouAnterior = quandoComeca;
+      quadroInicioAnterior = quadroInicio;
+    }
+
+    const texto = (palavras[indiceAtivo] || '').trim();
+    if (!texto) return true;
+
+    const fontFamilyPadrao = texts._fontFamily[indiceAtivo] || tpl.styles.default.fontFamily;
+    // Peso: prioridade é personalização explícita > peso especial do
+    // vídeo original (só faz sentido pra fidelidade exata, onde a
+    // palavra na MESMA posição É a mesma do vídeo original) > padrão.
+    let fontWeight = 600;
+    if (ehFidelidade && tpl.pesosEspeciais[tpl.palavrasOriginais[indiceAtivo]]) {
+      fontWeight = tpl.pesosEspeciais[tpl.palavrasOriginais[indiceAtivo]];
+    }
+    const fontScale = texts._fontScale[indiceAtivo] || 1;
+    const offset = texts._offset[indiceAtivo] || { dx: 0, dy: 0 };
+
+    // Bbox: fidelidade usa os dados REAIS medidos do vídeo original
+    // pro quadro efetivo dentro do estágio dessa palavra (com
+    // esticamento independente em X e Y, igual a referência —
+    // preserva a MESMA "assinatura visual" exata do vídeo). Reflow
+    // sintetiza uma curva "começa ~13.5% maior, encolhe até o
+    // natural" — proporção medida diretamente nos dados reais (bate
+    // consistentemente em todas as palavras do vídeo original,
+    // independente de qual palavra é).
+    let bx, by, bw, bh;
+    if (ehFidelidade) {
+      const quadroInicio = tpl.estagios[indiceAtivo][0];
+      const quadroFim = tpl.estagios[indiceAtivo][1];
+      const quadroBruto = Math.min(quadroInicio + frameEfetivoNoEstagio, quadroFim);
+      const fData = _efeito17FrameData(tpl, quadroBruto);
+      if (!fData) return true;
+      bx = fData.x; by = fData.y; bw = fData.width; bh = fData.height;
+    } else {
+      const alturaNatural = _efeito17AlturaNatural(fontFamilyPadrao, fontWeight);
+      const medidor = document.createElement('canvas').getContext('2d');
+      medidor.font = `${fontWeight} ${alturaNatural}px "${fontFamilyPadrao}"`;
+      const m = medidor.measureText(texto.toUpperCase());
+      const larguraNatural = Math.max(1, (m.actualBoundingBoxRight || 0) + (m.actualBoundingBoxLeft || 0) || m.width);
+
+      const quadroInicio = _efeito17QuadroInicioEstagio(tpl, indiceAtivo, totalPalavras);
+      const quadroFim = _efeito17QuadroFimEstagio(tpl, indiceAtivo, totalPalavras);
+      const duracaoEstagio = Math.max(1, quadroFim - quadroInicio);
+      const progresso = Math.min(1, Math.max(0, frameEfetivoNoEstagio / duracaoEstagio));
+      // Desaceleração cúbica (ease-out), medida visualmente contra o
+      // vídeo original — encolhe rápido no início, devagar no fim.
+      const fatorEscala = 1 + 0.135 * Math.pow(1 - progresso, 3);
+
+      bw = larguraNatural * fatorEscala;
+      bh = alturaNatural * fatorEscala;
+      const centroCanvasX = tpl.logicalWidth * 0.4974; // centro medido (levemente à esquerda do centro geométrico, igual ao vídeo original)
+      const centroCanvasY = tpl.logicalHeight * 0.5023;
+      bx = centroCanvasX - bw / 2;
+      by = centroCanvasY - bh / 2;
+    }
+
+    // Aplica personalização (escala extra do usuário + deslocamento),
+    // sempre em torno do MESMO centro (nunca desloca o ponto de
+    // ancoragem, só cresce/diminui a partir dele).
+    const centroX = bx + bw / 2, centroY = by + bh / 2;
+    const bwFinal = bw * fontScale, bhFinal = bh * fontScale;
+    const bxFinal = centroX - bwFinal / 2 + offset.dx;
+    const byFinal = centroY - bhFinal / 2 + offset.dy;
+
+    // Desenha a palavra esticada (X e Y independentes) pra caber
+    // exatamente na caixa — mesma técnica da referência.
+    const alturaMedicao = 500;
+    const medidor = document.createElement('canvas').getContext('2d');
+    medidor.font = `${fontWeight} ${alturaMedicao}px "${fontFamilyPadrao}"`;
+    const m = medidor.measureText(texto.toUpperCase());
+    const rawW = Math.max(1, (m.actualBoundingBoxRight || 0) + (m.actualBoundingBoxLeft || 0) || m.width);
+    const rawH = Math.max(1, (m.actualBoundingBoxAscent || 400) + (m.actualBoundingBoxDescent || 20));
+    const sx = bwFinal / rawW, sy = bhFinal / rawH;
+
+    ctx.save();
+    ctx.translate(bxFinal, byFinal);
+    ctx.scale(sx, sy);
+    ctx.font = `${fontWeight} ${alturaMedicao}px "${fontFamilyPadrao}"`;
+    ctx.textBaseline = 'alphabetic';
+    ctx.textAlign = 'left';
+    ctx.shadowColor = tpl.styles.default.corBrilho;
+    ctx.shadowBlur = 55;
+    ctx.fillStyle = tpl.styles.default.corPrincipal;
+    ctx.fillText(texto.toUpperCase(), -(m.actualBoundingBoxLeft || 0), m.actualBoundingBoxAscent || 400);
+    ctx.restore();
+
+    _registrarRegiaoClique(tpl, texts._wordId[indiceAtivo], bxFinal, byFinal, bwFinal, bhFinal);
+    return true;
+  }
+
   function _renderFrameKineticScaleStack(ctx, tpl, texts, frameIdx, elapsedMs) {
     const m = tpl.motionData.motion[frameIdx];
     _limparRegioesClique(tpl);
@@ -40710,6 +40997,27 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       return Math.max(duracaoBase, atrasoMs + duracaoBase);
     }
 
+    // Efeito 17: cada palavra tem seu PRÓPRIO atraso (só uma
+    // visível por vez, cada uma "assume a vez" na hora certa) — mesmo
+    // princípio dos Efeitos 14/15. Pra cada palavra marcada, o tempo
+    // necessário é o atraso dela + o tempo que falta da animação
+    // original a partir do quadro onde essa palavra naturalmente
+    // começaria (garante que a última palavra marcada tenha tempo de
+    // completar sua fase de encolhimento antes da estrofe acabar).
+    if (tpl.layout === 'efeito-17-style') {
+      const totalPalavras = (texts.palavras || []).filter(p => (p || '').trim()).length;
+      let maiorFim17 = duracaoBase;
+      Object.keys(tStarts).forEach(indiceStr => {
+        const indice = Number(indiceStr);
+        const atrasoMs = Math.max(0, (tStarts[indice] - referencia) * 1000);
+        const quadroInicio = _efeito17QuadroInicioEstagio(tpl, indice, totalPalavras);
+        const tempoRestanteOriginal = duracaoBase - quadroInicio * (1000 / tpl.motionData.fps);
+        const fimDessaPalavra = atrasoMs + Math.max(300, tempoRestanteOriginal);
+        if (fimDessaPalavra > maiorFim17) maiorFim17 = fimDessaPalavra;
+      });
+      return maiorFim17;
+    }
+
     // Kinetic Scale Stack (Efeitos 1/3) usa uma estrutura de dados
     // DIFERENTE (tpl.motionData.motion, não framesData) — usa as
     // variantes "Motion" das funções de quadro inicial/assentado.
@@ -40776,6 +41084,9 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     }
     if (tpl && tpl.layout === 'efeito-16-style') {
       return _readTextsEfeito16Style(stanza, tpl, wordOverrides);
+    }
+    if (tpl && tpl.layout === 'efeito-17-style') {
+      return _readTextsEfeito17Style(stanza, tpl, wordOverrides);
     }
     return _readTextsKineticScaleStack(stanza, wordOverrides);
   }
