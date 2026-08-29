@@ -14096,6 +14096,31 @@ const TEMPLATES = [
     },
   },
   {
+    id: "tpl-oficial-text-preset-02-frame-exact",
+    name: "Text Preset 02",
+    description: "Texto acumulado ancorado pela borda direita — a palavra mais nova empurra o texto antigo pra fora da tela pela esquerda, com corte natural. Palavra ativa em azul/branco, restante em cinza.",
+    tags: ["Letreiro", "Frame-exact", "Pro Plus"],
+    isOfficial: true,
+    isPremium: true,
+    requiredPlan: "pro_plus",
+    isActive: true,
+    accent: "#0A82F5",
+    config: {
+      type: "frame-exact",
+      frameExactTemplateId: "efeito-15",
+      style: {},
+      animConfig: {},
+      aspect: "16:9",
+      parsed: {
+        stanzas: [
+          { id: "stz_mcdjldk", label: "Estrofe 1", lines: [
+            { id: "ln_fqxiq4h", words: [{ id: "w_k74q16w", text: 'none', chars: [{id:"ch_9c2th3q",text:'n'}, {id:"ch_n2d6xlx",text:'o'}, {id:"ch_skzy1hh",text:'n'}, {id:"ch_gx2px62",text:'e'}], emphasized: false }, { id: "w_vgum83o", text: 'of', chars: [{id:"ch_joroqfj",text:'o'}, {id:"ch_k7p8s0q",text:'f'}], emphasized: false }, { id: "w_dczduhh", text: 'us', chars: [{id:"ch_1zl39c7",text:'u'}, {id:"ch_tc72b2t",text:'s'}], emphasized: false }, { id: "w_v7c2g77", text: 'really', chars: [{id:"ch_jyhg7hg",text:'r'}, {id:"ch_20uw7m2",text:'e'}, {id:"ch_3lrew5c",text:'a'}, {id:"ch_4tocp6e",text:'l'}, {id:"ch_vqa8anm",text:'l'}, {id:"ch_27gahh1",text:'y'}], emphasized: false }, { id: "w_sfn2ymx", text: 'know', chars: [{id:"ch_be6n3m0",text:'k'}, {id:"ch_h6zszrj",text:'n'}, {id:"ch_zmw3qnf",text:'o'}, {id:"ch_r2v01ye",text:'w'}], emphasized: false }, { id: "w_lemirzu", text: 'what', chars: [{id:"ch_yh0m4oc",text:'w'}, {id:"ch_dvgvhj6",text:'h'}, {id:"ch_ewn5e9k",text:'a'}, {id:"ch_8qrvrh3",text:'t'}], emphasized: false }, { id: "w_k7ype9x", text: 'we’re', chars: [{id:"ch_b81t91y",text:'w'}, {id:"ch_je0hqiz",text:'e'}, {id:"ch_sxv1w2x",text:'’'}, {id:"ch_h550gtz",text:'r'}, {id:"ch_4ol0blq",text:'e'}], emphasized: false }, { id: "w_792v40p", text: 'doing', chars: [{id:"ch_kxde5uk",text:'d'}, {id:"ch_pvkrzme",text:'o'}, {id:"ch_byyo0bx",text:'i'}, {id:"ch_g1k3nq3",text:'n'}, {id:"ch_fl2i6d8",text:'g'}], emphasized: false }, { id: "w_iu8dyzb", text: 'over', chars: [{id:"ch_abwph09",text:'o'}, {id:"ch_3wi1bnx",text:'v'}, {id:"ch_eex2cn9",text:'e'}, {id:"ch_taz7g37",text:'r'}], emphasized: false }, { id: "w_bg6s33v", text: 'here', chars: [{id:"ch_h6vsedd",text:'h'}, {id:"ch_9i5ws0b",text:'e'}, {id:"ch_uo5o4qd",text:'r'}, {id:"ch_n80or2g",text:'e'}], emphasized: false }] },
+          ] },
+        ],
+      },
+    },
+  },
+  {
     id: "tpl-oficial-kinetic-scale-stack-frameexact",
     name: "Kinetic Scale Stack",
     description: "Tipografia cinética em três linhas, com compressão/expansão e zoom final, reproduzida por bounding boxes absolutas frame a frame (frame-exact).",
@@ -33403,6 +33428,7 @@ function initEditor() {
     if (tplFE.layout === 'efeito-10-style') return 1;
     if (tplFE.layout === 'efeito-11-style') return 6;
     if (tplFE.layout === 'efeito-14-style') return 1;
+    if (tplFE.layout === 'efeito-15-style') return 1;
     return 3;
   }
 
@@ -37184,6 +37210,42 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
   // Registro de templates frame-exact — motion-data ORIGINAL, sem
   // nenhuma alteração (mesmo JSON do ZIP, byte a byte).
   const TEMPLATES_FRAME_EXACT = {
+    'efeito-15': {
+      layout: 'efeito-15-style',
+      // Espaço lógico PRÓPRIO — 3840x2160, 24fps, 120 quadros
+      // (confirmado no manifest.json e no próprio MP4 original).
+      logicalWidth: 3840,
+      logicalHeight: 2160,
+      // Estrutura de dados PRÓPRIA desse efeito: texto ACUMULADO
+      // (cresce uma palavra por vez, nunca reinicia) ancorado pela
+      // borda DIREITA — conforme mais palavras entram, o texto
+      // antigo é empurrado pra fora da tela pela esquerda (corte
+      // natural, sem esticar/escalar, diferente do Efeito 14). Cada
+      // item é [activeWordIndex, visibleWordCount, anchorRightPx, topPx].
+      motionData: { fps: 24, frames: 120, framesCompact: [[0,1,2522,990],[0,1,2476,990],[0,1,2470,990],[0,1,2470,990],[0,1,2470,990],[0,1,2470,990],[1,2,2486,896],[1,2,2486,896],[1,2,2486,896],[1,2,2486,896],[1,2,2486,896],[1,2,2486,896],[2,3,2468,990],[2,3,2468,990],[2,3,2468,990],[2,3,2468,990],[2,3,2468,990],[2,3,2468,990],[3,4,2476,900],[3,4,2476,900],[3,4,2476,900],[3,4,2476,900],[3,4,2476,900],[3,4,2476,900],[4,5,2478,900],[4,5,2478,900],[4,5,2478,900],[4,5,2478,900],[4,5,2478,900],[4,5,2478,900],[5,6,2480,900],[5,6,2480,900],[5,6,2480,900],[5,6,2480,900],[5,6,2480,900],[5,6,2480,900],[6,7,2466,922],[6,7,2466,922],[6,7,2466,922],[6,7,2466,922],[6,7,2466,922],[6,7,2466,922],[7,8,2449,900],[7,8,2449,900],[7,8,2449,900],[7,8,2449,900],[7,8,2449,900],[7,8,2449,900],[8,9,2467,900],[8,9,2466,900],[8,9,2465,900],[8,9,2464,900],[8,9,2463,900],[8,9,2463,900],[9,10,2462,900],[9,10,2461,900],[9,10,2460,900],[9,10,2459,900],[9,10,2458,900],[9,10,2457,900],[9,10,2456,900],[9,10,2455,900],[9,10,2455,900],[9,10,2454,900],[9,10,2453,900],[9,10,2452,900],[9,10,2451,900],[9,10,2450,900],[9,10,2449,900],[9,10,2448,900],[9,10,2447,900],[9,10,2447,900],[9,10,2446,900],[9,10,2445,900],[9,10,2444,900],[9,10,2443,900],[9,10,2442,900],[9,10,2441,900],[9,10,2440,900],[9,10,2439,900],[9,10,2439,900],[9,10,2438,900],[9,10,2437,900],[9,10,2436,900],[9,10,2435,900],[9,10,2434,900],[9,10,2433,900],[9,10,2432,900],[9,10,2432,900],[9,10,2431,900],[9,10,2430,900],[9,10,2429,900],[9,10,2428,900],[9,10,2427,900],[9,10,2426,900],[9,10,2425,900],[9,10,2424,900],[9,10,2424,900],[9,10,2423,900],[9,10,2422,900],[9,10,2421,900],[9,10,2420,900],[9,10,2419,900],[9,10,2418,900],[9,10,2417,900],[9,10,2416,900],[9,10,2416,900],[9,10,2415,900],[9,10,2414,900],[9,10,2413,900],[9,10,2412,900],[9,10,2411,900],[9,10,2410,900],[9,10,2409,900],[9,10,2408,900],[9,10,2408,900],[9,10,2407,900],[9,10,2406,900],[9,10,2405,900],[9,10,2404,900]] },
+      palavrasOriginais: ['none', 'of', 'us', 'really', 'know', 'what', 'we’re', 'doing', 'over', 'here'],
+      // Quantos quadros cada palavra fica em cena antes da próxima
+      // entrar (confirmado no manifest/README: 6 quadros por palavra,
+      // 10 palavras = 60 quadros de construção, resto é o estado
+      // final assentado). Usado pra generalizar a revelação
+      // proporcionalmente quando a contagem de palavras é diferente
+      // da original (reflow).
+      animationStageFrames: 6,
+      // Espessura de fonte tratada como ESCOLHA DE FAMÍLIA aqui (3
+      // fontes de verdade, não uma única fonte variável) — mesmo
+      // critério do Efeito 14 (mesma família de fontes, aliás).
+      fontFamilyOptions: ['GalanoGrotesque-ExtraBold', 'GalanoGrotesque-SemiBold', 'GalanoGrotesque-Black'],
+      // BUG REAL CORRIGIDO (ver Efeito 14): precoregamento de fonte
+      // genérico usa "styles" no PLURAL (um por papel) — esse
+      // template só tem UM "papel" (o texto inteiro é uma fileira só),
+      // mas precisa da mesma chave plural com pelo menos uma entrada.
+      styles: {
+        default: {
+          fontFamily: 'GalanoGrotesque-ExtraBold',
+          corAtivaAzul: '#0A82F5', corInativaCinza: '#646A71', corAtivaBranca: '#FDFDFD',
+        },
+      },
+    },
     'efeito-14': {
       layout: 'efeito-14-style',
       // Espaço lógico PRÓPRIO — 3840x2160, 24fps, 121 quadros
@@ -37709,6 +37771,9 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     }
     if (tpl.layout === 'efeito-14-style') {
       return _renderFrameEfeito14Style(ctx, tpl, texts, frameIdx, elapsedMs);
+    }
+    if (tpl.layout === 'efeito-15-style') {
+      return _renderFrameEfeito15Style(ctx, tpl, texts, frameIdx, elapsedMs);
     }
     return _renderFrameKineticScaleStack(ctx, tpl, texts, frameIdx, elapsedMs);
   }
@@ -39356,6 +39421,260 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     return `rgb(${r},${g},${b})`;
   }
 
+  /**
+   * Efeito 15 ("Text Preset 02"): texto ACUMULADO ancorado pela borda
+   * DIREITA — conforme mais palavras entram, a fileira inteira é
+   * medida e posicionada com a borda direita fixa (`anchorRightPx`),
+   * empurrando o texto mais antigo pra fora da tela pela esquerda
+   * (corte natural — sem esticar/escalar, diferente do Efeito 14).
+   * Cores: palavras já "passadas" (não mais a mais nova) ficam SEMPRE
+   * cinza; a palavra mais nova fica azul OU branca — troca pra branco
+   * exatamente no instante em que o corte à esquerda começa a
+   * acontecer (confirmado medindo os dados reais: bate 100%, nenhuma
+   * divergência entre "corte começou" e "cor virou branca").
+   */
+  const EFEITO15_COR_ATIVA_AZUL = '#0A82F5';
+  const EFEITO15_COR_INATIVA_CINZA = '#646A71';
+  const EFEITO15_COR_ATIVA_BRANCA = '#FDFDFD';
+
+  function _efeito15FrameData(tpl, frameIdx) {
+    const c = tpl.motionData.framesCompact[frameIdx];
+    if (!c) return null;
+    return { activeWordIndex: c[0], visibleWordCount: c[1], anchorRightPx: c[2], topPx: c[3] };
+  }
+
+  /**
+   * Quadro em que a palavra de índice `indice` vira a ativa (mesma
+   * técnica do Efeito 14) — 6 quadros por palavra no vídeo original,
+   * generaliza proporcionalmente pra contagens diferentes de 10.
+   */
+  function _efeito15QuadroRevelacao(tpl, indice, totalPalavras) {
+    tpl._cacheRevelacao15 = tpl._cacheRevelacao15 || {};
+    const chave = indice + '|' + totalPalavras;
+    if (chave in tpl._cacheRevelacao15) return tpl._cacheRevelacao15[chave];
+    const totalOriginal = tpl.palavrasOriginais.length;
+    let resultado;
+    if (totalPalavras === totalOriginal) {
+      resultado = 0;
+      for (let i = 0; i < tpl.motionData.frames; i++) {
+        const f = _efeito15FrameData(tpl, i);
+        if (f && f.activeWordIndex >= indice) { resultado = i; break; }
+      }
+    } else {
+      const fimJanela = (totalOriginal - 1) * tpl.animationStageFrames;
+      resultado = totalPalavras > 1 ? Math.round(indice * fimJanela / (totalPalavras - 1)) : 0;
+    }
+    tpl._cacheRevelacao15[chave] = resultado;
+    return resultado;
+  }
+
+  function _readTextsEfeito15Style(stanza, tpl, wordOverrides) {
+    const lines = (stanza && stanza.lines) || [];
+    const palavrasObj = (lines[0]?.words || []);
+    const palavras = palavrasObj.map(w => w.text);
+    const out = {
+      palavras, _tStarts: {}, _referenciaTStart: null,
+      _fontScale: {}, _fontFamily: {}, _offset: {}, _wordId: {},
+    };
+    palavrasObj.forEach((w, i) => {
+      out._wordId[i] = w?.id || null;
+      if (w && typeof w.tStart === 'number') {
+        out._tStarts[i] = w.tStart;
+        if (out._referenciaTStart === null) out._referenciaTStart = w.tStart;
+      }
+      const wo = w && w.id && wordOverrides && wordOverrides[w.id];
+      if (wo && wo.style && wo.style.fontSizeScale) out._fontScale[i] = wo.style.fontSizeScale;
+      if (wo && wo.style && wo.style.fontFamily) out._fontFamily[i] = wo.style.fontFamily;
+      if (wo && wo.style && wo.style.frameExactOffset) out._offset[i] = wo.style.frameExactOffset;
+    });
+    return out;
+  }
+
+  /** Mesmo princípio de _efeito14QuadroEfetivo — resolve o quadro
+   * "efetivo" de revelação de uma palavra considerando marcação de
+   * ritmo (sem marcação: usa o tempo natural; com marcação: atrasa
+   * conforme o tStart, nunca antecipa). */
+  function _efeito15QuadroEfetivo(tpl, indice, totalPalavras, elapsedMs, tStarts, referencia) {
+    const natural = _efeito15QuadroRevelacao(tpl, indice, totalPalavras);
+    if (!tStarts || referencia == null || !(indice in tStarts)) {
+      const frameAtual = Math.floor(elapsedMs / (1000 / tpl.motionData.fps));
+      return frameAtual >= natural ? Math.min(frameAtual, tpl.motionData.frames - 1) : null;
+    }
+    const atrasoMs = Math.max(0, (tStarts[indice] - referencia) * 1000);
+    if (elapsedMs < atrasoMs) return null;
+    const framesDesdeRevelacao = Math.floor((elapsedMs - atrasoMs) / (1000 / tpl.motionData.fps));
+    return Math.min(natural + framesDesdeRevelacao, tpl.motionData.frames - 1);
+  }
+
+  /**
+   * Âncora (borda direita X, topo Y) apropriada pra mostrar
+   * exatamente `n` palavras — mesmo princípio do
+   * _efeito14BboxParaContagem: usa o ÚLTIMO quadro natural com essa
+   * contagem (estado assentado), não o quadro bruto atual. Evita o
+   * mesmo bug já corrigido no Efeito 14 (geometria errada quando a
+   * marcação de ritmo desalinha "quantas palavras visíveis" de
+   * "tempo bruto decorrido").
+   */
+  function _efeito15AncoraParaContagem(tpl, n, totalOriginal) {
+    tpl._cacheAncora15 = tpl._cacheAncora15 || {};
+    if (n in tpl._cacheAncora15) return tpl._cacheAncora15[n];
+    let resultado = null;
+    if (n >= totalOriginal) {
+      const f = _efeito15FrameData(tpl, tpl.motionData.frames - 1);
+      resultado = f ? { anchorRightPx: f.anchorRightPx, topPx: f.topPx } : null;
+    } else {
+      let ultimoComN = null;
+      for (let i = 0; i < tpl.motionData.frames; i++) {
+        const f = _efeito15FrameData(tpl, i);
+        if (!f) continue;
+        if (f.visibleWordCount === n) ultimoComN = f;
+        else if (f.visibleWordCount > n) break;
+      }
+      resultado = ultimoComN ? { anchorRightPx: ultimoComN.anchorRightPx, topPx: ultimoComN.topPx } : null;
+    }
+    tpl._cacheAncora15[n] = resultado;
+    return resultado;
+  }
+
+  function _renderFrameEfeito15Style(ctx, tpl, texts, frameIdx, elapsedMs) {
+    _limparRegioesClique(tpl);
+    const palavras = (texts && texts.palavras) || [];
+    const totalPalavras = palavras.filter(p => (p || '').trim()).length;
+    if (!totalPalavras) return true;
+
+    const totalOriginal = tpl.palavrasOriginais.length;
+    // Fidelidade exige bater CONTAGEM *e* as PALAVRAS em si — mesma
+    // correção já aplicada no Efeito 14 (uma frase qualquer com a
+    // mesma contagem de palavras do original não deve usar a
+    // geometria calibrada só pro texto original).
+    const palavrasOriginaisUpper = tpl.palavrasOriginais.map(p => p.toUpperCase());
+    const ehFidelidade = totalPalavras === totalOriginal
+      && palavras.slice(0, totalOriginal).every((p, i) => (p || '').trim().toUpperCase() === palavrasOriginaisUpper[i]);
+
+    const tStarts = texts._tStarts, referencia = texts._referenciaTStart;
+    let n = 0;
+    for (let i = 0; i < totalPalavras; i++) {
+      const fe = _efeito15QuadroEfetivo(tpl, i, totalPalavras, elapsedMs, tStarts, referencia);
+      if (fe !== null) n = i + 1;
+    }
+    if (!n) return true;
+    const shown = palavras.slice(0, n).map(p => (p || '').trim());
+    const indiceAtivo = n - 1;
+
+    // Âncora (borda direita + topo): fidelidade usa os dados reais
+    // medidos do vídeo pra essa contagem exata; reflow usa a âncora
+    // final (mesma X/Y independente da contagem, texto só cresce mais
+    // pra esquerda conforme mais palavras entram).
+    let anchorRightPx, topPx;
+    if (ehFidelidade) {
+      const ancora = _efeito15AncoraParaContagem(tpl, n, totalOriginal);
+      if (!ancora) return true;
+      anchorRightPx = ancora.anchorRightPx;
+      topPx = ancora.topPx;
+    } else {
+      const fFinal = _efeito15FrameData(tpl, tpl.motionData.frames - 1);
+      if (!fFinal) return true;
+      anchorRightPx = fFinal.anchorRightPx;
+      topPx = fFinal.topPx;
+    }
+
+    const fontFamilyPadrao = tpl.styles.default.fontFamily;
+    // Altura de referência fixa pro tamanho de fonte "natural" desse
+    // efeito (400px de font-size no vídeo original, 3840 de largura
+    // lógica) — medida uma vez (ascendente+descendente reais), igual
+    // ao critério já usado no Efeito 14 pra evitar métrica
+    // inconsistente entre palavras vizinhas (seção 4.4 do guia).
+    const alturaNatural = _efeito15AlturaNatural(fontFamilyPadrao);
+
+    // Determina se o corte à esquerda JÁ aconteceu em algum ponto até
+    // agora (não só nesse quadro) — a cor branca, uma vez ativada,
+    // nunca mais volta pra azul no vídeo original (é uma transição de
+    // mão única). Mede a largura NATURAL do texto completo mostrado
+    // agora contra a âncora — se ultrapassar x=0, o corte já rolou.
+    const medidor = document.createElement('canvas').getContext('2d');
+    medidor.font = `800 ${alturaNatural}px "${fontFamilyPadrao}"`;
+    const larguraCompletaNatural = medidor.measureText(shown.join(' ')).width || 1;
+    const xEsquerdaNatural = anchorRightPx - larguraCompletaNatural;
+    const corteJaAconteceu = xEsquerdaNatural < 0;
+
+    // Duas passadas (mesma técnica já usada no Efeito 14 pra manter a
+    // âncora fixa mesmo com personalização de tamanho por palavra):
+    // primeiro MEDE cada palavra (bitmap já na altura/fonte próprias
+    // de cada uma), depois desenha a partir do cursor certo.
+    const itens = [];
+    for (let i = 0; i < n; i++) {
+      const texto = shown[i];
+      if (!texto) { itens.push(null); continue; }
+      const fontFamily = texts._fontFamily[i] || fontFamilyPadrao;
+      const fontScale = texts._fontScale[i] || 1;
+      const alturaAlvo = alturaNatural * fontScale;
+      const img = _efeito2MakeBitmapAtHeight(texto, fontFamily, '#FFFFFF', alturaAlvo, 800);
+      if (!img) { itens.push(null); continue; }
+      itens.push({ img, drawW: img.width, drawH: img.height });
+    }
+    const larguraEspaco = medidor.measureText(' ').width;
+    const larguraTotalReal = itens.reduce((s, it) => s + (it ? it.drawW : 0), 0)
+      + larguraEspaco * Math.max(0, itens.filter(Boolean).length - 1);
+    let cursor = anchorRightPx - larguraTotalReal;
+
+    for (let i = 0; i < n; i++) {
+      const item = itens[i];
+      if (!item) continue;
+      const { img, drawW, drawH } = item;
+      const offset = texts._offset[i] || { dx: 0, dy: 0 };
+      const drawX = cursor + offset.dx;
+      const drawY = topPx + offset.dy;
+
+      const ehAtiva = (i === indiceAtivo);
+      let cor, corGlow, alphaGlow;
+      if (ehAtiva) {
+        cor = corteJaAconteceu ? EFEITO15_COR_ATIVA_BRANCA : EFEITO15_COR_ATIVA_AZUL;
+        corGlow = 'rgba(10,130,245,0.70)'; alphaGlow = 34;
+      } else {
+        cor = EFEITO15_COR_INATIVA_CINZA;
+        corGlow = 'rgba(10,130,245,0.30)'; alphaGlow = 30;
+      }
+
+      ctx.save();
+      ctx.shadowColor = corGlow;
+      ctx.shadowBlur = alphaGlow;
+      ctx.globalCompositeOperation = 'source-over';
+      // Recolore o bitmap (gerado em branco) via composite — evita
+      // gerar um bitmap novo por combinação de cor (só 3 cores
+      // possíveis aqui, mas mesma técnica por consistência com o
+      // Efeito 14 e pra já dar suporte a cores customizadas no
+      // futuro).
+      const tmp = document.createElement('canvas');
+      tmp.width = img.width; tmp.height = img.height;
+      const tctx = tmp.getContext('2d');
+      tctx.drawImage(img, 0, 0);
+      tctx.globalCompositeOperation = 'source-in';
+      tctx.fillStyle = cor;
+      tctx.fillRect(0, 0, img.width, img.height);
+      ctx.drawImage(tmp, drawX, drawY, drawW, drawH);
+      ctx.restore();
+
+      _registrarRegiaoClique(tpl, texts._wordId[i], drawX, drawY, drawW, drawH);
+      cursor += drawW + larguraEspaco;
+    }
+    return true;
+  }
+
+  /** Altura de referência (ascendente+descendente reais) pro
+   * "fontSize: 400px" do vídeo original — medida uma vez e cacheada,
+   * amostra ampla do alfabeto (mesmo critério do Efeito 2/14, evita
+   * métrica inconsistente entre palavras vizinhas). */
+  function _efeito15AlturaNatural(fontFamily) {
+    _efeito15AlturaNatural._cache = _efeito15AlturaNatural._cache || {};
+    if (fontFamily in _efeito15AlturaNatural._cache) return _efeito15AlturaNatural._cache[fontFamily];
+    const c = document.createElement('canvas').getContext('2d');
+    c.font = `800 400px "${fontFamily}"`;
+    const m = c.measureText('AÁÀÂÃEÉÊIÍMNOÓÔÕRSTUÚXBCÇDFGHJKLPQVWYZ0123456789');
+    const altura = (m.actualBoundingBoxAscent || 300) + (m.actualBoundingBoxDescent || 60);
+    _efeito15AlturaNatural._cache[fontFamily] = altura;
+    return altura;
+  }
+
   function _renderFrameKineticScaleStack(ctx, tpl, texts, frameIdx, elapsedMs) {
     const m = tpl.motionData.motion[frameIdx];
     _limparRegioesClique(tpl);
@@ -39897,6 +40216,22 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       return maiorFim;
     }
 
+    // Efeito 15: mesma estrutura de marcação do Efeito 14 (_tStarts
+    // indexado por posição), mas "assentar" aqui é IMEDIATO — não há
+    // esmaecimento gradual de cor (a palavra ativa já nasce na cor
+    // final, azul ou branca, sem transição) — só uma pequena folga
+    // pra garantir visibilidade antes do fim da estrofe.
+    if (tpl.layout === 'efeito-15-style') {
+      let maiorFim = duracaoBase;
+      Object.keys(tStarts).forEach(indiceStr => {
+        const indice = Number(indiceStr);
+        const atrasoMs = Math.max(0, (tStarts[indice] - referencia) * 1000);
+        const fimDessaPalavra = atrasoMs + 500;
+        if (fimDessaPalavra > maiorFim) maiorFim = fimDessaPalavra;
+      });
+      return maiorFim;
+    }
+
     // Kinetic Scale Stack (Efeitos 1/3) usa uma estrutura de dados
     // DIFERENTE (tpl.motionData.motion, não framesData) — usa as
     // variantes "Motion" das funções de quadro inicial/assentado.
@@ -39957,6 +40292,9 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     }
     if (tpl && tpl.layout === 'efeito-14-style') {
       return _readTextsEfeito14Style(stanza, tpl, wordOverrides);
+    }
+    if (tpl && tpl.layout === 'efeito-15-style') {
+      return _readTextsEfeito15Style(stanza, tpl, wordOverrides);
     }
     return _readTextsKineticScaleStack(stanza, wordOverrides);
   }
