@@ -39431,9 +39431,11 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
    * cinza; a palavra mais nova fica azul OU branca — troca pra branco
    * exatamente no instante em que o corte à esquerda começa a
    * acontecer (confirmado medindo os dados reais: bate 100%, nenhuma
-   * divergência entre "corte começou" e "cor virou branca").
+   * divergência entre "corte começou" e "cor virou branca") — ATUALIZAÇÃO:
+   * a cor azul foi removida a pedido do usuário (ficava nas primeiras
+   * palavras antes do corte começar) — a palavra ativa agora é sempre
+   * branca, sem essa transição de cor.
    */
-  const EFEITO15_COR_ATIVA_AZUL = '#0A82F5';
   // BUG REAL CORRIGIDO ("o cinza ainda não ficou legal" — pedido do
   // usuário depois de eu ter trocado por um cinza claro sólido):
   // usa branco com 50% de opacidade (transparência de verdade, não
@@ -39625,15 +39627,6 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       anchorRightPx = centroCanvas + larguraAtiva / 2;
     }
 
-    // Determina se o corte à esquerda JÁ aconteceu em algum ponto até
-    // agora (não só nesse quadro) — a cor branca, uma vez ativada,
-    // nunca mais volta pra azul no vídeo original (é uma transição de
-    // mão única). Mede a largura NATURAL do texto completo mostrado
-    // agora contra a âncora — se ultrapassar x=0, o corte já rolou.
-    const larguraCompletaNatural = medidor.measureText(shown.join(' ')).width || 1;
-    const xEsquerdaNatural = anchorRightPx - larguraCompletaNatural;
-    const corteJaAconteceu = xEsquerdaNatural < 0;
-
     const larguraEspaco = medidor.measureText(' ').width;
     const larguraTotalReal = itens.reduce((s, it) => s + (it ? it.drawW : 0), 0)
       + larguraEspaco * Math.max(0, itens.filter(Boolean).length - 1);
@@ -39650,11 +39643,18 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       const ehAtiva = (i === indiceAtivo);
       let cor, corGlow, alphaGlow;
       if (ehAtiva) {
-        cor = corteJaAconteceu ? EFEITO15_COR_ATIVA_BRANCA : EFEITO15_COR_ATIVA_AZUL;
-        corGlow = 'rgba(10,130,245,0.70)'; alphaGlow = 34;
+        // PEDIDO DO USUÁRIO ("retira as cores azuis que fica na
+        // primeira e segunda palavra e deixa em branco"): antes, a
+        // palavra ativa nascia azul e só virava branca depois que o
+        // corte à esquerda começava — removido o azul por completo,
+        // a palavra ativa agora é sempre branca (também trocado o
+        // brilho, que tinha um tom azulado, por um brilho branco
+        // neutro, pra não sobrar nenhum resquício da cor antiga).
+        cor = EFEITO15_COR_ATIVA_BRANCA;
+        corGlow = 'rgba(255,255,255,0.55)'; alphaGlow = 34;
       } else {
         cor = EFEITO15_COR_INATIVA_BRANCA_50;
-        corGlow = 'rgba(10,130,245,0.30)'; alphaGlow = 30;
+        corGlow = 'rgba(255,255,255,0.25)'; alphaGlow = 30;
       }
 
       ctx.save();
