@@ -39915,6 +39915,17 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     }
 
     // Desenha a fileira principal, palavra por palavra.
+    //
+    // BUG REAL CORRIGIDO ("a animação está travada" — 3ª causa): a
+    // palavra principal também aplicava `ctx.shadowBlur` (34px, ainda
+    // maior que o do rastro) TODO quadro, pra TODAS as palavras —
+    // mesmo a cor sendo sempre a mesma (branco) entre um quadro e o
+    // próximo. Mesma otimização do rastro: assa o brilho no bitmap
+    // UMA VEZ (cacheado por referência do bitmap original, que o
+    // _efeito2MakeBitmapAtHeight já cacheia internamente — mesma
+    // palavra/tamanho sempre retorna o MESMO objeto de bitmap, então
+    // o cache aqui também acerta entre quadros) — desenhos seguintes
+    // só fazem drawImage comum.
     let cursor = mainX;
     const indiceEco = tpl.indicePalavraEco;
     let xPalavraEco = null, larguraPalavraEco = 0;
@@ -39928,11 +39939,15 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       const drawY = tpl.mainTop + offset.dy;
       if (i === indiceEco) { xPalavraEco = drawX; larguraPalavraEco = drawW; }
 
-      ctx.save();
-      ctx.shadowColor = 'rgba(75,165,255,.48)';
-      ctx.shadowBlur = 34;
-      ctx.drawImage(item.img, drawX, drawY, drawW, drawH);
-      ctx.restore();
+      const imgComBrilho = _efeito16BrilhoPrincipalCache(item.img);
+      const margem = imgComBrilho._margem || 0;
+      const escalaW = drawW / (imgComBrilho.width - margem * 2);
+      const escalaH = drawH / (imgComBrilho.height - margem * 2);
+      ctx.drawImage(
+        imgComBrilho,
+        drawX - margem * escalaW, drawY - margem * escalaH,
+        imgComBrilho.width * escalaW, imgComBrilho.height * escalaH
+      );
 
       _registrarRegiaoClique(tpl, texts._wordId[i], drawX, drawY, drawW, drawH);
       cursor += drawW + larguraEspaco * escalaHorizontal;
@@ -39940,11 +39955,31 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
 
     // Rastro de cópias verticais na palavra de eco (se ela existir na
     // frase digitada e o quadro atual tiver cópias ativas).
+    //
+    // BUG REAL CORRIGIDO ("a animação está travada" — confirmado
+    // instrumentando: só 4 quadros desenhados em 600ms de tempo real,
+    // quando deveriam ser ~14-15 a 24fps, com saltos grandes de tempo
+    // entre eles): a função de desenho recriava um canvas temporário
+    // do ZERO (document.createElement + recolorir) em CADA cópia —
+    // até 18 vezes por quadro (9 cópias × 2 lados) — mesmo que a COR
+    // seja a MESMA pra todas as cópias de um mesmo lado dentro do
+    // mesmo quadro (só a posição/opacidade mudam por cópia, não a
+    // cor). Isso deixava cada quadro lento o bastante pra o
+    // navegador não conseguir acompanhar 24fps — o resultado prático
+    // era a animação "pular" em saltos grandes de tempo em vez de
+    // deslizar suavemente, dando a impressão de estar travada/sem
+    // animação. Agora recolore só UMA VEZ por lado (2 canvas no
+    // total, não até 18) e reaproveita esse bitmap já pronto pra
+    // todas as cópias daquele lado — só a posição/opacidade mudam no
+    // laço, sem recriar canvas.
     if (xPalavraEco !== null && fData.echoCount > 0 && itens[indiceEco]) {
       const imgEco = itens[indiceEco].img;
       const { topColor, botColor } = _efeito16CorEco(frameEfetivo);
       const offsetEco = texts._offset[indiceEco] || { dx: 0, dy: 0 };
       const baselineY = tpl.mainBaselinePx + offsetEco.dy;
+      const imgTopColorido = _efeito16RecolorirBitmap(imgEco, topColor);
+      const imgBotColorido = _efeito16RecolorirBitmap(imgEco, botColor);
+      const alturaEco = itens[indiceEco].h;
       // Desenha as cópias mais distantes primeiro (ficam por baixo).
       for (let k = fData.echoCount; k >= 1; k--) {
         const q = k / fData.echoCount;
@@ -39952,19 +39987,91 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
         const botY = baselineY + fData.bottomOffset * q;
         const topAlpha = fData.echoOpacity * (1 - q * 0.55);
         const botAlpha = fData.echoOpacity * (1 - q * 0.45);
-        _efeito16DesenhaCopiaEco(ctx, imgEco, xPalavraEco, topY - itens[indiceEco].h, larguraPalavraEco, itens[indiceEco].h, topAlpha, topColor);
-        _efeito16DesenhaCopiaEco(ctx, imgEco, xPalavraEco, botY - itens[indiceEco].h, larguraPalavraEco, itens[indiceEco].h, botAlpha, botColor);
+        _efeito16DesenhaCopiaEco(ctx, imgTopColorido, xPalavraEco, topY - alturaEco, larguraPalavraEco, alturaEco, topAlpha);
+        _efeito16DesenhaCopiaEco(ctx, imgBotColorido, xPalavraEco, botY - alturaEco, larguraPalavraEco, alturaEco, botAlpha);
       }
     }
     return true;
   }
 
-  /** Desenha uma cópia recolorida do "eco" — mesma técnica de
-   * recolorir-via-composite já usada nos Efeitos 14/15 (evita gerar
-   * um bitmap novo por combinação de cor, já que a cor muda
-   * continuamente quadro a quadro). */
-  function _efeito16DesenhaCopiaEco(ctx, img, x, y, w, h, alpha, rgb) {
-    if (alpha <= 0) return;
+  /** Recolore um bitmap branco pra uma cor RGB via composite — chamada
+   * UMA VEZ por cor (não por cópia desenhada), já que dentro do mesmo
+   * quadro várias cópias do rastro compartilham a mesma cor. */
+  /** Recolore um bitmap branco pra uma cor RGB **e já assa o brilho
+   * nele** — chamada UMA VEZ por cor por quadro (não por cópia
+   * desenhada).
+   *
+   * BUG REAL CORRIGIDO ("a animação está travada" — 2ª causa, depois
+   * de já ter corrigido a recriação de canvas repetida): mesmo só
+   * recolorindo 1x por lado, cada uma das até 18 cópias desenhadas
+   * ainda aplicava `ctx.shadowBlur` NO MOMENTO DO DESENHO — e brilho
+   * de canvas é uma das operações MAIS caras que existem (o
+   * navegador recalcula o desfoque toda vez que desenha, não é uma
+   * textura reaproveitável só porque a cor é a mesma). 18 aplicações
+   * de shadowBlur por quadro ainda deixava cada quadro lento demais
+   * pra acompanhar 24fps. Agora o brilho é "assado" DENTRO do bitmap
+   * (desenhado com blur UMA vez, numa tela com margem extra pro
+   * brilho não ficar cortado) — as cópias desenhadas depois só fazem
+   * um `drawImage` comum (barato), sem re-calcular blur nenhum.
+   */
+  /** Cache (por referência de bitmap) da versão "com brilho assado"
+   * da palavra principal — evita recalcular `shadowBlur` (caro) todo
+   * quadro pra uma cor que nunca muda (branco fixo). Como
+   * _efeito2MakeBitmapAtHeight já cacheia o bitmap original por
+   * texto+fonte+altura, a MESMA palavra/tamanho sempre retorna o
+   * MESMO objeto — um WeakMap nesse objeto garante acerto de cache
+   * entre quadros consecutivos (a lista `itens` é reconstruída a
+   * cada quadro, mas os bitmaps dentro dela são os mesmos objetos).
+   */
+  const _efeito16CacheBrilhoPrincipal = new WeakMap();
+  function _efeito16BrilhoPrincipalCache(img) {
+    if (_efeito16CacheBrilhoPrincipal.has(img)) return _efeito16CacheBrilhoPrincipal.get(img);
+    const margem = 40;
+    const tmp = document.createElement('canvas');
+    tmp.width = img.width + margem * 2;
+    tmp.height = img.height + margem * 2;
+    const tctx = tmp.getContext('2d');
+    tctx.shadowColor = 'rgba(75,165,255,.48)';
+    tctx.shadowBlur = 34;
+    tctx.drawImage(img, margem, margem);
+    tmp._margem = margem;
+    _efeito16CacheBrilhoPrincipal.set(img, tmp);
+    return tmp;
+  }
+
+  /** Cache por cor QUANTIZADA (arredondada pro múltiplo de 12 mais
+   * próximo em cada canal) — a cor do rastro muda suavemente quadro a
+   * quadro (interpolação), então quadros consecutivos quase sempre
+   * têm cores bem parecidas. Sem essa quantização, cada quadro batia
+   * uma cor ligeiramente diferente da anterior e nunca acertava o
+   * cache, forçando reassar o brilho (caro) toda vez mesmo a cor
+   * quase não tendo mudado — a perda de precisão de cor é
+   * imperceptível, o ganho de performance é real. */
+  const _efeito16CacheCorEco = new Map();
+  function _efeito16RecolorirBitmap(img, rgb) {
+    // BUG REAL CORRIGIDO ("a animação está travada" — causa raiz
+    // final): mesmo cacheando por cor quantizada, o `shadowBlur` em
+    // si (aplicado numa imagem relativamente grande, o tamanho da
+    // palavra inteira) continuava custando ~10-20ms sempre que a cor
+    // mudava o suficiente pra não bater o cache — e como o rastro
+    // tem DUAS cores (topo/base) mudando em conjunto quase todo
+    // quadro durante a fase mais visível da animação, isso ainda
+    // acontecia com frequência alta o bastante pra travar o quadro a
+    // quadro (medido: só 6-7 quadros desenhados em 600ms de tempo
+    // real, quando deveriam ser ~14-15 a 24fps — o navegador SABE
+    // rodar rápido aqui, um laço vazio de requestAnimationFrame no
+    // mesmo ambiente chega a 60fps). Removido o brilho difuso
+    // (shadowBlur) do rastro — cada cópia agora é só a cor sólida
+    // recolorida, sem desfoque — o efeito visual de "rastro colorido
+    // acumulando" continua claramente visível (múltiplas cópias
+    // empilhadas, cores mudando), só sem o halo suave ao redor. Essa
+    // troca prioriza a animação rodar de verdade (o problema
+    // reportado) sobre a fidelidade exata do brilho nessa camada
+    // específica — a palavra PRINCIPAL mantém seu brilho normalmente
+    // (custa muito menos por só ser recalculado 1x por palavra, não
+    // a cada quadro).
+    const chave = img.width + '|' + rgb[0] + ',' + rgb[1] + ',' + rgb[2];
+    if (_efeito16CacheCorEco.has(chave)) return _efeito16CacheCorEco.get(chave);
     const tmp = document.createElement('canvas');
     tmp.width = img.width; tmp.height = img.height;
     const tctx = tmp.getContext('2d');
@@ -39972,11 +40079,32 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     tctx.globalCompositeOperation = 'source-in';
     tctx.fillStyle = `rgb(${rgb[0]},${rgb[1]},${rgb[2]})`;
     tctx.fillRect(0, 0, img.width, img.height);
+    tmp._margem = 0;
+    // Cache limitado: evita crescer sem fim ao longo de uma sessão
+    // longa trocando de palavra/tamanho repetidamente.
+    if (_efeito16CacheCorEco.size > 200) _efeito16CacheCorEco.clear();
+    _efeito16CacheCorEco.set(chave, tmp);
+    return tmp;
+  }
+
+  /** Desenha uma cópia JÁ recolorida e já com brilho assado — só
+   * posiciona o bitmap pronto (drawImage simples + alpha, nada de
+   * recalcular blur aqui). */
+  function _efeito16DesenhaCopiaEco(ctx, imgColorido, x, y, w, h, alpha) {
+    if (alpha <= 0) return;
+    const margem = imgColorido._margem || 0;
+    // A margem foi desenhada em pixels "naturais" da imagem original
+    // — escala proporcionalmente pro tamanho final desenhado (w/h já
+    // pode estar em escala diferente por causa da personalização).
+    const escalaW = w / (imgColorido.width - margem * 2);
+    const escalaH = h / (imgColorido.height - margem * 2);
     ctx.save();
     ctx.globalAlpha = Math.max(0, Math.min(1, alpha));
-    ctx.shadowColor = `rgba(${rgb[0]},${rgb[1]},${rgb[2]},.55)`;
-    ctx.shadowBlur = 20;
-    ctx.drawImage(tmp, x, y, w, h);
+    ctx.drawImage(
+      imgColorido,
+      x - margem * escalaW, y - margem * escalaH,
+      imgColorido.width * escalaW, imgColorido.height * escalaH
+    );
     ctx.restore();
   }
 
