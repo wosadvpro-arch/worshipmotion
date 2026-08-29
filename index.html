@@ -39050,6 +39050,67 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     return resultado;
   }
 
+  /**
+   * Bbox NATURAL (medida do vídeo original) apropriada pra mostrar
+   * exatamente `n` palavras — usa o ÚLTIMO quadro antes da próxima
+   * revelação (o estado "assentado" pra essa contagem), não o quadro
+   * bruto atual.
+   *
+   * BUG REAL CORRIGIDO ("com marcação de ritmo, cada palavra nova
+   * aparece com um tamanho diferente" — confirmado com 5 capturas em
+   * sequência): a bbox usada pro layout coletivo vinha do
+   * elapsedMs/frameIdx BRUTO (tempo real decorrido) — isso funciona
+   * sem marcação, porque lá "quantas palavras estão visíveis" e "que
+   * quadro do vídeo original estamos" andam sempre juntos, no mesmo
+   * ritmo. Só que a marcação de ritmo pode espalhar a revelação de
+   * cada palavra em QUALQUER tempo — depois da primeira marcação, o
+   * elapsedMs já passa muito do quadro 18 (onde a caixa do vídeo
+   * original pára de crescer, larga o bastante pra caber as 5
+   * palavras), então TODA revelação seguinte (2ª, 3ª, 4ª, 5ª palavra)
+   * acabava usando essa MESMA caixa larga — só a quantidade de texto
+   * dentro dela mudava, fazendo o fator de esticamento (e portanto o
+   * tamanho aparente de cada letra) variar bastante entre uma
+   * marcação e outra. Agora a bbox é escolhida pela CONTAGEM de
+   * palavras visíveis (`n`), não pelo tempo bruto — cada contagem usa
+   * a bbox que o vídeo original tinha naturalmente pra essa mesma
+   * quantidade de palavras, com ou sem marcação de ritmo.
+   */
+  function _efeito14BboxParaContagem(tpl, n, totalOriginal) {
+    tpl._cacheBboxContagem = tpl._cacheBboxContagem || {};
+    if (n in tpl._cacheBboxContagem) return tpl._cacheBboxContagem[n];
+    let resultado = null;
+    if (n >= totalOriginal) {
+      // Todas (ou mais) as palavras originais: usa o quadro final,
+      // já assentado.
+      const f = _efeito14FrameData(tpl, tpl.motionData.frames - 1);
+      resultado = f ? f.bbox : null;
+    } else {
+      // Acha o ÚLTIMO quadro onde visibleWords ainda é exatamente n
+      // (o estado assentado, bem antes da próxima palavra entrar).
+      let ultimoComN = null;
+      let ultimoAbaixoDeN = null; // fallback: última contagem MENOR que existiu de verdade
+      for (let i = 0; i < tpl.motionData.frames; i++) {
+        const f = _efeito14FrameData(tpl, i);
+        if (!f) continue;
+        if (f.visibleWords === n) { ultimoComN = f; }
+        else if (f.visibleWords < n) { ultimoAbaixoDeN = f; }
+        else if (f.visibleWords > n) break;
+      }
+      // BUG REAL CORRIGIDO ("com certas marcações, a tela fica em
+      // branco" — n=4 num vídeo de 5 palavras onde a 4ª e 5ª aparecem
+      // JUNTAS): nem toda contagem existe de verdade nos dados
+      // originais (o vídeo pode pular de 3 pra 5 palavras direto,
+      // sem nunca passar por exatamente 4). Sem esse fallback, essa
+      // contagem não achava nenhuma bbox e a função de renderização
+      // desistia cedo — nada era desenhado, tela em branco. Usa a
+      // ÚLTIMA contagem MENOR que existiu de verdade (aqui, a bbox de
+      // 3 palavras) como aproximação razoável — bem melhor que nada.
+      resultado = ultimoComN ? ultimoComN.bbox : (ultimoAbaixoDeN ? ultimoAbaixoDeN.bbox : null);
+    }
+    tpl._cacheBboxContagem[n] = resultado;
+    return resultado;
+  }
+
   function _readTextsEfeito14Style(stanza, tpl, wordOverrides) {
     const lines = (stanza && stanza.lines) || [];
     const palavrasObj = (lines[0]?.words || []);
@@ -39136,15 +39197,26 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     const fontFamilyPadrao = tpl.styles.default.fontFamily;
     const medidor = document.createElement('canvas').getContext('2d');
     if (ehFidelidade) {
-      // Bbox de referência: usa o quadro NATURAL (sem marcação) mais
-      // avançado entre as palavras mostradas — o layout coletivo
-      // (onde a caixa está, quão larga) segue o vídeo original
-      // normalmente; só o TEMPO de revelação de cada palavra responde
-      // à marcação.
-      const frameIdxData = Math.min(frameIdx, tpl.motionData.frames - 1);
-      const fData = _efeito14FrameData(tpl, frameIdxData) || _efeito14FrameData(tpl, tpl.motionData.frames - 1);
-      if (!fData) return true;
-      [bx, by, bw, bh] = fData.bbox;
+      // BUG REAL CORRIGIDO ("com marcação de ritmo, cada palavra nova
+      // aparece com um tamanho diferente" — confirmado com 5 capturas
+      // em sequência): a bbox usada aqui vinha do elapsedMs/frameIdx
+      // BRUTO — sem marcação, isso bate com quantas palavras estão
+      // visíveis (andam sempre juntos), mas COM marcação de ritmo
+      // espalhando as revelações em qualquer tempo, o elapsedMs real
+      // já passa muito do quadro 18 (onde a caixa do vídeo original
+      // pára de crescer) bem antes da 2ª palavra ser marcada pra
+      // aparecer — toda revelação seguinte (2ª, 3ª, 4ª, 5ª) acabava
+      // usando essa MESMA caixa larga (pensada pra 5 palavras), só
+      // com quantidades diferentes de texto dentro, variando bastante
+      // o esticamento (e portanto o tamanho aparente) entre uma
+      // marcação e outra. Agora usa `n` (quantas palavras estão
+      // REALMENTE visíveis agora) pra achar a bbox NATURAL que o
+      // vídeo original tinha pra essa mesma contagem — bate com o
+      // tempo bruto quando não há marcação (comportamento já validado
+      // antes), e continua correto quando há.
+      const bboxN = _efeito14BboxParaContagem(tpl, n, totalOriginal);
+      if (!bboxN) return true;
+      [bx, by, bw, bh] = bboxN;
       alturaNatural = bh * 1.04;
       medidor.font = `800 ${alturaNatural}px "${fontFamilyPadrao}"`;
       const larguraTotalNatural = medidor.measureText(shown.join(' ')).width || 1;
