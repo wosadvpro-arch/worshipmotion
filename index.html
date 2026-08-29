@@ -39175,7 +39175,26 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     const shown = palavras.slice(0, n).map(p => (p || '').trim());
 
     const totalOriginal = tpl.palavrasOriginais.length;
-    const ehFidelidade = (totalPalavras === totalOriginal);
+    // BUG REAL CORRIGIDO ("com 3 palavras a fonte fica de um tamanho,
+    // com 5 palavras reduz pra caber" — confirmado testando): a
+    // checagem de fidelidade olhava só a CONTAGEM de palavras
+    // (=== 5), não se o TEXTO digitado era de fato o original ("when
+    // you think about it"). Qualquer frase com exatamente 5 palavras
+    // — mesmo com palavras totalmente diferentes, tipo "pra me amar
+    // tanto assim" — caía no caminho de fidelidade, que ESPREME o
+    // texto pra caber numa largura fixa (calibrada só pras 5 palavras
+    // ORIGINAIS medidas do vídeo) — se as palavras digitadas fossem
+    // naturalmente mais largas que o original, ficavam visivelmente
+    // mais compactas/comprimidas que uma frase de outra contagem
+    // (que usa o caminho de reflow, sem esse esmagamento). Mesmo
+    // padrão já usado no Efeito 8: fidelidade exige bater CONTAGEM **e**
+    // as PALAVRAS em si — qualquer frase diferente do original (nem
+    // que seja só uma palavra trocada) usa reflow, com tamanho
+    // consistente não importa quantas palavras tiverem.
+    const palavrasOriginaisUpper = tpl.palavrasOriginais.map(p => p.toUpperCase());
+    const todasOriginais = totalPalavras === totalOriginal
+      && palavras.slice(0, totalOriginal).every((p, i) => (p || '').trim().toUpperCase() === palavrasOriginaisUpper[i]);
+    const ehFidelidade = todasOriginais;
 
     // BUG REAL CORRIGIDO ("com 1/2/3 palavras o tamanho fica
     // diferente entre elas" — confirmado com capturas reais): no
