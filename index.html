@@ -19273,16 +19273,20 @@ class RenderEngineV2 {
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     const texts = this._readFrameExactTexts(stanza);
-    R.renderFrame(ctx, tplId, texts, elapsedMs);
 
-    // BUG REAL CORRIGIDO: se a fonte (HeadingNowTrial-*) ainda não
-    // tinha terminado de carregar nesse instante, o desenho acima usou
-    // uma fonte substituta — e como o bitmap do texto fica em cache
-    // (por texto+fonte+cor), esse bitmap ERRADO nunca se corrigia
-    // sozinho depois, mesmo com a fonte certa já disponível. Checa se
-    // a fonte está pronta; se não, espera carregar, limpa o cache de
-    // bitmap (derruba o que foi desenhado com a fonte errada) e
-    // redesenha esse MESMO frame com a fonte de verdade.
+    // BUG REAL CORRIGIDO ("a primeira palavra aparece com outra
+    // fonte" — confirmado visualmente pelo usuário: um quadro
+    // inicial com fonte substituta, que só se corrige um instante
+    // depois): antes, o desenho abaixo rodava ANTES dessa checagem —
+    // ou seja, SEMPRE desenhava pelo menos uma vez com a fonte que
+    // estivesse disponível NAQUELE INSTANTE (frequentemente uma
+    // substituta, já que a fonte real ainda está carregando da rede
+    // logo que a página abre), e só corrigia DEPOIS, de forma
+    // assíncrona — dava tempo de esse quadro errado aparecer
+    // visivelmente na tela. Agora a checagem vem PRIMEIRO: só desenha
+    // de imediato se a fonte já está confirmada pronta; senão, pula
+    // esse desenho (evita mostrar o quadro errado) e só desenha
+    // quando a fonte de verdade estiver disponível.
     //
     // BUG REAL CORRIGIDO ("primeira palavra sai com fonte/tamanho
     // errado" — Efeito 14, reportado depois de já ter usado outro
@@ -19293,7 +19297,9 @@ class RenderEngineV2 {
     // tivesse carregado. Agora rastreia prontidão POR TEMPLATE (Set
     // de ids já confirmados prontos), não um booleano global.
     this._frameExactFontsReadySet = this._frameExactFontsReadySet || new Set();
-    if (!this._frameExactFontsReadySet.has(tplId)) {
+    if (this._frameExactFontsReadySet.has(tplId)) {
+      R.renderFrame(ctx, tplId, texts, elapsedMs);
+    } else {
       // BUG REAL CORRIGIDO ("primeira palavra sai com fonte/tamanho
       // errado" — Efeito 14): checar só o peso 700 não detecta fontes
       // que só existem em OUTROS pesos (GalanoGrotesque é 600/800/900,
@@ -19305,15 +19311,19 @@ class RenderEngineV2 {
       (tpl.fontFamilyOptions || []).forEach(f => familias.add(f));
       const pesos = [400, 600, 700, 800, 900];
       const prontas = [...familias].every(f => pesos.some(w => document.fonts.check(`${w} 1000px "${f}"`)));
-      if (!prontas) {
+      if (prontas) {
+        this._frameExactFontsReadySet.add(tplId);
+        R.renderFrame(ctx, tplId, texts, elapsedMs);
+      } else {
+        // Não desenha ainda (canvas fica em branco por um instante,
+        // em vez de mostrar a fonte errada) — desenha assim que a
+        // fonte de verdade estiver pronta.
         R.preloadFonts(tplId).then(() => {
           this._frameExactFontsReadySet.add(tplId);
           if (typeof R.clearBitmapCache === 'function') R.clearBitmapCache();
           ctx.clearRect(0, 0, canvas.width, canvas.height);
           R.renderFrame(ctx, tplId, texts, elapsedMs);
         });
-      } else {
-        this._frameExactFontsReadySet.add(tplId);
       }
     }
   }
