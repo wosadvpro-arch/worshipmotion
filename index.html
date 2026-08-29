@@ -37242,7 +37242,7 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       styles: {
         default: {
           fontFamily: 'GalanoGrotesque-ExtraBold',
-          corAtivaAzul: '#0A82F5', corInativaCinza: '#646A71', corAtivaBranca: '#FDFDFD',
+          corAtivaAzul: '#0A82F5', corInativaCinza: '#D8DADD', corAtivaBranca: '#FDFDFD',
         },
       },
     },
@@ -39434,7 +39434,7 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
    * divergência entre "corte começou" e "cor virou branca").
    */
   const EFEITO15_COR_ATIVA_AZUL = '#0A82F5';
-  const EFEITO15_COR_INATIVA_CINZA = '#646A71';
+  const EFEITO15_COR_INATIVA_CINZA = '#D8DADD';
   const EFEITO15_COR_ATIVA_BRANCA = '#FDFDFD';
 
   function _efeito15FrameData(tpl, frameIdx) {
@@ -39561,23 +39561,6 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     const shown = palavras.slice(0, n).map(p => (p || '').trim());
     const indiceAtivo = n - 1;
 
-    // Âncora (borda direita + topo): fidelidade usa os dados reais
-    // medidos do vídeo pra essa contagem exata; reflow usa a âncora
-    // final (mesma X/Y independente da contagem, texto só cresce mais
-    // pra esquerda conforme mais palavras entram).
-    let anchorRightPx, topPx;
-    if (ehFidelidade) {
-      const ancora = _efeito15AncoraParaContagem(tpl, n, totalOriginal);
-      if (!ancora) return true;
-      anchorRightPx = ancora.anchorRightPx;
-      topPx = ancora.topPx;
-    } else {
-      const fFinal = _efeito15FrameData(tpl, tpl.motionData.frames - 1);
-      if (!fFinal) return true;
-      anchorRightPx = fFinal.anchorRightPx;
-      topPx = fFinal.topPx;
-    }
-
     const fontFamilyPadrao = tpl.styles.default.fontFamily;
     // Altura de referência fixa pro tamanho de fonte "natural" desse
     // efeito (400px de font-size no vídeo original, 3840 de largura
@@ -39585,22 +39568,12 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     // ao critério já usado no Efeito 14 pra evitar métrica
     // inconsistente entre palavras vizinhas (seção 4.4 do guia).
     const alturaNatural = _efeito15AlturaNatural(fontFamilyPadrao);
-
-    // Determina se o corte à esquerda JÁ aconteceu em algum ponto até
-    // agora (não só nesse quadro) — a cor branca, uma vez ativada,
-    // nunca mais volta pra azul no vídeo original (é uma transição de
-    // mão única). Mede a largura NATURAL do texto completo mostrado
-    // agora contra a âncora — se ultrapassar x=0, o corte já rolou.
     const medidor = document.createElement('canvas').getContext('2d');
     medidor.font = `800 ${alturaNatural}px "${fontFamilyPadrao}"`;
-    const larguraCompletaNatural = medidor.measureText(shown.join(' ')).width || 1;
-    const xEsquerdaNatural = anchorRightPx - larguraCompletaNatural;
-    const corteJaAconteceu = xEsquerdaNatural < 0;
 
-    // Duas passadas (mesma técnica já usada no Efeito 14 pra manter a
-    // âncora fixa mesmo com personalização de tamanho por palavra):
-    // primeiro MEDE cada palavra (bitmap já na altura/fonte próprias
-    // de cada uma), depois desenha a partir do cursor certo.
+    // Mede cada palavra ANTES de decidir a âncora — no reflow, a
+    // âncora depende da largura da palavra ATIVA (ver abaixo), então
+    // precisa medir primeiro.
     const itens = [];
     for (let i = 0; i < n; i++) {
       const texto = shown[i];
@@ -39612,6 +39585,49 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       if (!img) { itens.push(null); continue; }
       itens.push({ img, drawW: img.width, drawH: img.height });
     }
+
+    // Âncora (borda direita + topo): fidelidade usa os dados reais
+    // medidos do vídeo pra essa contagem exata — mesma posição
+    // (deslocada) do vídeo original, incluindo o efeito de "letreiro"
+    // assimétrico.
+    //
+    // BUG REAL CORRIGIDO ("a palavra em destaque começa centralizada
+    // mas não fica" — reportado com captura real): o reflow usava a
+    // MESMA âncora fixa do vídeo original (~64% da largura, nunca o
+    // centro de verdade) — com poucas palavras, o texto CURTO
+    // "por acaso" parecia mais ou menos centralizado nessa posição,
+    // mas conforme mais palavras entravam (texto mais LONGO), o
+    // desequilíbrio ficava óbvio. Agora o reflow calcula a âncora
+    // TODA VEZ com base na largura da palavra ATIVA — mantém o
+    // CENTRO da palavra em destaque sempre no centro horizontal do
+    // canvas, palavras anteriores crescem/cortam pra esquerda a
+    // partir daí, igual ao espírito "letreiro" original, mas
+    // corretamente centralizado pra qualquer texto digitado.
+    let anchorRightPx, topPx;
+    if (ehFidelidade) {
+      const ancora = _efeito15AncoraParaContagem(tpl, n, totalOriginal);
+      if (!ancora) return true;
+      anchorRightPx = ancora.anchorRightPx;
+      topPx = ancora.topPx;
+    } else {
+      const fFinal = _efeito15FrameData(tpl, tpl.motionData.frames - 1);
+      if (!fFinal) return true;
+      topPx = fFinal.topPx;
+      const itemAtivo = itens[indiceAtivo];
+      const larguraAtiva = itemAtivo ? itemAtivo.drawW : 0;
+      const centroCanvas = tpl.logicalWidth / 2;
+      anchorRightPx = centroCanvas + larguraAtiva / 2;
+    }
+
+    // Determina se o corte à esquerda JÁ aconteceu em algum ponto até
+    // agora (não só nesse quadro) — a cor branca, uma vez ativada,
+    // nunca mais volta pra azul no vídeo original (é uma transição de
+    // mão única). Mede a largura NATURAL do texto completo mostrado
+    // agora contra a âncora — se ultrapassar x=0, o corte já rolou.
+    const larguraCompletaNatural = medidor.measureText(shown.join(' ')).width || 1;
+    const xEsquerdaNatural = anchorRightPx - larguraCompletaNatural;
+    const corteJaAconteceu = xEsquerdaNatural < 0;
+
     const larguraEspaco = medidor.measureText(' ').width;
     const larguraTotalReal = itens.reduce((s, it) => s + (it ? it.drawW : 0), 0)
       + larguraEspaco * Math.max(0, itens.filter(Boolean).length - 1);
