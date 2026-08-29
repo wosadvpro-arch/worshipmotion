@@ -19425,10 +19425,37 @@ class RenderEngineV2 {
 
     const start = () => {
       if (this._frameExactPlayGen !== minhaGeracao) return; // superada por uma chamada mais nova
-      const t0 = performance.now();
       this._frameExactPlaying = true;
+      // BUG REAL CORRIGIDO ("não tem animação" — Efeito 16, mas afeta
+      // qualquer efeito frame-exact com fase inicial curta/rápida):
+      // `t0` era capturado ANTES de agendar o primeiro
+      // requestAnimationFrame — se houvesse qualquer trabalho síncrono
+      // pesado entre esse instante e o navegador finalmente conseguir
+      // pintar o primeiro quadro (ex: fechar o menu de templates,
+      // atualizar outra parte da interface, tudo isso disparado pelo
+      // mesmo clique que confirma o template), esse atraso REAL
+      // contava como "tempo decorrido da animação". Medido na prática:
+      // não é só o PRIMEIRO quadro que sofre isso — às vezes o
+      // segundo/terceiro quadro também chegam atrasados (a interface
+      // ainda está assentando depois do clique de confirmar), então
+      // só resetar no primeiro quadro não bastava. Agora `t0` continua
+      // sendo REAJUSTADO a cada quadro enquanto o intervalo entre um
+      // quadro e o anterior estiver anormalmente grande (> 80ms —
+      // bem acima do esperado ~16-42ms de um quadro normal a
+      // 24-60fps) — só passa a contar de verdade quando o laço já
+      // está num ritmo estável. Pra efeitos com fase inicial CURTA
+      // (tipo o deslizar do Efeito 16, ~400ms), isso evita pular reto
+      // pro meio/fim da animação antes do usuário ver qualquer coisa
+      // se mover.
+      let t0 = null;
+      let ultimoNow = null;
+      const LIMIAR_INSTAVEL_MS = 180;
       const step = (now) => {
         if (!this._frameExactPlaying || this._frameExactPlayGen !== minhaGeracao) return;
+        if (t0 === null || (ultimoNow !== null && now - ultimoNow > LIMIAR_INSTAVEL_MS)) {
+          t0 = now;
+        }
+        ultimoNow = now;
         // BUG REAL CORRIGIDO: guardar o elemento do DOM uma vez só (no
         // início) e reusar em todo quadro quebrava sempre que algo
         // re-renderizava a estrofe no meio da reprodução (ex: o app
