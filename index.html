@@ -39113,25 +39113,66 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     if (!n) return true;
     const shown = palavras.slice(0, n).map(p => (p || '').trim());
 
-    // Bbox de referência: usa o quadro NATURAL (sem marcação) mais
-    // avançado entre as palavras mostradas — o layout coletivo (onde
-    // a caixa está, quão larga) segue o vídeo original normalmente;
-    // só o TEMPO de revelação de cada palavra responde à marcação.
-    const frameIdxData = Math.min(frameIdx, tpl.motionData.frames - 1);
-    const fData = _efeito14FrameData(tpl, frameIdxData) || _efeito14FrameData(tpl, tpl.motionData.frames - 1);
-    if (!fData) return true;
-    const [bx, by, bw, bh] = fData.bbox;
+    const totalOriginal = tpl.palavrasOriginais.length;
+    const ehFidelidade = (totalPalavras === totalOriginal);
+
+    // BUG REAL CORRIGIDO ("com 1/2/3 palavras o tamanho fica
+    // diferente entre elas" — confirmado com capturas reais): no
+    // caminho de reflow (contagem ≠ 5 original), o código usava a
+    // MESMA bbox medida do vídeo original (que no fim da animação é
+    // larga o bastante pra caber as 5 palavras ORIGINAIS) e esticava
+    // o texto digitado pra caber EXATAMENTE nela — com menos
+    // palavras, o fator de esticamento ficava bem maior (cada palavra
+    // sozinha esticada pra preencher uma caixa pensada pra 5), e esse
+    // fator ia diminuindo conforme mais palavras eram digitadas —
+    // dando a impressão de "encolher" a cada palavra nova. A
+    // fidelidade exata (5 palavras, sem marcação diferente) CONTINUA
+    // usando a bbox real medida + esticamento (validado antes,
+    // bate certinho com o vídeo original) — só o reflow muda: usa uma
+    // altura FIXA (da bbox final/assentada) pra qualquer contagem de
+    // palavras, sem esticar, com a fileira centralizada — mesmo
+    // tamanho de letra não importa quantas palavras tiverem.
+    let bx, by, bw, bh, escalaHorizontal, alturaNatural;
+    const fontFamilyPadrao = tpl.styles.default.fontFamily;
+    const medidor = document.createElement('canvas').getContext('2d');
+    if (ehFidelidade) {
+      // Bbox de referência: usa o quadro NATURAL (sem marcação) mais
+      // avançado entre as palavras mostradas — o layout coletivo
+      // (onde a caixa está, quão larga) segue o vídeo original
+      // normalmente; só o TEMPO de revelação de cada palavra responde
+      // à marcação.
+      const frameIdxData = Math.min(frameIdx, tpl.motionData.frames - 1);
+      const fData = _efeito14FrameData(tpl, frameIdxData) || _efeito14FrameData(tpl, tpl.motionData.frames - 1);
+      if (!fData) return true;
+      [bx, by, bw, bh] = fData.bbox;
+      alturaNatural = bh * 1.04;
+      medidor.font = `800 ${alturaNatural}px "${fontFamilyPadrao}"`;
+      const larguraTotalNatural = medidor.measureText(shown.join(' ')).width || 1;
+      escalaHorizontal = bw / larguraTotalNatural;
+    } else {
+      // Reflow: altura FIXA (bbox do quadro final, já assentada — a
+      // mesma pra qualquer contagem de palavras) e SEM esticamento —
+      // a fileira cresce naturalmente em largura conforme mais
+      // palavras aparecem, centralizada no mesmo centro horizontal
+      // da caixa final do vídeo original.
+      const fDataFinal = _efeito14FrameData(tpl, tpl.motionData.frames - 1);
+      if (!fDataFinal) return true;
+      const [bxF, byF, bwF, bhF] = fDataFinal.bbox;
+      alturaNatural = bhF * 1.04;
+      escalaHorizontal = 1;
+      medidor.font = `800 ${alturaNatural}px "${fontFamilyPadrao}"`;
+      const larguraTotalNatural = medidor.measureText(shown.join(' ')).width || 1;
+      const centroX = bxF + bwF / 2;
+      bx = centroX - larguraTotalNatural / 2;
+      by = byF;
+      bw = larguraTotalNatural;
+      bh = bhF;
+    }
 
     // Mede a fileira JUNTA (mesma técnica da referência: uma altura
     // natural, esticada horizontalmente pra caber exatamente na
     // largura da caixa) — depois desenha palavra por palavra, cada
     // uma podendo receber personalização própria por cima.
-    const fontFamilyPadrao = tpl.styles.default.fontFamily;
-    const alturaNatural = bh * 1.04;
-    const medidor = document.createElement('canvas').getContext('2d');
-    medidor.font = `800 ${alturaNatural}px "${fontFamilyPadrao}"`;
-    const larguraTotalNatural = medidor.measureText(shown.join(' ')).width || 1;
-    const escalaHorizontal = bw / larguraTotalNatural;
 
     let cursor = bx;
     for (let i = 0; i < n; i++) {
