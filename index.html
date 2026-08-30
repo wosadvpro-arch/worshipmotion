@@ -18625,11 +18625,34 @@ class RenderEngineV2 {
     }
 
     // FILTER (glow + shadow projetada combinados)
+    //
+    // PEDIDO DO USUÁRIO ("sobra azul nas palavras, parece estranho
+    // com fundo preto"): esse filtro genérico (pensado pro texto
+    // NORMAL, não-frame-exact) usa a cor de brilho PADRÃO do app
+    // (#8b5cf6, o mesmo roxo/azul do gradiente "brand") — pra
+    // estrofes frame-exact, cada efeito já desenha seu PRÓPRIO brilho
+    // certo direto no canvas (calibrado pra bater com o vídeo de
+    // referência de cada um). Aplicar ESSE filtro genérico por cima
+    // criava um brilho roxo/azul "extra", sem relação nenhuma com o
+    // efeito de verdade — exatamente o resíduo que o usuário via.
+    // Estrofes frame-exact pulam esse filtro genérico por completo.
+    //
+    // BUG REAL CORRIGIDO: checar a classe CSS 'is-frame-exact-stanza'
+    // não funciona AQUI — ela só é adicionada DEPOIS que essa função
+    // roda pela primeira vez (a ordem de chamadas coloca
+    // _applyStyleToStanzaEl ANTES de marcar a classe), então na
+    // primeira renderização a checagem sempre veria "false". Em vez
+    // disso, busca o dado de verdade (stanza.frameExactTemplateId) na
+    // lista de estrofes já processadas — disponível independente de
+    // classe CSS ou ordem de chamada.
     const filters = [];
-    if (s.glow > 0) {
+    const stanzaDados = sid && this.parsed && this.parsed.stanzas
+      ? this.parsed.stanzas.find(st => st.id === sid) : null;
+    const ehEstrofeFrameExact = !!(stanzaDados && stanzaDados.frameExactTemplateId);
+    if (!ehEstrofeFrameExact && s.glow > 0) {
       filters.push(`drop-shadow(0 0 ${s.glow * 0.5}px ${this._hexToRgba(s.glowColor, 0.6)})`);
     }
-    if (s.shadow && s.shadow > 0) {
+    if (!ehEstrofeFrameExact && s.shadow && s.shadow > 0) {
       const sx = s.shadowOffsetX ?? 4;
       const sy = s.shadowOffsetY ?? 4;
       const sb = s.shadowBlur ?? 8;
@@ -39683,7 +39706,15 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       const framesDesdeRevelacao = frameEfetivo !== null ? Math.max(0, frameEfetivo - quadroRevelacao) : EFEITO14_FADE_FRAMES;
       const progresso = Math.min(1, framesDesdeRevelacao / EFEITO14_FADE_FRAMES);
       const cor = _misturarCor(tpl.styles.default.corRevelada, tpl.styles.default.corAssentada, progresso);
-      const glowAlpha = 0.85 - progresso * (0.85 - 0.18);
+      // PEDIDO DO USUÁRIO ("sobra azul nas palavras, parece estranho
+      // com fundo preto"): antes, o brilho nunca chegava a zero de
+      // verdade — mesmo uma palavra totalmente assentada (branca)
+      // ficava com 18% de brilho azul permanente, que contra um fundo
+      // preto sólido fica bem visível/estranho (contra o gradiente
+      // antigo, se perdia mais facilmente). Agora o brilho esmaece
+      // JUNTO com a cor, até zero — palavra assentada fica sem
+      // nenhum resquício de azul.
+      const glowAlpha = 0.85 * (1 - progresso);
 
       ctx.save();
       ctx.shadowColor = `rgba(10,120,240,${glowAlpha.toFixed(3)})`;
@@ -40272,7 +40303,14 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     tmp.width = img.width + margem * 2;
     tmp.height = img.height + margem * 2;
     const tctx = tmp.getContext('2d');
-    tctx.shadowColor = 'rgba(75,165,255,.48)';
+    // PEDIDO DO USUÁRIO ("sobra azul nas palavras, parece estranho
+    // com fundo preto"): o texto principal (sempre branco, nunca
+    // muda de cor nesse efeito) tinha um brilho AZUL constante — sem
+    // nenhuma palavra "ativa" pra justificar a cor, ficava parecendo
+    // um resíduo/erro contra fundo preto sólido. Trocado por um
+    // brilho branco neutro (mesmo tom do texto), suave o bastante
+    // pra dar profundidade sem parecer uma cor "grudada" errada.
+    tctx.shadowColor = 'rgba(255,255,255,.35)';
     tctx.shadowBlur = 34;
     tctx.drawImage(img, margem, margem);
     tmp._margem = margem;
@@ -40800,7 +40838,14 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
         }
       }
       const cor = alpha > 0 ? _misturarCor(tpl.styles.default.corFinal, tpl.styles.default.corAtivaAzul, alpha) : tpl.styles.default.corFinal;
-      const glowAlpha = ehAtiva ? (0.20 + 0.30 * alpha) : 0.20;
+      // PEDIDO DO USUÁRIO ("sobra azul nas palavras, parece estranho
+      // com fundo preto"): antes, TODA palavra (ativa ou já
+      // assentada/branca) tinha um piso de 20% de brilho azul
+      // permanente — contra fundo preto sólido, esse resíduo fica
+      // bem visível/estranho em palavras que já deveriam estar 100%
+      // brancas. Agora o brilho acompanha a mistura de cor (`alpha`)
+      // de perto — chega a praticamente zero quando a palavra assenta.
+      const glowAlpha = 0.30 * alpha;
 
       ctx.save();
       ctx.shadowColor = `rgba(20,120,255,${glowAlpha.toFixed(3)})`;
