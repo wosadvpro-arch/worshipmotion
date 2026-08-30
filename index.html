@@ -2139,7 +2139,7 @@ body.marking-open.marking-collapsed .editor-canvas {
 .canvas-bg {
   position: absolute;
   inset: 0;
-  background: var(--gradient-brand);
+  background: #050507;
   opacity: 1;
   pointer-events: none;
 }
@@ -7648,11 +7648,11 @@ Digno de toda honra"></textarea>
         <div class="panel-section">
           <div class="panel-section-title" data-i18n="bg.title">Background</div>
           <div class="color-swatches" id="bg-swatches" style="grid-template-columns: repeat(5, 1fr);">
-            <div class="color-swatch selected" data-bg="brand" style="background: linear-gradient(135deg, #8b5cf6, #3b82f6)"></div>
+            <div class="color-swatch" data-bg="brand" style="background: linear-gradient(135deg, #8b5cf6, #3b82f6)"></div>
             <div class="color-swatch" data-bg="divine" style="background: linear-gradient(135deg, #d4a857, #8b5cf6)"></div>
             <div class="color-swatch" data-bg="midnight" style="background: linear-gradient(135deg, #0f0f17, #1e1b4b)"></div>
             <div class="color-swatch" data-bg="warm" style="background: linear-gradient(135deg, #7c2d12, #d4a857)"></div>
-            <div class="color-swatch" data-bg="black" style="background: #050507; border:1px solid var(--border-default);"></div>
+            <div class="color-swatch selected" data-bg="black" style="background: #050507; border:1px solid var(--border-default);"></div>
           </div>
 
           
@@ -12094,7 +12094,7 @@ function buildProjectSnapshot(engine, name) {
     animConfig: { ...engine.animConfig },
     sceneOverrides: { ...(engine.sceneOverrides || {}) },
     wordOverrides: { ...(engine.wordOverrides || {}) },
-    bg: window.__currentBg || 'brand',
+    bg: window.__currentBg || 'black',
     aspect: window.__currentAspect || '16:9',
     autoEmphasis: document.getElementById('auto-emphasis')?.checked ?? true,
     audioId: window.__currentAudioId || null,
@@ -14171,6 +14171,31 @@ const TEMPLATES = [
     },
   },
   {
+    id: "tpl-oficial-text-preset-10-frame-exact",
+    name: "Text Preset 10",
+    description: "Texto acumulado com esticamento independente em X e Y — a palavra mais nova nasce azul e esmaece pra branco conforme a composição inteira se ajusta ao crescer.",
+    tags: ["Revelação", "Frame-exact", "Pro Plus"],
+    isOfficial: true,
+    isPremium: true,
+    requiredPlan: "pro_plus",
+    isActive: true,
+    accent: "#2A8BFF",
+    config: {
+      type: "frame-exact",
+      frameExactTemplateId: "efeito-18",
+      style: {},
+      animConfig: {},
+      aspect: "16:9",
+      parsed: {
+        stanzas: [
+          { id: "stz_9otuqi9", label: "Estrofe 1", lines: [
+            { id: "ln_r33izj5", words: [{ id: "w_vo336ki", text: "we", chars: [{id:"ch_hattdpb",text:"w"}, {id:"ch_mgr2twl",text:"e"}], emphasized: false }, { id: "w_6zrjtbq", text: "are", chars: [{id:"ch_glgc9iq",text:"a"}, {id:"ch_nhvjpc8",text:"r"}, {id:"ch_30efhn5",text:"e"}], emphasized: false }, { id: "w_8zr39hu", text: "the", chars: [{id:"ch_2r4k7lk",text:"t"}, {id:"ch_6fiqok6",text:"h"}, {id:"ch_eka2bdm",text:"e"}], emphasized: false }, { id: "w_2u5j94e", text: "same", chars: [{id:"ch_zpu8wst",text:"s"}, {id:"ch_zp5ayzi",text:"a"}, {id:"ch_lh9ra09",text:"m"}, {id:"ch_hijoa1l",text:"e"}], emphasized: false }] },
+          ] },
+        ],
+      },
+    },
+  },
+  {
     id: "tpl-oficial-kinetic-scale-stack-frameexact",
     name: "Kinetic Scale Stack",
     description: "Tipografia cinética em três linhas, com compressão/expansão e zoom final, reproduzida por bounding boxes absolutas frame a frame (frame-exact).",
@@ -14357,7 +14382,7 @@ const CanvasRenderer = {
   drawSlide(ctx, slide, elapsedMs, W, H, blank) {
     // 1. Limpa e desenha background (do cache se possível). O fundo SEMPRE
     //    ocupa o canvas inteiro, em qualquer proporção.
-    this._drawBackgroundCached(ctx, slide.background || 'brand', W, H);
+    this._drawBackgroundCached(ctx, slide.background || 'black', W, H);
 
     // INSTRUMENTAL: se 'blank', mostra só o fundo (letra sumiu no intervalo sem
     // canto). Mesmo comportamento do preview, agora também no export/MP4.
@@ -14713,7 +14738,7 @@ const CanvasRenderer = {
     } else if (bgKey && bgKey.type === 'image') {
       keyStr = `custom_image_${bgKey.cacheId || bgKey.img?.src || 'unknown'}`;
     } else {
-      keyStr = 'brand';
+      keyStr = 'black';
     }
     const cacheKey = `${keyStr}_${W}x${H}`;
     let cached = this._bgCache.get(cacheKey);
@@ -16646,11 +16671,11 @@ class VideoExporter {
         // 2) Fallback: window.__currentBg — o "último aplicado no painel".
         //    Necessário porque o usuário pode aplicar um fundo (vídeo
         //    custom) no painel e ESQUECER de clicar "Aplicar em todas":
-        //    nesse caso __globalBg fica em 'brand' (default), mas o
+        //    nesse caso __globalBg fica em 'black' (default), mas o
         //    usuário VÊ o vídeo no preview. Sem este fallback, o export
-        //    pega 'brand' e o vídeo nunca aparece no MP4. Com ele, o
+        //    pega 'black' e o vídeo nunca aparece no MP4. Com ele, o
         //    export usa o vídeo que o usuário acabou de aplicar.
-        //    Só aplica se sceneConfig.background é o 'brand' default
+        //    Só aplica se sceneConfig.background é o 'black' default
         //    E nenhuma estrofe tem bg próprio (caso single-bg comum).
         background: this._resolveSlideBackground(sceneConfig?.background),
         stanza: stanza,
@@ -16677,21 +16702,21 @@ class VideoExporter {
   }
 
   _getCurrentBackground() {
-    return (typeof window !== 'undefined' && window.__currentBg) || 'brand';
+    return (typeof window !== 'undefined' && window.__currentBg) || 'black';
   }
 
   /**
    * Resolve o background efetivo de um slide.
    *
    * O engine.getSceneConfig() retorna o background com a prioridade:
-   *   stanza.background → sceneOverride.background → __globalBg → 'brand'
+   *   stanza.background → sceneOverride.background → __globalBg → 'black'
    *
    * Mas se o usuário aplicou um fundo no painel (especialmente vídeo
    * custom) e esqueceu de clicar "Aplicar em todas", __globalBg
-   * permanece 'brand' (default), mesmo que __currentBg tenha o vídeo.
-   * Resultado: o preview mostra o vídeo, mas o export sai com 'brand'.
+   * permanece 'black' (default), mesmo que __currentBg tenha o vídeo.
+   * Resultado: o preview mostra o vídeo, mas o export sai com 'black'.
    *
-   * Esta função detecta esse caso (sceneBg é o default 'brand') e
+   * Esta função detecta esse caso (sceneBg é o default 'black') e
    * promove __currentBg como o background efetivo. Se houver um
    * sceneBg específico (estrofe própria ou aplicado em todas), usa
    * ele — sem mexer.
@@ -16699,15 +16724,15 @@ class VideoExporter {
   _resolveSlideBackground(sceneBg) {
     const cur = (typeof window !== 'undefined' && window.__currentBg) || null;
     const glob = (typeof window !== 'undefined' && window.__globalBg) || null;
-    // Caso 1: sceneBg já é específico (não é 'brand' default) → respeita.
-    if (sceneBg && sceneBg !== 'brand') return sceneBg;
+    // Caso 1: sceneBg já é específico (não é 'black' default) → respeita.
+    if (sceneBg && sceneBg !== 'black') return sceneBg;
     // Caso 2: usuário definiu __globalBg explicitamente → respeita
-    // (mesmo se for 'brand', porque pode ter sido escolhido).
-    if (glob && glob !== 'brand') return glob;
+    // (mesmo se for 'black', porque pode ter sido escolhido).
+    if (glob && glob !== 'black') return glob;
     // Caso 3 (fallback): __currentBg é o que aparece no preview no momento.
     // Se for diferente do default, é o que o usuário "vê" — usa.
-    if (cur && cur !== 'brand') return cur;
-    return sceneBg || 'brand';
+    if (cur && cur !== 'black') return cur;
+    return sceneBg || 'black';
   }
 
   /**
@@ -18251,7 +18276,7 @@ class RenderEngineV2 {
       background:     stanzaBg
                        ?? override.background
                        ?? (typeof window !== 'undefined' ? window.__globalBg : null)
-                       ?? 'brand',
+                       ?? 'black',
       stanzaDuration: override.stanzaDuration ?? null, // null = usa global (export)
       target:         override.target         ?? this.animConfig.target,
       stagger:        override.stagger        ?? this.animConfig.stagger,
@@ -20224,7 +20249,7 @@ function initEditor() {
   window.__WM_DEFAULTS = {
     style: JSON.parse(JSON.stringify(engine.style)),
     animConfig: JSON.parse(JSON.stringify(engine.animConfig)),
-    bg: 'brand',        // o swatch marcado como .selected no HTML
+    bg: 'black',        // o swatch marcado como .selected no HTML
     aspect: '16:9',
   };
 
@@ -23983,7 +24008,7 @@ function initEditor() {
       sceneOverrides: engine.sceneOverrides || {},
       style: engine.style || {},
       animConfig: engine.animConfig || {},
-      globalBg: window.__globalBg || 'brand',
+      globalBg: window.__globalBg || 'black',
     });
   }
 
@@ -28422,7 +28447,7 @@ function initEditor() {
               if (typeof showToast === 'function') {
                 showToast('Vídeo de fundo não reproduziu (' + motivo + ', erro ' + cod + ', estado ' + video.readyState + ').');
               }
-              applyBg('brand');
+              applyBg('black');
             };
             // Qualquer sinal de que carregou cancela o fallback.
             video.addEventListener('loadeddata', _cancelaFalha, { once: true });
@@ -28470,7 +28495,7 @@ function initEditor() {
           console.warn('Falha ao aplicar bg custom:', e);
         }
       }
-      key = 'brand';
+      key = 'black';
     }
 
     canvasBg.style.background = BG_PRESETS[key] || BG_PRESETS.brand;
@@ -28490,7 +28515,7 @@ function initEditor() {
     if (!parsed || !parsed.stanzas.length) return;
     const stanza = parsed.stanzas[engine.currentStanzaIndex];
     if (!stanza) return;
-    const key = stanza.background || window.__globalBg || 'brand';
+    const key = stanza.background || window.__globalBg || 'black';
     _previewBg = null;  // cancela preview ao navegar
     await applyBg(key);
     updateStanzaBgIndicator();
@@ -28779,7 +28804,7 @@ function initEditor() {
       }
       // Se o bg deletado estava em uso, volta pro brand
       if (window.__currentBg === `custom:${assetId}`) {
-        applyBg('brand');
+        applyBg('black');
       }
       await refreshCustomBgGrid();
       return;
@@ -31922,8 +31947,8 @@ function initEditor() {
   }
 
   // ============ Estado de Background e Aspect (globais para snapshot) ============
-  window.__currentBg = 'brand';
-  window.__globalBg = 'brand';
+  window.__currentBg = 'black';
+  window.__globalBg = 'black';
   window.__currentAspect = '16:9';
 
   // ============ APLICAR Projeto/Template no editor ============
@@ -32180,7 +32205,7 @@ function initEditor() {
       parsed: { stanzas: [] },        // sem estrofe nenhuma
       style: JSON.parse(JSON.stringify(D.style || {})),
       animConfig: JSON.parse(JSON.stringify(D.animConfig || {})),
-      bg: D.bg || 'brand',
+      bg: D.bg || 'black',
       aspect: D.aspect || '16:9',
       sceneOverrides: {},
       wordOverrides: {},
@@ -32897,7 +32922,7 @@ function initEditor() {
       lyrics: lyrics,
       style: state.style || {},
       animConfig: state.animConfig || {},
-      bg: state.globalBg || window.__globalBg || 'brand',
+      bg: state.globalBg || window.__globalBg || 'black',
       aspect: window.__currentAspect || '16:9',
       // Estado completo (pra templates personalizados manterem posições
       // e variações por estrofe). Templates oficiais não têm isso e
@@ -33030,8 +33055,113 @@ function initEditor() {
     return t.description || '';
   }
 
+  /**
+   * PEDIDO DO USUÁRIO: prévia de verdade pros cartões de efeitos
+   * frame-exact — em vez do CSS genérico de hover, desenha a
+   * animação REAL (quadro a quadro, usando o mesmo motor do canvas
+   * principal) dentro do <canvas> marcador que
+   * _renderTemplatePreviewContent() deixou em cada cartão. Só anima
+   * os cartões VISÍVEIS na tela (IntersectionObserver) — evita gastar
+   * processamento com dezenas de animações rodando escondidas fora
+   * da área visível da grade.
+   */
+  let _previewFEObserver = null;
+  const _previewFEIntervalos = new Map(); // canvas -> intervalId
+
+  function _pararPreviewsFrameExatoAnteriores() {
+    if (_previewFEObserver) { _previewFEObserver.disconnect(); _previewFEObserver = null; }
+    _previewFEIntervalos.forEach(id => clearInterval(id));
+    _previewFEIntervalos.clear();
+  }
+
+  function _iniciarPreviewsFrameExato(grid, list) {
+    // A grade inteira é reconstruída a cada chamada (innerHTML) — os
+    // <canvas> antigos já não existem mais no DOM, mas o observer e os
+    // intervalos antigos continuariam rodando pra elementos órfãos se
+    // não forem parados explicitamente primeiro.
+    _pararPreviewsFrameExatoAnteriores();
+
+    const canvases = grid.querySelectorAll('canvas.tpl-prev-canvas');
+    if (!canvases.length) return;
+    const R = window.WM_FRAME_EXACT_RENDERER;
+    if (!R) return;
+
+    // Mapa rápido: id do template frame-exact -> config completo do
+    // cartão (pra achar a estrofe/wordOverrides certos de cada um).
+    const porFrameExactId = new Map();
+    list.forEach(t => {
+      const cfg = t.config || {};
+      if (cfg.type === 'frame-exact' && cfg.frameExactTemplateId) {
+        porFrameExactId.set(cfg.frameExactTemplateId, cfg);
+      }
+    });
+
+    const FPS_PREVIEW = 15; // menor que os 24fps reais — suficiente pra prévia pequena, mais leve
+
+    function iniciaAnimacao(canvas) {
+      const feId = canvas.dataset.frameExactTpl;
+      const cfg = porFrameExactId.get(feId);
+      const tpl = R.getTemplate(feId);
+      if (!cfg || !tpl || !cfg.parsed || !cfg.parsed.stanzas || !cfg.parsed.stanzas[0]) return;
+      const ctx = canvas.getContext('2d');
+      const stanza = cfg.parsed.stanzas[0];
+      const wordOverrides = cfg.wordOverrides || {};
+      // Texto e personalização não mudam quadro a quadro — lê uma vez só.
+      const texts = R.readTextsFromStanza(stanza, feId, wordOverrides);
+      const duracaoMs = (tpl.motionData.frames / tpl.motionData.fps) * 1000;
+      const escalaX = canvas.width / tpl.logicalWidth;
+      const escalaY = canvas.height / tpl.logicalHeight;
+      const inicio = Date.now();
+
+      const desenhaQuadro = () => {
+        const elapsed = (Date.now() - inicio) % duracaoMs;
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#050507';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.save();
+        ctx.scale(escalaX, escalaY);
+        try { R.renderFrame(ctx, feId, texts, elapsed); } catch (e) { /* prévia é best-effort */ }
+        ctx.restore();
+      };
+      desenhaQuadro();
+      const intervalId = setInterval(desenhaQuadro, 1000 / FPS_PREVIEW);
+      _previewFEIntervalos.set(canvas, intervalId);
+    }
+
+    function paraAnimacao(canvas) {
+      const id = _previewFEIntervalos.get(canvas);
+      if (id) { clearInterval(id); _previewFEIntervalos.delete(canvas); }
+    }
+
+    _previewFEObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) iniciaAnimacao(entry.target);
+        else paraAnimacao(entry.target);
+      });
+    }, { root: null, rootMargin: '80px', threshold: 0.01 });
+
+    canvases.forEach(c => _previewFEObserver.observe(c));
+  }
+
   function _renderTemplatePreviewContent(t) {
     const cfg = t.config || {};
+
+    // PEDIDO DO USUÁRIO ("as animações estão padrão e não o efeito
+    // verdadeiro, na aba efeitos"): pra templates frame-exact, a
+    // prévia genérica (CSS hover com stagger simples) não representa
+    // NADA da animação real desses efeitos — cada um tem uma
+    // assinatura visual bem própria (deslizar, rastro colorido,
+    // esmaecer de cor, cortar à esquerda, etc.) que um fade/translate
+    // genérico não consegue reproduzir. Em vez disso, devolve um
+    // <canvas> marcador — a animação de verdade é desenhada nele
+    // depois, quadro a quadro, usando o MESMO motor de renderização
+    // do canvas principal (WM_FRAME_EXACT_RENDERER), só numa
+    // resolução menor. Ver _iniciarPreviewsFrameExato().
+    if (cfg.type === 'frame-exact' && cfg.frameExactTemplateId) {
+      return `<canvas class="tpl-prev-canvas" data-frame-exact-tpl="${escapeHtml(cfg.frameExactTemplateId)}" width="480" height="270"></canvas>`;
+    }
+
     const parsed = cfg.parsed;
     const wordOverrides = cfg.wordOverrides || {};
     const globalStyle = cfg.style || {};
@@ -33154,7 +33284,7 @@ function initEditor() {
           <div class="template-preview">
             ${lcLabel ? `<span class="template-line-badge">${escapeHtml(lcLabel)}</span>` : ''}
             ${isPremium ? `<span class="template-plan-badge">Pro Plus</span>` : ''}
-            <div class="template-preview-bg" style="background: ${BG_CSS[t.config.bg] || BG_CSS.brand};"></div>
+            <div class="template-preview-bg" style="background: ${BG_CSS[t.config.bg] || BG_CSS.black};"></div>
             <div class="template-preview-text">${previewContent}</div>
           </div>
           <div class="template-info">
@@ -33165,6 +33295,7 @@ function initEditor() {
         </div>
       `;
     }).join('');
+    _iniciarPreviewsFrameExato(grid, list);
     $$('.template-card').forEach(card => {
       card.addEventListener('click', () => {
         const tpl = WM_TEMPLATES.get(card.dataset.templateId);
@@ -33508,6 +33639,7 @@ function initEditor() {
     if (tplFE.layout === 'efeito-15-style') return 1;
     if (tplFE.layout === 'efeito-16-style') return 1;
     if (tplFE.layout === 'efeito-17-style') return 1;
+    if (tplFE.layout === 'efeito-18-style') return 1;
     return 3;
   }
 
@@ -37289,6 +37421,29 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
   // Registro de templates frame-exact — motion-data ORIGINAL, sem
   // nenhuma alteração (mesmo JSON do ZIP, byte a byte).
   const TEMPLATES_FRAME_EXACT = {
+    'efeito-18': {
+      layout: 'efeito-18-style',
+      // Espaço lógico PRÓPRIO — 3840x2160, 24fps, 120 quadros.
+      logicalWidth: 3840,
+      logicalHeight: 2160,
+      // Estrutura de dados PRÓPRIA: texto acumulado (cresce uma
+      // palavra por vez, igual ao Efeito 14) mas com esticamento
+      // INDEPENDENTE em X e Y pra caber na caixa medida (igual ao
+      // Efeito 17, diferente do Efeito 14 que só estica horizontal).
+      // A palavra mais nova esmaece de azul pra branco — a curva de
+      // opacidade vem PRONTA nos dados (blueActiveAlpha), não precisa
+      // ser estimada. Cada item de framesCompact é
+      // [x, y, width, height, activeWordIndex, visibleWordCount, blueActiveAlpha].
+      motionData: { fps: 24, frames: 120, framesCompact: [[1805,1038,231,95,0,1,1.0],[1802,1037,236,97,0,1,1.0],[1799,1036,242,100,0,1,1.0],[1797,1035,246,102,0,1,1.0],[1794,1034,252,104,0,1,1.0],[1792,1033,256,107,0,1,1.0],[1625,1031,591,110,1,2,1.0],[1612,1030,617,112,1,2,1.0],[1604,1028,634,115,1,2,1.0],[1598,1027,646,117,1,2,1.0],[1594,1026,655,119,1,2,1.0],[1415,982,1010,164,2,3,1.0],[1400,981,1039,167,2,3,1.0],[1392,980,1057,168,2,3,1.0],[1386,978,1069,171,2,3,1.0],[1382,977,1077,173,2,3,1.0],[1378,976,1086,175,2,3,1.0],[1066,977,1704,174,3,4,1.0],[1057,976,1723,175,3,4,1.0],[1051,974,1737,178,3,4,1.0],[1046,974,1748,178,3,4,1.0],[1042,973,1756,179,3,4,1.0],[1038,973,1764,179,3,4,0.875],[1034,972,1772,180,3,4,0.75],[1031,972,1779,180,3,4,0.625],[1028,972,1785,181,3,4,0.5],[1024,972,1792,181,3,4,0.375],[1022,972,1797,181,3,4,0.25],[1019,971,1802,182,3,4,0.125],[1017,971,1807,182,3,4,0.0],[1015,971,1811,182,3,4,0.0],[1013,972,1814,181,3,4,0.0],[1012,971,1817,182,3,4,0.0],[1011,972,1819,181,3,4,0.0],[1009,972,1822,181,3,4,0.0],[1008,972,1824,181,3,4,0.0],[1008,972,1825,181,3,4,0.0],[1007,972,1827,181,3,4,0.0],[1006,972,1828,180,3,4,0.0],[1006,972,1829,180,3,4,0.0],[1005,972,1830,180,3,4,0.0],[1005,972,1830,180,3,4,0.0],[1005,973,1831,179,3,4,0.0],[1005,973,1831,179,3,4,0.0],[1004,973,1831,179,3,4,0.0],[1005,973,1830,178,3,4,0.0],[1005,974,1831,177,3,4,0.0],[1005,974,1831,177,3,4,0.0],[1005,974,1831,177,3,4,0.0],[1005,974,1831,177,3,4,0.0],[1005,974,1831,177,3,4,0.0],[1005,974,1831,177,3,4,0.0],[1005,974,1831,177,3,4,0.0],[1005,974,1831,177,3,4,0.0],[1005,974,1831,177,3,4,0.0],[1005,974,1831,177,3,4,0.0],[1005,974,1831,177,3,4,0.0],[1005,974,1830,177,3,4,0.0],[1005,974,1830,177,3,4,0.0],[1005,974,1830,177,3,4,0.0],[1005,974,1831,177,3,4,0.0],[1005,974,1831,177,3,4,0.0],[1005,974,1831,177,3,4,0.0],[1005,974,1830,177,3,4,0.0],[1005,974,1830,177,3,4,0.0],[1005,974,1830,177,3,4,0.0],[1005,974,1830,177,3,4,0.0],[1005,974,1830,177,3,4,0.0],[1005,974,1830,177,3,4,0.0],[1005,974,1830,177,3,4,0.0],[1005,974,1830,177,3,4,0.0],[1005,974,1830,177,3,4,0.0],[1005,974,1830,177,3,4,0.0],[1005,974,1830,177,3,4,0.0],[1005,974,1830,177,3,4,0.0],[1005,974,1830,177,3,4,0.0],[1005,974,1830,177,3,4,0.0],[1005,974,1831,177,3,4,0.0],[1005,974,1831,177,3,4,0.0],[1005,974,1831,177,3,4,0.0],[1005,974,1831,177,3,4,0.0],[1005,974,1831,177,3,4,0.0],[1005,974,1831,177,3,4,0.0],[1005,974,1831,177,3,4,0.0],[1005,974,1831,177,3,4,0.0],[1005,974,1831,177,3,4,0.0],[1005,974,1831,177,3,4,0.0],[1005,974,1831,177,3,4,0.0],[1005,974,1831,177,3,4,0.0],[1005,974,1830,177,3,4,0.0],[1005,974,1831,177,3,4,0.0],[1005,974,1830,177,3,4,0.0],[1005,974,1830,177,3,4,0.0],[1005,974,1830,177,3,4,0.0],[1005,974,1830,177,3,4,0.0],[1005,974,1830,177,3,4,0.0],[1005,974,1830,177,3,4,0.0],[1005,974,1830,177,3,4,0.0],[1005,974,1830,177,3,4,0.0],[1005,974,1830,177,3,4,0.0],[1005,974,1830,177,3,4,0.0],[1005,974,1830,177,3,4,0.0],[1005,974,1830,177,3,4,0.0],[1005,974,1830,177,3,4,0.0],[1005,974,1830,177,3,4,0.0],[1005,974,1830,177,3,4,0.0],[1005,974,1830,177,3,4,0.0],[1005,974,1830,177,3,4,0.0],[1005,974,1830,177,3,4,0.0],[1005,974,1831,177,3,4,0.0],[1005,974,1830,177,3,4,0.0],[1005,974,1830,177,3,4,0.0],[1005,974,1831,177,3,4,0.0],[1005,974,1831,177,3,4,0.0],[1005,974,1831,177,3,4,0.0],[1005,974,1831,177,3,4,0.0],[1005,974,1831,177,3,4,0.0],[1005,974,1830,177,3,4,0.0],[1005,974,1830,177,3,4,0.0],[1005,974,1830,177,3,4,0.0]] },
+      palavrasOriginais: ['we', 'are', 'the', 'same'],
+      fontFamilyOptions: ['GalanoGrotesque-ExtraBold', 'GalanoGrotesque-SemiBold', 'GalanoGrotesque-Black'],
+      styles: {
+        default: {
+          fontFamily: 'GalanoGrotesque-ExtraBold',
+          corAtivaAzul: '#2A8BFF', corFinal: '#F4F4F4',
+        },
+      },
+    },
     'efeito-17': {
       layout: 'efeito-17-style',
       // Espaço lógico PRÓPRIO — 3840x2160, 24fps, 145 quadros.
@@ -37911,6 +38066,9 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     }
     if (tpl.layout === 'efeito-17-style') {
       return _renderFrameEfeito17Style(ctx, tpl, texts, frameIdx, elapsedMs);
+    }
+    if (tpl.layout === 'efeito-18-style') {
+      return _renderFrameEfeito18Style(ctx, tpl, texts, frameIdx, elapsedMs);
     }
     return _renderFrameKineticScaleStack(ctx, tpl, texts, frameIdx, elapsedMs);
   }
@@ -40422,6 +40580,247 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     return true;
   }
 
+  /**
+   * Efeito 18 ("Text Preset 10"): texto ACUMULADO (cresce uma palavra
+   * por vez, igual ao Efeito 14) mas com esticamento INDEPENDENTE em
+   * X e Y pra caber na caixa medida (igual ao Efeito 17) — diferente
+   * do Efeito 14, que só estica horizontalmente com altura fixa. A
+   * palavra mais nova nasce azul e esmaece pra branco — a curva de
+   * opacidade vem PRONTA nos dados originais (não precisa ser
+   * estimada como no Efeito 14).
+   */
+  const EFEITO18_SEGURA_QUADROS = 5; // quadros em azul sólido antes de começar a esmaecer
+  const EFEITO18_ESMAECE_QUADROS = 7; // quadros levando pra esmaecer até branco
+
+  function _efeito18FrameData(tpl, frameIdx) {
+    const c = tpl.motionData.framesCompact[frameIdx];
+    if (!c) return null;
+    return { x: c[0], y: c[1], width: c[2], height: c[3], activeWordIndex: c[4], visibleWordCount: c[5], blueActiveAlpha: c[6] };
+  }
+
+  /** Quadro em que a palavra de índice `indice` vira visível — mesma
+   * técnica dos Efeitos 14/15. */
+  function _efeito18QuadroRevelacao(tpl, indice, totalPalavras) {
+    tpl._cacheRevelacao18 = tpl._cacheRevelacao18 || {};
+    const chave = indice + '|' + totalPalavras;
+    if (chave in tpl._cacheRevelacao18) return tpl._cacheRevelacao18[chave];
+    const totalOriginal = tpl.palavrasOriginais.length;
+    let resultado;
+    if (totalPalavras === totalOriginal) {
+      resultado = 0;
+      for (let i = 0; i < tpl.motionData.frames; i++) {
+        const f = _efeito18FrameData(tpl, i);
+        if (f && f.visibleWordCount > indice) { resultado = i; break; }
+      }
+    } else {
+      let fimJanela = 0;
+      for (let i = 0; i < tpl.motionData.frames; i++) {
+        const f = _efeito18FrameData(tpl, i);
+        if (f && f.visibleWordCount >= totalOriginal) { fimJanela = i; break; }
+      }
+      resultado = totalPalavras > 1 ? Math.round(indice * fimJanela / (totalPalavras - 1)) : 0;
+    }
+    tpl._cacheRevelacao18[chave] = resultado;
+    return resultado;
+  }
+
+  /** Bbox NATURAL apropriada pra mostrar exatamente `n` palavras —
+   * mesma técnica do Efeito 14 (usa o ÚLTIMO quadro natural antes da
+   * próxima revelação, estado assentado). */
+  function _efeito18BboxParaContagem(tpl, n, totalOriginal) {
+    tpl._cacheBbox18 = tpl._cacheBbox18 || {};
+    if (n in tpl._cacheBbox18) return tpl._cacheBbox18[n];
+    let resultado = null;
+    if (n >= totalOriginal) {
+      const f = _efeito18FrameData(tpl, tpl.motionData.frames - 1);
+      resultado = f ? { x: f.x, y: f.y, width: f.width, height: f.height } : null;
+    } else {
+      let ultimoComN = null;
+      for (let i = 0; i < tpl.motionData.frames; i++) {
+        const f = _efeito18FrameData(tpl, i);
+        if (!f) continue;
+        if (f.visibleWordCount === n) ultimoComN = f;
+        else if (f.visibleWordCount > n) break;
+      }
+      resultado = ultimoComN ? { x: ultimoComN.x, y: ultimoComN.y, width: ultimoComN.width, height: ultimoComN.height } : null;
+    }
+    tpl._cacheBbox18[n] = resultado;
+    return resultado;
+  }
+
+  function _readTextsEfeito18Style(stanza, tpl, wordOverrides) {
+    const lines = (stanza && stanza.lines) || [];
+    const palavrasObj = (lines[0]?.words || []);
+    const palavras = palavrasObj.map(w => w.text);
+    const out = {
+      palavras, _tStarts: {}, _referenciaTStart: null,
+      _fontScale: {}, _fontFamily: {}, _offset: {}, _wordId: {},
+    };
+    palavrasObj.forEach((w, i) => {
+      out._wordId[i] = w?.id || null;
+      if (w && typeof w.tStart === 'number') {
+        out._tStarts[i] = w.tStart;
+        if (out._referenciaTStart === null) out._referenciaTStart = w.tStart;
+      }
+      const wo = w && w.id && wordOverrides && wordOverrides[w.id];
+      if (wo && wo.style && wo.style.fontSizeScale) out._fontScale[i] = wo.style.fontSizeScale;
+      if (wo && wo.style && wo.style.fontFamily) out._fontFamily[i] = wo.style.fontFamily;
+      if (wo && wo.style && wo.style.frameExactOffset) out._offset[i] = wo.style.frameExactOffset;
+    });
+    return out;
+  }
+
+  /** Mesmo princípio do Efeito 14/15 — resolve o quadro "efetivo" de
+   * revelação de uma palavra considerando marcação de ritmo. */
+  function _efeito18QuadroEfetivo(tpl, indice, totalPalavras, elapsedMs, tStarts, referencia) {
+    const natural = _efeito18QuadroRevelacao(tpl, indice, totalPalavras);
+    if (!tStarts || referencia == null || !(indice in tStarts)) {
+      const frameAtual = Math.floor(elapsedMs / (1000 / tpl.motionData.fps));
+      return frameAtual >= natural ? Math.min(frameAtual, tpl.motionData.frames - 1) : null;
+    }
+    const atrasoMs = Math.max(0, (tStarts[indice] - referencia) * 1000);
+    if (elapsedMs < atrasoMs) return null;
+    const framesDesdeRevelacao = Math.floor((elapsedMs - atrasoMs) / (1000 / tpl.motionData.fps));
+    return Math.min(natural + framesDesdeRevelacao, tpl.motionData.frames - 1);
+  }
+
+  function _efeito18AlturaNatural(fontFamily, weight) {
+    _efeito18AlturaNatural._cache = _efeito18AlturaNatural._cache || {};
+    const chave = fontFamily + '|' + weight;
+    if (chave in _efeito18AlturaNatural._cache) return _efeito18AlturaNatural._cache[chave];
+    const c = document.createElement('canvas').getContext('2d');
+    c.font = `${weight} 400px "${fontFamily}"`;
+    const m = c.measureText('AÁÀÂÃEÉÊIÍMNOÓÔÕRSTUÚXBCÇDFGHJKLPQVWYZ0123456789');
+    const altura = (m.actualBoundingBoxAscent || 290) + (m.actualBoundingBoxDescent || 70);
+    _efeito18AlturaNatural._cache[chave] = altura;
+    return altura;
+  }
+
+  function _renderFrameEfeito18Style(ctx, tpl, texts, frameIdx, elapsedMs) {
+    _limparRegioesClique(tpl);
+    const palavras = (texts && texts.palavras) || [];
+    const totalPalavras = palavras.filter(p => (p || '').trim()).length;
+    if (!totalPalavras) return true;
+
+    const totalOriginal = tpl.palavrasOriginais.length;
+    const palavrasOriginaisUpper = tpl.palavrasOriginais.map(p => p.toUpperCase());
+    const ehFidelidade = totalPalavras === totalOriginal
+      && palavras.slice(0, totalOriginal).every((p, i) => (p || '').trim().toUpperCase() === palavrasOriginaisUpper[i]);
+
+    const tStarts = texts._tStarts, referencia = texts._referenciaTStart;
+    let n = 0;
+    for (let i = 0; i < totalPalavras; i++) {
+      const fe = _efeito18QuadroEfetivo(tpl, i, totalPalavras, elapsedMs, tStarts, referencia);
+      if (fe !== null) n = i + 1;
+    }
+    if (!n) return true;
+    const shown = palavras.slice(0, n).map(p => (p || '').trim());
+    const indiceAtivo = n - 1;
+
+    const fontFamilyPadrao = tpl.styles.default.fontFamily;
+    const alturaNatural = _efeito18AlturaNatural(fontFamilyPadrao, 800);
+    const medidor = document.createElement('canvas').getContext('2d');
+    medidor.font = `800 ${alturaNatural}px "${fontFamilyPadrao}"`;
+
+    // Mede cada palavra (natural, sem esticar ainda).
+    const itens = shown.map((texto, i) => {
+      const fontFamily = texts._fontFamily[i] || fontFamilyPadrao;
+      const fontScale = texts._fontScale[i] || 1;
+      const alturaAlvo = alturaNatural * fontScale;
+      const img = _efeito2MakeBitmapAtHeight(texto, fontFamily, '#FFFFFF', alturaAlvo, 800);
+      return img ? { img, w: img.width, h: img.height } : null;
+    });
+    const larguraEspaco = medidor.measureText(' ').width;
+    const larguraTotalNatural = itens.reduce((s, it) => s + (it ? it.w : 0), 0)
+      + larguraEspaco * Math.max(0, itens.filter(Boolean).length - 1);
+
+    // Bbox: fidelidade usa os dados reais medidos pra essa contagem
+    // exata de palavras (com esticamento independente em X e Y,
+    // igual à referência). Reflow usa tamanho natural, sem esticar
+    // (mesmo critério já corrigido nos Efeitos 14/15/16), centralizado.
+    //
+    // BUG REAL CORRIGIDO ("primeira palavra some da tela" — testado
+    // com 6 palavras mais longas): sem nenhum limite, o tamanho
+    // natural de uma fileira mais longa/larga podia facilmente
+    // ultrapassar a largura do canvas — como a fileira fica
+    // centralizada, a sobra "vazava" pros dois lados, cortando as
+    // palavras das pontas pra fora da tela (nada era desenhado ali,
+    // simplesmente ficava fora dos limites do canvas). Agora, se a
+    // largura natural ultrapassar 92% da largura do canvas, reduz
+    // proporcionalmente (largura E altura juntas, mantendo a mesma
+    // proporção — nunca distorce) até caber — só ENCOLHE quando
+    // necessário, nunca estica além do tamanho natural.
+    let bx, by, bw, bh;
+    if (ehFidelidade) {
+      const bbox = _efeito18BboxParaContagem(tpl, n, totalOriginal);
+      if (!bbox) return true;
+      bx = bbox.x; by = bbox.y; bw = bbox.width; bh = bbox.height;
+    } else {
+      const fFinal = _efeito18FrameData(tpl, tpl.motionData.frames - 1);
+      if (!fFinal) return true;
+      const larguraMaxima = tpl.logicalWidth * 0.92;
+      const fatorCoubeu = larguraTotalNatural > larguraMaxima ? larguraMaxima / larguraTotalNatural : 1;
+      bw = larguraTotalNatural * fatorCoubeu;
+      bh = alturaNatural * fatorCoubeu;
+      const centroX = tpl.logicalWidth / 2;
+      bx = centroX - bw / 2;
+      by = fFinal.y + (fFinal.height - bh) / 2;
+    }
+    const sx = bw / Math.max(1, larguraTotalNatural);
+    const sy = bh / Math.max(1, alturaNatural);
+
+    // Duas passadas (mesma técnica dos Efeitos 14/15): a largura NATURAL
+    // total já foi medida acima — desenha a partir do cursor certo,
+    // aplicando sx/sy ao redor do canto superior esquerdo da caixa
+    // (igual à referência: translate+scale, não centralizado por
+    // palavra individualmente).
+    let cursorNatural = 0;
+    for (let i = 0; i < n; i++) {
+      const item = itens[i];
+      if (!item) continue;
+      const offset = texts._offset[i] || { dx: 0, dy: 0 };
+      const drawXNatural = cursorNatural;
+      const drawX = bx + drawXNatural * sx + offset.dx;
+      const drawY = by + offset.dy;
+      const drawW = item.w * sx;
+      const drawH = item.h * sy;
+
+      const ehAtiva = (i === indiceAtivo);
+      let alpha = 0;
+      if (ehAtiva) {
+        if (ehFidelidade) {
+          const fAtual = _efeito18FrameData(tpl, Math.min(frameIdx, tpl.motionData.frames - 1));
+          alpha = (fAtual && fAtual.activeWordIndex === indiceAtivo) ? fAtual.blueActiveAlpha : 0;
+        } else {
+          const frameEfetivo = _efeito18QuadroEfetivo(tpl, i, totalPalavras, elapsedMs, tStarts, referencia);
+          const quadroRevelacao = _efeito18QuadroRevelacao(tpl, i, totalPalavras);
+          const framesDesdeRevelacao = frameEfetivo !== null ? Math.max(0, frameEfetivo - quadroRevelacao) : (EFEITO18_SEGURA_QUADROS + EFEITO18_ESMAECE_QUADROS);
+          const progressoEsmaecer = Math.min(1, Math.max(0, (framesDesdeRevelacao - EFEITO18_SEGURA_QUADROS) / EFEITO18_ESMAECE_QUADROS));
+          alpha = 1 - progressoEsmaecer;
+        }
+      }
+      const cor = alpha > 0 ? _misturarCor(tpl.styles.default.corFinal, tpl.styles.default.corAtivaAzul, alpha) : tpl.styles.default.corFinal;
+      const glowAlpha = ehAtiva ? (0.20 + 0.30 * alpha) : 0.20;
+
+      ctx.save();
+      ctx.shadowColor = `rgba(20,120,255,${glowAlpha.toFixed(3)})`;
+      ctx.shadowBlur = 30;
+      const tmp = document.createElement('canvas');
+      tmp.width = item.img.width; tmp.height = item.img.height;
+      const tctx = tmp.getContext('2d');
+      tctx.drawImage(item.img, 0, 0);
+      tctx.globalCompositeOperation = 'source-in';
+      tctx.fillStyle = cor;
+      tctx.fillRect(0, 0, item.img.width, item.img.height);
+      ctx.drawImage(tmp, drawX, drawY, drawW, drawH);
+      ctx.restore();
+
+      _registrarRegiaoClique(tpl, texts._wordId[i], drawX, drawY, drawW, drawH);
+      cursorNatural += item.w + larguraEspaco;
+    }
+    return true;
+  }
+
   function _renderFrameKineticScaleStack(ctx, tpl, texts, frameIdx, elapsedMs) {
     const m = tpl.motionData.motion[frameIdx];
     _limparRegioesClique(tpl);
@@ -41018,6 +41417,22 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       return maiorFim17;
     }
 
+    // Efeito 18: mesma estrutura de marcação do Efeito 14 (_tStarts
+    // indexado por posição) — "assentar" aqui é o esmaecimento de
+    // azul pra branco (EFEITO18_SEGURA_QUADROS + EFEITO18_ESMAECE_QUADROS
+    // quadros depois da revelação).
+    if (tpl.layout === 'efeito-18-style') {
+      let maiorFim18 = duracaoBase;
+      Object.keys(tStarts).forEach(indiceStr => {
+        const indice = Number(indiceStr);
+        const atrasoMs = Math.max(0, (tStarts[indice] - referencia) * 1000);
+        const tempoParaAssentar = (EFEITO18_SEGURA_QUADROS + EFEITO18_ESMAECE_QUADROS) * (1000 / fps);
+        const fimDessaPalavra = atrasoMs + tempoParaAssentar + 500;
+        if (fimDessaPalavra > maiorFim18) maiorFim18 = fimDessaPalavra;
+      });
+      return maiorFim18;
+    }
+
     // Kinetic Scale Stack (Efeitos 1/3) usa uma estrutura de dados
     // DIFERENTE (tpl.motionData.motion, não framesData) — usa as
     // variantes "Motion" das funções de quadro inicial/assentado.
@@ -41087,6 +41502,9 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     }
     if (tpl && tpl.layout === 'efeito-17-style') {
       return _readTextsEfeito17Style(stanza, tpl, wordOverrides);
+    }
+    if (tpl && tpl.layout === 'efeito-18-style') {
+      return _readTextsEfeito18Style(stanza, tpl, wordOverrides);
     }
     return _readTextsKineticScaleStack(stanza, wordOverrides);
   }
