@@ -32745,6 +32745,26 @@ function initEditor() {
     }
     document.getElementById('tpl-mode-overlay')?.remove();
     $('#modal-overlay').classList.remove('active');
+    // BUG REAL CORRIGIDO ("ao selecionar a palavra, a caixa aparece na
+    // posição das palavras do template original, não da palavra
+    // digitada" — confirmado testando: a região de clique registrada
+    // continuava mostrando 'feeling/amped/up' mesmo depois de aplicar
+    // um texto diferente): as prévias animadas dos cartões de efeito
+    // (a animação real que roda dentro de cada cartão no seletor de
+    // templates) usam o MESMO objeto de template compartilhado
+    // (TEMPLATES_FRAME_EXACT['efeito-16'], por exemplo) que o canvas
+    // principal — e escrevem as regiões de clique nesse MESMO objeto
+    // (tpl._ultimasRegioesClique). Se essas prévias continuassem
+    // rodando em segundo plano depois do modal fechar (o
+    // IntersectionObserver só as PAUSA quando saem da tela, não
+    // quando o modal inteiro fecha), elas ficavam sobrescrevendo
+    // continuamente as regiões de clique do canvas principal com as
+    // posições das palavras ORIGINAIS do template (não as que o
+    // usuário digitou) — bagunçando onde a caixa de seleção aparecia.
+    // Para todas as prévias explicitamente aqui, no ÚNICO ponto
+    // central por onde o modal sempre fecha (botão X, Esc, clique
+    // fora, ou aplicar um template).
+    if (typeof _pararPreviewsFrameExatoAnteriores === 'function') _pararPreviewsFrameExatoAnteriores();
   }
   function switchModalTab(tab) {
     // Blindagem extra: trocar de aba com um preview pendente também cancela.
@@ -39629,10 +39649,28 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       // a fileira cresce naturalmente em largura conforme mais
       // palavras aparecem, centralizada no mesmo centro horizontal
       // da caixa final do vídeo original.
+      //
+      // BUG REAL CORRIGIDO ("texto vaza da tela com frase longa" —
+      // mesma causa já corrigida no Efeito 18, encontrada numa
+      // varredura geral por outros efeitos com o mesmo padrão): sem
+      // nenhum limite, uma frase digitada mais longa que o original
+      // podia facilmente ultrapassar a largura do canvas — cortando
+      // as palavras das pontas pra fora da tela. Calcula o fator de
+      // redução UMA VEZ com base em TODAS as palavras da frase final
+      // (não só as já reveladas) — o tamanho fica definido desde a
+      // primeira palavra e nunca muda durante a revelação, só
+      // encolhe (nunca estica) o suficiente pra a frase INTEIRA caber
+      // dentro de 92% da largura do canvas.
       const fDataFinal = _efeito14FrameData(tpl, tpl.motionData.frames - 1);
       if (!fDataFinal) return true;
       const [bxF, byF, bwF, bhF] = fDataFinal.bbox;
-      alturaNatural = bhF * 1.04;
+      const alturaBase = bhF * 1.04;
+      medidor.font = `800 ${alturaBase}px "${fontFamilyPadrao}"`;
+      const todasAsPalavras = palavras.slice(0, totalPalavras).map(p => (p || '').trim());
+      const larguraTotalCompleta = medidor.measureText(todasAsPalavras.join(' ')).width || 1;
+      const larguraMaxima = tpl.logicalWidth * 0.92;
+      const fatorCoubeu = larguraTotalCompleta > larguraMaxima ? larguraMaxima / larguraTotalCompleta : 1;
+      alturaNatural = alturaBase * fatorCoubeu;
       escalaHorizontal = 1;
       medidor.font = `800 ${alturaNatural}px "${fontFamilyPadrao}"`;
       const larguraTotalNatural = medidor.measureText(shown.join(' ')).width || 1;
@@ -39640,7 +39678,7 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       bx = centroX - larguraTotalNatural / 2;
       by = byF;
       bw = larguraTotalNatural;
-      bh = bhF;
+      bh = alturaNatural;
     }
 
     // Mede a fileira JUNTA (mesma técnica da referência: uma altura
@@ -40137,23 +40175,46 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
 
     const shown = palavras.slice(0, totalPalavras).map(p => (p || '').trim());
     const fontFamilyPadrao = tpl.styles.default.fontFamily;
-    const alturaNatural = _efeito16AlturaNatural(fontFamilyPadrao);
+    const alturaNaturalBase = _efeito16AlturaNatural(fontFamilyPadrao);
     const medidor = document.createElement('canvas').getContext('2d');
-    medidor.font = `800 ${alturaNatural}px "${fontFamilyPadrao}"`;
 
     // Mede cada palavra (bitmap já na altura/fonte próprias de cada
     // uma — mesma técnica dos Efeitos 14/15, evita métrica
     // inconsistente entre palavras vizinhas).
-    const itens = shown.map((texto, i) => {
-      const fontFamily = texts._fontFamily[i] || fontFamilyPadrao;
-      const fontScale = texts._fontScale[i] || 1;
-      const alturaAlvo = alturaNatural * fontScale;
-      const img = _efeito2MakeBitmapAtHeight(texto, fontFamily, '#FFFFFF', alturaAlvo, 800);
-      return img ? { img, w: img.width, h: img.height } : null;
-    });
-    const larguraEspaco = medidor.measureText(' ').width;
-    const larguraTotalNatural = itens.reduce((s, it) => s + (it ? it.w : 0), 0)
-      + larguraEspaco * Math.max(0, itens.filter(Boolean).length - 1);
+    //
+    // BUG REAL CORRIGIDO ("texto vaza da tela com frase longa" —
+    // mesma causa já corrigida nos Efeitos 14/18, encontrada numa
+    // varredura geral por outros efeitos com o mesmo padrão): sem
+    // nenhum limite, uma frase digitada mais longa que o original
+    // podia facilmente ultrapassar a largura do canvas (esse efeito
+    // mostra TODAS as palavras juntas desde o início, então o
+    // problema aparecia já no primeiro quadro). Mede a largura
+    // natural primeiro; se ultrapassar 92% do canvas, gera os
+    // bitmaps de novo numa altura menor (reduzida na MESMA proporção
+    // que faltava pra caber) — encolhe tudo igual, nunca distorce.
+    function _geraItensEfeito16(alturaAlvoBase) {
+      medidor.font = `800 ${alturaAlvoBase}px "${fontFamilyPadrao}"`;
+      const its = shown.map((texto, i) => {
+        const fontFamily = texts._fontFamily[i] || fontFamilyPadrao;
+        const fontScale = texts._fontScale[i] || 1;
+        const alturaAlvo = alturaAlvoBase * fontScale;
+        const img = _efeito2MakeBitmapAtHeight(texto, fontFamily, '#FFFFFF', alturaAlvo, 800);
+        return img ? { img, w: img.width, h: img.height } : null;
+      });
+      const larguraEsp = medidor.measureText(' ').width;
+      const largTotal = its.reduce((s, it) => s + (it ? it.w : 0), 0)
+        + larguraEsp * Math.max(0, its.filter(Boolean).length - 1);
+      return { its, larguraEsp, largTotal };
+    }
+
+    let { its: itens, larguraEsp: larguraEspaco, largTotal: larguraTotalNatural } = _geraItensEfeito16(alturaNaturalBase);
+    let alturaNatural = alturaNaturalBase;
+    const larguraMaxima16 = tpl.logicalWidth * 0.92;
+    if (larguraTotalNatural > larguraMaxima16) {
+      const fatorReducao = larguraMaxima16 / larguraTotalNatural;
+      alturaNatural = alturaNaturalBase * fatorReducao;
+      ({ its: itens, larguraEsp: larguraEspaco, largTotal: larguraTotalNatural } = _geraItensEfeito16(alturaNatural));
+    }
 
     // Fidelidade: estica horizontalmente pra caber exatamente na
     // largura medida do vídeo original (mesma técnica da referência:
@@ -40578,6 +40639,19 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
 
       bw = larguraNatural * fatorEscala;
       bh = alturaNatural * fatorEscala;
+      // BUG REAL CORRIGIDO ("texto vaza da tela com palavra muito
+      // longa" — mesma causa já corrigida nos Efeitos 14/16/18,
+      // encontrada numa varredura geral por outros efeitos com o
+      // mesmo padrão): sem nenhum limite, uma palavra digitada bem
+      // mais longa que qualquer uma do vídeo original podia facilmente
+      // ultrapassar a largura do canvas. Se ultrapassar 92%, reduz
+      // proporcionalmente (largura e altura juntas, nunca distorce).
+      const larguraMaxima17 = tpl.logicalWidth * 0.92;
+      if (bw > larguraMaxima17) {
+        const fatorCoubeu17 = larguraMaxima17 / bw;
+        bw *= fatorCoubeu17;
+        bh *= fatorCoubeu17;
+      }
       const centroCanvasX = tpl.logicalWidth * 0.4974; // centro medido (levemente à esquerda do centro geométrico, igual ao vídeo original)
       const centroCanvasY = tpl.logicalHeight * 0.5023;
       bx = centroCanvasX - bw / 2;
@@ -40760,7 +40834,9 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     const medidor = document.createElement('canvas').getContext('2d');
     medidor.font = `800 ${alturaNatural}px "${fontFamilyPadrao}"`;
 
-    // Mede cada palavra (natural, sem esticar ainda).
+    // Mede cada palavra ATUALMENTE VISÍVEL (natural, sem esticar
+    // ainda) — usado pra POSICIONAR a fileira (largura real do que
+    // está desenhado agora).
     const itens = shown.map((texto, i) => {
       const fontFamily = texts._fontFamily[i] || fontFamilyPadrao;
       const fontScale = texts._fontScale[i] || 1;
@@ -40788,16 +40864,43 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     // proporcionalmente (largura E altura juntas, mantendo a mesma
     // proporção — nunca distorce) até caber — só ENCOLHE quando
     // necessário, nunca estica além do tamanho natural.
-    let bx, by, bw, bh;
+    //
+    // BUG REAL CORRIGIDO ("a primeira palavra começa maior e vai
+    // diminuindo conforme mais palavras entram" — reportado pelo
+    // usuário): o fator de redução acima usava a largura das palavras
+    // JÁ REVELADAS (`larguraTotalNatural`, que só tem `n` palavras) —
+    // conforme `n` crescia (mais palavras reveladas), essa largura
+    // aumentava, e uma vez que passava do limite de 92%, TODAS as
+    // palavras (inclusive a primeira, que já estava desenhada) eram
+    // encolhidas juntas pra caber — dava a impressão de a primeira
+    // palavra "murchar" a cada nova palavra revelada. Agora o fator é
+    // calculado UMA VEZ com base em TODAS as palavras da frase final
+    // (não só as já visíveis) — o tamanho fica definido desde a
+    // primeira palavra e nunca muda durante a revelação, só a LARGURA
+    // da fileira desenhada cresce (mais palavras cabendo lado a lado
+    // no mesmo tamanho), nunca o tamanho de cada uma.
+    let bx, by, bw, bh, fatorCoubeu;
     if (ehFidelidade) {
       const bbox = _efeito18BboxParaContagem(tpl, n, totalOriginal);
       if (!bbox) return true;
       bx = bbox.x; by = bbox.y; bw = bbox.width; bh = bbox.height;
+      fatorCoubeu = 1; // fidelidade já usa a geometria real medida, sem essa redução
     } else {
       const fFinal = _efeito18FrameData(tpl, tpl.motionData.frames - 1);
       if (!fFinal) return true;
+      // Mede a largura da frase COMPLETA (todas as palavras que vão
+      // aparecer, não só as já reveladas) pra decidir o fator de
+      // redução UMA VEZ só.
+      const todasAsPalavras = palavras.slice(0, totalPalavras).map(p => (p || '').trim());
+      const larguraTotalCompleta = todasAsPalavras.reduce((s, texto, i) => {
+        if (!texto) return s;
+        const fontFamily = texts._fontFamily[i] || fontFamilyPadrao;
+        const fontScale = texts._fontScale[i] || 1;
+        medidor.font = `800 ${alturaNatural * fontScale}px "${fontFamily}"`;
+        return s + medidor.measureText(texto.toUpperCase()).width;
+      }, 0) + larguraEspaco * Math.max(0, todasAsPalavras.filter(Boolean).length - 1);
       const larguraMaxima = tpl.logicalWidth * 0.92;
-      const fatorCoubeu = larguraTotalNatural > larguraMaxima ? larguraMaxima / larguraTotalNatural : 1;
+      fatorCoubeu = larguraTotalCompleta > larguraMaxima ? larguraMaxima / larguraTotalCompleta : 1;
       bw = larguraTotalNatural * fatorCoubeu;
       bh = alturaNatural * fatorCoubeu;
       const centroX = tpl.logicalWidth / 2;
