@@ -31134,16 +31134,57 @@ function initEditor() {
 
   // Play/Pause toggle: áudio + lyric juntos
   function playWithAudio() {
-    // TEMPLATE FRAME-EXACT: essa animação é autocontida (3440ms fixos,
-    // sem sincronia com áudio) — usa o próprio loop dedicado em vez do
-    // pipeline normal (por palavra + áudio). Alterna play/pause no
-    // mesmo botão, igual ao comportamento padrão.
+    // BUG REAL CORRIGIDO ("a barra de reprodução (espaço) não está
+    // funcionando, junto com o áudio adicionado" — confirmado
+    // testando: com um efeito frame-exact aplicado, clicar em play
+    // tocava a animação mas o áudio ficava parado em 0:00, sempre):
+    // esse desvio pros templates frame-exact tratava a animação como
+    // "autocontida, sem sincronia com áudio" e retornava CEDO — nunca
+    // chegava no código mais abaixo que de fato inicia o áudio
+    // (audio.play()). Se o usuário tinha música carregada, ela nunca
+    // tocava junto com um efeito frame-exact. Agora, mesmo pra
+    // templates frame-exact, o áudio toca em conjunto — busca a
+    // primeira palavra marcada (tStart) da estrofe atual, igual ao
+    // caminho normal (com uma folga de 1,5s antes), e começa os dois
+    // ao mesmo tempo. As funções de desenho de cada efeito já
+    // calculam o atraso de cada palavra RELATIVO a essa mesma
+    // referência internamente — começar os dois juntos a partir desse
+    // ponto mantém tudo sincronizado, sem precisar duplicar essa
+    // lógica aqui.
     if (typeof engine.isCurrentStanzaFrameExact === 'function' && engine.isCurrentStanzaFrameExact()) {
+      const audioFE = audioElement;
+      const hadAudioFE = !!(audioFE && audioFE.src && audioFE.duration > 0);
       if (engine._frameExactPlaying) {
         engine.pauseFrameExact();
-      } else {
-        engine.playFrameExact();
+        if (hadAudioFE) audioFE.pause();
+        updatePlayButtonIcon();
+        return;
       }
+      if (hadAudioFE) {
+        let audioStartSecFE = audioFE.currentTime || 0;
+        try {
+          const stFE = engine.parsed && engine.parsed.stanzas
+            && engine.parsed.stanzas[engine.currentStanzaIndex];
+          let firstTStartFE = null;
+          if (stFE) {
+            for (const ln of stFE.lines) {
+              for (const wd of ln.words) {
+                if (typeof wd.tStart === 'number'
+                    && (firstTStartFE === null || wd.tStart < firstTStartFE)) {
+                  firstTStartFE = wd.tStart;
+                }
+              }
+            }
+          }
+          if (firstTStartFE !== null) {
+            audioStartSecFE = Math.max(0, firstTStartFE - 1.5);
+          }
+        } catch (e) {}
+        audioFE.currentTime = audioStartSecFE;
+        audioFE.play().catch(e => console.warn('Audio play falhou:', e));
+      }
+      engine.playFrameExact();
+      updatePlayButtonIcon();
       return;
     }
     const audio = audioElement;
@@ -40002,7 +40043,22 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       const { img, drawW, drawH } = item;
       const offset = texts._offset[i] || { dx: 0, dy: 0 };
       const drawX = cursor + offset.dx;
-      const drawY = topPx + offset.dy;
+      // BUG REAL CORRIGIDO ("ao aumentar a fonte, ela vai indo pra
+      // baixo, parece que a ancoragem não está no centro" —
+      // reportado pelo usuário): a posição vertical usava `topPx`
+      // (o topo) FIXO como referência — quando o tamanho de uma
+      // palavra crescia (redimensionar pela bolinha), a altura
+      // desenhada (`drawH`) aumentava, mas o TOPO ficava parado no
+      // mesmo lugar, então a base ia se estendendo pra baixo — dava
+      // a impressão de a palavra "descer" conforme crescia, em vez
+      // de crescer a partir do centro (que é o comportamento
+      // esperado, mesmo princípio já corrigido no Efeito 14 pro eixo
+      // horizontal). Agora ancora pelo CENTRO vertical (calculado a
+      // partir da altura NATURAL, sem escala — um ponto de
+      // referência fixo) — ao crescer, a palavra se expande pros
+      // dois lados a partir desse centro, não só pra baixo.
+      const centroYPalavra = topPx + alturaNatural / 2;
+      const drawY = centroYPalavra - drawH / 2 + offset.dy;
 
       const ehAtiva = (i === indiceAtivo);
       let cor, corGlow, alphaGlow;
