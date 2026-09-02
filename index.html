@@ -39562,6 +39562,15 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     const out = {
       palavras, _tStarts: {}, _referenciaTStart: null,
       _fontScale: {}, _fontFamily: {}, _offset: {}, _wordId: {},
+      // BUG REAL CORRIGIDO ("bold, espessura e itálico não estão
+      // funcionando" — reportado pelo usuário, confirmado numa
+      // varredura geral): essa função nunca lia wo.style.fontWeight
+      // nem wo.style.fontStyle — a personalização de negrito/peso/
+      // itálico feita pela barra de ferramentas (que grava exatamente
+      // nesses dois campos, mesmo padrão usado pelos efeitos mais
+      // antigos) nunca chegava a ser lida aqui, então nunca tinha
+      // efeito nenhum nesse efeito.
+      _fontWeight: {}, _italic: {},
     };
     palavrasObj.forEach((w, i) => {
       out._wordId[i] = w?.id || null;
@@ -39573,6 +39582,8 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       if (wo && wo.style && wo.style.fontSizeScale) out._fontScale[i] = wo.style.fontSizeScale;
       if (wo && wo.style && wo.style.fontFamily) out._fontFamily[i] = wo.style.fontFamily;
       if (wo && wo.style && wo.style.frameExactOffset) out._offset[i] = wo.style.frameExactOffset;
+      if (wo && wo.style && wo.style.fontWeight) out._fontWeight[i] = wo.style.fontWeight;
+      if (wo && wo.style && wo.style.fontStyle === 'italic') out._italic[i] = true;
     });
     return out;
   }
@@ -39759,7 +39770,14 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       // trocando o parâmetro de entrada (altura alvo) em vez de
       // calcular a escala manualmente depois.
       const alturaAlvo = alturaNatural * fontScale;
-      const img = _efeito2MakeBitmapAtHeight(texto, fontFamily, '#FFFFFF', alturaAlvo, 800);
+      // BUG REAL CORRIGIDO ("bold, espessura e itálico não estão
+      // funcionando"): peso e itálico eram sempre fixos (800, sem
+      // itálico), ignorando qualquer personalização feita pela barra
+      // de ferramentas — agora usa o peso/itálico da palavra se
+      // definidos, senão o peso padrão desse efeito (800).
+      const pesoPersonalizado = texts._fontWeight[i] || 800;
+      const italicoPersonalizado = !!texts._italic[i];
+      const img = _efeito2MakeBitmapAtHeight(texto, fontFamily, '#FFFFFF', alturaAlvo, pesoPersonalizado, italicoPersonalizado);
       if (!img) { itens.push(null); continue; }
       itens.push({ img, drawW: img.width * escalaHorizontal, drawH: img.height });
     }
@@ -39774,7 +39792,19 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       const { img, drawW, drawH } = item;
       const offset = texts._offset[i] || { dx: 0, dy: 0 };
       const drawX = cursor + offset.dx;
-      const drawY = by + offset.dy;
+      // BUG REAL CORRIGIDO ("ao aumentar a fonte, vai indo pra baixo,
+      // a ancoragem não está no centro" — mesmo bug já corrigido no
+      // Efeito 15, encontrado numa varredura geral por outros
+      // efeitos com o mesmo padrão): a posição vertical usava `by`
+      // (o topo) FIXO — quando o tamanho de uma palavra crescia
+      // (redimensionar pela bolinha), a altura desenhada (`drawH`)
+      // aumentava, mas o topo ficava parado no mesmo lugar, então a
+      // base ia se estendendo pra baixo. Agora ancora pelo CENTRO
+      // vertical (calculado a partir da altura NATURAL, sem escala —
+      // um ponto de referência fixo) — ao crescer, a palavra se
+      // expande pros dois lados a partir desse centro.
+      const centroYPalavra14 = by + alturaNatural / 2;
+      const drawY = centroYPalavra14 - drawH / 2 + offset.dy;
 
       // Cor + brilho: esmaece de azul (revelação) pra branco
       // (assentado) ao longo de EFEITO14_FADE_FRAMES quadros — usa o
@@ -39888,6 +39918,15 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     const out = {
       palavras, _tStarts: {}, _referenciaTStart: null,
       _fontScale: {}, _fontFamily: {}, _offset: {}, _wordId: {},
+      // BUG REAL CORRIGIDO ("bold, espessura e itálico não estão
+      // funcionando" — reportado pelo usuário, confirmado numa
+      // varredura geral): essa função nunca lia wo.style.fontWeight
+      // nem wo.style.fontStyle — a personalização de negrito/peso/
+      // itálico feita pela barra de ferramentas (que grava exatamente
+      // nesses dois campos, mesmo padrão usado pelos efeitos mais
+      // antigos) nunca chegava a ser lida aqui, então nunca tinha
+      // efeito nenhum nesse efeito.
+      _fontWeight: {}, _italic: {},
     };
     palavrasObj.forEach((w, i) => {
       out._wordId[i] = w?.id || null;
@@ -39899,6 +39938,8 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       if (wo && wo.style && wo.style.fontSizeScale) out._fontScale[i] = wo.style.fontSizeScale;
       if (wo && wo.style && wo.style.fontFamily) out._fontFamily[i] = wo.style.fontFamily;
       if (wo && wo.style && wo.style.frameExactOffset) out._offset[i] = wo.style.frameExactOffset;
+      if (wo && wo.style && wo.style.fontWeight) out._fontWeight[i] = wo.style.fontWeight;
+      if (wo && wo.style && wo.style.fontStyle === 'italic') out._italic[i] = true;
     });
     return out;
   }
@@ -39994,7 +40035,13 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       const fontFamily = texts._fontFamily[i] || fontFamilyPadrao;
       const fontScale = texts._fontScale[i] || 1;
       const alturaAlvo = alturaNatural * fontScale;
-      const img = _efeito2MakeBitmapAtHeight(texto, fontFamily, '#FFFFFF', alturaAlvo, 800);
+      // BUG REAL CORRIGIDO ("bold, espessura e itálico não estão
+      // funcionando"): peso e itálico eram sempre fixos (800, sem
+      // itálico), ignorando qualquer personalização feita pela barra
+      // de ferramentas.
+      const pesoPersonalizado15 = texts._fontWeight[i] || 800;
+      const italicoPersonalizado15 = !!texts._italic[i];
+      const img = _efeito2MakeBitmapAtHeight(texto, fontFamily, '#FFFFFF', alturaAlvo, pesoPersonalizado15, italicoPersonalizado15);
       if (!img) { itens.push(null); continue; }
       itens.push({ img, drawW: img.width, drawH: img.height });
     }
@@ -40161,6 +40208,15 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     const out = {
       palavras, _tStarts: {}, _referenciaTStart: null,
       _fontScale: {}, _fontFamily: {}, _offset: {}, _wordId: {},
+      // BUG REAL CORRIGIDO ("bold, espessura e itálico não estão
+      // funcionando" — reportado pelo usuário, confirmado numa
+      // varredura geral): essa função nunca lia wo.style.fontWeight
+      // nem wo.style.fontStyle — a personalização de negrito/peso/
+      // itálico feita pela barra de ferramentas (que grava exatamente
+      // nesses dois campos, mesmo padrão usado pelos efeitos mais
+      // antigos) nunca chegava a ser lida aqui, então nunca tinha
+      // efeito nenhum nesse efeito.
+      _fontWeight: {}, _italic: {},
     };
     palavrasObj.forEach((w, i) => {
       out._wordId[i] = w?.id || null;
@@ -40172,6 +40228,8 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       if (wo && wo.style && wo.style.fontSizeScale) out._fontScale[i] = wo.style.fontSizeScale;
       if (wo && wo.style && wo.style.fontFamily) out._fontFamily[i] = wo.style.fontFamily;
       if (wo && wo.style && wo.style.frameExactOffset) out._offset[i] = wo.style.frameExactOffset;
+      if (wo && wo.style && wo.style.fontWeight) out._fontWeight[i] = wo.style.fontWeight;
+      if (wo && wo.style && wo.style.fontStyle === 'italic') out._italic[i] = true;
     });
     return out;
   }
@@ -40254,7 +40312,13 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
         const fontFamily = texts._fontFamily[i] || fontFamilyPadrao;
         const fontScale = texts._fontScale[i] || 1;
         const alturaAlvo = alturaAlvoBase * fontScale;
-        const img = _efeito2MakeBitmapAtHeight(texto, fontFamily, '#FFFFFF', alturaAlvo, 800);
+        // BUG REAL CORRIGIDO ("bold, espessura e itálico não estão
+        // funcionando"): peso e itálico eram sempre fixos (800, sem
+        // itálico), ignorando qualquer personalização feita pela
+        // barra de ferramentas.
+        const pesoPersonalizado16 = texts._fontWeight[i] || 800;
+        const italicoPersonalizado16 = !!texts._italic[i];
+        const img = _efeito2MakeBitmapAtHeight(texto, fontFamily, '#FFFFFF', alturaAlvo, pesoPersonalizado16, italicoPersonalizado16);
         return img ? { img, w: img.width, h: img.height } : null;
       });
       const larguraEsp = medidor.measureText(' ').width;
@@ -40325,7 +40389,18 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       const drawW = item.w * escalaHorizontal;
       const drawH = item.h;
       const drawX = cursor + offset.dx;
-      const drawY = tpl.mainTop + offset.dy;
+      // BUG REAL CORRIGIDO ("ao aumentar a fonte, vai indo pra
+      // baixo, a ancoragem não está no centro" — mesmo bug já
+      // corrigido no Efeito 15, encontrado numa varredura geral por
+      // outros efeitos com o mesmo padrão): `tpl.mainTop` é uma
+      // posição FIXA (o topo) — quando o tamanho de uma palavra
+      // crescia (redimensionar pela bolinha), a altura desenhada
+      // (`drawH`) aumentava, mas o topo ficava parado no mesmo
+      // lugar, então a base ia se estendendo pra baixo. Agora ancora
+      // pelo CENTRO vertical (calculado a partir da altura NATURAL
+      // desse efeito, sem escala — um ponto de referência fixo).
+      const centroYPalavra16 = tpl.mainTop + alturaNatural / 2;
+      const drawY = centroYPalavra16 - drawH / 2 + offset.dy;
       if (i === indiceEco) { xPalavraEco = drawX; larguraPalavraEco = drawW; }
 
       const imgComBrilho = _efeito16BrilhoPrincipalCache(item.img);
@@ -40556,6 +40631,15 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     const out = {
       palavras, _tStarts: {}, _referenciaTStart: null,
       _fontScale: {}, _fontFamily: {}, _offset: {}, _wordId: {},
+      // BUG REAL CORRIGIDO ("bold, espessura e itálico não estão
+      // funcionando" — reportado pelo usuário, confirmado numa
+      // varredura geral): essa função nunca lia wo.style.fontWeight
+      // nem wo.style.fontStyle — a personalização de negrito/peso/
+      // itálico feita pela barra de ferramentas (que grava exatamente
+      // nesses dois campos, mesmo padrão usado pelos efeitos mais
+      // antigos) nunca chegava a ser lida aqui, então nunca tinha
+      // efeito nenhum nesse efeito.
+      _fontWeight: {}, _italic: {},
     };
     palavrasObj.forEach((w, i) => {
       out._wordId[i] = w?.id || null;
@@ -40567,6 +40651,8 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       if (wo && wo.style && wo.style.fontSizeScale) out._fontScale[i] = wo.style.fontSizeScale;
       if (wo && wo.style && wo.style.fontFamily) out._fontFamily[i] = wo.style.fontFamily;
       if (wo && wo.style && wo.style.frameExactOffset) out._offset[i] = wo.style.frameExactOffset;
+      if (wo && wo.style && wo.style.fontWeight) out._fontWeight[i] = wo.style.fontWeight;
+      if (wo && wo.style && wo.style.fontStyle === 'italic') out._italic[i] = true;
     });
     return out;
   }
@@ -40655,10 +40741,21 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     // Peso: prioridade é personalização explícita > peso especial do
     // vídeo original (só faz sentido pra fidelidade exata, onde a
     // palavra na MESMA posição É a mesma do vídeo original) > padrão.
+    //
+    // BUG REAL CORRIGIDO ("bold, espessura e itálico não estão
+    // funcionando" — reportado pelo usuário especificamente nesse
+    // efeito): o comentário acima já dizia qual devia ser a
+    // prioridade, mas o código nunca chegava a checar
+    // `texts._fontWeight` de verdade — a personalização de peso feita
+    // pela barra de ferramentas nunca tinha efeito nenhum aqui, só o
+    // peso especial do vídeo original (STARS) ou o padrão (600)
+    // apareciam. Também nunca existia suporte a itálico nesse efeito.
     let fontWeight = 600;
     if (ehFidelidade && tpl.pesosEspeciais[tpl.palavrasOriginais[indiceAtivo]]) {
       fontWeight = tpl.pesosEspeciais[tpl.palavrasOriginais[indiceAtivo]];
     }
+    if (texts._fontWeight[indiceAtivo]) fontWeight = texts._fontWeight[indiceAtivo];
+    const italico = !!texts._italic[indiceAtivo];
     const fontScale = texts._fontScale[indiceAtivo] || 1;
     const offset = texts._offset[indiceAtivo] || { dx: 0, dy: 0 };
 
@@ -40681,7 +40778,7 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     } else {
       const alturaNatural = _efeito17AlturaNatural(fontFamilyPadrao, fontWeight);
       const medidor = document.createElement('canvas').getContext('2d');
-      medidor.font = `${fontWeight} ${alturaNatural}px "${fontFamilyPadrao}"`;
+      medidor.font = `${italico ? 'italic ' : ''}${fontWeight} ${alturaNatural}px "${fontFamilyPadrao}"`;
       const m = medidor.measureText(texto.toUpperCase());
       const larguraNatural = Math.max(1, (m.actualBoundingBoxRight || 0) + (m.actualBoundingBoxLeft || 0) || m.width);
 
@@ -40726,7 +40823,7 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     // exatamente na caixa — mesma técnica da referência.
     const alturaMedicao = 500;
     const medidor = document.createElement('canvas').getContext('2d');
-    medidor.font = `${fontWeight} ${alturaMedicao}px "${fontFamilyPadrao}"`;
+    medidor.font = `${italico ? 'italic ' : ''}${fontWeight} ${alturaMedicao}px "${fontFamilyPadrao}"`;
     const m = medidor.measureText(texto.toUpperCase());
     const rawW = Math.max(1, (m.actualBoundingBoxRight || 0) + (m.actualBoundingBoxLeft || 0) || m.width);
     const rawH = Math.max(1, (m.actualBoundingBoxAscent || 400) + (m.actualBoundingBoxDescent || 20));
@@ -40735,7 +40832,7 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     ctx.save();
     ctx.translate(bxFinal, byFinal);
     ctx.scale(sx, sy);
-    ctx.font = `${fontWeight} ${alturaMedicao}px "${fontFamilyPadrao}"`;
+    ctx.font = `${italico ? 'italic ' : ''}${fontWeight} ${alturaMedicao}px "${fontFamilyPadrao}"`;
     ctx.textBaseline = 'alphabetic';
     ctx.textAlign = 'left';
     ctx.shadowColor = tpl.styles.default.corBrilho;
@@ -40823,6 +40920,15 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     const out = {
       palavras, _tStarts: {}, _referenciaTStart: null,
       _fontScale: {}, _fontFamily: {}, _offset: {}, _wordId: {},
+      // BUG REAL CORRIGIDO ("bold, espessura e itálico não estão
+      // funcionando" — reportado pelo usuário, confirmado numa
+      // varredura geral): essa função nunca lia wo.style.fontWeight
+      // nem wo.style.fontStyle — a personalização de negrito/peso/
+      // itálico feita pela barra de ferramentas (que grava exatamente
+      // nesses dois campos, mesmo padrão usado pelos efeitos mais
+      // antigos) nunca chegava a ser lida aqui, então nunca tinha
+      // efeito nenhum nesse efeito.
+      _fontWeight: {}, _italic: {},
     };
     palavrasObj.forEach((w, i) => {
       out._wordId[i] = w?.id || null;
@@ -40834,6 +40940,8 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       if (wo && wo.style && wo.style.fontSizeScale) out._fontScale[i] = wo.style.fontSizeScale;
       if (wo && wo.style && wo.style.fontFamily) out._fontFamily[i] = wo.style.fontFamily;
       if (wo && wo.style && wo.style.frameExactOffset) out._offset[i] = wo.style.frameExactOffset;
+      if (wo && wo.style && wo.style.fontWeight) out._fontWeight[i] = wo.style.fontWeight;
+      if (wo && wo.style && wo.style.fontStyle === 'italic') out._italic[i] = true;
     });
     return out;
   }
@@ -40897,7 +41005,13 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       const fontFamily = texts._fontFamily[i] || fontFamilyPadrao;
       const fontScale = texts._fontScale[i] || 1;
       const alturaAlvo = alturaNatural * fontScale;
-      const img = _efeito2MakeBitmapAtHeight(texto, fontFamily, '#FFFFFF', alturaAlvo, 800);
+      // BUG REAL CORRIGIDO ("bold, espessura e itálico não estão
+      // funcionando"): peso e itálico eram sempre fixos (800, sem
+      // itálico), ignorando qualquer personalização feita pela barra
+      // de ferramentas.
+      const pesoPersonalizado18 = texts._fontWeight[i] || 800;
+      const italicoPersonalizado18 = !!texts._italic[i];
+      const img = _efeito2MakeBitmapAtHeight(texto, fontFamily, '#FFFFFF', alturaAlvo, pesoPersonalizado18, italicoPersonalizado18);
       return img ? { img, w: img.width, h: img.height } : null;
     });
     const larguraEspaco = medidor.measureText(' ').width;
@@ -40978,9 +41092,21 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       const offset = texts._offset[i] || { dx: 0, dy: 0 };
       const drawXNatural = cursorNatural;
       const drawX = bx + drawXNatural * sx + offset.dx;
-      const drawY = by + offset.dy;
       const drawW = item.w * sx;
       const drawH = item.h * sy;
+      // BUG REAL CORRIGIDO ("ao aumentar a fonte, vai indo pra
+      // baixo, a ancoragem não está no centro" — mesmo bug já
+      // corrigido no Efeito 15, encontrado numa varredura geral por
+      // outros efeitos com o mesmo padrão): `by` é uma posição FIXA
+      // (o topo da fileira) — quando o tamanho de uma palavra
+      // crescia (redimensionar pela bolinha), a altura desenhada
+      // (`drawH`) aumentava, mas o topo ficava parado no mesmo
+      // lugar, então a base ia se estendendo pra baixo. Agora ancora
+      // pelo CENTRO vertical dessa palavra (baseado na altura NATURAL
+      // dela, sem escala própria, só o esticamento comum da fileira
+      // — um ponto de referência fixo).
+      const centroYPalavra18 = by + (alturaNatural * sy) / 2;
+      const drawY = centroYPalavra18 - drawH / 2 + offset.dy;
 
       const ehAtiva = (i === indiceAtivo);
       let alpha = 0;
