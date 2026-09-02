@@ -25191,6 +25191,39 @@ function initEditor() {
       const sid = engine.parsed && engine.parsed.stanzas[engine.currentStanzaIndex] && engine.parsed.stanzas[engine.currentStanzaIndex].id;
       if (sid && engine.sceneOverrides[sid] && engine.sceneOverrides[sid].style) Object.assign(base, engine.sceneOverrides[sid].style);
     } catch (e) {}
+    // BUG REAL CORRIGIDO ("ao clicar na palavra não mostra a fonte/
+    // tamanho reais, isso funcionava antes" — confirmado testando: a
+    // barra mostrava \"Montserrat\" pra uma palavra desenhada de
+    // verdade em \"GalanoGrotesque-ExtraBold\"): pra estrofes
+    // frame-exact, a fonte/peso REAL não vem do estilo genérico do
+    // app (`engine.style`, que é só um valor padrão herdado por
+    // TODAS as estrofes) — cada efeito frame-exact tem sua PRÓPRIA
+    // fonte padrão embutida (ex: GalanoGrotesque-ExtraBold), que
+    // nunca passa por `engine.style`. Sem override explícito na
+    // palavra, a barra caía direto no padrão genérico do app — errado
+    // pra qualquer efeito frame-exact. Agora, se a estrofe atual é
+    // frame-exact, usa a fonte/peso PRÓPRIO desse efeito como base
+    // (antes do override da palavra, que continua tendo prioridade se
+    // existir).
+    try {
+      if (typeof engine.isCurrentStanzaFrameExact === 'function' && engine.isCurrentStanzaFrameExact()) {
+        const stFE = engine.parsed.stanzas[engine.currentStanzaIndex];
+        const tplFE = window.WM_FRAME_EXACT_RENDERER && window.WM_FRAME_EXACT_RENDERER.getTemplate(stFE.frameExactTemplateId);
+        const defFE = tplFE && tplFE.styles && tplFE.styles.default;
+        if (defFE && defFE.fontFamily) {
+          base.fontFamily = defFE.fontFamily;
+          // O peso "de verdade" está embutido no NOME da família
+          // (GalanoGrotesque-SemiBold/ExtraBold/Black) — sem um campo
+          // numérico próprio nos dados do efeito, usa esse mapeamento
+          // (as únicas 3 variantes usadas em todos os efeitos
+          // frame-exact) só pra mostrar um peso condizente na barra.
+          const nomeFonte = defFE.fontFamily.toLowerCase();
+          if (nomeFonte.includes('black')) base.fontWeight = 900;
+          else if (nomeFonte.includes('extrabold')) base.fontWeight = 800;
+          else if (nomeFonte.includes('semibold')) base.fontWeight = 600;
+        }
+      }
+    } catch (e) {}
     if (_ctxTemSelecao()) {
       const wid = [...selectedWordIds][0];
       const wo = engine.wordOverrides[wid];
@@ -27516,6 +27549,17 @@ function initEditor() {
         }
         if (typeof window.updateSelectionBox === 'function') window.updateSelectionBox();
         if (typeof markDirty === 'function') markDirty();
+        // BUG REAL CORRIGIDO ("ao clicar na palavra não mostra a
+        // fonte real, e escolher uma fonte não atualiza a barra" —
+        // reportado pelo usuário): esse caminho (frame-exact)
+        // gravava a fonte corretamente e redesenhava o canvas, mas
+        // NUNCA atualizava o painel/barra de ferramentas depois —
+        // diferente do caminho normal (mais abaixo), que sempre
+        // chama renderWordPanel() no final. A palavra ficava com a
+        // fonte nova aplicada de verdade, mas a barra continuava
+        // mostrando o valor antigo até alguma OUTRA ação forçar uma
+        // atualização.
+        if (typeof renderWordPanel === 'function') renderWordPanel();
         if (typeof showToast === 'function') {
           const count = selectedWordIds.size;
           showToast(`Fonte aplicada em ${count} ${count === 1 ? 'palavra' : 'palavras'}`);
@@ -28019,6 +28063,11 @@ function initEditor() {
             }
             if (typeof window.updateSelectionBox === 'function') window.updateSelectionBox();
             if (typeof markDirty === 'function') markDirty();
+            // BUG REAL CORRIGIDO ("peso da fonte não atualiza a
+            // barra" — mesma causa já corrigida em selectFont():
+            // esse caminho nunca chamava renderWordPanel()/
+            // syncCtxToolbar() no final).
+            if (typeof renderWordPanel === 'function') renderWordPanel();
             return;
           }
         }
@@ -28062,6 +28111,11 @@ function initEditor() {
           }
           if (typeof window.updateSelectionBox === 'function') window.updateSelectionBox();
           if (typeof markDirty === 'function') markDirty();
+          // BUG REAL CORRIGIDO ("itálico não atualiza a barra" —
+          // mesma causa já corrigida em selectFont() e no peso: esse
+          // caminho nunca chamava renderWordPanel()/syncCtxToolbar()
+          // no final).
+          if (typeof renderWordPanel === 'function') renderWordPanel();
           return;
         }
         // Garante que cada palavra esteja free ANTES (mede centro atual,
