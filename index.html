@@ -60,7 +60,7 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,300;1,400;1,600;1,800;1,900&family=Inter:wght@400;500;600;700&family=Sora:wght@400;500;600;700;800&family=Manrope:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&family=Anton&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,300;1,400;1,600;1,800;1,900&family=Inter:wght@400;500;600;700&family=Sora:wght@400;500;600;700;800&family=Manrope:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&family=Anton&family=Permanent+Marker&display=swap">
 
   <style>
 
@@ -14196,6 +14196,33 @@ const TEMPLATES = [
     },
   },
   {
+    id: "tpl-oficial-quando-meia-noite-chegar-frame-exact",
+    name: "Quando a Meia-Noite Chegar",
+    description: "Três linhas entram de baixo pra cima, cada palavra com seu próprio tempo — a linha do meio em itálico fino, a primeira linha muda de creme pra dourado.",
+    tags: ["Entrada", "Frame-exact", "Pro Plus"],
+    isOfficial: true,
+    isPremium: true,
+    requiredPlan: "pro_plus",
+    isActive: true,
+    accent: "#E0B52F",
+    config: {
+      type: "frame-exact",
+      frameExactTemplateId: "efeito-19",
+      style: {},
+      animConfig: {},
+      aspect: "16:9",
+      parsed: {
+        stanzas: [
+          { id: "stz_d9nh5km", label: "Estrofe 1", lines: [
+            { id: "ln_tzjhgyj", words: [{ id: "w_7gu36xg", text: "QUANDO", chars: [{id:"ch_tbq5jc6",text:"Q"}, {id:"ch_qlkavc9",text:"U"}, {id:"ch_y1auasm",text:"A"}, {id:"ch_wc70e4a",text:"N"}, {id:"ch_c2qv1o2",text:"D"}, {id:"ch_qk1jdu4",text:"O"}], emphasized: false }] },
+            { id: "ln_rmg6sge", words: [{ id: "w_3888ig3", text: "A", chars: [{id:"ch_68vf695",text:"A"}], emphasized: false }, { id: "w_h8rpq0q", text: "MEIA", chars: [{id:"ch_1yuxr1t",text:"M"}, {id:"ch_5mw4jz1",text:"E"}, {id:"ch_7r6bb9o",text:"I"}, {id:"ch_8lp7g47",text:"A"}], emphasized: false }, { id: "w_0b4w4i7", text: "NOITE", chars: [{id:"ch_3rc6qvu",text:"N"}, {id:"ch_o6m85p3",text:"O"}, {id:"ch_tryti9b",text:"I"}, {id:"ch_kmtwypd",text:"T"}, {id:"ch_wq2w4cs",text:"E"}], emphasized: false }] },
+            { id: "ln_bwqj4ho", words: [{ id: "w_uvhldo6", text: "CHEGAR", chars: [{id:"ch_0238s4o",text:"C"}, {id:"ch_bxhbtll",text:"H"}, {id:"ch_t2u0hzv",text:"E"}, {id:"ch_qny0v0w",text:"G"}, {id:"ch_stdzeif",text:"A"}, {id:"ch_6ppdlyv",text:"R"}], emphasized: false }] },
+          ] },
+        ],
+      },
+    },
+  },
+  {
     id: "tpl-oficial-kinetic-scale-stack-frameexact",
     name: "Kinetic Scale Stack",
     description: "Tipografia cinética em três linhas, com compressão/expansão e zoom final, reproduzida por bounding boxes absolutas frame a frame (frame-exact).",
@@ -19430,8 +19457,17 @@ class RenderEngineV2 {
       // como pronta, deixando o bitmap errado (da fonte substituta)
       // preso pra sempre. Checa vários pesos comuns, e também as
       // variações de fontFamilyOptions (não só a fonte padrão).
-      const familias = new Set(Object.values(tpl.styles).map(s => s.fontFamily));
-      (tpl.fontFamilyOptions || []).forEach(f => familias.add(f));
+      //
+      // BUG REAL CORRIGIDO (Efeito 19): valores como "Window Markers,
+      // Permanent Marker" (fonte paga + substituto gratuito) precisam
+      // ser SEPARADOS em nomes individuais antes de checar — checar a
+      // cadeia inteira como um nome só nunca corresponde a nenhuma
+      // fonte de verdade, deixando "prontas" sempre falso e o quadro
+      // em branco pra sempre (nunca passava dessa checagem).
+      const separaFamilias = (s) => String(s || '').split(',').map(n => n.trim()).filter(Boolean);
+      const familias = new Set();
+      Object.values(tpl.styles).forEach(s => separaFamilias(s.fontFamily).forEach(f => familias.add(f)));
+      (tpl.fontFamilyOptions || []).forEach(fOuLista => separaFamilias(fOuLista).forEach(f => familias.add(f)));
       const pesos = [400, 600, 700, 800, 900];
       const prontas = [...familias].every(f => pesos.some(w => document.fonts.check(`${w} 1000px "${f}"`)));
       if (prontas) {
@@ -33778,6 +33814,7 @@ function initEditor() {
     if (tplFE.layout === 'efeito-16-style') return 1;
     if (tplFE.layout === 'efeito-17-style') return 1;
     if (tplFE.layout === 'efeito-18-style') return 1;
+    if (tplFE.layout === 'efeito-19-style') return 3;
     return 3;
   }
 
@@ -37559,6 +37596,42 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
   // Registro de templates frame-exact — motion-data ORIGINAL, sem
   // nenhuma alteração (mesmo JSON do ZIP, byte a byte).
   const TEMPLATES_FRAME_EXACT = {
+    'efeito-19': {
+      layout: 'efeito-19-style',
+      // Espaço lógico PRÓPRIO — 1920x1080, 30fps, 61 quadros.
+      logicalWidth: 1920,
+      logicalHeight: 1080,
+      // Estrutura de dados PRÓPRIA: 5 papéis nomeados de largura
+      // fixa (não uma lista genérica de palavras) — quando/a/meia/
+      // noite/chegar — cada um com seu próprio bbox [x,y,w,h] +
+      // visível + opacidade por quadro, IGUAL ao vídeo original, SEM
+      // interpolação em runtime (pedido explícito do material: usa
+      // sempre o quadro inteiro mais próximo, nunca mistura dois
+      // quadros). Cada linha de framesCompact tem 31 valores: 6 por
+      // papel (visível, opacidade, x, y, w, h) × 5 papéis, seguido do
+      // ÍNDICE da cor de quando nesse quadro (só essa palavra muda
+      // de cor — de creme pra dourado — as outras são sempre creme).
+      motionData: {
+        fps: 30, frames: 61,
+        papeis: ['quando', 'a', 'meia', 'noite', 'chegar'],
+        coresQuando: ['#F4F1E5', '#E9D090', '#E1C77D', '#DCC46C', '#D9C36B', '#D8C060', '#E0B52F'],
+        framesCompact: [[0,0,454,177,1020,257,0,0,454,462,116,116,0,0,598,462,356,116,0,0,992,462,481,116,0,0,448,618,1032,286,0],[1,0.92,454,235,1020,257,0,0,454,462,116,116,0,0,598,462,356,116,0,0,992,462,481,116,0,0,448,618,1032,286,0],[1,1.0,454,177,1020,257,0,0,454,462,116,116,0,0,598,462,356,116,0,0,992,462,481,116,0,0,448,618,1032,286,0],[1,1,454,177,1020,257,1,0.3,454,516,116,116,0,0,598,462,356,116,0,0,992,462,481,116,0,0,448,618,1032,286,0],[1,1,454,177,1020,257,1,0.7,454,487,116,116,1,0.18,598,526,356,116,0,0,992,462,481,116,0,0,448,618,1032,286,0],[1,1,454,177,1020,257,1,1.0,454,462,116,116,1,0.45,598,505,356,116,0,0,992,462,481,116,0,0,448,618,1032,286,0],[1,1,454,177,1020,257,1,1,454,462,116,116,1,0.78,598,484,356,116,0,0,992,462,481,116,0,0,448,618,1032,286,0],[1,1,454,177,1020,257,1,1,454,462,116,116,1,1.0,598,462,356,116,0,0,992,462,481,116,0,0,448,618,1032,286,0],[1,1,454,177,1020,257,1,1,454,462,116,116,1,1,598,462,356,116,1,0.18,992,528,481,116,0,0,448,618,1032,286,0],[1,1,454,177,1020,257,1,1,454,462,116,116,1,1,598,462,356,116,1,0.45,992,505,481,116,0,0,448,618,1032,286,0],[1,1,454,177,1020,257,1,1,454,462,116,116,1,1,598,462,356,116,1,0.78,992,484,481,116,0,0,448,618,1032,286,0],[1,1,454,177,1020,257,1,1,454,462,116,116,1,1,598,462,356,116,1,1.0,992,462,481,116,0,0,448,618,1032,286,0],[1,1,454,177,1020,257,1,1,454,462,116,116,1,1,598,462,356,116,1,1,992,462,481,116,0,0,448,618,1032,286,0],[1,1,454,177,1020,257,1,1,454,462,116,116,1,1,598,462,356,116,1,1,992,462,481,116,1,0.18,448,723,1032,286,0],[1,1,454,177,1020,257,1,1,454,462,116,116,1,1,598,462,356,116,1,1,992,462,481,116,1,0.48,448,688,1032,286,0],[1,1,454,177,1020,257,1,1,454,462,116,116,1,1,598,462,356,116,1,1,992,462,481,116,1,0.8,448,652,1032,286,0],[1,1,454,177,1020,257,1,1,454,462,116,116,1,1,598,462,356,116,1,1,992,462,481,116,1,1.0,448,618,1032,286,0],[1,1,454,177,1020,257,1,1,454,462,116,116,1,1,598,462,356,116,1,1,992,462,481,116,1,1,448,618,1032,286,0],[1,1,454,177,1020,257,1,1,454,462,116,116,1,1,598,462,356,116,1,1,992,462,481,116,1,1,448,618,1032,286,0],[1,1,454,177,1020,257,1,1,454,462,116,116,1,1,598,462,356,116,1,1,992,462,481,116,1,1,448,618,1032,286,0],[1,1,454,177,1020,257,1,1,454,462,116,116,1,1,598,462,356,116,1,1,992,462,481,116,1,1,448,618,1032,286,1],[1,1,454,177,1020,257,1,1,454,462,116,116,1,1,598,462,356,116,1,1,992,462,481,116,1,1,448,618,1032,286,2],[1,1,454,177,1020,257,1,1,454,462,116,116,1,1,598,462,356,116,1,1,992,462,481,116,1,1,448,618,1032,286,3],[1,1,454,177,1020,257,1,1,454,462,116,116,1,1,598,462,356,116,1,1,992,462,481,116,1,1,448,618,1032,286,4],[1,1,454,177,1020,257,1,1,454,462,116,116,1,1,598,462,356,116,1,1,992,462,481,116,1,1,448,618,1032,286,5],[1,1,454,177,1020,257,1,1,454,462,116,116,1,1,598,462,356,116,1,1,992,462,481,116,1,1,448,618,1032,286,6],[1,1,454,177,1020,257,1,1,454,462,116,116,1,1,598,462,356,116,1,1,992,462,481,116,1,1,448,618,1032,286,6],[1,1,454,177,1020,257,1,1,454,462,116,116,1,1,598,462,356,116,1,1,992,462,481,116,1,1,448,618,1032,286,6],[1,1,454,177,1020,257,1,1,454,462,116,116,1,1,598,462,356,116,1,1,992,462,481,116,1,1,448,618,1032,286,6],[1,1,454,177,1020,257,1,1,454,462,116,116,1,1,598,462,356,116,1,1,992,462,481,116,1,1,448,618,1032,286,6],[1,1,454,177,1020,257,1,1,454,462,116,116,1,1,598,462,356,116,1,1,992,462,481,116,1,1,448,618,1032,286,6],[1,1,454,177,1020,257,1,1,454,462,116,116,1,1,598,462,356,116,1,1,992,462,481,116,1,1,448,618,1032,286,6],[1,1,454,177,1020,257,1,1,454,462,116,116,1,1,598,462,356,116,1,1,992,462,481,116,1,1,448,618,1032,286,6],[1,1,454,177,1020,257,1,1,454,462,116,116,1,1,598,462,356,116,1,1,992,462,481,116,1,1,448,618,1032,286,6],[1,1,454,177,1020,257,1,1,454,462,116,116,1,1,598,462,356,116,1,1,992,462,481,116,1,1,448,618,1032,286,6],[1,1,454,177,1020,257,1,1,454,462,116,116,1,1,598,462,356,116,1,1,992,462,481,116,1,1,448,618,1032,286,6],[1,1,454,177,1020,257,1,1,454,462,116,116,1,1,598,462,356,116,1,1,992,462,481,116,1,1,448,618,1032,286,6],[1,1,454,177,1020,257,1,1,454,462,116,116,1,1,598,462,356,116,1,1,992,462,481,116,1,1,448,618,1032,286,6],[1,1,454,177,1020,257,1,1,454,462,116,116,1,1,598,462,356,116,1,1,992,462,481,116,1,1,448,618,1032,286,6],[1,1,454,177,1020,257,1,1,454,462,116,116,1,1,598,462,356,116,1,1,992,462,481,116,1,1,448,618,1032,286,6],[1,1,454,177,1020,257,1,1,454,462,116,116,1,1,598,462,356,116,1,1,992,462,481,116,1,1,448,618,1032,286,6],[1,1,454,177,1020,257,1,1,454,462,116,116,1,1,598,462,356,116,1,1,992,462,481,116,1,1,448,618,1032,286,6],[1,1,454,177,1020,257,1,1,454,462,116,116,1,1,598,462,356,116,1,1,992,462,481,116,1,1,448,618,1032,286,6],[1,1,454,177,1020,257,1,1,454,462,116,116,1,1,598,462,356,116,1,1,992,462,481,116,1,1,448,618,1032,286,6],[1,1,454,177,1020,257,1,1,454,462,116,116,1,1,598,462,356,116,1,1,992,462,481,116,1,1,448,618,1032,286,6],[1,1,454,177,1020,257,1,1,454,462,116,116,1,1,598,462,356,116,1,1,992,462,481,116,1,1,448,618,1032,286,6],[1,1,454,177,1020,257,1,1,454,462,116,116,1,1,598,462,356,116,1,1,992,462,481,116,1,1,448,618,1032,286,6],[1,1,454,177,1020,257,1,1,454,462,116,116,1,1,598,462,356,116,1,1,992,462,481,116,1,1,448,618,1032,286,6],[1,1,454,177,1020,257,1,1,454,462,116,116,1,1,598,462,356,116,1,1,992,462,481,116,1,1,448,618,1032,286,6],[1,1,454,177,1020,257,1,1,454,462,116,116,1,1,598,462,356,116,1,1,992,462,481,116,1,1,448,618,1032,286,6],[1,1,454,177,1020,257,1,1,454,462,116,116,1,1,598,462,356,116,1,1,992,462,481,116,1,1,448,618,1032,286,6],[1,1,454,177,1020,257,1,1,454,462,116,116,1,1,598,462,356,116,1,1,992,462,481,116,1,1,448,618,1032,286,6],[1,1,454,177,1020,257,1,1,454,462,116,116,1,1,598,462,356,116,1,1,992,462,481,116,1,1,448,618,1032,286,6],[1,1,454,177,1020,257,1,1,454,462,116,116,1,1,598,462,356,116,1,1,992,462,481,116,1,1,448,618,1032,286,6],[1,1,454,177,1020,257,1,1,454,462,116,116,1,1,598,462,356,116,1,1,992,462,481,116,1,1,448,618,1032,286,6],[1,1,454,177,1020,257,1,1,454,462,116,116,1,1,598,462,356,116,1,1,992,462,481,116,1,1,448,618,1032,286,6],[1,1,454,177,1020,257,1,1,454,462,116,116,1,1,598,462,356,116,1,1,992,462,481,116,1,1,448,618,1032,286,6],[1,1,454,177,1020,257,1,1,454,462,116,116,1,1,598,462,356,116,1,1,992,462,481,116,1,1,448,618,1032,286,6],[1,1,454,177,1020,257,1,1,454,462,116,116,1,1,598,462,356,116,1,1,992,462,481,116,1,1,448,618,1032,286,6],[1,1,454,177,1020,257,1,1,454,462,116,116,1,1,598,462,356,116,1,1,992,462,481,116,1,1,448,618,1032,286,6],[1,1,454,177,1020,257,1,1,454,462,116,116,1,1,598,462,356,116,1,1,992,462,481,116,1,1,448,618,1032,286,6]]
+      },
+      // Mapeia CADA papel pra ITÁLICO/peso — só "a", "meia" e
+      // "noite" (a linha do meio) usam itálico fino (300); "quando"
+      // e "chegar" usam reto grosso (900) — igual à referência.
+      papeisItalico: { quando: false, a: true, meia: true, noite: true, chegar: false },
+      corPadrao: '#F4F1E5',
+      // "Window Markers" é uma fonte paga (não distribuível
+      // livremente) — usa "Permanent Marker" (Google Fonts, estilo
+      // caneta/marcador parecido) como substituto visual, igual ao
+      // padrão já usado em outras cenas do app pra fontes pagas sem
+      // licença embutida (ex: "Heading Now" → "Anton").
+      fontFamilyOptions: ['Window Markers, Permanent Marker', 'Permanent Marker'],
+      styles: {
+        default: { fontFamily: 'Window Markers, Permanent Marker' },
+      },
+    },
     'efeito-18': {
       layout: 'efeito-18-style',
       // Espaço lógico PRÓPRIO — 3840x2160, 24fps, 120 quadros.
@@ -38207,6 +38280,9 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     }
     if (tpl.layout === 'efeito-18-style') {
       return _renderFrameEfeito18Style(ctx, tpl, texts, frameIdx, elapsedMs);
+    }
+    if (tpl.layout === 'efeito-19-style') {
+      return _renderFrameEfeito19Style(ctx, tpl, texts, frameIdx, elapsedMs);
     }
     return _renderFrameKineticScaleStack(ctx, tpl, texts, frameIdx, elapsedMs);
   }
@@ -41205,6 +41281,259 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     return true;
   }
 
+  /**
+   * Efeito 19 ("Quando a Meia-Noite Chegar"): estrutura DIFERENTE de
+   * todos os outros — 5 "papéis" nomeados de largura fixa (quando/a/
+   * meia/noite/chegar), cada um com seu próprio bbox+opacidade por
+   * quadro, SEM interpolação em runtime (pedido explícito do
+   * material fornecido) — sempre usa o quadro inteiro mais próximo,
+   * nunca mistura dois quadros adjacentes. "quando" muda de cor
+   * (creme → dourado) nos quadros 20-26; as demais são sempre creme.
+   * "a"/"meia"/"noite" (linha do meio) usam itálico fino; "quando" e
+   * "chegar" usam reto grosso.
+   */
+  function _efeito19FrameData(tpl, frameIdx) {
+    const c = tpl.motionData.framesCompact[frameIdx];
+    if (!c) return null;
+    const papeis = tpl.motionData.papeis;
+    const out = { cor: tpl.motionData.coresQuando[c[c.length - 1]] };
+    papeis.forEach((papel, i) => {
+      const base = i * 6;
+      out[papel] = { visivel: !!c[base], opacidade: c[base + 1], x: c[base + 2], y: c[base + 3], w: c[base + 4], h: c[base + 5] };
+    });
+    return out;
+  }
+
+  function _readTextsEfeito19Style(stanza, tpl, wordOverrides) {
+    const lines = (stanza && stanza.lines) || [];
+    const linha0 = lines[0]?.words || [];
+    const linha1 = lines[1]?.words || [];
+    const linha2 = lines[2]?.words || [];
+    const out = {
+      _tStarts: {}, _referenciaTStart: null,
+      _fontScale: {}, _fontFamily: {}, _offset: {}, _fontWeight: {}, _italic: {},
+      papeis: {},
+    };
+    function processaPapel(papel, w) {
+      if (!w) { out.papeis[papel] = null; return; }
+      out.papeis[papel] = { texto: w.text, wordId: w.id };
+      if (typeof w.tStart === 'number') {
+        out._tStarts[papel] = w.tStart;
+        if (out._referenciaTStart === null) out._referenciaTStart = w.tStart;
+      }
+      const wo = w.id && wordOverrides && wordOverrides[w.id];
+      if (wo && wo.style && wo.style.fontSizeScale) out._fontScale[papel] = wo.style.fontSizeScale;
+      if (wo && wo.style && wo.style.fontFamily) out._fontFamily[papel] = wo.style.fontFamily;
+      if (wo && wo.style && wo.style.frameExactOffset) out._offset[papel] = wo.style.frameExactOffset;
+      if (wo && wo.style && wo.style.fontWeight) out._fontWeight[papel] = wo.style.fontWeight;
+      if (wo && wo.style && wo.style.fontStyle === 'italic') out._italic[papel] = true;
+    }
+    // "quando"/"chegar" são a LINHA INTEIRA junta num bloco só — usa a
+    // primeira palavra da linha como referência de personalização/
+    // clique (o app é por-palavra; um "papel de linha inteira" usa a
+    // primeira como representante), mas desenha o TEXTO JUNTO de
+    // todas as palavras da linha.
+    processaPapel('quando', linha0[0]);
+    if (out.papeis.quando) out.papeis.quando.texto = linha0.map(w => w.text).join(' ');
+    processaPapel('a', linha1[0]);
+    processaPapel('meia', linha1[1]);
+    processaPapel('noite', linha1[2]);
+    processaPapel('chegar', linha2[0]);
+    if (out.papeis.chegar) out.papeis.chegar.texto = linha2.map(w => w.text).join(' ');
+    return out;
+  }
+
+  /** Quadro efetivo (0-60) de um papel, considerando marcação de
+   * ritmo — mesmo princípio já usado nos Efeitos 14/15 (atraso
+   * relativo à referência marcada, sem interpolar quadros — só
+   * ARREDONDA pro quadro inteiro mais próximo, igual pedido no
+   * material). */
+  function _efeito19QuadroEfetivo(tpl, papel, elapsedMs, tStarts, referencia) {
+    const msPorQuadro = 1000 / tpl.motionData.fps;
+    let elapsedEfetivo = elapsedMs;
+    if (tStarts && referencia != null && (papel in tStarts)) {
+      const atrasoMs = Math.max(0, (tStarts[papel] - referencia) * 1000);
+      elapsedEfetivo = Math.max(0, elapsedMs - atrasoMs);
+    }
+    return Math.max(0, Math.min(tpl.motionData.frames - 1, Math.round(elapsedEfetivo / msPorQuadro)));
+  }
+
+  function _efeito19AlturaNatural(fontFamily, weight, italic) {
+    _efeito19AlturaNatural._cache = _efeito19AlturaNatural._cache || {};
+    const chave = fontFamily + '|' + weight + '|' + italic;
+    if (chave in _efeito19AlturaNatural._cache) return _efeito19AlturaNatural._cache[chave];
+    const c = document.createElement('canvas').getContext('2d');
+    c.font = `${italic ? 'italic ' : ''}${weight} 260px ${_fontFamilyCanvas(fontFamily)}`;
+    const m = c.measureText('AÁÀÂÃEÉÊIÍMNOÓÔÕRSTUÚXBCÇDFGHJKLPQVWYZ0123456789');
+    const altura = (m.actualBoundingBoxAscent || 195) + (m.actualBoundingBoxDescent || 55);
+    _efeito19AlturaNatural._cache[chave] = altura;
+    return altura;
+  }
+
+  /** Monta uma string de font-family válida pro CANVAS a partir de
+   * uma cadeia "Principal, Substituta" — cada nome precisa das suas
+   * PRÓPRIAS aspas, separado por vírgula FORA das aspas (diferente de
+   * envolver a cadeia inteira numa aspa só, que o canvas não entende
+   * como lista de fallback). Usada pelo Efeito 19 (fonte paga +
+   * substituto gratuito do Google Fonts). */
+  function _fontFamilyCanvas(nomeOuLista) {
+    const nomes = String(nomeOuLista || '').split(',').map(n => n.trim()).filter(Boolean);
+    if (!nomes.length) return 'sans-serif';
+    return nomes.map(n => `"${n}"`).join(', ') + ', sans-serif';
+  }
+
+  function _renderFrameEfeito19Style(ctx, tpl, texts, frameIdx, elapsedMs) {
+    _limparRegioesClique(tpl);
+    const PAPEIS = tpl.motionData.papeis;
+    const tStarts = texts._tStarts, referencia = texts._referenciaTStart;
+
+    // Fidelidade: TODOS os 5 papéis com o texto EXATO do original
+    // (não só a contagem — o conteúdo também).
+    const ORIGINAIS = { quando: 'QUANDO', a: 'A', meia: 'MEIA', noite: 'NOITE', chegar: 'CHEGAR' };
+    const ehFidelidade = PAPEIS.every(papel => {
+      const p = texts.papeis[papel];
+      return p && (p.texto || '').trim().toUpperCase() === ORIGINAIS[papel];
+    });
+
+    // BUG REAL CORRIGIDO ("palavras da linha do meio ficam
+    // sobrepostas no reflow" — testado com \"cristo voltar\" no lugar
+    // de \"a meia\"): cada papel da linha do meio (a/meia/noite) tinha
+    // sua própria posição X FIXA, calibrada pras palavras EXATAS do
+    // vídeo original — com palavras diferentes (mais largas/estreitas
+    // que o original), cada papel continuava centralizado na MESMA
+    // posição isolada, e como não considerava a largura das palavras
+    // VIZINHAS, elas caíam uma em cima da outra. Corrigido: no
+    // reflow, mede todas as palavras PRESENTES da linha do meio
+    // primeiro, e monta uma fileira de verdade (cursor + centralizada
+    // como um bloco só), igual à técnica já usada nos Efeitos 14/16/
+    // 18 pra acumular palavras numa linha.
+    //
+    // BUG REAL CORRIGIDO ("texto vaza da tela com palavras longas" —
+    // mesma causa já corrigida em outros efeitos, encontrada de cara
+    // aqui também): sem limite, palavras mais longas que o original
+    // ("A"/"MEIA") facilmente ultrapassavam a largura do canvas. Mede
+    // a largura total primeiro; se ultrapassar 92%, calcula um fator
+    // de redução — usado tanto pra encolher a fileira do meio aqui
+    // quanto repassado pro laço principal (via
+    // fatorReducaoMeioLinha), que aplica a MESMA redução na altura de
+    // cada papel da linha do meio quando desenha de verdade.
+    const centrosXMeioLinha = {};
+    let fatorReducaoMeioLinha = 1;
+    if (!ehFidelidade) {
+      const papeisDoMeio = ['a', 'meia', 'noite'].filter(papel => texts.papeis[papel] && (texts.papeis[papel].texto || '').trim());
+      if (papeisDoMeio.length) {
+        const medidorMeio = document.createElement('canvas').getContext('2d');
+        function _medeItensMeio(fatorExtra) {
+          return papeisDoMeio.map(papel => {
+            const p = texts.papeis[papel];
+            const texto = p.texto.trim().toUpperCase();
+            const italicoBase = tpl.papeisItalico[papel];
+            const italico = (papel in texts._italic) ? texts._italic[papel] : italicoBase;
+            const peso = texts._fontWeight[papel] || 300;
+            const fontFamily = texts._fontFamily[papel] || tpl.styles.default.fontFamily;
+            const fontScale = texts._fontScale[papel] || 1;
+            const alturaNatural = _efeito19AlturaNatural(fontFamily, peso, italico) * fontScale * fatorExtra;
+            medidorMeio.font = `${italico ? 'italic ' : ''}${peso} ${alturaNatural}px ${_fontFamilyCanvas(fontFamily)}`;
+            const largura = Math.max(1, medidorMeio.measureText(texto).width);
+            return { papel, largura };
+          });
+        }
+        const larguraEspacoMeio = 40; // folga entre palavras da linha do meio, proporcional ao gap medido no original (~41-42px)
+        let itensMeio = _medeItensMeio(1);
+        let larguraTotalMeio = itensMeio.reduce((s, it) => s + it.largura, 0) + larguraEspacoMeio * Math.max(0, itensMeio.length - 1);
+        const larguraMaximaMeio = tpl.logicalWidth * 0.92;
+        if (larguraTotalMeio > larguraMaximaMeio) {
+          fatorReducaoMeioLinha = larguraMaximaMeio / larguraTotalMeio;
+          itensMeio = _medeItensMeio(fatorReducaoMeioLinha);
+          larguraTotalMeio = itensMeio.reduce((s, it) => s + it.largura, 0) + larguraEspacoMeio * Math.max(0, itensMeio.length - 1);
+        }
+        let cursorMeio = 960 - larguraTotalMeio / 2; // 960 = centro X do canvas 1920
+        itensMeio.forEach(it => {
+          centrosXMeioLinha[it.papel] = cursorMeio + it.largura / 2;
+          cursorMeio += it.largura + larguraEspacoMeio;
+        });
+      }
+    }
+
+    PAPEIS.forEach(papel => {
+      const p = texts.papeis[papel];
+      if (!p || !(p.texto || '').trim()) return;
+      const texto = p.texto.trim();
+
+      const frameEfetivo = _efeito19QuadroEfetivo(tpl, papel, elapsedMs, tStarts, referencia);
+      const fData = _efeito19FrameData(tpl, frameEfetivo);
+      if (!fData) return;
+      const dadosPapel = fData[papel];
+      if (!dadosPapel.visivel || dadosPapel.opacidade <= 0) return;
+
+      const italicoBase = tpl.papeisItalico[papel];
+      const italico = (papel in texts._italic) ? texts._italic[papel] : italicoBase;
+      const pesoBase = italicoBase ? 300 : 900;
+      const peso = texts._fontWeight[papel] || pesoBase;
+      const fontFamily = texts._fontFamily[papel] || tpl.styles.default.fontFamily;
+      const fontScale = texts._fontScale[papel] || 1;
+      const offset = texts._offset[papel] || { dx: 0, dy: 0 };
+      const baseSize = italicoBase ? 130 : 260;
+      const cor = (papel === 'quando') ? fData.cor : tpl.corPadrao;
+
+      let bx, by, bw, bh;
+      if (ehFidelidade) {
+        bx = dadosPapel.x; by = dadosPapel.y; bw = dadosPapel.w; bh = dadosPapel.h;
+      } else {
+        // Reflow: tamanho NATURAL (sem esticar/distorcer pra caber
+        // numa caixa calibrada pro texto original — mesmo critério já
+        // corrigido em outros efeitos). Pra "quando"/"chegar" (blocos
+        // isolados, sem risco de sobrepor vizinhos), centraliza no
+        // MESMO centro X/Y que a caixa original teria. Pra
+        // "a"/"meia"/"noite" (linha do meio), usa o centro X já
+        // calculado em conjunto acima (evita sobreposição), com a
+        // MESMA redução de tamanho já aplicada nesse cálculo (evita
+        // vazar da tela com palavras longas — consistência com o
+        // centro X calculado).
+        const ehPapelDoMeio = papel in centrosXMeioLinha;
+        const alturaNatural = _efeito19AlturaNatural(fontFamily, peso, italico) * (ehPapelDoMeio ? fatorReducaoMeioLinha : 1);
+        const medidor = document.createElement('canvas').getContext('2d');
+        medidor.font = `${italico ? 'italic ' : ''}${peso} ${alturaNatural}px ${_fontFamilyCanvas(fontFamily)}`;
+        const larguraNatural = Math.max(1, medidor.measureText(texto.toUpperCase()).width);
+        const cxFinal = ehPapelDoMeio ? centrosXMeioLinha[papel] : (dadosPapel.x + dadosPapel.w / 2);
+        const cyFinal = dadosPapel.y + dadosPapel.h / 2;
+        const subidaMax = alturaNatural * 0.7; // fração da altura, generalizando a subida observada no original
+        const subidaAtual = subidaMax * (1 - dadosPapel.opacidade);
+        bw = larguraNatural; bh = alturaNatural;
+        bx = cxFinal - bw / 2;
+        by = (cyFinal - bh / 2) + subidaAtual;
+      }
+
+      // Personalização: escala extra do usuário + deslocamento,
+      // sempre em torno do MESMO centro (nunca desloca o ponto de
+      // ancoragem, só cresce/diminui a partir dele) — mesmo princípio
+      // já corrigido em outros efeitos (ancoragem pelo centro, não
+      // por uma borda fixa).
+      const centroX = bx + bw / 2, centroY = by + bh / 2;
+      const bwFinal = bw * fontScale, bhFinal = bh * fontScale;
+      const bxFinal = centroX - bwFinal / 2 + offset.dx;
+      const byFinal = centroY - bhFinal / 2 + offset.dy;
+
+      const medidor2 = document.createElement('canvas').getContext('2d');
+      medidor2.font = `${italico ? 'italic ' : ''}${peso} ${baseSize}px ${_fontFamilyCanvas(fontFamily)}`;
+      const mw = Math.max(1, medidor2.measureText(texto.toUpperCase()).width);
+
+      ctx.save();
+      ctx.globalAlpha = dadosPapel.opacidade;
+      ctx.fillStyle = cor;
+      ctx.font = `${italico ? 'italic ' : ''}${peso} ${baseSize}px ${_fontFamilyCanvas(fontFamily)}`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.translate(centroX + offset.dx, centroY + offset.dy);
+      ctx.scale(bwFinal / mw, bhFinal / baseSize);
+      ctx.fillText(texto.toUpperCase(), 0, 0);
+      ctx.restore();
+
+      _registrarRegiaoClique(tpl, p.wordId, bxFinal, byFinal, bwFinal, bhFinal);
+    });
+    return true;
+  }
+
   function _renderFrameKineticScaleStack(ctx, tpl, texts, frameIdx, elapsedMs) {
     const m = tpl.motionData.motion[frameIdx];
     _limparRegioesClique(tpl);
@@ -41641,6 +41970,28 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
   }
 
   /** Garante que as fontes do template estão carregadas antes do 1º frame. */
+  /**
+   * Separa uma cadeia de fontes "Principal, Substituta" (formato CSS
+   * válido pra usar direto num font-family) em nomes INDIVIDUAIS —
+   * necessário pra carregar/checar cada fonte separadamente via
+   * document.fonts. Usada por templates que precisam de um substituto
+   * gratuito pra uma fonte paga (ex: Efeito 19 — "Window Markers,
+   * Permanent Marker": "Window Markers" é licenciada e não pode ser
+   * embutida; "Permanent Marker" é o substituto do Google Fonts).
+   *
+   * BUG REAL CORRIGIDO: antes, `document.fonts.load`/`.check()`
+   * recebiam a cadeia INTEIRA como um nome só, entre uma única aspa
+   * (`"Window Markers, Permanent Marker"`) — isso NUNCA bate com
+   * nenhuma fonte de verdade (nem "Window Markers" nem "Permanent
+   * Marker" se chamam assim, com vírgula no meio do nome) — o
+   * carregamento/checagem sempre falhava silenciosamente, e o
+   * primeiro quadro sempre saía com a fonte serifada padrão do
+   * navegador em vez do substituto correto.
+   */
+  function _separarFamiliasFonte(nomeOuLista) {
+    return String(nomeOuLista || '').split(',').map(n => n.trim()).filter(Boolean);
+  }
+
   async function preloadFonts(templateId) {
     const tpl = TEMPLATES_FRAME_EXACT[templateId];
     if (!tpl || !document.fonts || !document.fonts.load) return true;
@@ -41653,8 +42004,15 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     // de antemão qual peso cada fonte usa. Também inclui
     // fontFamilyOptions (variações de fonte selecionáveis por
     // palavra), não só a fonte padrão do estilo.
-    const familias = new Set(Object.values(tpl.styles).map(s => s.fontFamily));
-    (tpl.fontFamilyOptions || []).forEach(f => familias.add(f));
+    //
+    // BUG REAL CORRIGIDO: valores como "Window Markers, Permanent
+    // Marker" (fonte paga + substituto gratuito) precisam ser
+    // SEPARADOS em nomes individuais antes de carregar — carregar a
+    // cadeia inteira como um nome só nunca corresponde a nenhuma
+    // fonte de verdade (ver _separarFamiliasFonte).
+    const familias = new Set();
+    Object.values(tpl.styles).forEach(s => _separarFamiliasFonte(s.fontFamily).forEach(f => familias.add(f)));
+    (tpl.fontFamilyOptions || []).forEach(fOuLista => _separarFamiliasFonte(fOuLista).forEach(f => familias.add(f)));
     const pesos = [400, 600, 700, 800, 900];
     try {
       await Promise.all(
@@ -41817,6 +42175,32 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       return maiorFim18;
     }
 
+    // Efeito 19: marcação por PAPEL NOMEADO (string: quando/a/meia/
+    // noite/chegar), não por índice numérico — cada papel tem seu
+    // próprio atraso relativo à referência marcada. A duração
+    // necessária é o atraso + o tempo que falta da animação original
+    // a partir do quadro em que esse papel naturalmente aparece.
+    if (tpl.layout === 'efeito-19-style') {
+      let maiorFim19 = duracaoBase;
+      const msPorQuadro19 = 1000 / tpl.motionData.fps;
+      Object.keys(tStarts).forEach(papel => {
+        const atrasoMs = Math.max(0, (tStarts[papel] - referencia) * 1000);
+        // Acha o primeiro quadro em que esse papel fica visível, no
+        // vídeo original — o tempo restante a partir dali garante que
+        // a animação completa desse papel (subida + esmaecimento)
+        // tenha tempo de rodar depois do atraso marcado.
+        let quadroInicioPapel = 0;
+        for (let i = 0; i < tpl.motionData.frames; i++) {
+          const f = _efeito19FrameData(tpl, i);
+          if (f && f[papel] && f[papel].visivel && f[papel].opacidade > 0) { quadroInicioPapel = i; break; }
+        }
+        const tempoRestanteOriginal = duracaoBase - quadroInicioPapel * msPorQuadro19;
+        const fimDessePapel = atrasoMs + Math.max(300, tempoRestanteOriginal);
+        if (fimDessePapel > maiorFim19) maiorFim19 = fimDessePapel;
+      });
+      return maiorFim19;
+    }
+
     // Kinetic Scale Stack (Efeitos 1/3) usa uma estrutura de dados
     // DIFERENTE (tpl.motionData.motion, não framesData) — usa as
     // variantes "Motion" das funções de quadro inicial/assentado.
@@ -41889,6 +42273,9 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     }
     if (tpl && tpl.layout === 'efeito-18-style') {
       return _readTextsEfeito18Style(stanza, tpl, wordOverrides);
+    }
+    if (tpl && tpl.layout === 'efeito-19-style') {
+      return _readTextsEfeito19Style(stanza, tpl, wordOverrides);
     }
     return _readTextsKineticScaleStack(stanza, wordOverrides);
   }
