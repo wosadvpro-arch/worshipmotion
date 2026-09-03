@@ -25559,6 +25559,49 @@ function initEditor() {
             && engine.wordOverrides[idsFE[0]].style
             && engine.wordOverrides[idsFE[0]].style.fontSizeScale) || 1;
           const novaEscalaFE = Math.max(0.2, Math.round((primeiraEscala + delta * 0.1) * 100) / 100);
+          // BUG REAL CORRIGIDO ("selecionar tudo e aumentar sobrepõe
+          // as linhas" — reportado pelo usuário com captura de tela):
+          // antes, aplicava a MESMA escala em cada palavra
+          // INDEPENDENTEMENTE — cada uma crescia em torno do seu
+          // PRÓPRIO centro, sem afastar as linhas vizinhas (diferente
+          // do texto normal, que reposiciona as palavras
+          // proporcionalmente ao redor do centro comum quando a
+          // estrofe inteira é escalada). Com as linhas empilhadas
+          // perto uma da outra, isso fazia elas se sobreporem ao
+          // crescer. Agora, lê a posição ATUAL de cada palavra (das
+          // regiões de clique, geometria real do último quadro
+          // desenhado), acha o centro do BLOCO inteiro, e desloca
+          // cada palavra pra LONGE desse centro na mesma proporção do
+          // crescimento — as linhas se afastam conforme o bloco
+          // cresce, igual ao texto normal.
+          const stFE = engine.parsed?.stanzas?.[engine.currentStanzaIndex];
+          const tplFE = stFE && window.WM_FRAME_EXACT_RENDERER
+            && window.WM_FRAME_EXACT_RENDERER.getTemplate(stFE.frameExactTemplateId);
+          const regioesAntes = (tplFE && tplFE._ultimasRegioesClique) || [];
+          if (regioesAntes.length && novaEscalaFE !== primeiraEscala) {
+            let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+            const centrosPorId = {};
+            regioesAntes.forEach(r => {
+              const cx = r.x + r.w / 2, cy = r.y + r.h / 2;
+              centrosPorId[r.wordId] = { cx, cy };
+              minX = Math.min(minX, r.x); maxX = Math.max(maxX, r.x + r.w);
+              minY = Math.min(minY, r.y); maxY = Math.max(maxY, r.y + r.h);
+            });
+            const centroGlobalX = (minX + maxX) / 2, centroGlobalY = (minY + maxY) / 2;
+            const razaoCrescimento = novaEscalaFE / primeiraEscala;
+            idsFE.forEach(wid => {
+              const c = centrosPorId[wid];
+              if (!c) return;
+              const deltaX = (c.cx - centroGlobalX) * (razaoCrescimento - 1);
+              const deltaY = (c.cy - centroGlobalY) * (razaoCrescimento - 1);
+              if (Math.abs(deltaX) < 0.5 && Math.abs(deltaY) < 0.5) return;
+              const woAtual = engine.wordOverrides[wid];
+              const offAtual = (woAtual && woAtual.style && woAtual.style.frameExactOffset) || { dx: 0, dy: 0 };
+              const novoStyle = { ...(woAtual && woAtual.style || {}) };
+              novoStyle.frameExactOffset = { dx: (offAtual.dx || 0) + deltaX, dy: (offAtual.dy || 0) + deltaY };
+              engine.setWordOverride(wid, { style: novoStyle });
+            });
+          }
           _aplicarFontScaleFrameExact(idsFE, novaEscalaFE === 1 ? null : novaEscalaFE);
           requestAnimationFrame(syncCtxToolbar);
           return;
@@ -25641,7 +25684,42 @@ function initEditor() {
         if (stzElFE && stzElFE.classList.contains('is-frame-exact-stanza')) {
           const idsFE = [...stzElFE.querySelectorAll('.lyric-word')].map(el => el.dataset.wordId).filter(Boolean);
           const globalFsFE = ((_ctxEstiloEfetivo().fontSize) || 64);
+          const primeiraEscalaFE = (idsFE[0] && engine.wordOverrides[idsFE[0]]
+            && engine.wordOverrides[idsFE[0]].style
+            && engine.wordOverrides[idsFE[0]].style.fontSizeScale) || 1;
           const novaEscalaFE = Math.max(0.1, Math.round((px / globalFsFE) * 100) / 100);
+          // Mesma correção do botão +/- (ver aplicarTamanho): afasta
+          // cada linha do centro do bloco na mesma proporção do
+          // crescimento, senão as linhas empilhadas se sobrepõem ao
+          // digitar um tamanho maior com a estrofe inteira selecionada.
+          const stFE = engine.parsed?.stanzas?.[engine.currentStanzaIndex];
+          const tplFE = stFE && window.WM_FRAME_EXACT_RENDERER
+            && window.WM_FRAME_EXACT_RENDERER.getTemplate(stFE.frameExactTemplateId);
+          const regioesAntes = (tplFE && tplFE._ultimasRegioesClique) || [];
+          if (regioesAntes.length && novaEscalaFE !== primeiraEscalaFE) {
+            let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+            const centrosPorId = {};
+            regioesAntes.forEach(r => {
+              const cx = r.x + r.w / 2, cy = r.y + r.h / 2;
+              centrosPorId[r.wordId] = { cx, cy };
+              minX = Math.min(minX, r.x); maxX = Math.max(maxX, r.x + r.w);
+              minY = Math.min(minY, r.y); maxY = Math.max(maxY, r.y + r.h);
+            });
+            const centroGlobalX = (minX + maxX) / 2, centroGlobalY = (minY + maxY) / 2;
+            const razaoCrescimento = novaEscalaFE / primeiraEscalaFE;
+            idsFE.forEach(wid => {
+              const c = centrosPorId[wid];
+              if (!c) return;
+              const deltaX = (c.cx - centroGlobalX) * (razaoCrescimento - 1);
+              const deltaY = (c.cy - centroGlobalY) * (razaoCrescimento - 1);
+              if (Math.abs(deltaX) < 0.5 && Math.abs(deltaY) < 0.5) return;
+              const woAtual = engine.wordOverrides[wid];
+              const offAtual = (woAtual && woAtual.style && woAtual.style.frameExactOffset) || { dx: 0, dy: 0 };
+              const novoStyle = { ...(woAtual && woAtual.style || {}) };
+              novoStyle.frameExactOffset = { dx: (offAtual.dx || 0) + deltaX, dy: (offAtual.dy || 0) + deltaY };
+              engine.setWordOverride(wid, { style: novoStyle });
+            });
+          }
           _aplicarFontScaleFrameExact(idsFE, novaEscalaFE === 1 ? null : novaEscalaFE);
           requestAnimationFrame(syncCtxToolbar);
           return;
