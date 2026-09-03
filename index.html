@@ -14223,6 +14223,35 @@ const TEMPLATES = [
     },
   },
   {
+    id: "tpl-oficial-e-necessario-estar-com-a-chama-acesa-frame-exact",
+    name: "É Necessário Estar com a Chama Acesa",
+    description: "Cinco linhas em itálico entram em sequência — COM muda de creme pra dourado, A mantém o tamanho natural do glifo sem distorcer.",
+    tags: ["Entrada", "Frame-exact", "Pro Plus"],
+    isOfficial: true,
+    isPremium: true,
+    requiredPlan: "pro_plus",
+    isActive: true,
+    accent: "#D6AA2E",
+    config: {
+      type: "frame-exact",
+      frameExactTemplateId: "efeito-20",
+      style: {},
+      animConfig: {},
+      aspect: "16:9",
+      parsed: {
+        stanzas: [
+          { id: "stz_pyjsb45", label: "Estrofe 1", lines: [
+            { id: "ln_4t3i7a7", words: [{ id: "w_bxdfckd", text: "É", chars: [{id:"ch_q3je1fw",text:"É"}], emphasized: false }, { id: "w_k14wty0", text: "NECESSÁRIO", chars: [{id:"ch_k4yqc32",text:"N"}, {id:"ch_p4ip7k0",text:"E"}, {id:"ch_ni7s82u",text:"C"}, {id:"ch_ab0vkwy",text:"E"}, {id:"ch_8vwg5cc",text:"S"}, {id:"ch_rr82xlf",text:"S"}, {id:"ch_92fxmuo",text:"Á"}, {id:"ch_ymklgmm",text:"R"}, {id:"ch_7em6ocv",text:"I"}, {id:"ch_f2f8xw2",text:"O"}], emphasized: false }] },
+            { id: "ln_dtythxj", words: [{ id: "w_anvax0m", text: "ESTAR", chars: [{id:"ch_49iipe7",text:"E"}, {id:"ch_enpn4o1",text:"S"}, {id:"ch_o31iof9",text:"T"}, {id:"ch_b0vqdxk",text:"A"}, {id:"ch_y3egg3e",text:"R"}], emphasized: false }] },
+            { id: "ln_d7iouzw", words: [{ id: "w_z8bfwiu", text: "COM", chars: [{id:"ch_3gwzh0h",text:"C"}, {id:"ch_29tl6qn",text:"O"}, {id:"ch_to7sudx",text:"M"}], emphasized: false }, { id: "w_93bgwq9", text: "A", chars: [{id:"ch_jsplc1l",text:"A"}], emphasized: false }] },
+            { id: "ln_i23ltxr", words: [{ id: "w_28xlr2s", text: "CHAMA", chars: [{id:"ch_6bue4zs",text:"C"}, {id:"ch_6ler2it",text:"H"}, {id:"ch_fgvhh47",text:"A"}, {id:"ch_ds6yiet",text:"M"}, {id:"ch_xcqky6q",text:"A"}], emphasized: false }] },
+            { id: "ln_xinqiir", words: [{ id: "w_bdh1rp6", text: "ACESA", chars: [{id:"ch_anwf30y",text:"A"}, {id:"ch_q1bhfa6",text:"C"}, {id:"ch_tge1ksx",text:"E"}, {id:"ch_ffhygle",text:"S"}, {id:"ch_jqi5mnj",text:"A"}], emphasized: false }] },
+          ] },
+        ],
+      },
+    },
+  },
+  {
     id: "tpl-oficial-kinetic-scale-stack-frameexact",
     name: "Kinetic Scale Stack",
     description: "Tipografia cinética em três linhas, com compressão/expansão e zoom final, reproduzida por bounding boxes absolutas frame a frame (frame-exact).",
@@ -33815,6 +33844,7 @@ function initEditor() {
     if (tplFE.layout === 'efeito-17-style') return 1;
     if (tplFE.layout === 'efeito-18-style') return 1;
     if (tplFE.layout === 'efeito-19-style') return 3;
+    if (tplFE.layout === 'efeito-20-style') return 5;
     return 3;
   }
 
@@ -37596,6 +37626,49 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
   // Registro de templates frame-exact — motion-data ORIGINAL, sem
   // nenhuma alteração (mesmo JSON do ZIP, byte a byte).
   const TEMPLATES_FRAME_EXACT = {
+    'efeito-20': {
+      layout: 'efeito-20-style',
+      // Espaço lógico PRÓPRIO — 1920x1080, 30fps, 90 quadros.
+      logicalWidth: 1920,
+      logicalHeight: 1080,
+      // Estrutura de dados PRÓPRIA: 6 papéis nomeados (necessario/
+      // estar/com/a/chama/acesa) — SEM interpolação em runtime, cada
+      // quadro tem seu bbox+opacidade exatos, IGUAL ao Efeito 19.
+      // Cada linha de framesCompact tem 37 valores: 6 por papel
+      // (visível, opacidade, x, y, w, h) × 6 papéis, seguido do
+      // ÍNDICE da cor de "com" (só esse papel muda de cor — de creme
+      // pra dourado — os outros são sempre creme).
+      motionData: {
+        fps: 30, frames: 90,
+        papeis: ['necessario', 'estar', 'com', 'a', 'chama', 'acesa'],
+        coresCom: ['#F2F1EC', '#D6AA2E'],
+        framesCompact: [[0,0,735,182,455,72,0,0,735,252,455,108,0,0,735,360,275,118,0,0,1018,360,92,118,0,0,735,474,455,116,0,0,735,584,455,118,0],[0,0,735,182,455,72,0,0,735,252,455,108,0,0,735,360,275,118,0,0,1018,360,92,118,0,0,735,474,455,116,1,0.18,735,694.0,455,118,0],[0,0,735,182,455,72,0,0,735,252,455,108,0,0,735,360,275,118,0,0,1018,360,92,118,0,0,735,474,455,116,1,0.539,735,645.88,455,118,0],[0,0,735,182,455,72,0,0,735,252,455,108,0,0,735,360,275,118,0,0,1018,360,92,118,1,0.18,735,579.0,455,116,1,0.795,735,611.5,455,118,0],[0,0,735,182,455,72,0,0,735,252,455,108,0,0,735,360,275,118,0,0,1018,360,92,118,1,0.539,735,533.06,455,116,1,0.949,735,590.88,455,118,0],[0,0,735,182,455,72,0,0,735,252,455,108,0,0,735,360,275,118,0,0,1018,360,92,118,1,0.795,735,500.25,455,116,1,1.0,735,584.0,455,118,0],[0,0,735,182,455,72,0,0,735,252,455,108,0,0,735,360,275,118,0,0,1018,360,92,118,1,0.949,735,480.56,455,116,1,1,735,584,455,118,0],[0,0,735,182,455,72,0,0,735,252,455,108,1,0.18,735,465.0,275,118,1,0.18,1018,360,92,118,1,1.0,735,474.0,455,116,1,1,735,584,455,118,0],[0,0,735,182,455,72,0,0,735,252,455,108,1,0.539,735,419.06,275,118,1,0.539,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,0],[0,0,735,182,455,72,0,0,735,252,455,108,1,0.795,735,386.25,275,118,1,0.795,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,0],[0,0,735,182,455,72,0,0,735,252,455,108,1,0.949,735,366.56,275,118,1,0.949,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,0],[0,0,735,182,455,72,1,0.18,735,342.0,455,108,1,1.0,735,360.0,275,118,1,1.0,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,0],[0,0,735,182,455,72,1,0.539,735,302.62,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,0],[0,0,735,182,455,72,1,0.795,735,274.5,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,0],[1,0.18,735,257.0,455,72,1,0.949,735,257.62,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,0],[1,0.539,735,224.19,455,72,1,1.0,735,252.0,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,0],[1,0.795,735,200.75,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,0],[1,0.949,735,186.69,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,0],[1,1.0,735,182.0,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,0],[1,1,735,182,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,0],[1,1,735,182,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,0],[1,1,735,182,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,0],[1,1,735,182,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,0],[1,1,735,182,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,0],[1,1,735,182,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,0],[1,1,735,182,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,0],[1,1,735,182,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,0],[1,1,735,182,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,0],[1,1,735,182,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,0],[1,1,735,182,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,0],[1,1,735,182,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,0],[1,1,735,182,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,0],[1,1,735,182,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,0],[1,1,735,182,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,0],[1,1,735,182,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,0],[1,1,735,182,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,1],[1,1,735,182,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,1],[1,1,735,182,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,1],[1,1,735,182,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,1],[1,1,735,182,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,1],[1,1,735,182,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,1],[1,1,735,182,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,1],[1,1,735,182,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,1],[1,1,735,182,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,1],[1,1,735,182,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,1],[1,1,735,182,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,1],[1,1,735,182,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,1],[1,1,735,182,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,1],[1,1,735,182,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,1],[1,1,735,182,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,1],[1,1,735,182,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,1],[1,1,735,182,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,1],[1,1,735,182,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,1],[1,1,735,182,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,1],[1,1,735,182,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,1],[1,1,735,182,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,1],[1,1,735,182,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,1],[1,1,735,182,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,1],[1,1,735,182,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,1],[1,1,735,182,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,1],[1,1,735,182,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,1],[1,1,735,182,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,1],[1,1,735,182,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,1],[1,1,735,182,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,1],[1,1,735,182,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,1],[1,1,735,182,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,1],[1,1,735,182,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,1],[1,1,735,182,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,1],[1,1,735,182,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,1],[1,1,735,182,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,1],[1,1,735,182,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,1],[1,1,735,182,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,1],[1,1,735,182,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,1],[1,1,735,182,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,1],[1,1,735,182,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,1],[1,1,735,182,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,1],[1,1,735,182,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,1],[1,1,735,182,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,1],[1,1,735,182,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,1],[1,1,735,182,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,1],[1,1,735,182,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,1],[1,1,735,182,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,1],[1,1,735,182,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,1],[1,1,735,182,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,1],[1,1,735,182,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,1],[1,1,735,182,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,1],[1,1,735,182,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,1],[1,1,735,182,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,1],[1,1,735,182,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,1],[1,1,735,182,455,72,1,1,735,252,455,108,1,1,735,360,275,118,1,1,1018,360,92,118,1,1,735,474,455,116,1,1,735,584,455,118,1]]
+      },
+      // Tamanho/peso PRÓPRIOS de cada papel — vêm explícitos nos
+      // dados originais (não uma fórmula), constantes em todos os
+      // quadros. TODOS os papéis são itálico (diferente do Efeito 19,
+      // que misturava reto/itálico).
+      papeisTipografia: {
+        necessario: { size: 64, weight: 400 },
+        estar: { size: 112, weight: 800 },
+        com: { size: 104, weight: 400 },
+        a: { size: 104, weight: 400 },
+        chama: { size: 108, weight: 800 },
+        acesa: { size: 101, weight: 400 },
+      },
+      // "A" não recebe NENHUM esticamento (nem horizontal nem
+      // vertical) — pedido explícito do material (evita distorção
+      // horizontal do glifo). Os demais papéis esticam SÓ
+      // horizontalmente pra caber no bbox exato — a altura vem
+      // direto do fontSize, nunca esticada verticalmente (diferente
+      // do Efeito 19, que esticava os dois eixos).
+      papelSemEsticar: 'a',
+      corPadrao: '#F2F1EC',
+      fontFamilyOptions: ['Montserrat'],
+      styles: {
+        default: { fontFamily: 'Montserrat' },
+      },
+    },
     'efeito-19': {
       layout: 'efeito-19-style',
       // Espaço lógico PRÓPRIO — 1920x1080, 30fps, 61 quadros.
@@ -38281,6 +38354,9 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     }
     if (tpl.layout === 'efeito-19-style') {
       return _renderFrameEfeito19Style(ctx, tpl, texts, frameIdx, elapsedMs);
+    }
+    if (tpl.layout === 'efeito-20-style') {
+      return _renderFrameEfeito20Style(ctx, tpl, texts, frameIdx, elapsedMs);
     }
     return _renderFrameKineticScaleStack(ctx, tpl, texts, frameIdx, elapsedMs);
   }
@@ -41537,6 +41613,208 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     return true;
   }
 
+  /**
+   * Efeito 20 ("É Necessário Estar com a Chama Acesa"): estrutura
+   * IGUAL ao Efeito 19 (papéis nomeados, sem interpolação em
+   * runtime), mas com 3 diferenças importantes:
+   * 1. TODOS os papéis são itálico (não mistura reto/itálico).
+   * 2. O esticamento é SÓ horizontal — a altura vem direto do
+   *    fontSize de cada papel, NUNCA esticada verticalmente
+   *    (diferente do Efeito 19, que esticava os dois eixos).
+   * 3. O papel "a" não recebe NENHUM esticamento — nem horizontal
+   *    nem vertical — desenhado sempre no tamanho natural do glifo
+   *    (pedido explícito do material, evita distorção horizontal).
+   */
+  function _efeito20FrameData(tpl, frameIdx) {
+    const c = tpl.motionData.framesCompact[frameIdx];
+    if (!c) return null;
+    const papeis = tpl.motionData.papeis;
+    const out = { corCom: tpl.motionData.coresCom[c[c.length - 1]] };
+    papeis.forEach((papel, i) => {
+      const base = i * 6;
+      out[papel] = { visivel: !!c[base], opacidade: c[base + 1], x: c[base + 2], y: c[base + 3], w: c[base + 4], h: c[base + 5] };
+    });
+    return out;
+  }
+
+  function _readTextsEfeito20Style(stanza, tpl, wordOverrides) {
+    const lines = (stanza && stanza.lines) || [];
+    const linha0 = lines[0]?.words || []; // necessario
+    const linha1 = lines[1]?.words || []; // estar
+    const linha2 = lines[2]?.words || []; // com, a
+    const linha3 = lines[3]?.words || []; // chama
+    const linha4 = lines[4]?.words || []; // acesa
+    const out = {
+      _tStarts: {}, _referenciaTStart: null,
+      _fontScale: {}, _fontFamily: {}, _offset: {}, _fontWeight: {}, _italic: {},
+      papeis: {},
+    };
+    function processaPapel(papel, w) {
+      if (!w) { out.papeis[papel] = null; return; }
+      out.papeis[papel] = { texto: w.text, wordId: w.id };
+      if (typeof w.tStart === 'number') {
+        out._tStarts[papel] = w.tStart;
+        if (out._referenciaTStart === null) out._referenciaTStart = w.tStart;
+      }
+      const wo = w.id && wordOverrides && wordOverrides[w.id];
+      if (wo && wo.style && wo.style.fontSizeScale) out._fontScale[papel] = wo.style.fontSizeScale;
+      if (wo && wo.style && wo.style.fontFamily) out._fontFamily[papel] = wo.style.fontFamily;
+      if (wo && wo.style && wo.style.frameExactOffset) out._offset[papel] = wo.style.frameExactOffset;
+      if (wo && wo.style && wo.style.fontWeight) out._fontWeight[papel] = wo.style.fontWeight;
+      if (wo && wo.style && wo.style.fontStyle === 'italic') out._italic[papel] = true;
+      if (wo && wo.style && wo.style.fontStyle === 'normal') out._italic[papel] = false;
+    }
+    processaPapel('necessario', linha0[0]);
+    if (out.papeis.necessario) out.papeis.necessario.texto = linha0.map(w => w.text).join(' ');
+    processaPapel('estar', linha1[0]);
+    if (out.papeis.estar) out.papeis.estar.texto = linha1.map(w => w.text).join(' ');
+    processaPapel('com', linha2[0]);
+    processaPapel('a', linha2[1]);
+    processaPapel('chama', linha3[0]);
+    if (out.papeis.chama) out.papeis.chama.texto = linha3.map(w => w.text).join(' ');
+    processaPapel('acesa', linha4[0]);
+    if (out.papeis.acesa) out.papeis.acesa.texto = linha4.map(w => w.text).join(' ');
+    return out;
+  }
+
+  function _efeito20QuadroEfetivo(tpl, papel, elapsedMs, tStarts, referencia) {
+    const msPorQuadro = 1000 / tpl.motionData.fps;
+    let elapsedEfetivo = elapsedMs;
+    if (tStarts && referencia != null && (papel in tStarts)) {
+      const atrasoMs = Math.max(0, (tStarts[papel] - referencia) * 1000);
+      elapsedEfetivo = Math.max(0, elapsedMs - atrasoMs);
+    }
+    return Math.max(0, Math.min(tpl.motionData.frames - 1, Math.round(elapsedEfetivo / msPorQuadro)));
+  }
+
+  function _renderFrameEfeito20Style(ctx, tpl, texts, frameIdx, elapsedMs) {
+    _limparRegioesClique(tpl);
+    const PAPEIS = tpl.motionData.papeis;
+    const tStarts = texts._tStarts, referencia = texts._referenciaTStart;
+
+    const ORIGINAIS = { necessario: 'É NECESSÁRIO', estar: 'ESTAR', com: 'COM', a: 'A', chama: 'CHAMA', acesa: 'ACESA' };
+    const ehFidelidade = PAPEIS.every(papel => {
+      const p = texts.papeis[papel];
+      return p && (p.texto || '').trim().toUpperCase() === ORIGINAIS[papel];
+    });
+
+    // Igual ao Efeito 19: no reflow, "com"/"a" (a linha "COM A")
+    // precisam de layout em CONJUNTO (medir os dois, montar fileira
+    // centralizada) — senão, com palavras diferentes das originais,
+    // ficam sobrepostas (cada uma usando sua posição X isolada,
+    // calibrada pras palavras específicas do vídeo original).
+    //
+    // BUG REAL CORRIGIDO ("texto vaza da tela com palavras longas" —
+    // mesma causa já corrigida no Efeito 19, testado aqui com duas
+    // palavras longas): sem limite, a fileira "COM A" podia
+    // ultrapassar a largura do canvas. Mede a largura total primeiro;
+    // se ultrapassar 92%, calcula um fator de redução — repassado pro
+    // laço principal (via fatorReducaoComA), que aplica a MESMA
+    // redução no tamanho de fonte de "com"/"a" quando desenha de
+    // verdade.
+    const centrosXComA = {};
+    let fatorReducaoComA = 1;
+    if (!ehFidelidade) {
+      const papeisLinha = ['com', 'a'].filter(papel => texts.papeis[papel] && (texts.papeis[papel].texto || '').trim());
+      if (papeisLinha.length) {
+        const medidorLinha = document.createElement('canvas').getContext('2d');
+        const _medeItensComA = (fatorExtra) => papeisLinha.map(papel => {
+          const p = texts.papeis[papel];
+          const texto = p.texto.trim().toUpperCase();
+          const tipoBase = tpl.papeisTipografia[papel];
+          const peso = texts._fontWeight[papel] || tipoBase.weight;
+          const fontFamily = texts._fontFamily[papel] || tpl.styles.default.fontFamily;
+          const fontScale = texts._fontScale[papel] || 1;
+          const tamanho = tipoBase.size * fontScale * fatorExtra;
+          medidorLinha.font = `italic ${peso} ${tamanho}px ${_fontFamilyCanvas(fontFamily)}`;
+          const largura = Math.max(1, medidorLinha.measureText(texto).width);
+          return { papel, largura };
+        });
+        const larguraEspacoLinha = 30;
+        let itensLinha = _medeItensComA(1);
+        let larguraTotalLinha = itensLinha.reduce((s, it) => s + it.largura, 0) + larguraEspacoLinha * Math.max(0, itensLinha.length - 1);
+        const larguraMaximaLinha = tpl.logicalWidth * 0.92;
+        if (larguraTotalLinha > larguraMaximaLinha) {
+          fatorReducaoComA = larguraMaximaLinha / larguraTotalLinha;
+          itensLinha = _medeItensComA(fatorReducaoComA);
+          larguraTotalLinha = itensLinha.reduce((s, it) => s + it.largura, 0) + larguraEspacoLinha * Math.max(0, itensLinha.length - 1);
+        }
+        let cursorLinha = 960 - larguraTotalLinha / 2;
+        itensLinha.forEach(it => {
+          centrosXComA[it.papel] = cursorLinha + it.largura / 2;
+          cursorLinha += it.largura + larguraEspacoLinha;
+        });
+      }
+    }
+
+    PAPEIS.forEach(papel => {
+      const p = texts.papeis[papel];
+      if (!p || !(p.texto || '').trim()) return;
+      const texto = p.texto.trim().toUpperCase();
+
+      const frameEfetivo = _efeito20QuadroEfetivo(tpl, papel, elapsedMs, tStarts, referencia);
+      const fData = _efeito20FrameData(tpl, frameEfetivo);
+      if (!fData) return;
+      const dadosPapel = fData[papel];
+      if (!dadosPapel.visivel || dadosPapel.opacidade <= 0) return;
+
+      const tipoBase = tpl.papeisTipografia[papel];
+      const italico = (papel in texts._italic) ? texts._italic[papel] : true; // TODOS os papéis são itálico por padrão
+      const peso = texts._fontWeight[papel] || tipoBase.weight;
+      const fontFamily = texts._fontFamily[papel] || tpl.styles.default.fontFamily;
+      const fontScale = texts._fontScale[papel] || 1;
+      const offset = texts._offset[papel] || { dx: 0, dy: 0 };
+      const ehPapelComA = (papel in centrosXComA);
+      const tamanho = tipoBase.size * fontScale * (ehPapelComA ? fatorReducaoComA : 1);
+      const cor = (papel === 'com') ? fData.corCom : tpl.corPadrao;
+      const semEsticar = (papel === tpl.papelSemEsticar);
+
+      let bx, by, bw, bh;
+      if (ehFidelidade) {
+        bx = dadosPapel.x; by = dadosPapel.y; bw = dadosPapel.w * fontScale; bh = dadosPapel.h * fontScale;
+        // Ajusta o centro pra manter a posição, já que fontScale
+        // mudou bw/bh a partir do bbox original.
+        bx = dadosPapel.x + dadosPapel.w / 2 - bw / 2;
+        by = dadosPapel.y + dadosPapel.h / 2 - bh / 2;
+      } else {
+        // Reflow: tamanho NATURAL, sem esticar (mesmo critério já
+        // corrigido em outros efeitos) — evita distorcer texto
+        // diferente do original.
+        const medidor = document.createElement('canvas').getContext('2d');
+        medidor.font = `italic ${peso} ${tamanho}px ${_fontFamilyCanvas(fontFamily)}`;
+        const larguraNatural = Math.max(1, medidor.measureText(texto).width);
+        const cxFinal = (papel in centrosXComA) ? centrosXComA[papel] : (dadosPapel.x + dadosPapel.w / 2);
+        const cyFinal = dadosPapel.y + dadosPapel.h / 2;
+        bw = larguraNatural; bh = tamanho;
+        bx = cxFinal - bw / 2;
+        by = cyFinal - bh / 2;
+      }
+
+      const centroX = bx + bw / 2, centroY = by + bh / 2;
+
+      const medidor2 = document.createElement('canvas').getContext('2d');
+      medidor2.font = `italic ${peso} ${tamanho}px ${_fontFamilyCanvas(fontFamily)}`;
+      const mw = Math.max(1, medidor2.measureText(texto).width);
+
+      ctx.save();
+      ctx.globalAlpha = dadosPapel.opacidade;
+      ctx.fillStyle = cor;
+      ctx.font = `italic ${peso} ${tamanho}px ${_fontFamilyCanvas(fontFamily)}`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.translate(centroX + offset.dx, centroY + offset.dy);
+      // "A" nunca estica — nem largura, nem altura. Os demais só
+      // esticam a LARGURA pra caber no bbox exato; a altura vem
+      // direto do fontSize (nunca esticada verticalmente).
+      if (!semEsticar) ctx.scale(bw / mw, 1);
+      ctx.fillText(texto, 0, 0);
+      ctx.restore();
+
+      _registrarRegiaoClique(tpl, p.wordId, bx + offset.dx, by + offset.dy, bw, bh);
+    });
+    return true;
+  }
+
   function _renderFrameKineticScaleStack(ctx, tpl, texts, frameIdx, elapsedMs) {
     const m = tpl.motionData.motion[frameIdx];
     _limparRegioesClique(tpl);
@@ -42204,6 +42482,25 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       return maiorFim19;
     }
 
+    // Efeito 20: mesmo princípio do Efeito 19 (marcação por papel
+    // nomeado, atraso relativo à referência marcada).
+    if (tpl.layout === 'efeito-20-style') {
+      let maiorFim20 = duracaoBase;
+      const msPorQuadro20 = 1000 / tpl.motionData.fps;
+      Object.keys(tStarts).forEach(papel => {
+        const atrasoMs = Math.max(0, (tStarts[papel] - referencia) * 1000);
+        let quadroInicioPapel = 0;
+        for (let i = 0; i < tpl.motionData.frames; i++) {
+          const f = _efeito20FrameData(tpl, i);
+          if (f && f[papel] && f[papel].visivel && f[papel].opacidade > 0) { quadroInicioPapel = i; break; }
+        }
+        const tempoRestanteOriginal = duracaoBase - quadroInicioPapel * msPorQuadro20;
+        const fimDessePapel = atrasoMs + Math.max(300, tempoRestanteOriginal);
+        if (fimDessePapel > maiorFim20) maiorFim20 = fimDessePapel;
+      });
+      return maiorFim20;
+    }
+
     // Kinetic Scale Stack (Efeitos 1/3) usa uma estrutura de dados
     // DIFERENTE (tpl.motionData.motion, não framesData) — usa as
     // variantes "Motion" das funções de quadro inicial/assentado.
@@ -42279,6 +42576,9 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     }
     if (tpl && tpl.layout === 'efeito-19-style') {
       return _readTextsEfeito19Style(stanza, tpl, wordOverrides);
+    }
+    if (tpl && tpl.layout === 'efeito-20-style') {
+      return _readTextsEfeito20Style(stanza, tpl, wordOverrides);
     }
     return _readTextsKineticScaleStack(stanza, wordOverrides);
   }
