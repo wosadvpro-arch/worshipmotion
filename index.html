@@ -14625,7 +14625,7 @@ const CanvasRenderer = {
         ctx.save();
         ctx.translate(_cxFE.x, _cxFE.y);
         ctx.scale(scaleFE, scaleFE);
-        const texts = R.readTextsFromStanza(slide.stanza, slide.stanza.frameExactTemplateId, slide.wordOverrides);
+        const texts = R.readTextsFromStanza(slide.stanza, slide.stanza.frameExactTemplateId, slide.wordOverrides, slide.style && slide.style.textTransform);
         // elapsedMs aqui já é relativo ao início do slide (mesmo tempo
         // usado pro resto do texto) — igual ao preview.
         R.renderFrame(ctx, slide.stanza.frameExactTemplateId, texts, elapsedMs);
@@ -19683,7 +19683,21 @@ class RenderEngineV2 {
    * Efeito 2: red único + palavras brancas independentes).
    */
   _readFrameExactTexts(stanza) {
-    return window.WM_FRAME_EXACT_RENDERER.readTextsFromStanza(stanza, stanza && stanza.frameExactTemplateId, this.wordOverrides);
+    // Mesma prioridade usada no resto do app pra caixa de texto: override
+    // de palavra (já considerado dentro de readTextsFromStanza) > override
+    // de cena > global (this.style.textTransform).
+    let sceneTT = null;
+    try {
+      const sid = stanza && stanza.id;
+      if (sid && typeof this.getSceneConfig === 'function') {
+        const sc = this.getSceneConfig(sid);
+        sceneTT = sc && sc.style ? sc.style.textTransform : null;
+      }
+    } catch (e) {}
+    return window.WM_FRAME_EXACT_RENDERER.readTextsFromStanza(
+      stanza, stanza && stanza.frameExactTemplateId, this.wordOverrides,
+      this.style && this.style.textTransform, sceneTT
+    );
   }
 
   /**
@@ -44548,7 +44562,60 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
    * método de instância) quanto pelo export (CanvasRenderer, objeto
    * plano sem "this" de engine), pra nunca divergir entre os dois.
    */
-  function readTextsFromStanza(stanza, templateId, wordOverrides) {
+  // BUG REAL CORRIGIDO ("aplico maiúscula/minúscula e não é aplicada no
+  // efeito Falsos Mestres" — confirmado testando, e o mesmo bug afetava
+  // TODOS os outros efeitos frame-exact, não só esse): o botão de caixa
+  // de texto na barra (engine.setStyle({textTransform})) sempre foi
+  // GLOBAL, mas nenhuma das funções `_readTextsEfeitoXXStyle` (Efeito 2
+  // até 26) nunca lia esse valor — todas usavam `w.text` cru, direto do
+  // texto digitado. Corrigido de forma CENTRALIZADA (não uma correção
+  // por efeito): a própria `readTextsFromStanza`, ANTES de despachar
+  // pro efeito específico, aplica a transformação em cada palavra da
+  // estrofe (com a MESMA prioridade usada no resto do app — override de
+  // palavra > override de cena > global) — assim TODAS as funções
+  // internas continuam lendo `w.text` normalmente, já vindo
+  // transformado, sem precisar tocar em nenhuma delas.
+  function _feApplyTextTransform(text, transform) {
+    if (transform === 'uppercase') return text.toUpperCase();
+    if (transform === 'lowercase') return text.toLowerCase();
+    if (transform === 'capitalize') {
+      return text.toLowerCase().replace(/(^|\s)(\S)/g, (m, sp, ch) => sp + ch.toUpperCase());
+    }
+    return text;
+  }
+
+  function _feStanzaComTextTransform(stanza, wordOverrides, globalTransform, sceneTransform) {
+    if (!stanza || !stanza.lines) return stanza;
+    const efetivoBase = (sceneTransform && sceneTransform !== 'none') ? sceneTransform : (globalTransform || 'none');
+    if (efetivoBase === 'none' && !(wordOverrides && Object.keys(wordOverrides).some(
+      wid => wordOverrides[wid] && wordOverrides[wid].style && wordOverrides[wid].style.textTransform
+             && wordOverrides[wid].style.textTransform !== 'none'
+    ))) {
+      // Nada pra transformar em lugar nenhum — devolve a estrofe original
+      // sem gastar tempo copiando (caminho comum, sem nenhuma caixa ativa).
+      return stanza;
+    }
+    return {
+      ...stanza,
+      lines: stanza.lines.map(ln => ({
+        ...ln,
+        words: (ln.words || []).map(w => {
+          const wo = w.id && wordOverrides && wordOverrides[w.id];
+          const ttPalavra = wo && wo.style && wo.style.textTransform;
+          const efetivo = (ttPalavra && ttPalavra !== 'none') ? ttPalavra : efetivoBase;
+          if (efetivo === 'none' || !w.text) return w;
+          return { ...w, text: _feApplyTextTransform(w.text, efetivo) };
+        }),
+      })),
+    };
+  }
+
+  function readTextsFromStanza(stanza, templateId, wordOverrides, globalTextTransform, sceneTextTransform) {
+    const stanzaEfetiva = _feStanzaComTextTransform(stanza, wordOverrides, globalTextTransform, sceneTextTransform);
+    return _readTextsFromStanzaBruta(stanzaEfetiva, templateId, wordOverrides);
+  }
+
+  function _readTextsFromStanzaBruta(stanza, templateId, wordOverrides) {
     const tpl = templateId ? TEMPLATES_FRAME_EXACT[templateId] : null;
     if (tpl && tpl.layout === 'efeito-2-style') {
       return _readTextsEfeito2Style(stanza, wordOverrides);
