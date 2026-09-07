@@ -25993,12 +25993,28 @@ function initEditor() {
             const centroGlobalX = (minX + maxX) / 2, centroGlobalY = (minY + maxY) / 2;
             const razaoCrescimento = novaEscalaFE / primeiraEscala;
             const deltaPorLinha = {};
+            // BUG REAL CORRIGIDO ("o bloco não está centralizado e
+            // quando tento centralizar fica desta forma" — reportado
+            // pelo usuário com captura de tela mostrando as 3 linhas
+            // se sobrepondo depois de reduzir com tudo selecionado):
+            // no Efeito 24 (Silêncio) com 3 linhas, a posição Y da
+            // linha do meio já é recalculada automaticamente TODA VEZ
+            // que o tamanho muda (centralizada entre linha1/linha2,
+            // considerando a altura real de cada uma). Aplicar TAMBÉM
+            // um deslocamento aqui, em cima disso, fazia linha1 e
+            // linha2 convergirem tão rápido uma em direção à outra
+            // que ultrapassavam a posição, parada, da linha do meio —
+            // as 3 colidiam. Agora pula o deslocamento vertical
+            // (dy=0) especificamente pra essa linha nesse efeito — a
+            // posição dela já se ajusta sozinha.
+            const ehEfeito24Com3Linhas = tplFE && tplFE.layout === 'efeito-24-style' && stFE.lines && stFE.lines.length >= 3;
             Object.keys(bboxPorLinha).forEach(li => {
               const b = bboxPorLinha[li];
               const cx = (b.x0 + b.x1) / 2, cy = (b.y0 + b.y1) / 2;
+              const puloVertical = ehEfeito24Com3Linhas && Number(li) === 1;
               deltaPorLinha[li] = {
                 dx: (cx - centroGlobalX) * (razaoCrescimento - 1),
-                dy: (cy - centroGlobalY) * (razaoCrescimento - 1),
+                dy: puloVertical ? 0 : (cy - centroGlobalY) * (razaoCrescimento - 1),
               };
             });
             idsFE.forEach(wid => {
@@ -26131,12 +26147,16 @@ function initEditor() {
             const centroGlobalX = (minX + maxX) / 2, centroGlobalY = (minY + maxY) / 2;
             const razaoCrescimento = novaEscalaFE / primeiraEscalaFE;
             const deltaPorLinha = {};
+            // Mesma correção de excluir a linha do meio do
+            // deslocamento vertical, explicada em aplicarTamanho.
+            const ehEfeito24Com3LinhasDef = tplFE && tplFE.layout === 'efeito-24-style' && stFE.lines && stFE.lines.length >= 3;
             Object.keys(bboxPorLinha).forEach(li => {
               const b = bboxPorLinha[li];
               const cx = (b.x0 + b.x1) / 2, cy = (b.y0 + b.y1) / 2;
+              const puloVertical = ehEfeito24Com3LinhasDef && Number(li) === 1;
               deltaPorLinha[li] = {
                 dx: (cx - centroGlobalX) * (razaoCrescimento - 1),
-                dy: (cy - centroGlobalY) * (razaoCrescimento - 1),
+                dy: puloVertical ? 0 : (cy - centroGlobalY) * (razaoCrescimento - 1),
               };
             });
             idsFE.forEach(wid => {
@@ -43638,7 +43658,16 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       const dy = (1 - progresso) * 40;
       const rot = (1 - progresso) * (i % 2 === 0 ? -25 : 25);
       const escala = 0.6 + 0.4 * progresso;
-      if (progresso > 0) _efeito24DesenhaLetra(ctx, ch, xFinal, yTopo + offset.dy, fontSize, fontFamily, dx, dy, rot, escala, ehContorno);
+      // BUG REAL CORRIGIDO ("o bloco não está centralizado e quando
+      // tento centralizar fica desta forma" — causa raiz real,
+      // encontrada instrumentando o código: `yTopo` já chega aqui com
+      // `offset.dy` somado pelo chamador — ex: `y1 = tpl.posicoes.
+      // linha1.y + offset1.dy` — mas essa função ADICIONAVA
+      // `offset.dy` de novo por cima, duplicando o deslocamento
+      // vertical. Um offset de 44px virava 88px de deslocamento real
+      // na tela — fazendo linha1/linha2 convergirem MUITO mais rápido
+      // do que o redimensionador pretendia, sobrepondo tudo).
+      if (progresso > 0) _efeito24DesenhaLetra(ctx, ch, xFinal, yTopo, fontSize, fontFamily, dx, dy, rot, escala, ehContorno);
       cursor += larguras[i];
     });
   }
@@ -43731,12 +43760,33 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
         // ABAIXO (da baseline dela até o topo real de linha2). Cai de
         // volta pro centro geométrico simples só se faltar linha1 ou
         // linha2 (nada pra centralizar em relação a elas).
+        //
+        // BUG REAL CORRIGIDO ("o bloco não está centralizado e quando
+        // tento centralizar fica desta forma" — reportado pelo
+        // usuário com captura de tela mostrando as 3 linhas
+        // completamente sobrepostas depois de usar o redimensionador
+        // com todas selecionadas): essa fórmula usava
+        // `offset1.dy`/`offset2.dy` (a posição JÁ deslocada de
+        // linha1/linha2) — só que o PRÓPRIO redimensionador de várias
+        // palavras calcula o quanto deslocar cada linha OLHANDO pra
+        // posição atual da linha do meio. Isso criava uma
+        // retroalimentação: cada clique no "-" mudava offset1/offset2
+        // → mudava a posição da linha do meio → o PRÓXIMO clique via
+        // uma posição de referência já deslocada → amplificava ainda
+        // mais no clique seguinte — as 3 linhas convergiam rápido pra
+        // um único ponto. Agora usa as posições NOMINAIS (sem
+        // nenhum offset) de linha1/linha2 pra calcular a centralização
+        // ideal — quebra esse ciclo. Efeito colateral aceitável: se o
+        // usuário mover só linha1 ou só linha2 manualmente (sem
+        // selecionar a linha do meio junto), a centralização não
+        // acompanha automaticamente — mas isso é bem mais raro do que
+        // simplesmente redimensionar tudo junto.
         let yMeio;
         if (p1 && texto1 && p2 && texto2) {
           const fontSize1Calc = tpl.posicoes.linha1.fontSize * fontScale1;
-          const y1Calc = tpl.posicoes.linha1.y + offset1.dy;
+          const y1Calc = tpl.posicoes.linha1.y;
           const fontSize2Calc = tpl.posicoes.linha2.fontSize * fontScale2;
-          const y2Calc = tpl.posicoes.linha2.y + offset2.dy;
+          const y2Calc = tpl.posicoes.linha2.y;
           const baseline1 = y1Calc + fontSize1Calc * 0.76;
           const baseline2 = y2Calc + fontSize2Calc * 0.76;
           const ascentReal2 = _efeito24MedeAscentReal(texto2, fontSize2Calc, fontFamily);
