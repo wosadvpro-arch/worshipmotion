@@ -41700,7 +41700,25 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     medidor.font = `${italico ? 'italic ' : ''}${fontWeight} ${alturaMedicao}px "${fontFamilyPadrao}"`;
     const m = medidor.measureText(texto.toUpperCase());
     const rawW = Math.max(1, (m.actualBoundingBoxRight || 0) + (m.actualBoundingBoxLeft || 0) || m.width);
-    const rawH = Math.max(1, (m.actualBoundingBoxAscent || 400) + (m.actualBoundingBoxDescent || 20));
+    // BUG REAL CORRIGIDO ("algumas palavras estão mais esticadas pra
+    // cima e outras normais, mesma fonte em todas" — reportado pelo
+    // usuário depois de trocar todas as palavras pra Montserrat):
+    // em modo NÃO-fidelidade, a altura ALVO da caixa (`bh`, calculada
+    // mais acima) já vem de `_efeito17AlturaNatural` — uma medição
+    // FIXA baseada num alfabeto completo (com acentos, que são mais
+    // altos). Mas aqui embaixo, a altura usada pra ESCALAR o desenho
+    // (`rawH`) media só os glifos da PALAVRA ESPECÍFICA — palavras
+    // sem nenhum acento (ex. "STARS") saem com um bounding box mais
+    // BAIXO que palavras com acento, então precisavam esticar MAIS
+    // (sy maior) pra caber na MESMA altura alvo, enquanto palavras
+    // com acento já saíam quase do tamanho certo. Em modo fidelidade,
+    // mantém a medição real (os dados originais foram calibrados
+    // para o texto ORIGINAL específico de cada estágio); em reflow,
+    // usa a MESMA referência fixa dos dois lados — nenhuma palavra
+    // estica mais que a outra só por ter ou não acento.
+    const rawH = ehFidelidade
+      ? Math.max(1, (m.actualBoundingBoxAscent || 400) + (m.actualBoundingBoxDescent || 20))
+      : _efeito17AlturaNatural(fontFamilyPadrao, fontWeight);
     const sx = bwFinal / rawW, sy = bhFinal / rawH;
 
     ctx.save();
@@ -42201,6 +42219,35 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       }
     }
 
+    // BUG REAL CORRIGIDO ("selecionei todas as palavras, troquei a
+    // fonte e diminuí o tamanho, ficou tudo sobreposto" — reportado
+    // pelo usuário com captura de tela; confirmado que a sobreposição
+    // já existia mesmo SEM reduzir o tamanho, só ficava mais visível
+    // depois): no modo reflow, a altura de CADA papel era calculada
+    // via `_efeito19AlturaNatural`, que mede sempre numa referência
+    // FIXA (260px) variando só por peso/itálico — isso IGNORA que, no
+    // vídeo original, a linha do meio (a/meia/noite) é bem mais
+    // COMPACTA que "quando"/"chegar" (proporção medida: quase 2.2x
+    // menor). Sem considerar essa proporção, a linha do meio saía
+    // com uma caixa ALTA DEMAIS (quase do mesmo tamanho de "quando"),
+    // avançando pra cima até sobrepor a linha anterior. Agora,
+    // ANTES do loop principal, mede a altura ORIGINAL de cada papel
+    // num quadro ESTÁVEL (o último — depois de qualquer animação de
+    // entrada já ter assentado) e guarda a PROPORÇÃO de cada papel
+    // relativa a "quando" (referência 1.0) — essa proporção é então
+    // aplicada em cima da altura calculada pela fonte, preservando a
+    // MESMA hierarquia visual do vídeo original mesmo com fonte/texto
+    // diferentes.
+    const proporcoesAlturaPapel = {};
+    if (!ehFidelidade) {
+      const fDataRef = _efeito19FrameData(tpl, tpl.motionData.frames - 1);
+      const alturaRefQuando = (fDataRef && fDataRef.quando && fDataRef.quando.h) || 1;
+      PAPEIS.forEach(papel => {
+        const d = fDataRef && fDataRef[papel];
+        proporcoesAlturaPapel[papel] = d ? (d.h / alturaRefQuando) : 1;
+      });
+    }
+
     PAPEIS.forEach(papel => {
       const p = texts.papeis[papel];
       if (!p || !(p.texto || '').trim()) return;
@@ -42242,7 +42289,8 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
         // vazar da tela com palavras longas — consistência com o
         // centro X calculado).
         const ehPapelDoMeio = papel in centrosXMeioLinha;
-        const alturaNatural = _efeito19AlturaNatural(fontFamily, peso, italico) * (ehPapelDoMeio ? fatorReducaoMeioLinha : 1);
+        const proporcaoAltura = proporcoesAlturaPapel[papel] || 1;
+        const alturaNatural = _efeito19AlturaNatural(fontFamily, peso, italico) * proporcaoAltura * (ehPapelDoMeio ? fatorReducaoMeioLinha : 1);
         const medidor = document.createElement('canvas').getContext('2d');
         medidor.font = `${italico ? 'italic ' : ''}${peso} ${alturaNatural}px ${_fontFamilyCanvas(fontFamily)}`;
         const larguraNatural = Math.max(1, medidor.measureText(texto.toUpperCase()).width);
@@ -42697,7 +42745,25 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       const L = tpl.linhasBase[k];
       const x = L.x + offset.dx, y = L.y + offset.dy;
       const targetW = L.w * s * fontScale;
-      const fs = _efeito21FitFont(medidor, texto, fontFamily, targetW);
+      let fs = _efeito21FitFont(medidor, texto, fontFamily, targetW);
+      // BUG REAL CORRIGIDO ("verifique se tem em outro efeito o mesmo
+      // problema de sobreposição" — confirmado testando com palavras
+      // de 1 letra só, tipo "X"/"Y"/"Z"/"W": o tamanho da fonte é
+      // calculado só pra bater a LARGURA alvo (targetW) — uma palavra
+      // bem mais CURTA que o original precisa de uma fonte ENORME pra
+      // ocupar a mesma largura, sem NENHUM limite de altura. Isso
+      // estourava a altura disponível da linha e sobrepunha as linhas
+      // vizinhas por completo. Agora mede a altura real resultante e,
+      // se ultrapassar o espaço vertical dessa linha, reduz a fonte
+      // proporcionalmente (perde só um pouco de largura de preenchimento,
+      // nunca sobrepõe outra linha).
+      const alturaMaximaLinha = L.h * s * fontScale;
+      medidor.font = `${fs}px ${_fontFamilyCanvas(fontFamily)}`;
+      const mAltura = medidor.measureText(texto);
+      const alturaFonteAtual = (mAltura.actualBoundingBoxAscent || fs * 0.72) + (mAltura.actualBoundingBoxDescent || 0);
+      if (alturaFonteAtual > alturaMaximaLinha) {
+        fs *= alturaMaximaLinha / alturaFonteAtual;
+      }
 
       // BUG REAL CORRIGIDO (evitado desde o início — lição de outros
       // efeitos): "falsos"/"mesmos" (k=0,3) SEMPRE usam sua própria
