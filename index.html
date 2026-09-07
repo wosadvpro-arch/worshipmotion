@@ -14164,7 +14164,7 @@ const TEMPLATES = [
   {
     id: "tpl-oficial-text-preset-08-frame-exact",
     name: "Text Preset 08",
-    description: "Uma palavra por vez, substituindo a anterior, centralizada — começa maior e encolhe até o tamanho final. Brilho azul-claro sobre fundo preto.",
+    description: "Uma palavra por vez, substituindo a anterior, centralizada — começa maior e encolhe até o tamanho final.",
     tags: ["Datilografia", "Frame-exact", "Pro Plus"],
     isOfficial: true,
     isPremium: true,
@@ -40750,19 +40750,11 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       const framesDesdeRevelacao = frameEfetivo !== null ? Math.max(0, frameEfetivo - quadroRevelacao) : EFEITO14_FADE_FRAMES;
       const progresso = Math.min(1, framesDesdeRevelacao / EFEITO14_FADE_FRAMES);
       const cor = _misturarCor(tpl.styles.default.corRevelada, tpl.styles.default.corAssentada, progresso);
-      // PEDIDO DO USUÁRIO ("sobra azul nas palavras, parece estranho
-      // com fundo preto"): antes, o brilho nunca chegava a zero de
-      // verdade — mesmo uma palavra totalmente assentada (branca)
-      // ficava com 18% de brilho azul permanente, que contra um fundo
-      // preto sólido fica bem visível/estranho (contra o gradiente
-      // antigo, se perdia mais facilmente). Agora o brilho esmaece
-      // JUNTO com a cor, até zero — palavra assentada fica sem
-      // nenhum resquício de azul.
-      const glowAlpha = 0.85 * (1 - progresso);
 
       ctx.save();
-      ctx.shadowColor = `rgba(10,120,240,${glowAlpha.toFixed(3)})`;
-      ctx.shadowBlur = 28;
+      // PEDIDO DO USUÁRIO ("as fontes não podem ter efeito nenhum,
+      // como brilho, sombra e etc"): removido por completo — nada de
+      // shadowColor/shadowBlur aqui, só a cor sólida em transição.
       ctx.globalCompositeOperation = 'source-over';
       // Recolore o bitmap (gerado em branco) pra cor calculada via
       // composite — evita gerar um bitmap novo por combinação de cor
@@ -41043,25 +41035,23 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       const drawY = centroYPalavra - drawH / 2 + offset.dy;
 
       const ehAtiva = (i === indiceAtivo);
-      let cor, corGlow, alphaGlow;
+      let cor;
       if (ehAtiva) {
         // PEDIDO DO USUÁRIO ("retira as cores azuis que fica na
         // primeira e segunda palavra e deixa em branco"): antes, a
         // palavra ativa nascia azul e só virava branca depois que o
         // corte à esquerda começava — removido o azul por completo,
-        // a palavra ativa agora é sempre branca (também trocado o
-        // brilho, que tinha um tom azulado, por um brilho branco
-        // neutro, pra não sobrar nenhum resquício da cor antiga).
+        // a palavra ativa agora é sempre branca.
         cor = EFEITO15_COR_ATIVA_BRANCA;
-        corGlow = 'rgba(255,255,255,0.55)'; alphaGlow = 34;
       } else {
         cor = EFEITO15_COR_INATIVA_BRANCA_50;
-        corGlow = 'rgba(255,255,255,0.25)'; alphaGlow = 30;
       }
 
       ctx.save();
-      ctx.shadowColor = corGlow;
-      ctx.shadowBlur = alphaGlow;
+      // BUG REAL CORRIGIDO ("a fonte saiu com um efeito de brilho" —
+      // mesmo relato do Efeito 17, mesmo padrão aqui): existia um
+      // brilho branco CONSTANTE (nunca decaía) em toda palavra, ativa
+      // ou não — removido, texto limpo.
       ctx.globalCompositeOperation = 'source-over';
       // Recolore o bitmap (gerado em branco) via composite — evita
       // gerar um bitmap novo por combinação de cor (só 3 cores
@@ -41338,15 +41328,12 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       const drawY = centroYPalavra16 - drawH / 2 + offset.dy;
       if (i === indiceEco) { xPalavraEco = drawX; larguraPalavraEco = drawW; }
 
-      const imgComBrilho = _efeito16BrilhoPrincipalCache(item.img);
-      const margem = imgComBrilho._margem || 0;
-      const escalaW = drawW / (imgComBrilho.width - margem * 2);
-      const escalaH = drawH / (imgComBrilho.height - margem * 2);
-      ctx.drawImage(
-        imgComBrilho,
-        drawX - margem * escalaW, drawY - margem * escalaH,
-        imgComBrilho.width * escalaW, imgComBrilho.height * escalaH
-      );
+      // BUG REAL CORRIGIDO ("a fonte saiu com um efeito de brilho" —
+      // mesmo padrão já corrigido nos Efeitos 15/17): a palavra
+      // principal tinha um brilho branco "assado" no bitmap,
+      // CONSTANTE, sem nunca decair — removido; desenha o bitmap
+      // original direto, sem sombra/brilho.
+      ctx.drawImage(item.img, drawX, drawY, drawW, drawH);
 
       _registrarRegiaoClique(tpl, texts._wordId[i], drawX, drawY, drawW, drawH);
       cursor += drawW + larguraEspaco * escalaHorizontal;
@@ -41396,54 +41383,6 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
   /** Recolore um bitmap branco pra uma cor RGB via composite — chamada
    * UMA VEZ por cor (não por cópia desenhada), já que dentro do mesmo
    * quadro várias cópias do rastro compartilham a mesma cor. */
-  /** Recolore um bitmap branco pra uma cor RGB **e já assa o brilho
-   * nele** — chamada UMA VEZ por cor por quadro (não por cópia
-   * desenhada).
-   *
-   * BUG REAL CORRIGIDO ("a animação está travada" — 2ª causa, depois
-   * de já ter corrigido a recriação de canvas repetida): mesmo só
-   * recolorindo 1x por lado, cada uma das até 18 cópias desenhadas
-   * ainda aplicava `ctx.shadowBlur` NO MOMENTO DO DESENHO — e brilho
-   * de canvas é uma das operações MAIS caras que existem (o
-   * navegador recalcula o desfoque toda vez que desenha, não é uma
-   * textura reaproveitável só porque a cor é a mesma). 18 aplicações
-   * de shadowBlur por quadro ainda deixava cada quadro lento demais
-   * pra acompanhar 24fps. Agora o brilho é "assado" DENTRO do bitmap
-   * (desenhado com blur UMA vez, numa tela com margem extra pro
-   * brilho não ficar cortado) — as cópias desenhadas depois só fazem
-   * um `drawImage` comum (barato), sem re-calcular blur nenhum.
-   */
-  /** Cache (por referência de bitmap) da versão "com brilho assado"
-   * da palavra principal — evita recalcular `shadowBlur` (caro) todo
-   * quadro pra uma cor que nunca muda (branco fixo). Como
-   * _efeito2MakeBitmapAtHeight já cacheia o bitmap original por
-   * texto+fonte+altura, a MESMA palavra/tamanho sempre retorna o
-   * MESMO objeto — um WeakMap nesse objeto garante acerto de cache
-   * entre quadros consecutivos (a lista `itens` é reconstruída a
-   * cada quadro, mas os bitmaps dentro dela são os mesmos objetos).
-   */
-  const _efeito16CacheBrilhoPrincipal = new WeakMap();
-  function _efeito16BrilhoPrincipalCache(img) {
-    if (_efeito16CacheBrilhoPrincipal.has(img)) return _efeito16CacheBrilhoPrincipal.get(img);
-    const margem = 40;
-    const tmp = document.createElement('canvas');
-    tmp.width = img.width + margem * 2;
-    tmp.height = img.height + margem * 2;
-    const tctx = tmp.getContext('2d');
-    // PEDIDO DO USUÁRIO ("sobra azul nas palavras, parece estranho
-    // com fundo preto"): o texto principal (sempre branco, nunca
-    // muda de cor nesse efeito) tinha um brilho AZUL constante — sem
-    // nenhuma palavra "ativa" pra justificar a cor, ficava parecendo
-    // um resíduo/erro contra fundo preto sólido. Trocado por um
-    // brilho branco neutro (mesmo tom do texto), suave o bastante
-    // pra dar profundidade sem parecer uma cor "grudada" errada.
-    tctx.shadowColor = 'rgba(255,255,255,.35)';
-    tctx.shadowBlur = 34;
-    tctx.drawImage(img, margem, margem);
-    tmp._margem = margem;
-    _efeito16CacheBrilhoPrincipal.set(img, tmp);
-    return tmp;
-  }
 
   /** Cache por cor QUANTIZADA (arredondada pro múltiplo de 12 mais
    * próximo em cada canal) — a cor do rastro muda suavemente quadro a
@@ -41770,8 +41709,12 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     ctx.font = `${italico ? 'italic ' : ''}${fontWeight} ${alturaMedicao}px "${fontFamilyPadrao}"`;
     ctx.textBaseline = 'alphabetic';
     ctx.textAlign = 'left';
-    ctx.shadowColor = tpl.styles.default.corBrilho;
-    ctx.shadowBlur = 55;
+    // BUG REAL CORRIGIDO ("a fonte saiu com um efeito de brilho" —
+    // reportado pelo usuário depois de trocar a fonte e o fundo):
+    // esse efeito sempre teve um brilho CONSTANTE (shadowBlur 55,
+    // nunca decaía), diferente dos Efeitos 14/18 (mesmo brilho azul,
+    // mas que já foi corrigido antes pra esmaecer até zero). Removido
+    // por completo — texto limpo, sem sombra/brilho permanente.
     ctx.fillStyle = tpl.styles.default.corPrincipal;
     ctx.fillText(texto.toUpperCase(), -(m.actualBoundingBoxLeft || 0), m.actualBoundingBoxAscent || 400);
     ctx.restore();
@@ -42058,18 +42001,10 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
         }
       }
       const cor = alpha > 0 ? _misturarCor(tpl.styles.default.corFinal, tpl.styles.default.corAtivaAzul, alpha) : tpl.styles.default.corFinal;
-      // PEDIDO DO USUÁRIO ("sobra azul nas palavras, parece estranho
-      // com fundo preto"): antes, TODA palavra (ativa ou já
-      // assentada/branca) tinha um piso de 20% de brilho azul
-      // permanente — contra fundo preto sólido, esse resíduo fica
-      // bem visível/estranho em palavras que já deveriam estar 100%
-      // brancas. Agora o brilho acompanha a mistura de cor (`alpha`)
-      // de perto — chega a praticamente zero quando a palavra assenta.
-      const glowAlpha = 0.30 * alpha;
 
       ctx.save();
-      ctx.shadowColor = `rgba(20,120,255,${glowAlpha.toFixed(3)})`;
-      ctx.shadowBlur = 30;
+      // PEDIDO DO USUÁRIO ("as fontes não podem ter efeito nenhum,
+      // como brilho, sombra e etc"): removido por completo.
       const tmp = document.createElement('canvas');
       tmp.width = item.img.width; tmp.height = item.img.height;
       const tctx = tmp.getContext('2d');
@@ -43217,11 +43152,10 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     ctx.font = `700 ${tamanho}px ${_fontFamilyCanvas(fontFamily)}`;
     ctx.textBaseline = 'alphabetic';
     ctx.textAlign = 'center';
-    ctx.shadowColor = 'rgba(255,255,255,.16)';
-    ctx.shadowBlur = 2;
+    // PEDIDO DO USUÁRIO ("as fontes não podem ter efeito nenhum, como
+    // brilho, sombra e etc"): removida a sombra sutil que existia aqui.
     ctx.fillStyle = corTexto;
     ctx.fillText(texto, cx, y);
-    ctx.shadowBlur = 0;
     ctx.restore();
   }
 
@@ -43235,8 +43169,8 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     ctx.save();
     ctx.font = `700 ${tamanho}px ${_fontFamilyCanvas(fontFamily)}`;
     ctx.textBaseline = 'alphabetic';
-    ctx.shadowColor = 'rgba(255,255,255,.16)';
-    ctx.shadowBlur = 2;
+    // PEDIDO DO USUÁRIO ("as fontes não podem ter efeito nenhum, como
+    // brilho, sombra e etc"): removida a sombra sutil que existia aqui.
     const larguraTexto = ctx.measureText(texto).width;
     const larguraCursor = ctx.measureText('_').width;
     const larguraTotal = larguraTexto + larguraCursor;
@@ -43244,10 +43178,8 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     ctx.textAlign = 'left';
     ctx.fillStyle = corTexto;
     ctx.fillText(texto, inicioX, y);
-    ctx.shadowBlur = 3;
     ctx.fillStyle = corCursor;
     ctx.fillText('_', inicioX + larguraTexto, y);
-    ctx.shadowBlur = 0;
     ctx.restore();
   }
 
@@ -43436,11 +43368,10 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       ctx.strokeStyle = 'rgba(255,255,255,.75)';
       ctx.strokeText(char, 0, baselineY);
     } else {
-      ctx.shadowColor = 'rgba(255,255,255,.14)';
-      ctx.shadowBlur = 8;
+      // PEDIDO DO USUÁRIO ("as fontes não podem ter efeito nenhum,
+      // como brilho, sombra e etc"): removida a sombra sutil.
       ctx.fillStyle = '#ffffff';
       ctx.fillText(char, 0, baselineY);
-      ctx.shadowBlur = 0;
     }
     ctx.restore();
   }
