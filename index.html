@@ -42373,6 +42373,27 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
         const subidaMax = alturaNatural * 0.7; // fração da altura, generalizando a subida observada no original
         const subidaAtual = subidaMax * (1 - dadosPapel.opacidade);
         bw = larguraNatural; bh = alturaNatural;
+        // BUG REAL CORRIGIDO ("quando aplico o efeito, olha como ele
+        // aparece de inicial... tem como diminuir a fonte" — reportado
+        // pelo usuário com captura de tela mostrando "SOMENTE"/"A
+        // GLÓRIA" vazando pra fora da tela ao trocar pra Permanent
+        // Marker): só a linha do meio (a/meia/noite) tinha uma
+        // salvaguarda de largura máxima — "quando"/"chegar" nunca
+        // tinham nenhum limite. Fontes com proporção largura/altura
+        // bem diferente da original (como Permanent Marker, uma fonte
+        // "marcador" naturalmente larga) podiam facilmente ultrapassar
+        // a largura do canvas já no tamanho PADRÃO, sem o usuário
+        // precisar digitar nada de especialmente longo. Mesmo critério
+        // dos outros papéis: se ultrapassar 92% da largura, reduz
+        // largura e altura juntas (nunca distorce).
+        if (!ehPapelDoMeio) {
+          const larguraMaximaPapel = tpl.logicalWidth * 0.92;
+          if (bw > larguraMaximaPapel) {
+            const fatorCoubeu19 = larguraMaximaPapel / bw;
+            bw *= fatorCoubeu19;
+            bh *= fatorCoubeu19;
+          }
+        }
         bx = cxFinal - bw / 2;
         by = (cyFinal - bh / 2) + subidaAtual;
       }
