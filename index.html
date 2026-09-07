@@ -41650,9 +41650,28 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       if (!fData) return true;
       bx = fData.x; by = fData.y; bw = fData.width; bh = fData.height;
     } else {
+      // BUG REAL CORRIGIDO ("está achatado a fonte e não naturalmente,
+      // como ela é" — reportado pelo usuário no Text Preset 08 com
+      // captura de tela): a largura-alvo (`bw`, calculada aqui) media
+      // o texto numa fonte de tamanho `alturaNatural` (a ALTURA
+      // calculada da fonte, tipicamente uns 300-400px) — mas mais
+      // abaixo, no bloco de desenho, a largura REAL desenhada (`rawW`)
+      // é medida numa fonte de tamanho FIXO diferente (500px, a
+      // constante `alturaMedicao`). Como a largura medida por
+      // measureText escala linearmente com o tamanho da fonte usada
+      // pra medir, misturar duas bases de medição diferentes pro
+      // MESMO texto (uma a ~350px, outra a 500px) fazia a razão
+      // `sx = bwFinal/rawW` sair sistematicamente menor que deveria —
+      // comprimindo a palavra na horizontal em relação à altura
+      // ("achatada"), mesmo sem nenhum acento ou peculiaridade
+      // específica do texto envolvida. Agora mede a largura na MESMA
+      // base fixa (500px) usada no bloco de desenho — garante que
+      // `bw`/`bwFinal` estejam na mesma escala que `rawW`, preservando
+      // a proporção natural da fonte.
       const alturaNatural = _efeito17AlturaNatural(fontFamilyPadrao, fontWeight);
+      const alturaMedicaoBw = 500;
       const medidor = document.createElement('canvas').getContext('2d');
-      medidor.font = `${italico ? 'italic ' : ''}${fontWeight} ${alturaNatural}px "${fontFamilyPadrao}"`;
+      medidor.font = `${italico ? 'italic ' : ''}${fontWeight} ${alturaMedicaoBw}px "${fontFamilyPadrao}"`;
       const m = medidor.measureText(texto.toUpperCase());
       const larguraNatural = Math.max(1, (m.actualBoundingBoxRight || 0) + (m.actualBoundingBoxLeft || 0) || m.width);
 
