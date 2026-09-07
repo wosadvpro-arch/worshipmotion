@@ -43625,24 +43625,6 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
   function _efeito24DesenhaReflow(ctx, texto, yTopo, fontSize, fontFamily, offset, f, ehContorno, larguraCanvas, quadroInicio, quadroFim) {
     const medidor = document.createElement('canvas').getContext('2d');
     medidor.font = `900 ${fontSize}px ${_fontFamilyCanvas(fontFamily)}`;
-    // BUG REAL CORRIGIDO ("ficou estranho, acho que usou o acento como
-    // referência de espaçamento" — reportado pelo usuário com captura
-    // de tela mostrando "GLÓRIA" parecendo mais perto de "PRA SUA" do
-    // que "PRA SUA" está de "EU VIVO"): confirmado testando — uma
-    // letra acentuada (Ó) se estende bem mais alto que uma letra
-    // normal na MESMA fonte/tamanho (medido: 92px de ascent com
-    // acento vs 73px sem, quase 20px de diferença). Isso empurra o
-    // TOPO VISUAL da palavra pra mais perto da linha de cima, mesmo a
-    // baseline estando na posição matematicamente correta/simétrica.
-    // Mede o ascent REAL do texto e compara com o ascent de uma letra
-    // maiúscula comum sem acento (referência do cap-height "normal"
-    // da fonte) — desloca o desenho pra baixo pela diferença, então
-    // o espaço visual líquido entre linhas fica consistente mesmo
-    // quando só uma delas tem acento.
-    const ascentReal = medidor.measureText(texto).actualBoundingBoxAscent || 0;
-    const ascentReferencia = medidor.measureText('A').actualBoundingBoxAscent || ascentReal;
-    const ajusteAcento = Math.max(0, ascentReal - ascentReferencia);
-    const yAjustado = yTopo + ajusteAcento;
     const chars = [...texto];
     const larguras = chars.map(c => medidor.measureText(c).width);
     const total = larguras.reduce((a, b) => a + b, 0);
@@ -43656,9 +43638,18 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       const dy = (1 - progresso) * 40;
       const rot = (1 - progresso) * (i % 2 === 0 ? -25 : 25);
       const escala = 0.6 + 0.4 * progresso;
-      if (progresso > 0) _efeito24DesenhaLetra(ctx, ch, xFinal, yAjustado + offset.dy, fontSize, fontFamily, dx, dy, rot, escala, ehContorno);
+      if (progresso > 0) _efeito24DesenhaLetra(ctx, ch, xFinal, yTopo + offset.dy, fontSize, fontFamily, dx, dy, rot, escala, ehContorno);
       cursor += larguras[i];
     });
+  }
+
+  // Mede o "ascent" REAL (altura visual acima da baseline) de um
+  // texto numa fonte/tamanho — usado pra calcular espaçamento visual
+  // que considera acentos, sem depender de uma altura nominal fixa.
+  function _efeito24MedeAscentReal(texto, fontSize, fontFamily) {
+    const medidor = document.createElement('canvas').getContext('2d');
+    medidor.font = `900 ${fontSize}px ${_fontFamilyCanvas(fontFamily)}`;
+    return medidor.measureText(texto).actualBoundingBoxAscent || fontSize * 0.72;
   }
 
   function _renderFrameEfeito24Style(ctx, tpl, texts, frameIdx, elapsedMs) {
@@ -43727,7 +43718,35 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
         _registrarRegiaoClique(tpl, pMeio.wordId, tpl.logicalWidth / 2 - c.raio * fontScaleMeio + offsetMeio.dx, c.y - c.raio * fontScaleMeio + offsetMeio.dy, c.raio * 2 * fontScaleMeio, c.raio * 2 * fontScaleMeio);
       } else {
         const fontSizeMeio = tpl.posicoes.linhaMeio.fontSize * fontScaleMeio;
-        const yMeio = tpl.posicoes.linhaMeio.yReflow + offsetMeio.dy;
+        // BUG REAL CORRIGIDO — 2ª tentativa ("ficou mais distante o
+        // espaçamento entre linhas" — a 1ª correção, um ajuste fixo
+        // de acento aplicado igual em toda linha, na verdade
+        // EXAGEROU o espaço abaixo da linha do meio ao empurrar
+        // "GLÓRIA" pra baixo, em vez de aproximar as duas). A conta
+        // certa: pega a baseline REAL de linha1 (fixa) e o TOPO
+        // visual REAL de linha2 (baseline menos o ascent REAL do
+        // texto dela, com acento incluso) — e resolve a posição da
+        // linha do meio de forma que o espaço ACIMA dela (da baseline
+        // de linha1 até o topo real dela) fique IGUAL ao espaço
+        // ABAIXO (da baseline dela até o topo real de linha2). Cai de
+        // volta pro centro geométrico simples só se faltar linha1 ou
+        // linha2 (nada pra centralizar em relação a elas).
+        let yMeio;
+        if (p1 && texto1 && p2 && texto2) {
+          const fontSize1Calc = tpl.posicoes.linha1.fontSize * fontScale1;
+          const y1Calc = tpl.posicoes.linha1.y + offset1.dy;
+          const fontSize2Calc = tpl.posicoes.linha2.fontSize * fontScale2;
+          const y2Calc = tpl.posicoes.linha2.y + offset2.dy;
+          const baseline1 = y1Calc + fontSize1Calc * 0.76;
+          const baseline2 = y2Calc + fontSize2Calc * 0.76;
+          const ascentReal2 = _efeito24MedeAscentReal(texto2, fontSize2Calc, fontFamily);
+          const topoReal2 = baseline2 - ascentReal2;
+          const ascentRealMeio = _efeito24MedeAscentReal(textoMeio, fontSizeMeio, fontFamily);
+          const baselineMeioIdeal = (topoReal2 + baseline1 + ascentRealMeio) / 2;
+          yMeio = (baselineMeioIdeal - fontSizeMeio * 0.76) + offsetMeio.dy;
+        } else {
+          yMeio = tpl.posicoes.linhaMeio.yReflow + offsetMeio.dy;
+        }
         _efeito24DesenhaReflow(ctx, textoMeio, yMeio, fontSizeMeio, fontFamily, offsetMeio, f, false, tpl.logicalWidth, 16, 26);
         if (pMeio.palavras && pMeio.palavras.length > 1) {
           _registrarRegioesCliquePorPalavraProporcional(tpl, pMeio.palavras, tpl.logicalWidth / 2 - 200, yMeio - 20, 400, fontSizeMeio * 1.3);
