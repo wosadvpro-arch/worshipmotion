@@ -38286,7 +38286,16 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       // essa posição nos primeiros quadros, com deslocamento +
       // rotação + escala/opacidade próprios por quadro.
       papeis: ['linha1', 'linhaMeio', 'linha2'],
-      posicoes: { linha1: { y: 176.4, fontSize: 88 }, linhaMeio: { y: 307.44, fontSize: 50 }, linha2: { y: 378, fontSize: 104 } },
+      // BUG REAL CORRIGIDO ("a linha do meio está mais encostada na
+      // linha de baixo e não no centro" — reportado pelo usuário com
+      // captura de tela): o y:307.44 da linha do meio foi calibrado
+      // especificamente pra onde o CÍRCULO aparece no vídeo original
+      // (fidelidade) — não é o centro geométrico real entre linha1 e
+      // linha2 (que ficaria em 277.2). Quando o usuário digita seu
+      // próprio texto no meio (reflow), usa `yReflow` — o centro
+      // VERDADEIRO entre as duas linhas — em vez da posição calibrada
+      // pro círculo original.
+      posicoes: { linha1: { y: 176.4, fontSize: 88 }, linhaMeio: { y: 307.44, yReflow: 277.2, fontSize: 50 }, linha2: { y: 378, fontSize: 104 } },
       // Posição X final de cada letra (uma entrada por letra, na
       // ORDEM do texto original "QUEBRA"/"SILÊNCIO").
       posX1: [465.0, 522.0, 583.0, 629.0, 684.0, 739.0],
@@ -43700,7 +43709,7 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
         _registrarRegiaoClique(tpl, pMeio.wordId, tpl.logicalWidth / 2 - c.raio * fontScaleMeio + offsetMeio.dx, c.y - c.raio * fontScaleMeio + offsetMeio.dy, c.raio * 2 * fontScaleMeio, c.raio * 2 * fontScaleMeio);
       } else {
         const fontSizeMeio = tpl.posicoes.linhaMeio.fontSize * fontScaleMeio;
-        const yMeio = tpl.posicoes.linhaMeio.y + offsetMeio.dy;
+        const yMeio = tpl.posicoes.linhaMeio.yReflow + offsetMeio.dy;
         _efeito24DesenhaReflow(ctx, textoMeio, yMeio, fontSizeMeio, fontFamily, offsetMeio, f, false, tpl.logicalWidth, 16, 26);
         if (pMeio.palavras && pMeio.palavras.length > 1) {
           _registrarRegioesCliquePorPalavraProporcional(tpl, pMeio.palavras, tpl.logicalWidth / 2 - 200, yMeio - 20, 400, fontSizeMeio * 1.3);
