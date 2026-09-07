@@ -42255,44 +42255,6 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     // quanto repassado pro laço principal (via
     // fatorReducaoMeioLinha), que aplica a MESMA redução na altura de
     // cada papel da linha do meio quando desenha de verdade.
-    const centrosXMeioLinha = {};
-    let fatorReducaoMeioLinha = 1;
-    if (!ehFidelidade) {
-      const papeisDoMeio = ['a', 'meia', 'noite'].filter(papel => texts.papeis[papel] && (texts.papeis[papel].texto || '').trim());
-      if (papeisDoMeio.length) {
-        const medidorMeio = document.createElement('canvas').getContext('2d');
-        function _medeItensMeio(fatorExtra) {
-          return papeisDoMeio.map(papel => {
-            const p = texts.papeis[papel];
-            const texto = p.texto.trim().toUpperCase();
-            const italicoBase = tpl.papeisItalico[papel];
-            const italico = (papel in texts._italic) ? texts._italic[papel] : italicoBase;
-            const peso = texts._fontWeight[papel] || (tpl.papeisPeso && tpl.papeisPeso[papel]) || 300;
-            const fontFamily = texts._fontFamily[papel] || tpl.styles.default.fontFamily;
-            const fontScale = texts._fontScale[papel] || 1;
-            const alturaNatural = _efeito19AlturaNatural(fontFamily, peso, italico) * fontScale * fatorExtra;
-            medidorMeio.font = `${italico ? 'italic ' : ''}${peso} ${alturaNatural}px ${_fontFamilyCanvas(fontFamily)}`;
-            const largura = Math.max(1, medidorMeio.measureText(texto).width);
-            return { papel, largura };
-          });
-        }
-        const larguraEspacoMeio = 40; // folga entre palavras da linha do meio, proporcional ao gap medido no original (~41-42px)
-        let itensMeio = _medeItensMeio(1);
-        let larguraTotalMeio = itensMeio.reduce((s, it) => s + it.largura, 0) + larguraEspacoMeio * Math.max(0, itensMeio.length - 1);
-        const larguraMaximaMeio = tpl.logicalWidth * 0.92;
-        if (larguraTotalMeio > larguraMaximaMeio) {
-          fatorReducaoMeioLinha = larguraMaximaMeio / larguraTotalMeio;
-          itensMeio = _medeItensMeio(fatorReducaoMeioLinha);
-          larguraTotalMeio = itensMeio.reduce((s, it) => s + it.largura, 0) + larguraEspacoMeio * Math.max(0, itensMeio.length - 1);
-        }
-        let cursorMeio = 960 - larguraTotalMeio / 2; // 960 = centro X do canvas 1920
-        itensMeio.forEach(it => {
-          centrosXMeioLinha[it.papel] = cursorMeio + it.largura / 2;
-          cursorMeio += it.largura + larguraEspacoMeio;
-        });
-      }
-    }
-
     // BUG REAL CORRIGIDO ("selecionei todas as palavras, troquei a
     // fonte e diminuí o tamanho, ficou tudo sobreposto" — reportado
     // pelo usuário com captura de tela; confirmado que a sobreposição
@@ -42311,7 +42273,9 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     // relativa a "quando" (referência 1.0) — essa proporção é então
     // aplicada em cima da altura calculada pela fonte, preservando a
     // MESMA hierarquia visual do vídeo original mesmo com fonte/texto
-    // diferentes.
+    // diferentes. Calculado ANTES do bloco da linha do meio logo
+    // abaixo porque o cálculo do espaço entre palavras também
+    // precisa dessa proporção (ver "BUG REAL CORRIGIDO" sobre o gap).
     const proporcoesAlturaPapel = {};
     if (!ehFidelidade) {
       const fDataRef = _efeito19FrameData(tpl, tpl.motionData.frames - 1);
@@ -42320,6 +42284,67 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
         const d = fDataRef && fDataRef[papel];
         proporcoesAlturaPapel[papel] = d ? (d.h / alturaRefQuando) : 1;
       });
+    }
+
+    const centrosXMeioLinha = {};
+    let fatorReducaoMeioLinha = 1;
+    if (!ehFidelidade) {
+      const papeisDoMeio = ['a', 'meia', 'noite'].filter(papel => texts.papeis[papel] && (texts.papeis[papel].texto || '').trim());
+      if (papeisDoMeio.length) {
+        const medidorMeio = document.createElement('canvas').getContext('2d');
+        function _medeItensMeio(fatorExtra) {
+          return papeisDoMeio.map(papel => {
+            const p = texts.papeis[papel];
+            const texto = p.texto.trim().toUpperCase();
+            const italicoBase = tpl.papeisItalico[papel];
+            const italico = (papel in texts._italic) ? texts._italic[papel] : italicoBase;
+            const peso = texts._fontWeight[papel] || (tpl.papeisPeso && tpl.papeisPeso[papel]) || 300;
+            const fontFamily = texts._fontFamily[papel] || tpl.styles.default.fontFamily;
+            const fontScale = texts._fontScale[papel] || 1;
+            // BUG REAL CORRIGIDO ("a linha do meio fica muito espaçado
+            // as palavras uma da outra" — causa raiz real: a própria
+            // MEDIÇÃO da largura de cada palavra aqui não aplicava a
+            // proporção de altura da linha do meio (~45% do tamanho de
+            // "quando"/"chegar", corrigida antes só no desenho final,
+            // não nessa medição) — media cada palavra numa fonte bem
+            // maior do que a desenhada de verdade, inflando tanto a
+            // largura de cada palavra quanto (por reusar essa mesma
+            // referência) o espaço calculado entre elas.
+            const proporcaoAltura = proporcoesAlturaPapel[papel] || 1;
+            const alturaNatural = _efeito19AlturaNatural(fontFamily, peso, italico) * proporcaoAltura * fontScale * fatorExtra;
+            medidorMeio.font = `${italico ? 'italic ' : ''}${peso} ${alturaNatural}px ${_fontFamilyCanvas(fontFamily)}`;
+            const largura = Math.max(1, medidorMeio.measureText(texto).width);
+            return { papel, largura, alturaNatural };
+          });
+        }
+        // BUG REAL CORRIGIDO ("a linha do meio fica muito espaçado as
+        // palavras uma da outra" — reportado pelo usuário depois da
+        // correção anterior de vazamento de largura): esse valor era
+        // FIXO em pixels absolutos (40px), calibrado pro tamanho
+        // ORIGINAL da fonte no vídeo de referência, e não escalava
+        // com o texto. Além disso, a MEDIÇÃO das próprias palavras (em
+        // `_medeItensMeio`, acima) não aplicava a proporção de altura
+        // da linha do meio — media cada palavra numa fonte bem maior
+        // do que a desenhada de verdade. Agora mede a largura REAL do
+        // caractere espaço na MESMA fonte/tamanho já usado (corrigido)
+        // pra medir as palavras — consistente, e escala junto com
+        // qualquer ajuste de tamanho ou fonte.
+        let itensMeio = _medeItensMeio(1);
+        medidorMeio.font = `${itensMeio[0].alturaNatural}px ${_fontFamilyCanvas(texts._fontFamily[papeisDoMeio[0]] || tpl.styles.default.fontFamily)}`;
+        const larguraEspacoMeio = Math.max(4, medidorMeio.measureText(' ').width);
+        let larguraTotalMeio = itensMeio.reduce((s, it) => s + it.largura, 0) + larguraEspacoMeio * Math.max(0, itensMeio.length - 1);
+        const larguraMaximaMeio = tpl.logicalWidth * 0.92;
+        if (larguraTotalMeio > larguraMaximaMeio) {
+          fatorReducaoMeioLinha = larguraMaximaMeio / larguraTotalMeio;
+          itensMeio = _medeItensMeio(fatorReducaoMeioLinha);
+          larguraTotalMeio = itensMeio.reduce((s, it) => s + it.largura, 0) + larguraEspacoMeio * Math.max(0, itensMeio.length - 1);
+        }
+        let cursorMeio = 960 - larguraTotalMeio / 2; // 960 = centro X do canvas 1920
+        itensMeio.forEach(it => {
+          centrosXMeioLinha[it.papel] = cursorMeio + it.largura / 2;
+          cursorMeio += it.largura + larguraEspacoMeio;
+        });
+      }
     }
 
     PAPEIS.forEach(papel => {
