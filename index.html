@@ -18923,7 +18923,7 @@ class RenderEngineV2 {
 
   /* ==================== RENDER DOM ==================== */
 
-  renderStanza(index = this.currentStanzaIndex) {
+  renderStanza(index = this.currentStanzaIndex, suprimirAutoPlay = false) {
     if (!this.parsed || !this.parsed.stanzas[index]) {
       this.canvas.innerHTML = '';
       return null;
@@ -19333,7 +19333,25 @@ class RenderEngineV2 {
       // de outra estrofe, ou de nenhuma), não em todo re-render interno
       // da MESMA estrofe (ex: selecionar uma palavra, mudar um
       // estilo), senão a animação reiniciaria toda hora.
-      if (_estrofeTrocou) {
+      //
+      // BUG REAL CORRIGIDO ("toda a animação quando aplico efeito,
+      // ela fica repetindo os primeiros frames durante umas 3x, para
+      // depois reproduzir ele totalmente" — reportado pelo usuário):
+      // quem aplica um template frame-exact chama `renderStanza()` e,
+      // LOGO DEPOIS, chama `playFrameExact()` diretamente por conta
+      // própria (pra garantir que toca mesmo se a estrofe não for
+      // "nova"). Se `_estrofeTrocou` também for true nesse momento
+      // (comum — é a primeira vez que essa estrofe é desenhada com
+      // ESSE id, ou o usuário estava em outra antes), o auto-play
+      // AQUI DENTRO disparava PRIMEIRO, e a chamada direta logo
+      // depois disparava de novo — cada uma reiniciando o loop de
+      // animação do zero (o sistema de "geração" cancela a anterior).
+      // Cada aplicação de template acabava tocando o começo da
+      // animação 2+ vezes em sequência rápida antes de "grudar" na
+      // última chamada e finalmente tocar até o fim. Agora, quem já
+      // vai chamar `playFrameExact()` por conta própria (`aplicarTemplate`)
+      // passa `suprimirAutoPlay=true`, evitando essa duplicação.
+      if (_estrofeTrocou && !suprimirAutoPlay) {
         this.playFrameExact();
       }
     }
@@ -20418,7 +20436,7 @@ class RenderEngineV2 {
     // frame-exact, e a reprodução automática depois de editar não
     // acontecia certo.
     if (typeof this.isCurrentStanzaFrameExact === 'function' && this.isCurrentStanzaFrameExact()) {
-      this.renderStanza(this.currentStanzaIndex);
+      this.renderStanza(this.currentStanzaIndex, true);
       this.playFrameExact();
       return;
     }
@@ -34912,7 +34930,7 @@ function initEditor() {
         alguma = true;
       });
       if (alguma && typeof engine.renderStanza === 'function') {
-        engine.renderStanza(engine.currentStanzaIndex || 0);
+        engine.renderStanza(engine.currentStanzaIndex || 0, true);
       }
       // Reproduz automaticamente ao aplicar — sem precisar clicar em
       // "Reproduzir" toda vez pra ver a animação depois de aplicar.
