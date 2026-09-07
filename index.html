@@ -43548,10 +43548,20 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     ctx.textBaseline = 'alphabetic';
     const baselineY = fontSize * 0.76;
     if (ehContorno) {
+      // BUG REAL CORRIGIDO ("o final do efeito no preview some a
+      // segunda linha" — reportado pelo usuário no efeito Silêncio):
+      // a espessura do contorno era `fontSize * 0.013` — pra um
+      // fontSize típico de 64px, isso dá MENOS DE 1 PIXEL de largura
+      // real. Um traço tão fino é instável no canvas (cai facilmente
+      // "entre pixels", sujeito a anti-aliasing) — dependendo da
+      // posição exata e da escala de exibição do preview, pode
+      // renderizar quase invisível. Agora usa um piso mínimo de
+      // largura (2px), garantindo que o contorno sempre fique visível
+      // independente do tamanho da fonte.
       ctx.fillStyle = '#000000';
       ctx.fillText(char, 0, baselineY);
-      ctx.lineWidth = Math.max(1, fontSize * 0.013);
-      ctx.strokeStyle = 'rgba(255,255,255,.75)';
+      ctx.lineWidth = Math.max(2, fontSize * 0.013);
+      ctx.strokeStyle = 'rgba(255,255,255,.9)';
       ctx.strokeText(char, 0, baselineY);
     } else {
       // PEDIDO DO USUÁRIO ("as fontes não podem ter efeito nenhum,
