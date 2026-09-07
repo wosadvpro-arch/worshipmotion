@@ -14350,7 +14350,7 @@ const TEMPLATES = [
   {
     id: "tpl-oficial-silencio-frame-exact",
     name: "Silêncio",
-    description: "Letras voam até se encaixar, uma palavra por vez — QUEBRA em branco sólido, SILÊNCIO em contorno vazado — com um anel decorativo no meio.",
+    description: "Letras voam até se encaixar, uma palavra por vez — QUEBRA em branco sólido, O no meio (estilizado como um anel), SILÊNCIO em contorno vazado.",
     tags: ["Entrada", "Frame-exact", "Pro Plus"],
     isOfficial: true,
     isPremium: true,
@@ -14367,6 +14367,7 @@ const TEMPLATES = [
         stanzas: [
           { id: "stz_qwve21d", label: "Estrofe 1", lines: [
             { id: "ln_1vco2gw", words: [{ id: "w_dnn015s", text: "QUEBRA", chars: [{id:"ch_sjzhjoq",text:"Q"}, {id:"ch_s2354cb",text:"U"}, {id:"ch_wz725zq",text:"E"}, {id:"ch_4cprjx1",text:"B"}, {id:"ch_p021p08",text:"R"}, {id:"ch_xmd5mfe",text:"A"}], emphasized: false }] },
+            { id: "ln_ihvj8qj", words: [{ id: "w_ztruipp", text: "O", chars: [{id:"ch_41jx7ci",text:"O"}], emphasized: false }] },
             { id: "ln_4x0g1hy", words: [{ id: "w_ae35i85", text: "SILÊNCIO", chars: [{id:"ch_dfnv722",text:"S"}, {id:"ch_var0vj9",text:"I"}, {id:"ch_7jgu211",text:"L"}, {id:"ch_vitf31v",text:"Ê"}, {id:"ch_up4zot2",text:"N"}, {id:"ch_3w4cgwf",text:"C"}, {id:"ch_r1rhhkb",text:"I"}, {id:"ch_tujyw83",text:"O"}], emphasized: false }] },
           ] },
         ],
@@ -20854,7 +20855,7 @@ function initEditor() {
           const tplFE = window.WM_FRAME_EXACT_RENDERER?.getTemplate(item.templateId);
           const numLinhasFE = _numLinhasParaTemplateFE(tplFE);
           const linhasPalavras = _distribuirEmLinhas(stNova, numLinhasFE);
-          if (linhasPalavras.length < numLinhasFE) return;
+          if (linhasPalavras.length < _numLinhasMinimoParaTemplateFE(tplFE)) return;
           const novasLines = linhasPalavras.map((palavras, li) => ({
             id: stNova.lines[li]?.id || ('ln_fe_' + stNova.id + '_' + li + '_' + Date.now()),
             words: palavras,
@@ -34356,10 +34357,21 @@ function initEditor() {
     if (tplFE.layout === 'efeito-21-style') return 4;
     if (tplFE.layout === 'efeito-22-style') return 2;
     if (tplFE.layout === 'efeito-23-style') return 2;
-    if (tplFE.layout === 'efeito-24-style') return 2;
+    if (tplFE.layout === 'efeito-24-style') return 3;
     if (tplFE.layout === 'efeito-25-style') return 3;
     if (tplFE.layout === 'efeito-26-style') return 4;
     return 3;
+  }
+
+  // Número MÍNIMO aceitável de linhas pra aplicar o template — igual
+  // ao "ideal" (`_numLinhasParaTemplateFE`) pra quase todos os
+  // efeitos, EXCETO o Efeito 24 ("Silêncio"): a linha do meio (a
+  // palavra "O" no original, estilizada como um anel) é OPCIONAL —
+  // uma estrofe com só 2 linhas ainda funciona (sem nada no meio),
+  // não precisa forçar o usuário a sempre digitar uma 3ª linha.
+  function _numLinhasMinimoParaTemplateFE(tplFE) {
+    if (tplFE && tplFE.layout === 'efeito-24-style') return 2;
+    return _numLinhasParaTemplateFE(tplFE);
   }
 
   function _distribuirEmLinhas(stanza, numLinhasSchema) {
@@ -34864,11 +34876,12 @@ function initEditor() {
       const tplFE = window.WM_FRAME_EXACT_RENDERER?.getTemplate(cfg.frameExactTemplateId);
       const numLinhasFE = _numLinhasParaTemplateFE(tplFE);
       let alguma = false;
+      const numLinhasMinimoFE = _numLinhasMinimoParaTemplateFE(tplFE);
       targetIndices.forEach(stanzaIdx => {
         const stanza = parsed.stanzas[stanzaIdx];
         if (!stanza) return;
         const linhasPalavras = _distribuirEmLinhas(stanza, numLinhasFE);
-        if (linhasPalavras.length < numLinhasFE) return;
+        if (linhasPalavras.length < numLinhasMinimoFE) return;
         const novasLines = linhasPalavras.map((palavras, li) => ({
           id: stanza.lines[li]?.id || ('ln_fe_' + stanza.id + '_' + li + '_' + Date.now()),
           words: palavras,
@@ -34888,7 +34901,7 @@ function initEditor() {
       }
       if (typeof markDirty === 'function') markDirty('template frame-exact aplicado');
       if (!alguma && typeof showToast === 'function') {
-        showToast(`Essa estrofe precisa de pelo menos ${numLinhasFE} linhas de texto pra esse template.`);
+        showToast(`Essa estrofe precisa de pelo menos ${numLinhasMinimoFE} linhas de texto pra esse template.`);
       }
       return;
     }
@@ -38272,8 +38285,8 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       // posição FINAL fixa (medida do vídeo original) e "voa" até
       // essa posição nos primeiros quadros, com deslocamento +
       // rotação + escala/opacidade próprios por quadro.
-      papeis: ['linha1', 'linha2'],
-      posicoes: { linha1: { y: 176.4, fontSize: 88 }, linha2: { y: 378, fontSize: 104 } },
+      papeis: ['linha1', 'linhaMeio', 'linha2'],
+      posicoes: { linha1: { y: 176.4, fontSize: 88 }, linhaMeio: { y: 307.44, fontSize: 50 }, linha2: { y: 378, fontSize: 104 } },
       // Posição X final de cada letra (uma entrada por letra, na
       // ORDEM do texto original "QUEBRA"/"SILÊNCIO").
       posX1: [465.0, 522.0, 583.0, 629.0, 684.0, 739.0],
@@ -38284,7 +38297,14 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       // entrada é [índiceLetra, dx, dy, rotação, escala/opacidade].
       estadosAnimacao: {"first":{"0":[[0,-2,-1,0,1],[1,0,0,0,1],[2,44,48,38,0.88]],"1":[[0,-1,-1,0,1],[1,0,0,0,1],[2,39,44,34,0.9]],"2":[[0,-1,-1,0,1],[1,0,0,0,1],[2,29,35,26,0.93]],"3":[[0,0,0,0,1],[1,0,0,0,1],[2,0,0,0,1],[3,58,35,-38,0.82]],"4":[[0,0,0,0,1],[1,0,0,0,1],[2,0,0,0,1],[3,42,28,-28,0.86]],"5":[[0,0,0,0,1],[1,0,0,0,1],[2,0,0,0,1],[3,18,17,-18,0.94],[4,55,35,35,0.8]],"6":[[0,0,0,0,1],[1,0,0,0,1],[2,0,0,0,1],[3,7,7,-8,0.98],[4,32,24,24,0.9],[5,58,28,30,0.78]],"7":[[0,0,0,0,1],[1,0,0,0,1],[2,0,0,0,1],[3,0,0,0,1],[4,20,14,15,0.95],[5,45,22,24,0.86]],"8":[[0,0,0,0,1],[1,0,0,0,1],[2,0,0,0,1],[3,0,0,0,1],[4,8,7,9,0.99],[5,29,15,17,0.93]],"9":[[0,0,0,0,1],[1,0,0,0,1],[2,0,0,0,1],[3,0,0,0,1],[4,2,2,3,1],[5,16,8,9,0.97]],"10":[[0,0,0,0,1],[1,0,0,0,1],[2,0,0,0,1],[3,0,0,0,1],[4,0,0,0,1],[5,6,3,4,0.99]],"11":[[0,0,0,0,1],[1,0,0,0,1],[2,0,0,0,1],[3,0,0,0,1],[4,0,0,0,1],[5,0,0,0,1]]},"second":{"27":[[0,-42,30,-18,0.7]],"28":[[0,-22,16,-10,0.86]],"29":[[0,0,0,0,1],[1,34,30,16,0.76]],"30":[[0,0,0,0,1],[1,8,10,7,0.94],[2,42,27,13,0.76]],"31":[[0,0,0,0,1],[1,0,0,0,1],[2,8,8,5,0.95]],"32":[[0,0,0,0,1],[1,0,0,0,1],[2,0,0,0,1],[3,35,26,-13,0.78]],"33":[[0,0,0,0,1],[1,0,0,0,1],[2,0,0,0,1],[3,7,7,-4,0.96],[4,35,23,9,0.8]],"34":[[0,0,0,0,1],[1,0,0,0,1],[2,0,0,0,1],[3,0,0,0,1],[4,7,6,4,0.96],[5,40,20,-10,0.76],[7,-145,10,-30,0.35]],"35":[[0,0,0,0,1],[1,0,0,0,1],[2,0,0,0,1],[3,0,0,0,1],[4,0,0,0,1],[5,8,7,-4,0.95],[6,25,16,9,0.84],[7,-82,8,-20,0.72]],"36":[[0,0,0,0,1],[1,0,0,0,1],[2,0,0,0,1],[3,0,0,0,1],[4,0,0,0,1],[5,0,0,0,1],[6,6,5,3,0.97],[7,-30,3,-7,0.92]],"37":[[0,0,0,0,1],[1,0,0,0,1],[2,0,0,0,1],[3,0,0,0,1],[4,0,0,0,1],[5,0,0,0,1],[6,0,0,0,1],[7,0,0,0,1]]},"posX1":[465.0,522.0,583.0,629.0,684.0,739.0],"posX2":[412.5,470.5,503.5,558.5,619.5,679.5,731.5,773.5]},
       // Círculo decorativo — anel branco, visível dos quadros 5 a 89.
-      circulo: { y: 307.44, raio: 21, corBorda: '#eeeeee', larguraBorda: 3, opacidade: 0.9, quadroInicio: 5, quadroFim: 89 },
+      // BUG REAL CORRIGIDO ("o último frame some essa linha 2 'O'" —
+      // reportado pelo usuário: o círculo decorativo, entre as duas
+      // linhas de texto, desaparecia nos últimos quadros da animação):
+      // `quadroFim` estava em 89, mas a animação tem 107 quadros no
+      // total (até 106) — o círculo sumia nos últimos 17 quadros, bem
+      // antes do efeito realmente terminar. Estendido até o ÚLTIMO
+      // quadro, pra ficar visível o tempo todo até o fim.
+      circulo: { y: 307.44, raio: 21, corBorda: '#eeeeee', larguraBorda: 3, opacidade: 0.9, quadroInicio: 5, quadroFim: 106 },
       fontFamilyOptions: ['Rye'],
       styles: {
         default: { fontFamily: 'Rye' },
@@ -43522,8 +43542,22 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       if (wo && wo.style && wo.style.fontFamily) out._fontFamily[papel] = wo.style.fontFamily;
       if (wo && wo.style && wo.style.frameExactOffset) out._offset[papel] = wo.style.frameExactOffset;
     }
-    processaLinha('linha1', lines[0]);
-    processaLinha('linha2', lines[1]);
+    // BUG REAL CORRIGIDO ("com só 2 linhas, a 2ª foi parar na posição
+    // do meio, pequena, em vez de embaixo, grande, como sempre foi"):
+    // o mapeamento fixo linha1/linhaMeio/linha2 = lines[0]/[1]/[2]
+    // quebrava o uso com só 2 linhas (comportamento que já existia
+    // antes da linha do meio virar um papel de texto de verdade).
+    // Agora é condicional: com 3+ linhas, usa a nova estrutura
+    // (linha1/linhaMeio/linha2); com exatamente 2, preserva o
+    // comportamento ORIGINAL (linha1/linha2 direto, sem meio).
+    if (lines.length >= 3) {
+      processaLinha('linha1', lines[0]);
+      processaLinha('linhaMeio', lines[1]);
+      processaLinha('linha2', lines[2]);
+    } else {
+      processaLinha('linha1', lines[0]);
+      processaLinha('linha2', lines[1]);
+    }
     return out;
   }
 
@@ -43603,18 +43637,22 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
   function _renderFrameEfeito24Style(ctx, tpl, texts, frameIdx, elapsedMs) {
     _limparRegioesClique(tpl);
     const referencia = texts._referenciaTStart;
-    const p1 = texts.papeis.linha1, p2 = texts.papeis.linha2;
-    if (!p1 && !p2) return true;
+    const p1 = texts.papeis.linha1, pMeio = texts.papeis.linhaMeio, p2 = texts.papeis.linha2;
+    if (!p1 && !pMeio && !p2) return true;
 
     const f = _efeito24QuadroEfetivo(tpl, elapsedMs, referencia);
-    const fontFamily = (p1 && texts._fontFamily.linha1) || (p2 && texts._fontFamily.linha2) || tpl.styles.default.fontFamily;
+    const fontFamily = (p1 && texts._fontFamily.linha1) || (pMeio && texts._fontFamily.linhaMeio) || (p2 && texts._fontFamily.linha2) || tpl.styles.default.fontFamily;
     const fontScale1 = (p1 && texts._fontScale.linha1) || 1;
+    const fontScaleMeio = (pMeio && texts._fontScale.linhaMeio) || 1;
     const fontScale2 = (p2 && texts._fontScale.linha2) || 1;
     const offset1 = (p1 && texts._offset.linha1) || { dx: 0, dy: 0 };
+    const offsetMeio = (pMeio && texts._offset.linhaMeio) || { dx: 0, dy: 0 };
     const offset2 = (p2 && texts._offset.linha2) || { dx: 0, dy: 0 };
     const texto1 = p1 ? p1.texto.toUpperCase() : '';
+    const textoMeio = pMeio ? pMeio.texto.toUpperCase() : '';
     const texto2 = p2 ? p2.texto.toUpperCase() : '';
     const ehFidelidade1 = texto1 === 'QUEBRA';
+    const ehFidelidadeMeio = textoMeio === 'O';
     const ehFidelidade2 = texto2 === 'SILÊNCIO';
 
     if (p1 && texto1) {
@@ -43637,18 +43675,58 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       }
     }
 
+    // BUG REAL CORRIGIDO ("o 'O' não é um círculo decorativo, é uma
+    // linha — a frase original era QUEBRA / O / SILÊNCIO" — reportado
+    // pelo usuário): antes, essa posição SEMPRE desenhava um anel
+    // fixo, independente do que o usuário digitasse na 2ª linha da
+    // estrofe — uma 3ª linha real (ex: "glória") era completamente
+    // ignorada. Agora lê e desenha o texto de verdade; só quando o
+    // texto bate exatamente com o original ("O") é que desenha o anel
+    // estilizado — fiel ao vídeo original, onde a letra "O" era
+    // literalmente representada como um círculo.
+    if (pMeio && textoMeio) {
+      const c = tpl.circulo;
+      if (ehFidelidadeMeio) {
+        if (f >= c.quadroInicio && f <= c.quadroFim) {
+          ctx.save();
+          ctx.globalAlpha = c.opacidade;
+          ctx.strokeStyle = c.corBorda;
+          ctx.lineWidth = c.larguraBorda * fontScaleMeio;
+          ctx.beginPath();
+          ctx.arc(tpl.logicalWidth / 2 + offsetMeio.dx, c.y + offsetMeio.dy, c.raio * fontScaleMeio, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.restore();
+        }
+        _registrarRegiaoClique(tpl, pMeio.wordId, tpl.logicalWidth / 2 - c.raio * fontScaleMeio + offsetMeio.dx, c.y - c.raio * fontScaleMeio + offsetMeio.dy, c.raio * 2 * fontScaleMeio, c.raio * 2 * fontScaleMeio);
+      } else {
+        const fontSizeMeio = tpl.posicoes.linhaMeio.fontSize * fontScaleMeio;
+        const yMeio = tpl.posicoes.linhaMeio.y + offsetMeio.dy;
+        _efeito24DesenhaReflow(ctx, textoMeio, yMeio, fontSizeMeio, fontFamily, offsetMeio, f, false, tpl.logicalWidth, 16, 26);
+        if (pMeio.palavras && pMeio.palavras.length > 1) {
+          _registrarRegioesCliquePorPalavraProporcional(tpl, pMeio.palavras, tpl.logicalWidth / 2 - 200, yMeio - 20, 400, fontSizeMeio * 1.3);
+        } else {
+          _registrarRegiaoClique(tpl, pMeio.wordId, tpl.logicalWidth / 2 - 200, yMeio - 20, 400, fontSizeMeio * 1.3);
+        }
+      }
+    }
+
     if (p2 && texto2) {
       const fontSize2 = tpl.posicoes.linha2.fontSize * fontScale2;
       const y2 = tpl.posicoes.linha2.y + offset2.dy;
+      // PEDIDO DO USUÁRIO ("retira a silhueta da linha 3" — na
+      // contagem dele, a segunda linha de texto, já que o círculo
+      // decorativo entre as duas linhas conta como uma posição pra
+      // ele): removido o contorno/vazado — agora preenchida sólida,
+      // igual à linha 1.
       if (ehFidelidade2) {
         const centroX2 = tpl.posX2.reduce((a, b) => a + b, 0) / tpl.posX2.length;
         _efeito24EstadoLinha2(tpl, f).forEach(([idx, dx, dy, rot, escala]) => {
           const char = texto2[idx];
           const xBase = centroX2 + (tpl.posX2[idx] - centroX2) * fontScale2;
-          _efeito24DesenhaLetra(ctx, char, xBase + offset2.dx, y2, fontSize2, fontFamily, dx * fontScale2, dy * fontScale2, rot, escala, true);
+          _efeito24DesenhaLetra(ctx, char, xBase + offset2.dx, y2, fontSize2, fontFamily, dx * fontScale2, dy * fontScale2, rot, escala, false);
         });
       } else {
-        _efeito24DesenhaReflow(ctx, texto2, y2, fontSize2, fontFamily, offset2, f, true, tpl.logicalWidth, 27, 37);
+        _efeito24DesenhaReflow(ctx, texto2, y2, fontSize2, fontFamily, offset2, f, false, tpl.logicalWidth, 27, 37);
       }
       if (p2.palavras && p2.palavras.length > 1) {
         _registrarRegioesCliquePorPalavraProporcional(tpl, p2.palavras, tpl.logicalWidth / 2 - 260, y2 - 20, 520, fontSize2 * 1.3);
@@ -43657,18 +43735,6 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       }
     }
 
-    // Círculo decorativo — anel branco, independente do texto.
-    const c = tpl.circulo;
-    if (f >= c.quadroInicio && f <= c.quadroFim) {
-      ctx.save();
-      ctx.globalAlpha = c.opacidade;
-      ctx.strokeStyle = c.corBorda;
-      ctx.lineWidth = c.larguraBorda;
-      ctx.beginPath();
-      ctx.arc(tpl.logicalWidth / 2, c.y, c.raio, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.restore();
-    }
     return true;
   }
 
