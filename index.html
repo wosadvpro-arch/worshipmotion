@@ -41989,12 +41989,18 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     // primeira como representante), mas desenha o TEXTO JUNTO de
     // todas as palavras da linha.
     processaPapel('quando', linha0[0]);
-    if (out.papeis.quando) out.papeis.quando.texto = linha0.map(w => w.text).join(' ');
+    if (out.papeis.quando) {
+      out.papeis.quando.texto = linha0.map(w => w.text).join(' ');
+      out.papeis.quando.palavras = linha0.map(w => ({ texto: w.text, id: w.id }));
+    }
     processaPapel('a', linha1[0]);
     processaPapel('meia', linha1[1]);
     processaPapel('noite', linha1[2]);
     processaPapel('chegar', linha2[0]);
-    if (out.papeis.chegar) out.papeis.chegar.texto = linha2.map(w => w.text).join(' ');
+    if (out.papeis.chegar) {
+      out.papeis.chegar.texto = linha2.map(w => w.text).join(' ');
+      out.papeis.chegar.palavras = linha2.map(w => ({ texto: w.text, id: w.id }));
+    }
     return out;
   }
 
@@ -42190,6 +42196,17 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       ctx.restore();
 
       _registrarRegiaoClique(tpl, p.wordId, bxFinal, byFinal, bwFinal, bhFinal);
+      if (p.palavras && p.palavras.length > 1) {
+        const fatorEscalaX = bwFinal / mw;
+        let cursorClique = bxFinal;
+        medidor2.font = `${italico ? 'italic ' : ''}${peso} ${baseSize}px ${_fontFamilyCanvas(fontFamily)}`;
+        const larguraEspaco = medidor2.measureText(' ').width * fatorEscalaX;
+        p.palavras.forEach(palavraObj => {
+          const wPal = medidor2.measureText(palavraObj.texto.toUpperCase()).width * fatorEscalaX;
+          _registrarRegiaoClique(tpl, palavraObj.id, cursorClique, byFinal, wPal, bhFinal);
+          cursorClique += wPal + larguraEspaco;
+        });
+      }
     });
     return true;
   }
@@ -42246,15 +42263,27 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       if (wo && wo.style && wo.style.fontStyle === 'normal') out._italic[papel] = false;
     }
     processaPapel('necessario', linha0[0]);
-    if (out.papeis.necessario) out.papeis.necessario.texto = linha0.map(w => w.text).join(' ');
+    if (out.papeis.necessario) {
+      out.papeis.necessario.texto = linha0.map(w => w.text).join(' ');
+      out.papeis.necessario.palavras = linha0.map(w => ({ texto: w.text, id: w.id }));
+    }
     processaPapel('estar', linha1[0]);
-    if (out.papeis.estar) out.papeis.estar.texto = linha1.map(w => w.text).join(' ');
+    if (out.papeis.estar) {
+      out.papeis.estar.texto = linha1.map(w => w.text).join(' ');
+      out.papeis.estar.palavras = linha1.map(w => ({ texto: w.text, id: w.id }));
+    }
     processaPapel('com', linha2[0]);
     processaPapel('a', linha2[1]);
     processaPapel('chama', linha3[0]);
-    if (out.papeis.chama) out.papeis.chama.texto = linha3.map(w => w.text).join(' ');
+    if (out.papeis.chama) {
+      out.papeis.chama.texto = linha3.map(w => w.text).join(' ');
+      out.papeis.chama.palavras = linha3.map(w => ({ texto: w.text, id: w.id }));
+    }
     processaPapel('acesa', linha4[0]);
-    if (out.papeis.acesa) out.papeis.acesa.texto = linha4.map(w => w.text).join(' ');
+    if (out.papeis.acesa) {
+      out.papeis.acesa.texto = linha4.map(w => w.text).join(' ');
+      out.papeis.acesa.palavras = linha4.map(w => ({ texto: w.text, id: w.id }));
+    }
     return out;
   }
 
@@ -42392,6 +42421,17 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       ctx.restore();
 
       _registrarRegiaoClique(tpl, p.wordId, bx + offset.dx, by + offset.dy, bw, bh);
+      if (p.palavras && p.palavras.length > 1) {
+        const fatorEscalaX20 = semEsticar ? 1 : (bw / mw);
+        let cursorClique20 = bx + offset.dx;
+        medidor2.font = `italic ${peso} ${tamanho}px ${_fontFamilyCanvas(fontFamily)}`;
+        const larguraEspaco20 = medidor2.measureText(' ').width * fatorEscalaX20;
+        p.palavras.forEach(palavraObj => {
+          const wPal = medidor2.measureText(palavraObj.texto.toUpperCase()).width * fatorEscalaX20;
+          _registrarRegiaoClique(tpl, palavraObj.id, cursorClique20, by + offset.dy, wPal, bh);
+          cursorClique20 += wPal + larguraEspaco20;
+        });
+      }
     });
     return true;
   }
@@ -42472,7 +42512,12 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     tpl.papeis.forEach((papel, i) => {
       const w = lines[i]?.words?.[0];
       if (!w) { out.papeis[papel] = null; return; }
-      out.papeis[papel] = { texto: (lines[i].words.map(x => x.text).join(' ')), wordId: w.id };
+      const palavrasLinha = lines[i].words;
+      out.papeis[papel] = {
+        texto: (palavrasLinha.map(x => x.text).join(' ')),
+        wordId: w.id,
+        palavras: palavrasLinha.map(x => ({ texto: x.text, id: x.id })),
+      };
       if (typeof w.tStart === 'number') {
         out._tStarts[papel] = w.tStart;
         if (out._referenciaTStart === null) out._referenciaTStart = w.tStart;
@@ -42597,7 +42642,12 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       }
 
       const alturaAprox = L.h * s * fontScale;
-      _registrarRegiaoClique(tpl, p.wordId, x - targetW / 2, y - alturaAprox / 2, targetW, alturaAprox);
+      const fonteCanvas21 = `${fs}px ${_fontFamilyCanvas(fontFamily)}`;
+      if (p.palavras && p.palavras.length > 1) {
+        _registrarRegioesCliquePorPalavra(tpl, ctx, p.palavras, x - targetW / 2, y - alturaAprox / 2, alturaAprox, fonteCanvas21);
+      } else {
+        _registrarRegiaoClique(tpl, p.wordId, x - targetW / 2, y - alturaAprox / 2, targetW, alturaAprox);
+      }
     });
     return true;
   }
@@ -42883,7 +42933,11 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
           fillMainM(EFEITO22_CORES.white);
         }
 
-        _registrarRegiaoClique(tpl, pMain.wordId, left, top, mw, bottom - top);
+        if (pMain.palavras && pMain.palavras.length > 1) {
+          _registrarRegioesCliquePorPalavra(tpl, ctx, pMain.palavras, left, top, bottom - top, _efeito22FontMain(mainSize, fontFamilyMain));
+        } else {
+          _registrarRegiaoClique(tpl, pMain.wordId, left, top, mw, bottom - top);
+        }
       }
 
       if (pSmall) {
@@ -42891,15 +42945,33 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
         ctx.save(); ctx.font = _efeito22FontSmall(smallSize, fontFamilySmall);
         const totalW = ctx.measureText(textoSmall).width;
         ctx.restore();
-        _registrarRegiaoClique(tpl, pSmall.wordId, smallX - totalW / 2, smallY - smallSize, totalW, smallSize * 2);
+        if (pSmall.palavras && pSmall.palavras.length > 1) {
+          _registrarRegioesCliquePorPalavra(tpl, ctx, pSmall.palavras, smallX - totalW / 2, smallY - smallSize, smallSize * 2, _efeito22FontSmall(smallSize, fontFamilySmall));
+        } else {
+          _registrarRegiaoClique(tpl, pSmall.wordId, smallX - totalW / 2, smallY - smallSize, totalW, smallSize * 2);
+        }
       }
     }
 
     if (pMain && f <= 37) {
-      _registrarRegiaoClique(tpl, pMain.wordId, mainX - mainSize * 2, mainY - mainSize, mainSize * 4, mainSize * 2);
+      if (pMain.palavras && pMain.palavras.length > 1) {
+        ctx.save(); ctx.font = _efeito22FontMain(mainSize, fontFamilyMain);
+        const mwEst = ctx.measureText(textoMain).width;
+        ctx.restore();
+        _registrarRegioesCliquePorPalavra(tpl, ctx, pMain.palavras, mainX - mwEst / 2, mainY - mainSize, mainSize * 2, _efeito22FontMain(mainSize, fontFamilyMain));
+      } else {
+        _registrarRegiaoClique(tpl, pMain.wordId, mainX - mainSize * 2, mainY - mainSize, mainSize * 4, mainSize * 2);
+      }
     }
     if (pSmall && f <= 37) {
-      _registrarRegiaoClique(tpl, pSmall.wordId, smallX - smallSize * 4, smallY - smallSize, smallSize * 8, smallSize * 2);
+      if (pSmall.palavras && pSmall.palavras.length > 1) {
+        ctx.save(); ctx.font = _efeito22FontSmall(smallSize, fontFamilySmall);
+        const swEst = ctx.measureText(textoSmall).width;
+        ctx.restore();
+        _registrarRegioesCliquePorPalavra(tpl, ctx, pSmall.palavras, smallX - swEst / 2, smallY - smallSize, smallSize * 2, _efeito22FontSmall(smallSize, fontFamilySmall));
+      } else {
+        _registrarRegiaoClique(tpl, pSmall.wordId, smallX - smallSize * 4, smallY - smallSize, smallSize * 8, smallSize * 2);
+      }
     }
     return true;
   }
@@ -42961,7 +43033,11 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     function processaLinha(papel, linha) {
       const palavras = (linha?.words) || [];
       if (!palavras.length) { out.papeis[papel] = null; return; }
-      out.papeis[papel] = { texto: palavras.map(w => w.text).join(' '), wordId: palavras[0].id };
+      out.papeis[papel] = {
+        texto: palavras.map(w => w.text).join(' '),
+        wordId: palavras[0].id,
+        palavras: palavras.map(w => ({ texto: w.text, id: w.id })),
+      };
       const w0 = palavras[0];
       if (typeof w0.tStart === 'number') {
         out._tStarts[papel] = w0.tStart;
@@ -43057,7 +43133,17 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
         const texto1 = L1.slice(0, n1);
         if (cursor1) _efeito23DesenhaComCursor(ctx, texto1, y1, fontFamily, tamanho, cx1, tpl.corTexto, tpl.corCursor);
         else _efeito23DesenhaTexto(ctx, texto1, y1, fontFamily, tamanho, cx1, tpl.corTexto, tpl.corCursor);
-        if (p1) _registrarRegiaoClique(tpl, p1.wordId, cx1 - tamanho * 3, y1 - tamanho, tamanho * 6, tamanho * 1.3);
+        if (p1) {
+          const fonte1 = `700 ${tamanho}px ${_fontFamilyCanvas(fontFamily)}`;
+          if (p1.palavras && p1.palavras.length > 1) {
+            ctx.save(); ctx.font = fonte1;
+            const largura1 = ctx.measureText(texto1).width;
+            ctx.restore();
+            _registrarRegioesCliquePorPalavraRevelado(tpl, ctx, p1.palavras, texto1, cx1 - largura1 / 2, y1 - tamanho, tamanho * 1.3, fonte1);
+          } else {
+            _registrarRegiaoClique(tpl, p1.wordId, cx1 - tamanho * 3, y1 - tamanho, tamanho * 6, tamanho * 1.3);
+          }
+        }
       } else if (p1) {
         _efeito23DesenhaTexto(ctx, '_', y1, fontFamily, tamanho, cx1, tpl.corCursor, tpl.corCursor);
       }
@@ -43066,7 +43152,17 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
         const texto2 = L2.slice(0, n2);
         if (cursor2) _efeito23DesenhaComCursor(ctx, texto2, y2, fontFamily, tamanho, cx2, tpl.corTexto, tpl.corCursor);
         else _efeito23DesenhaTexto(ctx, texto2, y2, fontFamily, tamanho, cx2, tpl.corTexto, tpl.corCursor);
-        if (p2) _registrarRegiaoClique(tpl, p2.wordId, cx2 - tamanho * 3, y2 - tamanho, tamanho * 6, tamanho * 1.3);
+        if (p2) {
+          const fonte2 = `700 ${tamanho}px ${_fontFamilyCanvas(fontFamily)}`;
+          if (p2.palavras && p2.palavras.length > 1) {
+            ctx.save(); ctx.font = fonte2;
+            const largura2 = ctx.measureText(texto2).width;
+            ctx.restore();
+            _registrarRegioesCliquePorPalavraRevelado(tpl, ctx, p2.palavras, texto2, cx2 - largura2 / 2, y2 - tamanho, tamanho * 1.3, fonte2);
+          } else {
+            _registrarRegiaoClique(tpl, p2.wordId, cx2 - tamanho * 3, y2 - tamanho, tamanho * 6, tamanho * 1.3);
+          }
+        }
       } else if (f >= 25 && p2) {
         _efeito23DesenhaTexto(ctx, '_', y2, fontFamily, tamanho, cx2, tpl.corCursor, tpl.corCursor);
       }
@@ -43115,7 +43211,11 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     function processaLinha(papel, linha) {
       const palavras = (linha?.words) || [];
       if (!palavras.length) { out.papeis[papel] = null; return; }
-      out.papeis[papel] = { texto: palavras.map(w => w.text).join(' '), wordId: palavras[0].id };
+      out.papeis[papel] = {
+        texto: palavras.map(w => w.text).join(' '),
+        wordId: palavras[0].id,
+        palavras: palavras.map(w => ({ texto: w.text, id: w.id })),
+      };
       const w0 = palavras[0];
       if (typeof w0.tStart === 'number') {
         out._tStarts[papel] = w0.tStart;
@@ -43225,7 +43325,11 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       } else {
         _efeito24DesenhaReflow(ctx, texto1, y1, fontSize1, fontFamily, offset1, f, false, tpl.logicalWidth, 0, 15);
       }
-      _registrarRegiaoClique(tpl, p1.wordId, tpl.logicalWidth / 2 - 200, y1 - 20, 400, fontSize1 * 1.3);
+      if (p1.palavras && p1.palavras.length > 1) {
+        _registrarRegioesCliquePorPalavraProporcional(tpl, p1.palavras, tpl.logicalWidth / 2 - 200, y1 - 20, 400, fontSize1 * 1.3);
+      } else {
+        _registrarRegiaoClique(tpl, p1.wordId, tpl.logicalWidth / 2 - 200, y1 - 20, 400, fontSize1 * 1.3);
+      }
     }
 
     if (p2 && texto2) {
@@ -43241,7 +43345,11 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       } else {
         _efeito24DesenhaReflow(ctx, texto2, y2, fontSize2, fontFamily, offset2, f, true, tpl.logicalWidth, 27, 37);
       }
-      _registrarRegiaoClique(tpl, p2.wordId, tpl.logicalWidth / 2 - 260, y2 - 20, 520, fontSize2 * 1.3);
+      if (p2.palavras && p2.palavras.length > 1) {
+        _registrarRegioesCliquePorPalavraProporcional(tpl, p2.palavras, tpl.logicalWidth / 2 - 260, y2 - 20, 520, fontSize2 * 1.3);
+      } else {
+        _registrarRegiaoClique(tpl, p2.wordId, tpl.logicalWidth / 2 - 260, y2 - 20, 520, fontSize2 * 1.3);
+      }
     }
 
     // Círculo decorativo — anel branco, independente do texto.
@@ -43283,7 +43391,11 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     function processaLinha(papel, linha) {
       const palavras = (linha?.words) || [];
       if (!palavras.length) { out.papeis[papel] = null; return; }
-      out.papeis[papel] = { texto: palavras.map(w => w.text).join(' '), wordId: palavras[0].id };
+      out.papeis[papel] = {
+        texto: palavras.map(w => w.text).join(' '),
+        wordId: palavras[0].id,
+        palavras: palavras.map(w => ({ texto: w.text, id: w.id })),
+      };
       const w0 = palavras[0];
       if (typeof w0.tStart === 'number') {
         out._tStarts[papel] = w0.tStart;
@@ -43372,7 +43484,11 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       const medidor = document.createElement('canvas').getContext('2d');
       medidor.font = _efeito25FonteCtx(fontFamily, cfg.fontSize * escala, cfg.fontWeight, cfg.italic);
       const w = Math.max(1, medidor.measureText(texto).width);
-      _registrarRegiaoClique(tpl, pTop.wordId, cx + offset.dx - w / 2, cfg.y + offset.dy + deslocY - cfg.fontSize * 0.8, w, cfg.fontSize * 1.1);
+      if (pTop.palavras && pTop.palavras.length > 1) {
+        _registrarRegioesCliquePorPalavra(tpl, medidor, pTop.palavras, cx + offset.dx - w / 2, cfg.y + offset.dy + deslocY - cfg.fontSize * 0.8, cfg.fontSize * 1.1, _efeito25FonteCtx(fontFamily, cfg.fontSize * escala, cfg.fontWeight, cfg.italic));
+      } else {
+        _registrarRegiaoClique(tpl, pTop.wordId, cx + offset.dx - w / 2, cfg.y + offset.dy + deslocY - cfg.fontSize * 0.8, w, cfg.fontSize * 1.1);
+      }
     }
 
     // ---- MID: "e" pequeno + palavras entrando progressivamente ----
@@ -43422,7 +43538,19 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
           const p = _efeito25Ease((f - s) / Math.max(1, e - s));
           _efeito25DesenhaLetra(ctx, letras[idx], xs[idx], yBase, tamanho, cfg.fontWeight, cfg.italic, fontFamily, dx * (1 - p), dy * (1 - p), rot * (1 - p), 0.96 + 0.04 * p, 1);
         });
-        _registrarRegiaoClique(tpl, pMid.wordId, cx + offset.dx - larguraTotal / 2, cfg.y + offset.dy - tamanho * 0.7, larguraTotal, tamanho * 1.1);
+        // 4 palavras conceituais fixas nesse padrão: "e"/"VEZ"/"QUE"/"EU"
+        // — cada uma ocupa um intervalo contíguo de índices em `letras`.
+        if (pMid.palavras && pMid.palavras.length === 4) {
+          const larguraDoIndice = (idx) => (idx === 0 ? larguraE : largurasResto[idx - 1]);
+          const faixas = [[0, 0], [2, 4], [6, 8], [10, 11]];
+          faixas.forEach(([ini, fim], i) => {
+            let largura = 0;
+            for (let idx = ini; idx <= fim; idx++) largura += larguraDoIndice(idx);
+            _registrarRegiaoClique(tpl, pMid.palavras[i].id, xs[ini], cfg.y + offset.dy - tamanho * 0.7, largura, tamanho * 1.1);
+          });
+        } else {
+          _registrarRegiaoClique(tpl, pMid.wordId, cx + offset.dx - larguraTotal / 2, cfg.y + offset.dy - tamanho * 0.7, larguraTotal, tamanho * 1.1);
+        }
       } else {
         // Reflow: layout natural generalizado — cada PALAVRA entra em
         // sequência (sem o tratamento especial do "e" minúsculo, que
@@ -43452,7 +43580,15 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
           }
           cursorX += largurasPalavras[i] + espacoLargura;
         });
-        _registrarRegiaoClique(tpl, pMid.wordId, cx + offset.dx - larguraTotal / 2, cfg.y + offset.dy - tamanho * 0.7, larguraTotal, tamanho * 1.1);
+        if (pMid.palavras && pMid.palavras.length === palavras.length) {
+          let cursorClique = cx - larguraTotal / 2 + offset.dx;
+          palavras.forEach((palavra, i) => {
+            _registrarRegiaoClique(tpl, pMid.palavras[i].id, cursorClique, cfg.y + offset.dy - tamanho * 0.7, largurasPalavras[i], tamanho * 1.1);
+            cursorClique += largurasPalavras[i] + espacoLargura;
+          });
+        } else {
+          _registrarRegiaoClique(tpl, pMid.wordId, cx + offset.dx - larguraTotal / 2, cfg.y + offset.dy - tamanho * 0.7, larguraTotal, tamanho * 1.1);
+        }
       }
     }
 
@@ -43489,6 +43625,40 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       });
       _registrarRegiaoClique(tpl, pBot.wordId, cx + offset.dx - larguraTotal / 2, cfg.y + offset.dy - tamanho * 0.8, larguraTotal, tamanho * 1.1);
     }
+    // BUG REAL CORRIGIDO (fora do loop de desenho — usa as posições `xs`
+    // já calculadas por letra): se "bot" tem mais de uma palavra
+    // (ex: usuário digitou "coloquei tudo"), agrupa os índices de
+    // letras contíguas SEM espaço em palavras, e substitui o registro
+    // genérico acima por uma região por palavra.
+    if (pBot && pBot.palavras && pBot.palavras.length > 1 && pBot.texto.trim()) {
+      const f2 = _efeito25QuadroEfetivo(tpl, 'bot', elapsedMs, tStarts, referencia);
+      const fontScale2 = texts._fontScale.bot || 1;
+      const offset2 = texts._offset.bot || { dx: 0, dy: 0 };
+      const cfg2 = tpl.posicoes.bot;
+      const tamanho2 = cfg2.fontSize * fontScale2;
+      const textoBot2 = pBot.texto.toUpperCase();
+      const medidor2 = document.createElement('canvas').getContext('2d');
+      medidor2.font = _efeito25FonteCtx(fontFamily, tamanho2, cfg2.fontWeight, cfg2.italic);
+      const letras2 = [...textoBot2];
+      const larguras2 = letras2.map(c => medidor2.measureText(c).width);
+      const larguraTotal2 = larguras2.reduce((a, b) => a + b, 0);
+      let cursorX2 = cx - larguraTotal2 / 2 + offset2.dx;
+      const xs2 = larguras2.map(w => { const x = cursorX2; cursorX2 += w; return x; });
+      let palavraIdx = 0, inicioIdx = null;
+      for (let i = 0; i <= letras2.length; i++) {
+        const ehEspaco = i === letras2.length || letras2[i] === ' ';
+        if (!ehEspaco && inicioIdx === null) inicioIdx = i;
+        if (ehEspaco && inicioIdx !== null) {
+          const fimIdx = i - 1;
+          const larguraPalavra = larguras2.slice(inicioIdx, fimIdx + 1).reduce((a, b) => a + b, 0);
+          if (pBot.palavras[palavraIdx]) {
+            _registrarRegiaoClique(tpl, pBot.palavras[palavraIdx].id, xs2[inicioIdx], cfg2.y + offset2.dy - tamanho2 * 0.8, larguraPalavra, tamanho2 * 1.1);
+          }
+          palavraIdx++;
+          inicioIdx = null;
+        }
+      }
+    }
     return true;
   }
 
@@ -43514,7 +43684,11 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     function processaLinha(papel, linha) {
       const palavras = (linha?.words) || [];
       if (!palavras.length) { out.papeis[papel] = null; return; }
-      out.papeis[papel] = { texto: palavras.map(w => w.text).join(' '), wordId: palavras[0].id };
+      out.papeis[papel] = {
+        texto: palavras.map(w => w.text).join(' '),
+        wordId: palavras[0].id,
+        palavras: palavras.map(w => ({ texto: w.text, id: w.id })),
+      };
       const w0 = palavras[0];
       if (typeof w0.tStart === 'number') {
         out._tStarts[papel] = w0.tStart;
@@ -43602,7 +43776,21 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
         const escala = escalaBase * fontScale;
         const texto = pNada.texto.toUpperCase();
         const largura = _efeito26DesenhaMontagem(ctx, texto, cfg.letras, f, x, y, cfg.fontSize, fontFamily, 900, cfg.italicSkewDeg, escala);
-        _registrarRegiaoClique(tpl, pNada.wordId, x - largura / 2, y - cfg.fontSize * escala * 0.8, largura, cfg.fontSize * escala * 1.1);
+        if (pNada.palavras && pNada.palavras.length > 1) {
+          ctx.save(); ctx.font = `900 ${cfg.fontSize}px ${_fontFamilyCanvas(fontFamily)}`;
+          const medidor = ctx;
+          const palavrasUpper = pNada.palavras.map(p => ({ id: p.id, texto: p.texto.toUpperCase() }));
+          const larguraEspaco = medidor.measureText(' ').width * escala;
+          let cursorClique = x - largura / 2;
+          palavrasUpper.forEach((p, i) => {
+            const wPal = medidor.measureText(p.texto).width * escala;
+            _registrarRegiaoClique(tpl, p.id, cursorClique, y - cfg.fontSize * escala * 0.8, wPal, cfg.fontSize * escala * 1.1);
+            cursorClique += wPal + larguraEspaco;
+          });
+          ctx.restore();
+        } else {
+          _registrarRegiaoClique(tpl, pNada.wordId, x - largura / 2, y - cfg.fontSize * escala * 0.8, largura, cfg.fontSize * escala * 1.1);
+        }
       }
     }
 
@@ -43620,7 +43808,20 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
         const x = cfg.x / 100 * W + offset.dx, y = cfg.y / 100 * H + offset.dy;
         const texto = pMais.texto.toUpperCase();
         const largura = _efeito26DesenhaMontagem(ctx, texto, cfg.letras, f, x, y, cfg.fontSize, fontFamily, 900, cfg.italicSkewDeg, escala);
-        _registrarRegiaoClique(tpl, pMais.wordId, x - largura / 2, y - cfg.fontSize * escala * 0.8, largura, cfg.fontSize * escala * 1.1);
+        if (pMais.palavras && pMais.palavras.length > 1) {
+          ctx.save(); ctx.font = `900 ${cfg.fontSize}px ${_fontFamilyCanvas(fontFamily)}`;
+          const palavrasUpper = pMais.palavras.map(p => ({ id: p.id, texto: p.texto.toUpperCase() }));
+          const larguraEspaco = ctx.measureText(' ').width * escala;
+          let cursorClique = x - largura / 2;
+          palavrasUpper.forEach((p, i) => {
+            const wPal = ctx.measureText(p.texto).width * escala;
+            _registrarRegiaoClique(tpl, p.id, cursorClique, y - cfg.fontSize * escala * 0.8, wPal, cfg.fontSize * escala * 1.1);
+            cursorClique += wPal + larguraEspaco;
+          });
+          ctx.restore();
+        } else {
+          _registrarRegiaoClique(tpl, pMais.wordId, x - largura / 2, y - cfg.fontSize * escala * 0.8, largura, cfg.fontSize * escala * 1.1);
+        }
       }
     }
 
@@ -43649,7 +43850,11 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
         try { ctx.letterSpacing = '0px'; } catch (e) {}
         const largura = ctx.measureText(texto).width;
         ctx.restore();
-        _registrarRegiaoClique(tpl, pMe.wordId, x - largura / 2, y - fontSizePx * 0.6, largura, fontSizePx * 1.2);
+        if (pMe.palavras && pMe.palavras.length > 1) {
+          _registrarRegioesCliquePorPalavra(tpl, ctx, pMe.palavras.map(p => ({ id: p.id, texto: p.texto.toLowerCase() })), x - largura / 2, y - fontSizePx * 0.6, fontSizePx * 1.2, `${cfg.italic ? 'italic ' : ''}${cfg.fontWeight} ${fontSizePx}px ${_fontFamilyCanvas(fontFamily)}`);
+        } else {
+          _registrarRegiaoClique(tpl, pMe.wordId, x - largura / 2, y - fontSizePx * 0.6, largura, fontSizePx * 1.2);
+        }
       }
     }
 
@@ -43714,7 +43919,9 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
         const larguras = chars.map(c => ctx.measureText(c).width + cfg.letterSpacing * fontSizePxAjustado);
         let cursor = xEsquerda;
         ctx.fillStyle = '#ffffff';
+        const posicoesLetras = [];
         chars.forEach((ch, i) => {
+          posicoesLetras.push(cursor);
           const cfgL = cfg.letras[i] || cfg.letras[cfg.letras.length - 1];
           if (f < cfgL.atraso || ch === ' ') { cursor += larguras[i]; return; }
           const q = _efeito26Ease((f - cfgL.atraso) / cfgL.dur);
@@ -43728,7 +43935,27 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
         });
         try { ctx.letterSpacing = '0px'; } catch (e) {}
         ctx.restore();
-        _registrarRegiaoClique(tpl, pSat.wordId, xEsquerda, y - fontSizePxAjustado * 0.8, larguraPalavraAjustada, fontSizePxAjustado * 1.1);
+        if (pSat.palavras && pSat.palavras.length > 1) {
+          // BUG REAL CORRIGIDO: agrupa os índices de caracteres
+          // contíguos SEM espaço em palavras, usando as posições X já
+          // calculadas letra a letra durante o desenho acima.
+          let palavraIdx = 0, inicioIdx = null;
+          for (let i = 0; i <= chars.length; i++) {
+            const ehEspaco = i === chars.length || chars[i] === ' ';
+            if (!ehEspaco && inicioIdx === null) inicioIdx = i;
+            if (ehEspaco && inicioIdx !== null) {
+              const fimIdx = i - 1;
+              const larguraPalavra = larguras.slice(inicioIdx, fimIdx + 1).reduce((a, b) => a + b, 0);
+              if (pSat.palavras[palavraIdx]) {
+                _registrarRegiaoClique(tpl, pSat.palavras[palavraIdx].id, posicoesLetras[inicioIdx], y - fontSizePxAjustado * 0.8, larguraPalavra, fontSizePxAjustado * 1.1);
+              }
+              palavraIdx++;
+              inicioIdx = null;
+            }
+          }
+        } else {
+          _registrarRegiaoClique(tpl, pSat.wordId, xEsquerda, y - fontSizePxAjustado * 0.8, larguraPalavraAjustada, fontSizePxAjustado * 1.1);
+        }
       }
     }
 
@@ -44024,10 +44251,77 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
   function _limparRegioesClique(tpl) {
     tpl._ultimasRegioesClique = [];
   }
+  function _registrarRegioesCliquePorPalavraRevelado(tpl, ctx, palavrasCompletas, textoRevelado, xEsquerda, y, altura, fontCanvasString) {
+    if (!palavrasCompletas || !palavrasCompletas.length || !textoRevelado) return;
+    ctx.save();
+    ctx.font = fontCanvasString;
+    const larguraTotalRevelada = ctx.measureText(textoRevelado).width;
+    ctx.restore();
+    const totalCharsRevelados = textoRevelado.length;
+    if (totalCharsRevelados <= 0) return;
+    let charsRestantes = totalCharsRevelados;
+    let cursor = xEsquerda;
+    for (let i = 0; i < palavrasCompletas.length && charsRestantes > 0; i++) {
+      const palavraTexto = palavrasCompletas[i].texto || '';
+      // +1 pro espaço separador (exceto antes da primeira palavra).
+      const charsDaPalavra = Math.min(palavraTexto.length, charsRestantes);
+      if (charsDaPalavra <= 0) break;
+      const larguraFatia = larguraTotalRevelada * (charsDaPalavra / totalCharsRevelados);
+      _registrarRegiaoClique(tpl, palavrasCompletas[i].id, cursor, y, larguraFatia, altura);
+      cursor += larguraFatia;
+      charsRestantes -= charsDaPalavra + 1; // +1 pro espaço consumido
+    }
+  }
+
+  function _registrarRegioesCliquePorPalavraProporcional(tpl, palavras, xEsquerda, y, larguraTotal, altura) {
+    if (!palavras || !palavras.length) return;
+    const totalChars = palavras.reduce((soma, p) => soma + (p.texto || '').length, 0) + (palavras.length - 1);
+    if (totalChars <= 0) return;
+    let cursor = xEsquerda;
+    palavras.forEach((p, i) => {
+      const chars = (p.texto || '').length;
+      const largura = larguraTotal * (chars / totalChars);
+      _registrarRegiaoClique(tpl, p.id, cursor, y, largura, altura);
+      cursor += largura;
+      if (i < palavras.length - 1) cursor += larguraTotal * (1 / totalChars);
+    });
+  }
+
   function _registrarRegiaoClique(tpl, wordId, bx, by, bw, bh) {
     if (!wordId) return;
     tpl._ultimasRegioesClique = tpl._ultimasRegioesClique || [];
     tpl._ultimasRegioesClique.push({ wordId, x: bx, y: by, w: bw, h: bh });
+  }
+  /**
+   * BUG REAL CORRIGIDO ("arrastar uma caixa de seleção sobre TODAS as
+   * palavras de um efeito só seleciona 2, mesmo com várias linhas de
+   * múltiplas palavras" — reportado pelo usuário com captura de tela,
+   * confirmado testando no Efeito 22 "Egos e Desejos"): várias
+   * funções de render de efeitos frame-exact ("papeis"/linhas com
+   * mais de uma palavra — Efeitos 19, 20, 21, 22, 23, 24, 25, 26)
+   * registravam UMA ÚNICA região de clique pra linha INTEIRA,
+   * associada só ao ID da PRIMEIRA palavra da linha (`palavras[0].id`)
+   * — as demais palavras da mesma linha nunca tinham NENHUMA região
+   * registrada, então nunca eram encontradas por arrasto (marquee)
+   * nem por clique individual, mesmo estando visíveis na tela. Esta
+   * função registra uma região PROPORCIONAL por palavra (medindo a
+   * largura real de cada uma na fonte/tamanho do quadro atual),
+   * cobrindo a linha inteira sem deixar nenhuma palavra sem clique.
+   */
+  function _registrarRegioesCliquePorPalavra(tpl, ctx, palavras, xEsquerda, y, altura, fontCanvasString) {
+    if (!palavras || !palavras.length) return;
+    ctx.save();
+    ctx.font = fontCanvasString;
+    const larguraEspaco = ctx.measureText(' ').width;
+    let cursor = xEsquerda;
+    palavras.forEach((p, i) => {
+      const texto = (p.texto != null ? p.texto : '');
+      const w = ctx.measureText(texto).width;
+      _registrarRegiaoClique(tpl, p.id, cursor, y, w, altura);
+      cursor += w;
+      if (i < palavras.length - 1) cursor += larguraEspaco;
+    });
+    ctx.restore();
   }
   /** Acha o wordId sob o ponto (x,y) em espaço lógico do template — usa
    * a última renderização (por isso é preciso já ter desenhado pelo
