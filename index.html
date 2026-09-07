@@ -25954,26 +25954,61 @@ function initEditor() {
             && window.WM_FRAME_EXACT_RENDERER.getTemplate(stFE.frameExactTemplateId);
           const regioesAntes = (tplFE && tplFE._ultimasRegioesClique) || [];
           if (regioesAntes.length && novaEscalaFE !== primeiraEscala) {
+            // BUG REAL CORRIGIDO ("quando diminui a fonte em bloco ele
+            // sai do centro e as palavras vão saindo para o lado, há
+            // sobreposição na linha do meio" — reportado pelo usuário
+            // com captura de tela, no efeito "Quando a Meia Noite
+            // Chegar"): quando uma LINHA tem mais de uma palavra (ex:
+            // "a glória", ambas no mesmo papel "chegar"), cada palavra
+            // tinha sua PRÓPRIA região de clique (posição relativa
+            // DENTRO da linha, calculada automaticamente pelo render a
+            // cada quadro) — calcular um deslocamento por PALAVRA
+            // INDIVIDUAL, a partir dessa posição relativa, e ACUMULAR
+            // esse deslocamento em cima do reposicionamento automático
+            // do render fazia cada palavra da mesma linha derivar pra
+            // um lado DIFERENTE a cada clique, quebrando a
+            // centralização automática da linha. Agora agrupa por
+            // LINHA (não por palavra): todas as palavras de uma MESMA
+            // linha recebem o MESMO deslocamento, calculado a partir
+            // do centro da linha inteira — a linha se afasta/aproxima
+            // do centro do bloco como uma unidade só, preservando o
+            // agrupamento automático interno dela.
+            const linhaPorPalavra = {};
+            (stFE.lines || []).forEach((linha, li) => {
+              (linha.words || []).forEach(w => { linhaPorPalavra[w.id] = li; });
+            });
             let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-            const centrosPorId = {};
+            const bboxPorLinha = {};
             regioesAntes.forEach(r => {
-              const cx = r.x + r.w / 2, cy = r.y + r.h / 2;
-              centrosPorId[r.wordId] = { cx, cy };
+              const li = linhaPorPalavra[r.wordId];
+              if (li === undefined) return;
+              if (!bboxPorLinha[li]) bboxPorLinha[li] = { x0: Infinity, x1: -Infinity, y0: Infinity, y1: -Infinity };
+              const b = bboxPorLinha[li];
+              b.x0 = Math.min(b.x0, r.x); b.x1 = Math.max(b.x1, r.x + r.w);
+              b.y0 = Math.min(b.y0, r.y); b.y1 = Math.max(b.y1, r.y + r.h);
               minX = Math.min(minX, r.x); maxX = Math.max(maxX, r.x + r.w);
               minY = Math.min(minY, r.y); maxY = Math.max(maxY, r.y + r.h);
             });
             const centroGlobalX = (minX + maxX) / 2, centroGlobalY = (minY + maxY) / 2;
             const razaoCrescimento = novaEscalaFE / primeiraEscala;
+            const deltaPorLinha = {};
+            Object.keys(bboxPorLinha).forEach(li => {
+              const b = bboxPorLinha[li];
+              const cx = (b.x0 + b.x1) / 2, cy = (b.y0 + b.y1) / 2;
+              deltaPorLinha[li] = {
+                dx: (cx - centroGlobalX) * (razaoCrescimento - 1),
+                dy: (cy - centroGlobalY) * (razaoCrescimento - 1),
+              };
+            });
             idsFE.forEach(wid => {
-              const c = centrosPorId[wid];
-              if (!c) return;
-              const deltaX = (c.cx - centroGlobalX) * (razaoCrescimento - 1);
-              const deltaY = (c.cy - centroGlobalY) * (razaoCrescimento - 1);
-              if (Math.abs(deltaX) < 0.5 && Math.abs(deltaY) < 0.5) return;
+              const li = linhaPorPalavra[wid];
+              const d = li !== undefined ? deltaPorLinha[li] : null;
+              if (!d) return;
+              if (Math.abs(d.dx) < 0.5 && Math.abs(d.dy) < 0.5) return;
               const woAtual = engine.wordOverrides[wid];
               const offAtual = (woAtual && woAtual.style && woAtual.style.frameExactOffset) || { dx: 0, dy: 0 };
               const novoStyle = { ...(woAtual && woAtual.style || {}) };
-              novoStyle.frameExactOffset = { dx: (offAtual.dx || 0) + deltaX, dy: (offAtual.dy || 0) + deltaY };
+              novoStyle.frameExactOffset = { dx: (offAtual.dx || 0) + d.dx, dy: (offAtual.dy || 0) + d.dy };
               engine.setWordOverride(wid, { style: novoStyle });
             });
           }
@@ -26072,26 +26107,46 @@ function initEditor() {
             && window.WM_FRAME_EXACT_RENDERER.getTemplate(stFE.frameExactTemplateId);
           const regioesAntes = (tplFE && tplFE._ultimasRegioesClique) || [];
           if (regioesAntes.length && novaEscalaFE !== primeiraEscalaFE) {
+            // Mesma correção de agrupar por LINHA (não por palavra
+            // individual) explicada em aplicarTamanho — evita que
+            // linhas com mais de uma palavra (ex: "a glória") derivem
+            // pra um lado a cada ajuste de tamanho.
+            const linhaPorPalavra = {};
+            (stFE.lines || []).forEach((linha, li) => {
+              (linha.words || []).forEach(w => { linhaPorPalavra[w.id] = li; });
+            });
             let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-            const centrosPorId = {};
+            const bboxPorLinha = {};
             regioesAntes.forEach(r => {
-              const cx = r.x + r.w / 2, cy = r.y + r.h / 2;
-              centrosPorId[r.wordId] = { cx, cy };
+              const li = linhaPorPalavra[r.wordId];
+              if (li === undefined) return;
+              if (!bboxPorLinha[li]) bboxPorLinha[li] = { x0: Infinity, x1: -Infinity, y0: Infinity, y1: -Infinity };
+              const b = bboxPorLinha[li];
+              b.x0 = Math.min(b.x0, r.x); b.x1 = Math.max(b.x1, r.x + r.w);
+              b.y0 = Math.min(b.y0, r.y); b.y1 = Math.max(b.y1, r.y + r.h);
               minX = Math.min(minX, r.x); maxX = Math.max(maxX, r.x + r.w);
               minY = Math.min(minY, r.y); maxY = Math.max(maxY, r.y + r.h);
             });
             const centroGlobalX = (minX + maxX) / 2, centroGlobalY = (minY + maxY) / 2;
             const razaoCrescimento = novaEscalaFE / primeiraEscalaFE;
+            const deltaPorLinha = {};
+            Object.keys(bboxPorLinha).forEach(li => {
+              const b = bboxPorLinha[li];
+              const cx = (b.x0 + b.x1) / 2, cy = (b.y0 + b.y1) / 2;
+              deltaPorLinha[li] = {
+                dx: (cx - centroGlobalX) * (razaoCrescimento - 1),
+                dy: (cy - centroGlobalY) * (razaoCrescimento - 1),
+              };
+            });
             idsFE.forEach(wid => {
-              const c = centrosPorId[wid];
-              if (!c) return;
-              const deltaX = (c.cx - centroGlobalX) * (razaoCrescimento - 1);
-              const deltaY = (c.cy - centroGlobalY) * (razaoCrescimento - 1);
-              if (Math.abs(deltaX) < 0.5 && Math.abs(deltaY) < 0.5) return;
+              const li = linhaPorPalavra[wid];
+              const d = li !== undefined ? deltaPorLinha[li] : null;
+              if (!d) return;
+              if (Math.abs(d.dx) < 0.5 && Math.abs(d.dy) < 0.5) return;
               const woAtual = engine.wordOverrides[wid];
               const offAtual = (woAtual && woAtual.style && woAtual.style.frameExactOffset) || { dx: 0, dy: 0 };
               const novoStyle = { ...(woAtual && woAtual.style || {}) };
-              novoStyle.frameExactOffset = { dx: (offAtual.dx || 0) + deltaX, dy: (offAtual.dy || 0) + deltaY };
+              novoStyle.frameExactOffset = { dx: (offAtual.dx || 0) + d.dx, dy: (offAtual.dy || 0) + d.dy };
               engine.setWordOverride(wid, { style: novoStyle });
             });
           }
