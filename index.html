@@ -43720,9 +43720,36 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     const ehFidelidadeMeio = textoMeio === 'O';
     const ehFidelidade2 = texto2 === 'SILÊNCIO';
 
+    // BUG REAL CORRIGIDO ("o bloco inteiro não está centralizado" —
+    // reportado pelo usuário depois de já ter o espaçamento interno
+    // corrigido): as posições Y de linha1/linha2 são medidas do vídeo
+    // original — fiéis a ONDE elas aparecem lá, mas o BLOCO como um
+    // todo (topo de linha1 até fundo de linha2) não necessariamente
+    // fica centralizado no meio exato da tela (o vídeo original pode
+    // ter mais espaço embaixo do que em cima, ou vice-versa). Mede o
+    // topo/fundo VISUAL real do bloco inteiro e desloca TODAS as
+    // linhas pela MESMA quantidade, pra que o bloco de 3 linhas fique
+    // centralizado verticalmente na tela — preserva o espaçamento
+    // interno já calculado entre elas, só reposiciona o conjunto.
+    let deslocamentoVerticalBloco = 0;
+    if (p1 && texto1 && p2 && texto2) {
+      const fontSize1Base = tpl.posicoes.linha1.fontSize * fontScale1;
+      const fontSize2Base = tpl.posicoes.linha2.fontSize * fontScale2;
+      const y1Base = tpl.posicoes.linha1.y;
+      const y2Base = tpl.posicoes.linha2.y;
+      const baseline1Base = y1Base + fontSize1Base * 0.76;
+      const baseline2Base = y2Base + fontSize2Base * 0.76;
+      const ascentReal1Base = _efeito24MedeAscentReal(texto1, fontSize1Base, fontFamily);
+      const ascentReal2Base = _efeito24MedeAscentReal(texto2, fontSize2Base, fontFamily);
+      const topoRealBloco = baseline1Base - ascentReal1Base;
+      const fundoRealBloco = baseline2Base;
+      const centroBlocoAtual = (topoRealBloco + fundoRealBloco) / 2;
+      deslocamentoVerticalBloco = tpl.logicalHeight / 2 - centroBlocoAtual;
+    }
+
     if (p1 && texto1) {
       const fontSize1 = tpl.posicoes.linha1.fontSize * fontScale1;
-      const y1 = tpl.posicoes.linha1.y + offset1.dy;
+      const y1 = tpl.posicoes.linha1.y + offset1.dy + deslocamentoVerticalBloco;
       if (ehFidelidade1) {
         const centroX1 = tpl.posX1.reduce((a, b) => a + b, 0) / tpl.posX1.length;
         _efeito24EstadoLinha1(tpl, f).forEach(([idx, dx, dy, rot, escala]) => {
@@ -43758,11 +43785,11 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
           ctx.strokeStyle = c.corBorda;
           ctx.lineWidth = c.larguraBorda * fontScaleMeio;
           ctx.beginPath();
-          ctx.arc(tpl.logicalWidth / 2 + offsetMeio.dx, c.y + offsetMeio.dy, c.raio * fontScaleMeio, 0, Math.PI * 2);
+          ctx.arc(tpl.logicalWidth / 2 + offsetMeio.dx, c.y + offsetMeio.dy + deslocamentoVerticalBloco, c.raio * fontScaleMeio, 0, Math.PI * 2);
           ctx.stroke();
           ctx.restore();
         }
-        _registrarRegiaoClique(tpl, pMeio.wordId, tpl.logicalWidth / 2 - c.raio * fontScaleMeio + offsetMeio.dx, c.y - c.raio * fontScaleMeio + offsetMeio.dy, c.raio * 2 * fontScaleMeio, c.raio * 2 * fontScaleMeio);
+        _registrarRegiaoClique(tpl, pMeio.wordId, tpl.logicalWidth / 2 - c.raio * fontScaleMeio + offsetMeio.dx, c.y - c.raio * fontScaleMeio + offsetMeio.dy + deslocamentoVerticalBloco, c.raio * 2 * fontScaleMeio, c.raio * 2 * fontScaleMeio);
       } else {
         const fontSizeMeio = tpl.posicoes.linhaMeio.fontSize * fontScaleMeio;
         // BUG REAL CORRIGIDO — 2ª tentativa ("ficou mais distante o
@@ -43811,7 +43838,7 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
           const topoReal2 = baseline2 - ascentReal2;
           const ascentRealMeio = _efeito24MedeAscentReal(textoMeio, fontSizeMeio, fontFamily);
           const baselineMeioIdeal = (topoReal2 + baseline1 + ascentRealMeio) / 2;
-          yMeio = (baselineMeioIdeal - fontSizeMeio * 0.76) + offsetMeio.dy;
+          yMeio = (baselineMeioIdeal - fontSizeMeio * 0.76) + offsetMeio.dy + deslocamentoVerticalBloco;
         } else {
           yMeio = tpl.posicoes.linhaMeio.yReflow + offsetMeio.dy;
         }
@@ -43826,7 +43853,7 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
 
     if (p2 && texto2) {
       const fontSize2 = tpl.posicoes.linha2.fontSize * fontScale2;
-      const y2 = tpl.posicoes.linha2.y + offset2.dy;
+      const y2 = tpl.posicoes.linha2.y + offset2.dy + deslocamentoVerticalBloco;
       // PEDIDO DO USUÁRIO ("retira a silhueta da linha 3" — na
       // contagem dele, a segunda linha de texto, já que o círculo
       // decorativo entre as duas linhas conta como uma posição pra
