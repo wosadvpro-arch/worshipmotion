@@ -1233,6 +1233,22 @@ html.wm-modal-open, body.wm-modal-open {
   align-items: center;
   justify-content: center;
 }
+/* BUG REAL CORRIGIDO ("os previews dos efeitos estão animados
+ * passando a tela, cortados" — reportado pelo usuário): o <canvas>
+ * marcador dos previews frame-exact tem resolução INTRÍNSECA fixa
+ * (480x270, via atributos width/height do HTML) — sem NENHUMA regra
+ * CSS controlando o tamanho VISUAL dele, o elemento renderiza no
+ * próprio tamanho intrínseco (480x270 pixels CSS reais), bem maior
+ * que os 140px de altura do card, vazando/sendo cortado pelo
+ * overflow:hidden do container pai. Sem isso, cada card de efeito
+ * frame-exact mostrava só um pedaço ampliado da animação, cortado
+ * nas bordas, em vez do preview inteiro e proporcional. */
+.tpl-prev-canvas {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
 
 /* Animação no hover do card: palavras aparecem em sequência (stagger).
  * Cada palavra tem data-word-idx 0,1,2... e o delay é calculado por
@@ -38376,14 +38392,28 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       // Mapeia CADA papel pra ITÁLICO — só "a", "meia" e "noite" (a
       // linha do meio) usam itálico; "quando" e "chegar" usam reto.
       papeisItalico: { quando: false, a: true, meia: true, noite: true, chegar: false },
-      // PEDIDO DO USUÁRIO: Montserrat em todas as linhas — linha 1
-      // (quando) e linha 3 (chegar) em negrito (700), linha 2 (a/meia/
-      // noite) em itálico com peso normal (400).
+      // Peso por papel — linha 1 (quando) e linha 3 (chegar) mais
+      // forte (700), linha 2 (a/meia/noite) peso normal (400). Como
+      // "Permanent Marker" só tem 1 peso real (400) e nenhum itálico
+      // nativo (fontes manuscritas quase nunca têm — é assim em quase
+      // todo o catálogo do Google Fonts), o navegador sintetiza
+      // negrito/itálico onde pedido — comportamento padrão, aceitável
+      // pra esse estilo.
       papeisPeso: { quando: 700, a: 400, meia: 400, noite: 400, chegar: 700 },
       corPadrao: '#F4F1E5',
-      fontFamilyOptions: ['Montserrat'],
+      // BUG REAL CORRIGIDO ("aplicar uma fonte parecida pra chegar
+      // visualmente perto do original sem depender de fonte paga" —
+      // pedido do usuário): o material original desse efeito
+      // documenta "Window Markers" como fonte (motion-data.json:
+      // font.family="Window Markers", font.required=true) — uma fonte
+      // script/manuscrita estilo caneta marcadora, mas é donationware
+      // (paga, não está no Google Fonts). "Permanent Marker" é da
+      // MESMA categoria visual (traços grossos de caneta hidrográfica,
+      // manuscrita informal) e é gratuita — chega mais perto do
+      // original do que Montserrat (usado antes).
+      fontFamilyOptions: ['Permanent Marker'],
       styles: {
-        default: { fontFamily: 'Montserrat' },
+        default: { fontFamily: 'Permanent Marker' },
       },
     },
     'efeito-18': {
