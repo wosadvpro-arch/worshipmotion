@@ -19327,7 +19327,23 @@ class RenderEngineV2 {
     // editor de letra lê/escreve o texto normalmente.
     if (stanza.frameExactTemplateId && window.WM_FRAME_EXACT_RENDERER) {
       stanzaEl.querySelectorAll('.lyric-line').forEach(el => { el.style.visibility = 'hidden'; });
-      this._renderFrameExactCanvas(stanzaEl, stanza, 0);
+      // BUG REAL CORRIGIDO ("quando aplico a cor some todas as
+      // palavras" — reportado pelo usuário no efeito Silêncio, mas
+      // afeta QUALQUER efeito frame-exact): esse `0` fixo redesenhava
+      // SEMPRE a partir do quadro INICIAL da animação, ignorando em
+      // que ponto o usuário estava (ex: pausado no último quadro,
+      // vendo o resultado final). Qualquer ação que chame
+      // `renderStanza` por outro motivo que não seja "entrar numa
+      // estrofe nova" — como aplicar cor, fonte, ou qualquer estilo
+      // via a barra de ferramentas (que re-renderiza pra refletir a
+      // mudança) — fazia a animação "voltar pro começo" visualmente.
+      // No Efeito 24 (Silêncio) isso é dramático: no quadro 0 as
+      // letras ainda não "voaram" pra posição, então tudo simplesmente
+      // some. Agora usa o ÚLTIMO quadro conhecido dessa estrofe
+      // (guardado toda vez que ela é desenhada), preservando o ponto
+      // exato em que a animação estava.
+      const mapaElapsed = this._frameExactUltimoElapsedPorStanza || {};
+      this._renderFrameExactCanvas(stanzaEl, stanza, mapaElapsed[stanza.id] || 0);
       // Reproduz automaticamente ao ENTRAR nessa estrofe (navegação,
       // trocar de slide) — mas só quando é uma troca de verdade (veio
       // de outra estrofe, ou de nenhuma), não em todo re-render interno
