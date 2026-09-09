@@ -25802,7 +25802,7 @@ function initEditor() {
         const cur = document.getElementById('ctx-font-current');
         if (cur) cur.textContent = f;
         renderListaFontes(document.getElementById('ctx-fonts-search')?.value || '');
-        requestAnimationFrame(() => { syncCtxToolbar(); if (typeof updateSelectionBox === 'function') updateSelectionBox(); });
+        requestAnimationFrame(syncCtxToolbar);
       });
     });
   }
@@ -25855,7 +25855,7 @@ function initEditor() {
       const alvo = ehBold ? 400 : 700;
       const orig = document.querySelector(`.segmented button[data-weight="${alvo}"]`);
       if (orig) orig.click();
-      requestAnimationFrame(() => { syncCtxToolbar(); if (typeof updateSelectionBox === 'function') updateSelectionBox(); });
+      requestAnimationFrame(syncCtxToolbar);
     });
 
     // Seletor de peso (Regular/Medium/Semibold/Bold/Heavy): aciona os
@@ -25864,7 +25864,7 @@ function initEditor() {
     if (selWeight) selWeight.addEventListener('change', () => {
       const orig = document.querySelector(`.segmented button[data-weight="${selWeight.value}"]`);
       if (orig) orig.click();
-      requestAnimationFrame(() => { syncCtxToolbar(); if (typeof updateSelectionBox === 'function') updateSelectionBox(); });
+      requestAnimationFrame(syncCtxToolbar);
     });
 
     // Itálico: TOGGLE de verdade. O original tem 2 botões (Normal /
@@ -25876,7 +25876,7 @@ function initEditor() {
       const ehItalico = (s.fontStyle === 'italic');
       const orig = document.getElementById(ehItalico ? 'style-roman-btn' : 'style-italic-btn');
       if (orig) orig.click();
-      requestAnimationFrame(() => { syncCtxToolbar(); if (typeof updateSelectionBox === 'function') updateSelectionBox(); });
+      requestAnimationFrame(syncCtxToolbar);
     });
 
     // Tamanho − / + : mexe via aplicarEstiloSensivel (respeita seleção).
@@ -25941,7 +25941,7 @@ function initEditor() {
         const escalaAtual = (_ctxValorSelecao('fontSizeScale', 1) || 1);
         const nova = Math.max(0.2, Math.round((escalaAtual + delta * 0.1) * 100) / 100);
         if (_aplicarFontScaleFrameExact([...selectedWordIds], nova === 1 ? null : nova)) {
-          requestAnimationFrame(() => { syncCtxToolbar(); if (typeof updateSelectionBox === 'function') updateSelectionBox(); });
+          requestAnimationFrame(syncCtxToolbar);
           return;
         }
         if (typeof aplicarEstiloSensivel === 'function')
@@ -26064,7 +26064,7 @@ function initEditor() {
             });
           }
           _aplicarFontScaleFrameExact(idsFE, novaEscalaFE === 1 ? null : novaEscalaFE);
-          requestAnimationFrame(() => { syncCtxToolbar(); if (typeof updateSelectionBox === 'function') updateSelectionBox(); });
+          requestAnimationFrame(syncCtxToolbar);
           return;
         }
         const st = engine.parsed && engine.parsed.stanzas[engine.currentStanzaIndex];
@@ -26115,7 +26115,7 @@ function initEditor() {
         if (slider) { slider.value = novo; const v2 = document.getElementById('font-size-val'); if (v2) v2.textContent = novo; }
         if (typeof markDirty === 'function') markDirty();
       }
-      requestAnimationFrame(() => { syncCtxToolbar(); if (typeof updateSelectionBox === 'function') updateSelectionBox(); });
+      requestAnimationFrame(syncCtxToolbar);
     };
     const sMinus = document.getElementById('ctx-size-minus');
     const sPlus = document.getElementById('ctx-size-plus');
@@ -26135,7 +26135,7 @@ function initEditor() {
         const globalFs = ((_ctxEstiloEfetivo().fontSize) || 64);
         const novaEscala = Math.max(0.1, Math.round((px / globalFs) * 100) / 100);
         if (_aplicarFontScaleFrameExact([...selectedWordIds], novaEscala === 1 ? null : novaEscala)) {
-          requestAnimationFrame(() => { syncCtxToolbar(); if (typeof updateSelectionBox === 'function') updateSelectionBox(); });
+          requestAnimationFrame(syncCtxToolbar);
           return;
         }
         if (typeof aplicarEstiloSensivel === 'function')
@@ -26206,7 +26206,7 @@ function initEditor() {
             });
           }
           _aplicarFontScaleFrameExact(idsFE, novaEscalaFE === 1 ? null : novaEscalaFE);
-          requestAnimationFrame(() => { syncCtxToolbar(); if (typeof updateSelectionBox === 'function') updateSelectionBox(); });
+          requestAnimationFrame(syncCtxToolbar);
           return;
         }
         const st = engine.parsed && engine.parsed.stanzas[engine.currentStanzaIndex];
@@ -26242,7 +26242,7 @@ function initEditor() {
         if (slider) { slider.value = Math.min(140, px); const v2 = document.getElementById('font-size-val'); if (v2) v2.textContent = px; }
         if (typeof markDirty === 'function') markDirty();
       }
-      requestAnimationFrame(() => { syncCtxToolbar(); if (typeof updateSelectionBox === 'function') updateSelectionBox(); });
+      requestAnimationFrame(syncCtxToolbar);
     };
 
     // Campo de tamanho editável: digita o número e Enter (ou sai do campo)
@@ -26296,7 +26296,7 @@ function initEditor() {
         const em = Math.round((parseInt(lsRange.value, 10) / 100) * 100) / 100;
         if (typeof aplicarEstiloSensivel === 'function')
           aplicarEstiloSensivel('letterSpacing', em, { afetaLargura: true });
-        requestAnimationFrame(() => { syncCtxToolbar(); if (typeof updateSelectionBox === 'function') updateSelectionBox(); });
+        requestAnimationFrame(syncCtxToolbar);
       });
     }
     // Entre linhas: aciona o slider original #line-height (do slide).
@@ -26352,13 +26352,13 @@ function initEditor() {
         btn.addEventListener('click', () => {
           if (typeof aplicarEstiloSensivel === 'function') aplicarEstiloSensivel('color', btn.dataset.c);
           if (pop) pop.style.display = 'none';
-          requestAnimationFrame(() => { syncCtxToolbar(); if (typeof updateSelectionBox === 'function') updateSelectionBox(); });
+          requestAnimationFrame(syncCtxToolbar);
         });
       });
     }
     if (colorInput) colorInput.addEventListener('input', () => {
       if (typeof aplicarEstiloSensivel === 'function') aplicarEstiloSensivel('color', colorInput.value);
-      requestAnimationFrame(() => { syncCtxToolbar(); if (typeof updateSelectionBox === 'function') updateSelectionBox(); });
+      requestAnimationFrame(syncCtxToolbar);
     });
     if (bColor && pop) {
       bColor.addEventListener('click', (e) => {
@@ -26401,7 +26401,7 @@ function initEditor() {
           document.querySelectorAll('.text-case-btn').forEach(b =>
             b.classList.toggle('active', b.dataset.case === val));
           casePop.style.display = 'none';
-          requestAnimationFrame(() => { syncCtxToolbar(); if (typeof updateSelectionBox === 'function') updateSelectionBox(); });
+          requestAnimationFrame(syncCtxToolbar);
         });
       });
     }
