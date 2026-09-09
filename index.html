@@ -19787,6 +19787,53 @@ class RenderEngineV2 {
     this._frameExactPlayGen = (this._frameExactPlayGen || 0) + 1;
     const minhaGeracao = this._frameExactPlayGen;
 
+    // BUG REAL CORRIGIDO ("ao marcar no ritmo, o efeito Silêncio some
+    // tanto na renderização como no preview" — reportado pelo
+    // usuário): esse loop sempre reinicia seu próprio cronômetro do
+    // zero (`t0`) toda vez que é chamado — mas o cálculo de qual
+    // quadro mostrar (`_efeitoXXQuadroEfetivo`) compara o tempo
+    // decorrido contra uma referência ABSOLUTA (o tStart marcado no
+    // ritmo, em segundos desde o início da música). Se a estrofe é
+    // marcada pra tocar, digamos, aos 15s da música, e o usuário sai
+    // dessa estrofe e volta (ou o app avança automaticamente até ela
+    // acompanhando o áudio), o loop reinicia do zero — só que a
+    // referência continua sendo "15s" e o cronômetro PRÓPRIO do loop
+    // não tem nenhuma ideia de que o áudio já está exatamente nesse
+    // ponto. Resultado: o efeito ficava preso no quadro inicial
+    // (vazio, pra efeitos com entrada animada como o Silêncio) até o
+    // loop "alcançar" artificialmente 15 segundos de execução própria
+    // — mesmo com o áudio já no lugar certo. Agora calcula, ANTES de
+    // começar, quanto tempo real do áudio já passou da referência
+    // marcada, e usa isso como ponto de partida do cronômetro — o
+    // efeito começa a tocar no quadro certo imediatamente.
+    let offsetInicialFrameExactMs = 0;
+    let referenciaTStartParaLoop = null;
+    try {
+      const textsRef = this._readFrameExactTexts(st);
+      const referenciaTStart = textsRef && textsRef._referenciaTStart;
+      referenciaTStartParaLoop = referenciaTStart;
+      // BUG REAL CORRIGIDO ("ao marcar no ritmo, o efeito Silêncio some
+      // tanto na renderização como no preview" — reportado pelo
+      // usuário): a PRIMEIRA tentativa de correção tentava acessar
+      // `audioElement` diretamente aqui, mas essa classe vive num
+      // escopo (IIFE) completamente separado de onde `audioElement` é
+      // declarado — a variável simplesmente não existe nesse escopo
+      // (erro "not defined" em teste). `window.__wm_getAudioCurrentTime`
+      // é a ponte exposta pelo outro escopo, que TEM acesso ao
+      // elemento de áudio real.
+      const audioTimeAtual = (typeof window.__wm_getAudioCurrentTime === 'function')
+        ? window.__wm_getAudioCurrentTime() : null;
+      // A referência (`referenciaTStart`) já é subtraída DENTRO das
+      // funções de cálculo de quadro de cada efeito (ex:
+      // `_efeito24QuadroEfetivo`) — `elapsedMs` precisa chegar lá
+      // representando o tempo ABSOLUTO desde o início da música, não
+      // a diferença já calculada (senão a referência seria subtraída
+      // duas vezes, zerando tudo de novo).
+      if (referenciaTStart != null && audioTimeAtual != null && !isNaN(audioTimeAtual)) {
+        offsetInicialFrameExactMs = Math.max(0, audioTimeAtual * 1000);
+      }
+    } catch (e) {}
+
     const start = () => {
       if (this._frameExactPlayGen !== minhaGeracao) return; // superada por uma chamada mais nova
       this._frameExactPlaying = true;
@@ -19834,12 +19881,20 @@ class RenderEngineV2 {
         if (!stanzaAtual || stanzaAtual.id !== stanzaId) { this._frameExactPlaying = false; return; }
         const stanzaEl = this.canvas.querySelector(`[data-stanza-id="${stanzaId}"]`);
         if (!stanzaEl) { this._frameExactPlaying = false; return; }
-        const elapsed = now - t0;
+        const elapsed = (now - t0) + offsetInicialFrameExactMs;
         this._renderFrameExactCanvas(stanzaEl, stanzaAtual, elapsed);
-        if (elapsed < durationMs) {
+        // `elapsed` agora pode representar tempo ABSOLUTO desde o
+        // início da música (quando há marcação de ritmo e áudio
+        // carregado) em vez de tempo relativo ao início da animação —
+        // a condição de parar precisa descontar a mesma referência que
+        // as funções de quadro de cada efeito já descontam por dentro,
+        // senão o loop nunca para (offset gigante sempre > duração) ou
+        // para cedo demais.
+        const referenciaMsParaDuracao = referenciaTStartParaLoop != null ? referenciaTStartParaLoop * 1000 : 0;
+        if ((elapsed - referenciaMsParaDuracao) < durationMs) {
           this._frameExactRAF = requestAnimationFrame(step);
         } else {
-          this._renderFrameExactCanvas(stanzaEl, stanzaAtual, durationMs - 0.001); // segura no último frame
+          this._renderFrameExactCanvas(stanzaEl, stanzaAtual, referenciaMsParaDuracao + durationMs - 0.001); // segura no último frame
           this._frameExactPlaying = false;
           this._frameExactRAF = 0;
         }
@@ -29772,6 +29827,16 @@ function initEditor() {
   // - Persiste no projeto: { audioId, audioName, audioDuration }
 
   let audioElement = null;
+  // Ponte pra outros escopos (como a classe RenderEngineV2, que vive
+  // numa IIFE separada e não tem acesso direto a `audioElement` via
+  // closure) conseguirem ler o tempo atual do áudio real. Usado pra
+  // sincronizar efeitos frame-exact com marcação de ritmo quando a
+  // estrofe é (re)aberta no meio da música, em vez de sempre reiniciar
+  // o cronômetro da animação do zero.
+  window.__wm_getAudioCurrentTime = function () {
+    return (audioElement && !isNaN(audioElement.currentTime) && audioElement.duration)
+      ? audioElement.currentTime : null;
+  };
   let audioCurrentId = null;
   let audioDuration = 0;        // duração total em segundos
   let audioPeaks = null;         // array de picos pra desenhar a waveform
@@ -43219,32 +43284,32 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     } else if (f <= 27) {
       if (pMain) _efeito22DrawMain(ctx, textoMain, mainX, mainY, mainSize, fontFamilyMain, 'white', 0, texts._cor.main, fontWeightMain, italicMain);
       if (pSmall) {
-        ctx.save(); ctx.font = _efeito22FontSmall(smallSize, fontFamilySmall); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.save(); ctx.font = _efeito22FontSmall(smallSize, fontFamilySmall, fontWeightSmall, italicSmall); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
         ctx.fillStyle = EFEITO22_CORES.white; ctx.fillText(textoSmall, smallX, smallY); ctx.restore();
       }
     } else if (f <= 31) {
       if (pMain) _efeito22DrawMain(ctx, textoMain, mainX, mainY, mainSize, fontFamilyMain, 'rgb', 0.7, texts._cor.main, fontWeightMain, italicMain);
       if (pSmall) {
-        ctx.save(); ctx.font = _efeito22FontSmall(smallSize, fontFamilySmall); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.save(); ctx.font = _efeito22FontSmall(smallSize, fontFamilySmall, fontWeightSmall, italicSmall); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
         ctx.fillStyle = EFEITO22_CORES.white; ctx.fillText(textoSmall, smallX, smallY); ctx.restore();
       }
     } else if (f <= 34) {
       if (pMain) _efeito22DrawMain(ctx, textoMain, mainX, mainY, mainSize, fontFamilyMain, 'yellow', 0, texts._cor.main, fontWeightMain, italicMain);
       if (pSmall) {
-        ctx.save(); ctx.font = _efeito22FontSmall(smallSize, fontFamilySmall); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.save(); ctx.font = _efeito22FontSmall(smallSize, fontFamilySmall, fontWeightSmall, italicSmall); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
         ctx.fillStyle = EFEITO22_CORES.white; ctx.fillText(textoSmall, smallX, smallY); ctx.restore();
       }
     } else if (f <= 37) {
       if (pMain) _efeito22DrawMain(ctx, textoMain, mainX, mainY, mainSize, fontFamilyMain, 'cyan', 0, texts._cor.main, fontWeightMain, italicMain);
       if (pSmall) {
-        ctx.save(); ctx.font = _efeito22FontSmall(smallSize, fontFamilySmall); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.save(); ctx.font = _efeito22FontSmall(smallSize, fontFamilySmall, fontWeightSmall, italicSmall); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
         ctx.fillStyle = EFEITO22_CORES.white; ctx.fillText(textoSmall, smallX, smallY); ctx.restore();
       }
     } else {
       // 38+: transição pra silhueta real na linha principal + a
       // linha pequena já assume seu estado final dividido por palavra.
       if (pMain) {
-        ctx.save(); ctx.font = _efeito22FontMain(mainSize, fontFamilyMain);
+        ctx.save(); ctx.font = _efeito22FontMain(mainSize, fontFamilyMain, fontWeightMain, italicMain);
         const mw = ctx.measureText(textoMain).width;
         ctx.restore();
         const left = mainX - mw / 2;
@@ -43259,7 +43324,7 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
         const top = mainY - mainSize * 0.56, bottom = mainY + mainSize * 0.56;
 
         function textBaseM() {
-          ctx.font = _efeito22FontMain(mainSize, fontFamilyMain); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.font = _efeito22FontMain(mainSize, fontFamilyMain, fontWeightMain, italicMain); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
         }
         function clipRectM(x, y, w, h, fn) {
           ctx.save(); ctx.beginPath(); ctx.rect(x, y, w, h); ctx.clip(); fn(); ctx.restore();
@@ -43275,7 +43340,7 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
         clipRectM(left - 10, top - 8, mw + 20, bottom - top + 16, () => strokeMainM('#f5f5f2', 1.45));
 
         if (temPrefixo) {
-          ctx.save(); ctx.font = _efeito22FontMain(mainSize, fontFamilyMain);
+          ctx.save(); ctx.font = _efeito22FontMain(mainSize, fontFamilyMain, fontWeightMain, italicMain);
           const prefixW = ctx.measureText(prefixo).width;
           const dW = ctx.measureText(sufixo.charAt(0)).width;
           ctx.restore();
@@ -43323,7 +43388,7 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
         }
 
         if (pMain.palavras && pMain.palavras.length > 1) {
-          _registrarRegioesCliquePorPalavra(tpl, ctx, pMain.palavras, left, top, bottom - top, _efeito22FontMain(mainSize, fontFamilyMain));
+          _registrarRegioesCliquePorPalavra(tpl, ctx, pMain.palavras, left, top, bottom - top, _efeito22FontMain(mainSize, fontFamilyMain, fontWeightMain, italicMain));
         } else {
           _registrarRegiaoClique(tpl, pMain.wordId, left, top, mw, bottom - top);
         }
@@ -43331,11 +43396,11 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
 
       if (pSmall) {
         _efeito22DrawSmallSplit(ctx, pSmall.palavras.map(p => p.texto.toUpperCase()), smallX, smallY, smallSize, fontFamilySmall, texts._cor.small, fontWeightSmall, italicSmall);
-        ctx.save(); ctx.font = _efeito22FontSmall(smallSize, fontFamilySmall);
+        ctx.save(); ctx.font = _efeito22FontSmall(smallSize, fontFamilySmall, fontWeightSmall, italicSmall);
         const totalW = ctx.measureText(textoSmall).width;
         ctx.restore();
         if (pSmall.palavras && pSmall.palavras.length > 1) {
-          _registrarRegioesCliquePorPalavra(tpl, ctx, pSmall.palavras, smallX - totalW / 2, smallY - smallSize, smallSize * 2, _efeito22FontSmall(smallSize, fontFamilySmall));
+          _registrarRegioesCliquePorPalavra(tpl, ctx, pSmall.palavras, smallX - totalW / 2, smallY - smallSize, smallSize * 2, _efeito22FontSmall(smallSize, fontFamilySmall, fontWeightSmall, italicSmall));
         } else {
           _registrarRegiaoClique(tpl, pSmall.wordId, smallX - totalW / 2, smallY - smallSize, totalW, smallSize * 2);
         }
@@ -43537,7 +43602,7 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
         if (cursor1) _efeito23DesenhaComCursor(ctx, texto1, y1, fontFamily1, tamanho, cx1, texts._cor.linha1 || tpl.corTexto, tpl.corCursor, fontWeight1, italic1);
         else _efeito23DesenhaTexto(ctx, texto1, y1, fontFamily1, tamanho, cx1, texts._cor.linha1 || tpl.corTexto, tpl.corCursor, fontWeight1, italic1);
         if (p1) {
-          const fonte1 = `700 ${tamanho}px ${_fontFamilyCanvas(fontFamily)}`;
+          const fonte1 = `${italic1 ? 'italic ' : ''}${fontWeight1 || 700} ${tamanho}px ${_fontFamilyCanvas(fontFamily1)}`;
           if (p1.palavras && p1.palavras.length > 1) {
             ctx.save(); ctx.font = fonte1;
             const largura1 = ctx.measureText(texto1).width;
@@ -43556,7 +43621,7 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
         if (cursor2) _efeito23DesenhaComCursor(ctx, texto2, y2, fontFamily2, tamanho, cx2, texts._cor.linha2 || tpl.corTexto, tpl.corCursor, fontWeight2, italic2);
         else _efeito23DesenhaTexto(ctx, texto2, y2, fontFamily2, tamanho, cx2, texts._cor.linha2 || tpl.corTexto, tpl.corCursor, fontWeight2, italic2);
         if (p2) {
-          const fonte2 = `700 ${tamanho}px ${_fontFamilyCanvas(fontFamily)}`;
+          const fonte2 = `${italic2 ? 'italic ' : ''}${fontWeight2 || 700} ${tamanho}px ${_fontFamilyCanvas(fontFamily2)}`;
           if (p2.palavras && p2.palavras.length > 1) {
             ctx.save(); ctx.font = fonte2;
             const largura2 = ctx.measureText(texto2).width;
@@ -43583,7 +43648,7 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       // no estado final em vez de desaparecer.
       if (p1) {
         _efeito23DesenhaTexto(ctx, L1, y1, fontFamily1, tamanho, cx1, texts._cor.linha1 || tpl.corTexto, tpl.corCursor, fontWeight1, italic1);
-        const fonte1 = `700 ${tamanho}px ${_fontFamilyCanvas(fontFamily)}`;
+        const fonte1 = `${italic1 ? 'italic ' : ''}${fontWeight1 || 700} ${tamanho}px ${_fontFamilyCanvas(fontFamily1)}`;
         if (p1.palavras && p1.palavras.length > 1) {
           ctx.save(); ctx.font = fonte1;
           const largura1 = ctx.measureText(L1).width;
@@ -43595,7 +43660,7 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       }
       if (p2) {
         _efeito23DesenhaTexto(ctx, L2, y2, fontFamily2, tamanho, cx2, texts._cor.linha2 || tpl.corTexto, tpl.corCursor, fontWeight2, italic2);
-        const fonte2 = `700 ${tamanho}px ${_fontFamilyCanvas(fontFamily)}`;
+        const fonte2 = `${italic2 ? 'italic ' : ''}${fontWeight2 || 700} ${tamanho}px ${_fontFamilyCanvas(fontFamily2)}`;
         if (p2.palavras && p2.palavras.length > 1) {
           ctx.save(); ctx.font = fonte2;
           const largura2 = ctx.measureText(L2).width;
