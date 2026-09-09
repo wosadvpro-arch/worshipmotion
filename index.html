@@ -43796,9 +43796,9 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
         _efeito24DesenhaReflow(ctx, texto1, y1, fontSize1, fontFamily, offset1, f, false, tpl.logicalWidth, 0, 15, texts._cor.linha1);
       }
       if (p1.palavras && p1.palavras.length > 1) {
-        _registrarRegioesCliquePorPalavraProporcional(tpl, p1.palavras, tpl.logicalWidth / 2 - 200, y1 - 20, 400, fontSize1 * 1.3);
+        _registrarRegioesCliquePorPalavraProporcional(tpl, p1.palavras, tpl.logicalWidth / 2 - 200 + offset1.dx, y1 - 20, 400, fontSize1 * 1.3);
       } else {
-        _registrarRegiaoClique(tpl, p1.wordId, tpl.logicalWidth / 2 - 200, y1 - 20, 400, fontSize1 * 1.3);
+        _registrarRegiaoClique(tpl, p1.wordId, tpl.logicalWidth / 2 - 200 + offset1.dx, y1 - 20, 400, fontSize1 * 1.3);
       }
     }
 
@@ -43879,9 +43879,9 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
         }
         _efeito24DesenhaReflow(ctx, textoMeio, yMeio, fontSizeMeio, fontFamily, offsetMeio, f, false, tpl.logicalWidth, 16, 26, texts._cor.linhaMeio);
         if (pMeio.palavras && pMeio.palavras.length > 1) {
-          _registrarRegioesCliquePorPalavraProporcional(tpl, pMeio.palavras, tpl.logicalWidth / 2 - 200, yMeio - 20, 400, fontSizeMeio * 1.3);
+          _registrarRegioesCliquePorPalavraProporcional(tpl, pMeio.palavras, tpl.logicalWidth / 2 - 200 + offsetMeio.dx, yMeio - 20, 400, fontSizeMeio * 1.3);
         } else {
-          _registrarRegiaoClique(tpl, pMeio.wordId, tpl.logicalWidth / 2 - 200, yMeio - 20, 400, fontSizeMeio * 1.3);
+          _registrarRegiaoClique(tpl, pMeio.wordId, tpl.logicalWidth / 2 - 200 + offsetMeio.dx, yMeio - 20, 400, fontSizeMeio * 1.3);
         }
       }
     }
@@ -43905,9 +43905,9 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
         _efeito24DesenhaReflow(ctx, texto2, y2, fontSize2, fontFamily, offset2, f, false, tpl.logicalWidth, 27, 37, texts._cor.linha2);
       }
       if (p2.palavras && p2.palavras.length > 1) {
-        _registrarRegioesCliquePorPalavraProporcional(tpl, p2.palavras, tpl.logicalWidth / 2 - 260, y2 - 20, 520, fontSize2 * 1.3);
+        _registrarRegioesCliquePorPalavraProporcional(tpl, p2.palavras, tpl.logicalWidth / 2 - 260 + offset2.dx, y2 - 20, 520, fontSize2 * 1.3);
       } else {
-        _registrarRegiaoClique(tpl, p2.wordId, tpl.logicalWidth / 2 - 260, y2 - 20, 520, fontSize2 * 1.3);
+        _registrarRegiaoClique(tpl, p2.wordId, tpl.logicalWidth / 2 - 260 + offset2.dx, y2 - 20, 520, fontSize2 * 1.3);
       }
     }
 
