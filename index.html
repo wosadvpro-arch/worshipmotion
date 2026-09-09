@@ -42844,9 +42844,9 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     return 0;
   }
 
-  function _efeito21FitFont(medidor, texto, fontFamily, targetW) {
+  function _efeito21FitFont(medidor, texto, fontFamily, targetW, peso, italico) {
     const fsBase = 100;
-    medidor.font = `${fsBase}px ${_fontFamilyCanvas(fontFamily)}`;
+    medidor.font = `${italico ? 'italic ' : ''}${peso || 400} ${fsBase}px ${_fontFamilyCanvas(fontFamily)}`;
     const mw = Math.max(1, medidor.measureText(texto).width);
     return fsBase * targetW / mw;
   }
@@ -42876,6 +42876,12 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       if (wo && wo.style && wo.style.fontFamily) out._fontFamily[papel] = wo.style.fontFamily;
       if (wo && wo.style && wo.style.frameExactOffset) out._offset[papel] = wo.style.frameExactOffset;
       if (wo && wo.style && wo.style.color) out._cor[papel] = wo.style.color;
+      // BUG REAL CORRIGIDO (mesma varredura que achou isso no Efeito
+      // 24 — "troquei o Montserrat, apliquei itálico, bold... e nada
+      // funcionou"): o objeto já declarava `_fontWeight`/`_italic`,
+      // mas nunca eram lidos de verdade.
+      if (wo && wo.style && wo.style.fontWeight) out._fontWeight[papel] = wo.style.fontWeight;
+      if (wo && wo.style && wo.style.fontStyle === 'italic') out._italic[papel] = true;
     });
     return out;
   }
@@ -42892,11 +42898,11 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
 
   // Desenha o texto com sombra ciano "fantasma" (aberração cromática)
   // + cor principal — usado antes do quadro 30.
-  function _efeito21DesenhaCorSuave(ctx, texto, x, y, fs, fontFamily, rgb, cyan, corOverride) {
+  function _efeito21DesenhaCorSuave(ctx, texto, x, y, fs, fontFamily, rgb, cyan, corOverride, peso, italico) {
     ctx.save();
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.font = `${fs}px ${_fontFamilyCanvas(fontFamily)}`;
+    ctx.font = `${italico ? 'italic ' : ''}${peso || 400} ${fs}px ${_fontFamilyCanvas(fontFamily)}`;
     if (cyan > 0 && !corOverride) {
       ctx.globalAlpha = 0.38 * cyan;
       ctx.fillStyle = '#08d7ff';
@@ -42912,11 +42918,11 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
   // (contorno), com a fronteira em `ratio` (0=topo, 1=base) e o lado
   // preenchido definido por `direction` ('bottom'=preenchido em cima
   // / silhueta embaixo; 'top'=silhueta em cima / preenchido embaixo).
-  function _efeito21DesenhaSplit(ctx, texto, x, y, fs, fontFamily, ratio, direction, larguraCanvas, corOverride) {
+  function _efeito21DesenhaSplit(ctx, texto, x, y, fs, fontFamily, ratio, direction, larguraCanvas, corOverride, peso, italico) {
     ctx.save();
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.font = `${fs}px ${_fontFamilyCanvas(fontFamily)}`;
+    ctx.font = `${italico ? 'italic ' : ''}${peso || 400} ${fs}px ${_fontFamilyCanvas(fontFamily)}`;
     ctx.lineWidth = Math.max(1.4, fs * 0.025);
     const corSolida = corOverride || '#f7f7f7';
     ctx.strokeStyle = corSolida;
@@ -42957,13 +42963,15 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       if (!_efeito21Visivel(i, k)) return;
 
       const fontFamily = texts._fontFamily[papel] || tpl.styles.default.fontFamily;
+      const fontWeight21 = texts._fontWeight[papel] || 400;
+      const italic21 = !!texts._italic[papel];
       const fontScale = texts._fontScale[papel] || 1;
       const offset = texts._offset[papel] || { dx: 0, dy: 0 };
       const s = _efeito21Escala(i);
       const L = tpl.linhasBase[k];
       const x = L.x + offset.dx, y = L.y + offset.dy;
       const targetW = L.w * s * fontScale;
-      let fs = _efeito21FitFont(medidor, texto, fontFamily, targetW);
+      let fs = _efeito21FitFont(medidor, texto, fontFamily, targetW, fontWeight21, italic21);
       // BUG REAL CORRIGIDO ("verifique se tem em outro efeito o mesmo
       // problema de sobreposição" — confirmado testando com palavras
       // de 1 letra só, tipo "X"/"Y"/"Z"/"W": o tamanho da fonte é
@@ -42976,7 +42984,7 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       // proporcionalmente (perde só um pouco de largura de preenchimento,
       // nunca sobrepõe outra linha).
       const alturaMaximaLinha = L.h * s * fontScale;
-      medidor.font = `${fs}px ${_fontFamilyCanvas(fontFamily)}`;
+      medidor.font = `${italic21 ? 'italic ' : ''}${fontWeight21} ${fs}px ${_fontFamilyCanvas(fontFamily)}`;
       const mAltura = medidor.measureText(texto);
       const alturaFonteAtual = (mAltura.actualBoundingBoxAscent || fs * 0.72) + (mAltura.actualBoundingBoxDescent || 0);
       if (alturaFonteAtual > alturaMaximaLinha) {
@@ -42992,7 +43000,7 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
         const rgb = _efeito21CorPerfil(tpl, i, k);
         const chroma = _efeito21Chroma(i, k);
         if (i < 30) {
-          _efeito21DesenhaCorSuave(ctx, texto, x, y, fs, fontFamily, rgb, chroma, texts._cor[papel]);
+          _efeito21DesenhaCorSuave(ctx, texto, x, y, fs, fontFamily, rgb, chroma, texts._cor[papel], fontWeight21, italic21);
         } else {
           const idx = Math.max(0, Math.min(7, i - 30));
           const progresso = EFEITO21_PROGRESSO_SILHUETA[idx];
@@ -43002,16 +43010,16 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
           // nasce em cima, preenchido nasce embaixo).
           const ratio = (k === 0) ? (1.0 - progresso) : progresso;
           const direction = (k === 0) ? 'bottom' : 'top';
-          _efeito21DesenhaSplit(ctx, texto, x, y, fs, fontFamily, ratio, direction, tpl.logicalWidth, texts._cor[papel]);
+          _efeito21DesenhaSplit(ctx, texto, x, y, fs, fontFamily, ratio, direction, tpl.logicalWidth, texts._cor[papel], fontWeight21, italic21);
         }
       } else {
         const rgb = _efeito21CorPerfil(tpl, i, k);
         const chroma = _efeito21Chroma(i, k);
-        _efeito21DesenhaCorSuave(ctx, texto, x, y, fs, fontFamily, rgb, chroma, texts._cor[papel]);
+        _efeito21DesenhaCorSuave(ctx, texto, x, y, fs, fontFamily, rgb, chroma, texts._cor[papel], fontWeight21, italic21);
       }
 
       const alturaAprox = L.h * s * fontScale;
-      const fonteCanvas21 = `${fs}px ${_fontFamilyCanvas(fontFamily)}`;
+      const fonteCanvas21 = `${italic21 ? 'italic ' : ''}${fontWeight21} ${fs}px ${_fontFamilyCanvas(fontFamily)}`;
       if (p.palavras && p.palavras.length > 1) {
         _registrarRegioesCliquePorPalavra(tpl, ctx, p.palavras, x - targetW / 2, y - alturaAprox / 2, alturaAprox, fonteCanvas21);
       } else {
@@ -43059,6 +43067,12 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       if (wo && wo.style && wo.style.fontFamily) out._fontFamily[papel] = wo.style.fontFamily;
       if (wo && wo.style && wo.style.frameExactOffset) out._offset[papel] = wo.style.frameExactOffset;
       if (wo && wo.style && wo.style.color) out._cor[papel] = wo.style.color;
+      // BUG REAL CORRIGIDO (mesma varredura do Efeito 24 — "troquei o
+      // Montserrat, apliquei itálico, bold... e nada funcionou"): o
+      // objeto já declarava `_fontWeight`/`_italic`, mas nunca eram
+      // lidos de verdade.
+      if (wo && wo.style && wo.style.fontWeight) out._fontWeight[papel] = wo.style.fontWeight;
+      if (wo && wo.style && wo.style.fontStyle === 'italic') out._italic[papel] = true;
     }
     processaLinha('small', lines[0]);
     processaLinha('main', lines[1]);
@@ -43075,14 +43089,14 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     return Math.max(0, Math.min(tpl.motionData.frames - 1, Math.round(elapsedEfetivo / msPorQuadro)));
   }
 
-  function _efeito22FontMain(px, fontFamily) { return `${px}px ${_fontFamilyCanvas(fontFamily)}`; }
-  function _efeito22FontSmall(px, fontFamily) { return `700 ${px}px ${_fontFamilyCanvas(fontFamily)}`; }
+  function _efeito22FontMain(px, fontFamily, peso, italico) { return `${italico ? 'italic ' : ''}${peso || 400} ${px}px ${_fontFamilyCanvas(fontFamily)}`; }
+  function _efeito22FontSmall(px, fontFamily, peso, italico) { return `${italico ? 'italic ' : ''}${peso || 700} ${px}px ${_fontFamilyCanvas(fontFamily)}`; }
 
-  function _efeito22DrawMain(ctx, texto, x, y, size, fontFamily, mode, jitter, corOverride) {
+  function _efeito22DrawMain(ctx, texto, x, y, size, fontFamily, mode, jitter, corOverride, peso, italico) {
     const C = EFEITO22_CORES;
     ctx.save();
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.font = _efeito22FontMain(size, fontFamily);
+    ctx.font = _efeito22FontMain(size, fontFamily, peso, italico);
     if (mode === 'white') {
       ctx.fillStyle = corOverride || C.white; ctx.fillText(texto, x, y);
     } else if (mode === 'yellow') {
@@ -43128,10 +43142,10 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
    * contagem de palavras no reflow (com 1 ou 2 palavras, aplica o
    * mesmo princípio de forma proporcional).
    */
-  function _efeito22DrawSmallSplit(ctx, palavras, x, y, size, fontFamily, corOverride) {
+  function _efeito22DrawSmallSplit(ctx, palavras, x, y, size, fontFamily, corOverride, peso, italico) {
     const C = EFEITO22_CORES;
     ctx.save();
-    ctx.font = _efeito22FontSmall(size, fontFamily);
+    ctx.font = _efeito22FontSmall(size, fontFamily, peso, italico);
     ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
     const gap = ctx.measureText(' ').width;
     const widths = palavras.map(p => ctx.measureText(p).width);
@@ -43140,11 +43154,11 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     const corSolida = corOverride || C.white;
 
     function strokeWord(word, wx) {
-      ctx.save(); ctx.font = _efeito22FontSmall(size, fontFamily); ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+      ctx.save(); ctx.font = _efeito22FontSmall(size, fontFamily, peso, italico); ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
       ctx.strokeStyle = corSolida; ctx.lineWidth = 1.15; ctx.strokeText(word, wx, y); ctx.restore();
     }
     function fillWord(word, wx) {
-      ctx.save(); ctx.font = _efeito22FontSmall(size, fontFamily); ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+      ctx.save(); ctx.font = _efeito22FontSmall(size, fontFamily, peso, italico); ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
       ctx.fillStyle = corSolida; ctx.fillText(word, wx, y); ctx.restore();
     }
 
@@ -43179,6 +43193,10 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     const posMain = tpl.posicoes.main, posSmall = tpl.posicoes.small;
     const fontFamilyMain = (pMain && texts._fontFamily.main) || tpl.styles.main.fontFamily;
     const fontFamilySmall = (pSmall && texts._fontFamily.small) || tpl.styles.small.fontFamily;
+    const fontWeightMain = (pMain && texts._fontWeight.main) || null;
+    const fontWeightSmall = (pSmall && texts._fontWeight.small) || null;
+    const italicMain = !!(pMain && texts._italic.main);
+    const italicSmall = !!(pSmall && texts._italic.small);
     const fontScaleMain = (pMain && texts._fontScale.main) || 1;
     const fontScaleSmall = (pSmall && texts._fontScale.small) || 1;
     const offsetMain = (pMain && texts._offset.main) || { dx: 0, dy: 0 };
@@ -43193,31 +43211,31 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     else if (f <= 7) {
       if (pMain) _efeito22DrawScattered(ctx, textoMain, mainX, mainY, mainSize, fontFamilyMain, (f - 2) / 5);
     } else if (f <= 12) {
-      if (pMain) _efeito22DrawMain(ctx, textoMain, mainX, mainY, mainSize, fontFamilyMain, 'rgb', 1, texts._cor.main);
+      if (pMain) _efeito22DrawMain(ctx, textoMain, mainX, mainY, mainSize, fontFamilyMain, 'rgb', 1, texts._cor.main, fontWeightMain, italicMain);
       if (pSmall) _efeito22DrawScattered(ctx, textoSmall, smallX + 10, smallY - 18, smallSize, fontFamilySmall, 0.55);
     } else if (f <= 18) {
-      if (pMain) _efeito22DrawMain(ctx, textoMain, mainX, mainY, mainSize, fontFamilyMain, f < 16 ? 'yellow' : 'white', 0, texts._cor.main);
+      if (pMain) _efeito22DrawMain(ctx, textoMain, mainX, mainY, mainSize, fontFamilyMain, f < 16 ? 'yellow' : 'white', 0, texts._cor.main, fontWeightMain, italicMain);
       if (pSmall) _efeito22DrawScattered(ctx, textoSmall, smallX, smallY, smallSize, fontFamilySmall, (f - 12) / 6);
     } else if (f <= 27) {
-      if (pMain) _efeito22DrawMain(ctx, textoMain, mainX, mainY, mainSize, fontFamilyMain, 'white', 0, texts._cor.main);
+      if (pMain) _efeito22DrawMain(ctx, textoMain, mainX, mainY, mainSize, fontFamilyMain, 'white', 0, texts._cor.main, fontWeightMain, italicMain);
       if (pSmall) {
         ctx.save(); ctx.font = _efeito22FontSmall(smallSize, fontFamilySmall); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
         ctx.fillStyle = EFEITO22_CORES.white; ctx.fillText(textoSmall, smallX, smallY); ctx.restore();
       }
     } else if (f <= 31) {
-      if (pMain) _efeito22DrawMain(ctx, textoMain, mainX, mainY, mainSize, fontFamilyMain, 'rgb', 0.7, texts._cor.main);
+      if (pMain) _efeito22DrawMain(ctx, textoMain, mainX, mainY, mainSize, fontFamilyMain, 'rgb', 0.7, texts._cor.main, fontWeightMain, italicMain);
       if (pSmall) {
         ctx.save(); ctx.font = _efeito22FontSmall(smallSize, fontFamilySmall); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
         ctx.fillStyle = EFEITO22_CORES.white; ctx.fillText(textoSmall, smallX, smallY); ctx.restore();
       }
     } else if (f <= 34) {
-      if (pMain) _efeito22DrawMain(ctx, textoMain, mainX, mainY, mainSize, fontFamilyMain, 'yellow', 0, texts._cor.main);
+      if (pMain) _efeito22DrawMain(ctx, textoMain, mainX, mainY, mainSize, fontFamilyMain, 'yellow', 0, texts._cor.main, fontWeightMain, italicMain);
       if (pSmall) {
         ctx.save(); ctx.font = _efeito22FontSmall(smallSize, fontFamilySmall); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
         ctx.fillStyle = EFEITO22_CORES.white; ctx.fillText(textoSmall, smallX, smallY); ctx.restore();
       }
     } else if (f <= 37) {
-      if (pMain) _efeito22DrawMain(ctx, textoMain, mainX, mainY, mainSize, fontFamilyMain, 'cyan', 0, texts._cor.main);
+      if (pMain) _efeito22DrawMain(ctx, textoMain, mainX, mainY, mainSize, fontFamilyMain, 'cyan', 0, texts._cor.main, fontWeightMain, italicMain);
       if (pSmall) {
         ctx.save(); ctx.font = _efeito22FontSmall(smallSize, fontFamilySmall); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
         ctx.fillStyle = EFEITO22_CORES.white; ctx.fillText(textoSmall, smallX, smallY); ctx.restore();
@@ -43312,7 +43330,7 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       }
 
       if (pSmall) {
-        _efeito22DrawSmallSplit(ctx, pSmall.palavras.map(p => p.texto.toUpperCase()), smallX, smallY, smallSize, fontFamilySmall, texts._cor.small);
+        _efeito22DrawSmallSplit(ctx, pSmall.palavras.map(p => p.texto.toUpperCase()), smallX, smallY, smallSize, fontFamilySmall, texts._cor.small, fontWeightSmall, italicSmall);
         ctx.save(); ctx.font = _efeito22FontSmall(smallSize, fontFamilySmall);
         const totalW = ctx.measureText(textoSmall).width;
         ctx.restore();
@@ -43419,6 +43437,12 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       if (wo && wo.style && wo.style.fontFamily) out._fontFamily[papel] = wo.style.fontFamily;
       if (wo && wo.style && wo.style.color) out._cor[papel] = wo.style.color;
       if (wo && wo.style && wo.style.frameExactOffset) out._offset[papel] = wo.style.frameExactOffset;
+      // BUG REAL CORRIGIDO (mesma varredura do Efeito 24 — "troquei o
+      // Montserrat, apliquei itálico, bold... e nada funcionou"): o
+      // objeto já declarava `_fontWeight`/`_italic`, mas nunca eram
+      // lidos de verdade.
+      if (wo && wo.style && wo.style.fontWeight) out._fontWeight[papel] = wo.style.fontWeight;
+      if (wo && wo.style && wo.style.fontStyle === 'italic') out._italic[papel] = true;
     }
     processaLinha('linha1', lines[0]);
     processaLinha('linha2', lines[1]);
@@ -43434,9 +43458,9 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     return Math.max(0, Math.min(tpl.motionData.frames - 1, Math.round(elapsedEfetivo / msPorQuadro)));
   }
 
-  function _efeito23DesenhaTexto(ctx, texto, y, fontFamily, tamanho, cx, corTexto, corCursor) {
+  function _efeito23DesenhaTexto(ctx, texto, y, fontFamily, tamanho, cx, corTexto, corCursor, peso, italico) {
     ctx.save();
-    ctx.font = `700 ${tamanho}px ${_fontFamilyCanvas(fontFamily)}`;
+    ctx.font = `${italico ? 'italic ' : ''}${peso || 700} ${tamanho}px ${_fontFamilyCanvas(fontFamily)}`;
     ctx.textBaseline = 'alphabetic';
     ctx.textAlign = 'center';
     // PEDIDO DO USUÁRIO ("as fontes não podem ter efeito nenhum, como
@@ -43452,9 +43476,9 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
   // bloco combinado. Evita a composição "andar" pra direita conforme
   // a palavra cresce (bug clássico de tentar centralizar cada parte
   // separadamente).
-  function _efeito23DesenhaComCursor(ctx, texto, y, fontFamily, tamanho, cx, corTexto, corCursor) {
+  function _efeito23DesenhaComCursor(ctx, texto, y, fontFamily, tamanho, cx, corTexto, corCursor, peso, italico) {
     ctx.save();
-    ctx.font = `700 ${tamanho}px ${_fontFamilyCanvas(fontFamily)}`;
+    ctx.font = `${italico ? 'italic ' : ''}${peso || 700} ${tamanho}px ${_fontFamilyCanvas(fontFamily)}`;
     ctx.textBaseline = 'alphabetic';
     // PEDIDO DO USUÁRIO ("as fontes não podem ter efeito nenhum, como
     // brilho, sombra e etc"): removida a sombra sutil que existia aqui.
@@ -43478,7 +43502,17 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
 
     const f = _efeito23QuadroEfetivo(tpl, elapsedMs, referencia);
     const cx = tpl.logicalWidth / 2;
-    const fontFamily = (p1 && texts._fontFamily.linha1) || tpl.styles.default.fontFamily;
+    // BUG REAL CORRIGIDO ("verifique se tem em outro efeito" — mesma
+    // varredura que achou o Efeito 24 compartilhando UMA fonte entre
+    // as 3 linhas): aqui só CONSIDERAVA `linha1` pra decidir a fonte —
+    // trocar a fonte só de `linha2` nunca tinha efeito nenhum. Agora
+    // cada linha tem sua própria fonte/peso/itálico.
+    const fontFamily1 = (p1 && texts._fontFamily.linha1) || tpl.styles.default.fontFamily;
+    const fontFamily2 = (p2 && texts._fontFamily.linha2) || tpl.styles.default.fontFamily;
+    const fontWeight1 = (p1 && texts._fontWeight.linha1) || null;
+    const fontWeight2 = (p2 && texts._fontWeight.linha2) || null;
+    const italic1 = !!(p1 && texts._italic.linha1);
+    const italic2 = !!(p2 && texts._italic.linha2);
     const fontScale = (p1 && texts._fontScale.linha1) || (p2 && texts._fontScale.linha2) || 1;
     const tamanho = tpl.fontSize * fontScale;
     const y1 = tpl.posicoes.linha1.y + ((p1 && texts._offset.linha1 && texts._offset.linha1.dy) || 0);
@@ -43500,8 +43534,8 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       if (n1 > 0) {
         const cursor1 = f < 25;
         const texto1 = L1.slice(0, n1);
-        if (cursor1) _efeito23DesenhaComCursor(ctx, texto1, y1, fontFamily, tamanho, cx1, texts._cor.linha1 || tpl.corTexto, tpl.corCursor);
-        else _efeito23DesenhaTexto(ctx, texto1, y1, fontFamily, tamanho, cx1, texts._cor.linha1 || tpl.corTexto, tpl.corCursor);
+        if (cursor1) _efeito23DesenhaComCursor(ctx, texto1, y1, fontFamily1, tamanho, cx1, texts._cor.linha1 || tpl.corTexto, tpl.corCursor, fontWeight1, italic1);
+        else _efeito23DesenhaTexto(ctx, texto1, y1, fontFamily1, tamanho, cx1, texts._cor.linha1 || tpl.corTexto, tpl.corCursor, fontWeight1, italic1);
         if (p1) {
           const fonte1 = `700 ${tamanho}px ${_fontFamilyCanvas(fontFamily)}`;
           if (p1.palavras && p1.palavras.length > 1) {
@@ -43514,13 +43548,13 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
           }
         }
       } else if (p1) {
-        _efeito23DesenhaTexto(ctx, '_', y1, fontFamily, tamanho, cx1, tpl.corCursor, tpl.corCursor);
+        _efeito23DesenhaTexto(ctx, '_', y1, fontFamily1, tamanho, cx1, tpl.corCursor, tpl.corCursor, fontWeight1, italic1);
       }
       if (n2 > 0) {
         const cursor2 = f < 49;
         const texto2 = L2.slice(0, n2);
-        if (cursor2) _efeito23DesenhaComCursor(ctx, texto2, y2, fontFamily, tamanho, cx2, texts._cor.linha2 || tpl.corTexto, tpl.corCursor);
-        else _efeito23DesenhaTexto(ctx, texto2, y2, fontFamily, tamanho, cx2, texts._cor.linha2 || tpl.corTexto, tpl.corCursor);
+        if (cursor2) _efeito23DesenhaComCursor(ctx, texto2, y2, fontFamily2, tamanho, cx2, texts._cor.linha2 || tpl.corTexto, tpl.corCursor, fontWeight2, italic2);
+        else _efeito23DesenhaTexto(ctx, texto2, y2, fontFamily2, tamanho, cx2, texts._cor.linha2 || tpl.corTexto, tpl.corCursor, fontWeight2, italic2);
         if (p2) {
           const fonte2 = `700 ${tamanho}px ${_fontFamilyCanvas(fontFamily)}`;
           if (p2.palavras && p2.palavras.length > 1) {
@@ -43533,7 +43567,7 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
           }
         }
       } else if (f >= 25 && p2) {
-        _efeito23DesenhaTexto(ctx, '_', y2, fontFamily, tamanho, cx2, tpl.corCursor, tpl.corCursor);
+        _efeito23DesenhaTexto(ctx, '_', y2, fontFamily2, tamanho, cx2, tpl.corCursor, tpl.corCursor, fontWeight2, italic2);
       }
     } else {
       // BUG REAL CORRIGIDO ("não aparece as letras quando termina no
@@ -43548,7 +43582,7 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       // igual a todos os outros efeitos frame-exact, que "congelam"
       // no estado final em vez de desaparecer.
       if (p1) {
-        _efeito23DesenhaTexto(ctx, L1, y1, fontFamily, tamanho, cx1, texts._cor.linha1 || tpl.corTexto, tpl.corCursor);
+        _efeito23DesenhaTexto(ctx, L1, y1, fontFamily1, tamanho, cx1, texts._cor.linha1 || tpl.corTexto, tpl.corCursor, fontWeight1, italic1);
         const fonte1 = `700 ${tamanho}px ${_fontFamilyCanvas(fontFamily)}`;
         if (p1.palavras && p1.palavras.length > 1) {
           ctx.save(); ctx.font = fonte1;
@@ -43560,7 +43594,7 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
         }
       }
       if (p2) {
-        _efeito23DesenhaTexto(ctx, L2, y2, fontFamily, tamanho, cx2, texts._cor.linha2 || tpl.corTexto, tpl.corCursor);
+        _efeito23DesenhaTexto(ctx, L2, y2, fontFamily2, tamanho, cx2, texts._cor.linha2 || tpl.corTexto, tpl.corCursor, fontWeight2, italic2);
         const fonte2 = `700 ${tamanho}px ${_fontFamilyCanvas(fontFamily)}`;
         if (p2.palavras && p2.palavras.length > 1) {
           ctx.save(); ctx.font = fonte2;
@@ -43623,6 +43657,13 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       if (wo && wo.style && wo.style.fontFamily) out._fontFamily[papel] = wo.style.fontFamily;
       if (wo && wo.style && wo.style.color) out._cor[papel] = wo.style.color;
       if (wo && wo.style && wo.style.frameExactOffset) out._offset[papel] = wo.style.frameExactOffset;
+      // BUG REAL CORRIGIDO ("troquei o Montserrat, apliquei itálico,
+      // bold, medium, regular e nada funcionou" — reportado pelo
+      // usuário): o objeto de leitura já DECLARAVA `_fontWeight` e
+      // `_italic`, mas essa função nunca preenchia esses campos —
+      // só cor, fonte, tamanho e posição eram lidos de verdade.
+      if (wo && wo.style && wo.style.fontWeight) out._fontWeight[papel] = wo.style.fontWeight;
+      if (wo && wo.style && wo.style.fontStyle === 'italic') out._italic[papel] = true;
     }
     // BUG REAL CORRIGIDO ("com só 2 linhas, a 2ª foi parar na posição
     // do meio, pequena, em vez de embaixo, grande, como sempre foi"):
@@ -43653,13 +43694,20 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
   // Desenha uma letra individual com as transformações (deslocamento
   // + rotação + escala) aplicadas em torno do PRÓPRIO centro do
   // glifo — igual ao transform-origin:center do CSS original.
-  function _efeito24DesenhaLetra(ctx, char, xFinal, yTopo, fontSize, fontFamily, dx, dy, rot, escala, ehContorno, corOverride) {
+  function _efeito24DesenhaLetra(ctx, char, xFinal, yTopo, fontSize, fontFamily, dx, dy, rot, escala, ehContorno, corOverride, peso, italico) {
     if (!char || char === ' ') return;
     ctx.save();
     ctx.translate(xFinal + dx, yTopo + dy);
     if (rot) ctx.rotate(rot * Math.PI / 180);
     if (escala !== 1) ctx.scale(escala, escala);
-    ctx.font = `900 ${fontSize}px ${_fontFamilyCanvas(fontFamily)}`;
+    // BUG REAL CORRIGIDO ("troquei o Montserrat, apliquei itálico,
+    // bold, medium, regular e nada funcionou" — reportado pelo
+    // usuário): o peso da fonte era SEMPRE fixo em 900, ignorando
+    // completamente qualquer peso escolhido na barra de ferramentas
+    // — e o itálico nunca era aplicado (a string da fonte nunca
+    // incluía "italic"). Agora usa o peso e itálico reais passados
+    // pra essa função.
+    ctx.font = `${italico ? 'italic ' : ''}${peso || 900} ${fontSize}px ${_fontFamilyCanvas(fontFamily)}`;
     ctx.textAlign = 'left';
     ctx.textBaseline = 'alphabetic';
     const baselineY = fontSize * 0.76;
@@ -43695,9 +43743,9 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
   // generaliza o espírito do original (letras "voando" até o lugar)
   // sem depender dos valores específicos calibrados pra QUEBRA/
   // SILÊNCIO.
-  function _efeito24DesenhaReflow(ctx, texto, yTopo, fontSize, fontFamily, offset, f, ehContorno, larguraCanvas, quadroInicio, quadroFim, corOverride) {
+  function _efeito24DesenhaReflow(ctx, texto, yTopo, fontSize, fontFamily, offset, f, ehContorno, larguraCanvas, quadroInicio, quadroFim, corOverride, peso, italico) {
     const medidor = document.createElement('canvas').getContext('2d');
-    medidor.font = `900 ${fontSize}px ${_fontFamilyCanvas(fontFamily)}`;
+    medidor.font = `${italico ? 'italic ' : ''}${peso || 900} ${fontSize}px ${_fontFamilyCanvas(fontFamily)}`;
     const chars = [...texto];
     const larguras = chars.map(c => medidor.measureText(c).width);
     const total = larguras.reduce((a, b) => a + b, 0);
@@ -43720,7 +43768,7 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       // vertical. Um offset de 44px virava 88px de deslocamento real
       // na tela — fazendo linha1/linha2 convergirem MUITO mais rápido
       // do que o redimensionador pretendia, sobrepondo tudo).
-      if (progresso > 0) _efeito24DesenhaLetra(ctx, ch, xFinal, yTopo, fontSize, fontFamily, dx, dy, rot, escala, ehContorno, corOverride);
+      if (progresso > 0) _efeito24DesenhaLetra(ctx, ch, xFinal, yTopo, fontSize, fontFamily, dx, dy, rot, escala, ehContorno, corOverride, peso, italico);
       cursor += larguras[i];
     });
   }
@@ -43755,7 +43803,25 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     if (!p1 && !pMeio && !p2) return true;
 
     const f = _efeito24QuadroEfetivo(tpl, elapsedMs, referencia);
-    const fontFamily = (p1 && texts._fontFamily.linha1) || (pMeio && texts._fontFamily.linhaMeio) || (p2 && texts._fontFamily.linha2) || tpl.styles.default.fontFamily;
+    // BUG REAL CORRIGIDO ("troquei o Montserrat, apliquei itálico,
+    // bold, medium, regular e nada funcionou, o que funcionou foi a
+    // cor" — reportado pelo usuário): essa era UMA ÚNICA variável
+    // compartilhada por TODAS as 3 linhas (pegava a primeira fonte
+    // customizada que encontrasse, em qualquer uma das linhas, e
+    // aplicava ela em TODAS) — trocar a fonte só da linha do meio,
+    // por exemplo, também mudava (ou não, dependendo da ordem de
+    // prioridade) as outras duas linhas de forma imprevisível. Agora
+    // cada linha tem sua própria fonte/peso/itálico, lidos
+    // independentemente do override daquela linha específica.
+    const fontFamily1 = (p1 && texts._fontFamily.linha1) || tpl.styles.default.fontFamily;
+    const fontFamilyMeio = (pMeio && texts._fontFamily.linhaMeio) || tpl.styles.default.fontFamily;
+    const fontFamily2 = (p2 && texts._fontFamily.linha2) || tpl.styles.default.fontFamily;
+    const fontWeight1 = (p1 && texts._fontWeight.linha1) || 900;
+    const fontWeightMeio = (pMeio && texts._fontWeight.linhaMeio) || 900;
+    const fontWeight2 = (p2 && texts._fontWeight.linha2) || 900;
+    const italic1 = !!(p1 && texts._italic.linha1);
+    const italicMeio = !!(pMeio && texts._italic.linhaMeio);
+    const italic2 = !!(p2 && texts._italic.linha2);
     const fontScale1 = (p1 && texts._fontScale.linha1) || 1;
     const fontScaleMeio = (pMeio && texts._fontScale.linhaMeio) || 1;
     const fontScale2 = (p2 && texts._fontScale.linha2) || 1;
@@ -43788,8 +43854,8 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       const y2Base = tpl.posicoes.linha2.y;
       const baseline1Base = y1Base + fontSize1Base * 0.76;
       const baseline2Base = y2Base + fontSize2Base * 0.76;
-      const ascentReal1Base = _efeito24MedeAscentReal(texto1, fontSize1Base, fontFamily);
-      const ascentReal2Base = _efeito24MedeAscentReal(texto2, fontSize2Base, fontFamily);
+      const ascentReal1Base = _efeito24MedeAscentReal(texto1, fontSize1Base, fontFamily1);
+      const ascentReal2Base = _efeito24MedeAscentReal(texto2, fontSize2Base, fontFamily2);
       const topoRealBloco = baseline1Base - ascentReal1Base;
       const fundoRealBloco = baseline2Base;
       const centroBlocoAtual = (topoRealBloco + fundoRealBloco) / 2;
@@ -43804,21 +43870,21 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
         _efeito24EstadoLinha1(tpl, f).forEach(([idx, dx, dy, rot, escala]) => {
           const char = texto1[idx];
           const xBase = centroX1 + (tpl.posX1[idx] - centroX1) * fontScale1;
-          _efeito24DesenhaLetra(ctx, char, xBase + offset1.dx, y1, fontSize1, fontFamily, dx * fontScale1, dy * fontScale1, rot, escala, false, texts._cor.linha1);
+          _efeito24DesenhaLetra(ctx, char, xBase + offset1.dx, y1, fontSize1, fontFamily1, dx * fontScale1, dy * fontScale1, rot, escala, false, texts._cor.linha1, fontWeight1, italic1);
         });
       } else {
-        _efeito24DesenhaReflow(ctx, texto1, y1, fontSize1, fontFamily, offset1, f, false, tpl.logicalWidth, 0, 15, texts._cor.linha1);
+        _efeito24DesenhaReflow(ctx, texto1, y1, fontSize1, fontFamily1, offset1, f, false, tpl.logicalWidth, 0, 15, texts._cor.linha1, fontWeight1, italic1);
       }
       if (p1.palavras && p1.palavras.length > 1) {
         const baselineReal1 = y1 + fontSize1 * 0.76;
-        const ascentReal1 = _efeito24MedeAscentReal(texto1, fontSize1, fontFamily);
-        const alturaClique1 = _efeito24MedeAlturaRealClique(texto1, fontSize1, fontFamily);
+        const ascentReal1 = _efeito24MedeAscentReal(texto1, fontSize1, fontFamily1);
+        const alturaClique1 = _efeito24MedeAlturaRealClique(texto1, fontSize1, fontFamily1);
         const centroReal1 = baselineReal1 - ascentReal1 * 0.5;
         _registrarRegioesCliquePorPalavraProporcional(tpl, p1.palavras, tpl.logicalWidth / 2 - 200 + offset1.dx, centroReal1 - alturaClique1 / 2, 400, alturaClique1);
       } else {
         const baselineReal1 = y1 + fontSize1 * 0.76;
-        const ascentReal1 = _efeito24MedeAscentReal(texto1, fontSize1, fontFamily);
-        const alturaClique1 = _efeito24MedeAlturaRealClique(texto1, fontSize1, fontFamily);
+        const ascentReal1 = _efeito24MedeAscentReal(texto1, fontSize1, fontFamily1);
+        const alturaClique1 = _efeito24MedeAlturaRealClique(texto1, fontSize1, fontFamily1);
         const centroReal1 = baselineReal1 - ascentReal1 * 0.5;
         _registrarRegiaoClique(tpl, p1.wordId, tpl.logicalWidth / 2 - 200 + offset1.dx, centroReal1 - alturaClique1 / 2, 400, alturaClique1);
       }
@@ -43904,19 +43970,19 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
           const y2Calc = tpl.posicoes.linha2.y;
           const baseline1 = y1Calc + fontSize1Calc * 0.76;
           const baseline2 = y2Calc + fontSize2Calc * 0.76;
-          const ascentReal2 = _efeito24MedeAscentReal(texto2, fontSize2Calc, fontFamily);
+          const ascentReal2 = _efeito24MedeAscentReal(texto2, fontSize2Calc, fontFamily2);
           const topoReal2 = baseline2 - ascentReal2;
-          const ascentRealMeio = _efeito24MedeAscentReal(textoMeio, fontSizeMeio, fontFamily);
+          const ascentRealMeio = _efeito24MedeAscentReal(textoMeio, fontSizeMeio, fontFamilyMeio);
           const baselineMeioIdeal = (topoReal2 + baseline1 + ascentRealMeio) / 2;
           yMeio = (baselineMeioIdeal - fontSizeMeio * 0.76) + offsetMeio.dy + deslocamentoVerticalBloco;
         } else {
           yMeio = tpl.posicoes.linhaMeio.yReflow + offsetMeio.dy;
         }
-        _efeito24DesenhaReflow(ctx, textoMeio, yMeio, fontSizeMeio, fontFamily, offsetMeio, f, false, tpl.logicalWidth, 16, 26, texts._cor.linhaMeio);
+        _efeito24DesenhaReflow(ctx, textoMeio, yMeio, fontSizeMeio, fontFamilyMeio, offsetMeio, f, false, tpl.logicalWidth, 16, 26, texts._cor.linhaMeio, fontWeightMeio, italicMeio);
         {
           const baselineRealMeio = yMeio + fontSizeMeio * 0.76;
-          const ascentRealMeioClique = _efeito24MedeAscentReal(textoMeio, fontSizeMeio, fontFamily);
-          const alturaCliqueMeio = _efeito24MedeAlturaRealClique(textoMeio, fontSizeMeio, fontFamily);
+          const ascentRealMeioClique = _efeito24MedeAscentReal(textoMeio, fontSizeMeio, fontFamilyMeio);
+          const alturaCliqueMeio = _efeito24MedeAlturaRealClique(textoMeio, fontSizeMeio, fontFamilyMeio);
           const centroRealMeio = baselineRealMeio - ascentRealMeioClique * 0.5;
           if (pMeio.palavras && pMeio.palavras.length > 1) {
             _registrarRegioesCliquePorPalavraProporcional(tpl, pMeio.palavras, tpl.logicalWidth / 2 - 200 + offsetMeio.dx, centroRealMeio - alturaCliqueMeio / 2, 400, alturaCliqueMeio);
@@ -43940,21 +44006,21 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
         _efeito24EstadoLinha2(tpl, f).forEach(([idx, dx, dy, rot, escala]) => {
           const char = texto2[idx];
           const xBase = centroX2 + (tpl.posX2[idx] - centroX2) * fontScale2;
-          _efeito24DesenhaLetra(ctx, char, xBase + offset2.dx, y2, fontSize2, fontFamily, dx * fontScale2, dy * fontScale2, rot, escala, false, texts._cor.linha2);
+          _efeito24DesenhaLetra(ctx, char, xBase + offset2.dx, y2, fontSize2, fontFamily2, dx * fontScale2, dy * fontScale2, rot, escala, false, texts._cor.linha2, fontWeight2, italic2);
         });
       } else {
-        _efeito24DesenhaReflow(ctx, texto2, y2, fontSize2, fontFamily, offset2, f, false, tpl.logicalWidth, 27, 37, texts._cor.linha2);
+        _efeito24DesenhaReflow(ctx, texto2, y2, fontSize2, fontFamily2, offset2, f, false, tpl.logicalWidth, 27, 37, texts._cor.linha2, fontWeight2, italic2);
       }
       if (p2.palavras && p2.palavras.length > 1) {
         const baselineReal2 = y2 + fontSize2 * 0.76;
-        const ascentReal2Clique = _efeito24MedeAscentReal(texto2, fontSize2, fontFamily);
-        const alturaClique2 = _efeito24MedeAlturaRealClique(texto2, fontSize2, fontFamily);
+        const ascentReal2Clique = _efeito24MedeAscentReal(texto2, fontSize2, fontFamily2);
+        const alturaClique2 = _efeito24MedeAlturaRealClique(texto2, fontSize2, fontFamily2);
         const centroReal2 = baselineReal2 - ascentReal2Clique * 0.5;
         _registrarRegioesCliquePorPalavraProporcional(tpl, p2.palavras, tpl.logicalWidth / 2 - 260 + offset2.dx, centroReal2 - alturaClique2 / 2, 520, alturaClique2);
       } else {
         const baselineReal2 = y2 + fontSize2 * 0.76;
-        const ascentReal2Clique = _efeito24MedeAscentReal(texto2, fontSize2, fontFamily);
-        const alturaClique2 = _efeito24MedeAlturaRealClique(texto2, fontSize2, fontFamily);
+        const ascentReal2Clique = _efeito24MedeAscentReal(texto2, fontSize2, fontFamily2);
+        const alturaClique2 = _efeito24MedeAlturaRealClique(texto2, fontSize2, fontFamily2);
         const centroReal2 = baselineReal2 - ascentReal2Clique * 0.5;
         _registrarRegiaoClique(tpl, p2.wordId, tpl.logicalWidth / 2 - 260 + offset2.dx, centroReal2 - alturaClique2 / 2, 520, alturaClique2);
       }
@@ -44002,6 +44068,12 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       if (wo && wo.style && wo.style.fontFamily) out._fontFamily[papel] = wo.style.fontFamily;
       if (wo && wo.style && wo.style.color) out._cor[papel] = wo.style.color;
       if (wo && wo.style && wo.style.frameExactOffset) out._offset[papel] = wo.style.frameExactOffset;
+      // BUG REAL CORRIGIDO (mesma varredura do Efeito 24 — "troquei o
+      // Montserrat, apliquei itálico, bold... e nada funcionou"): o
+      // objeto já declarava `_fontWeight`/`_italic`, mas nunca eram
+      // lidos de verdade.
+      if (wo && wo.style && wo.style.fontWeight) out._fontWeight[papel] = wo.style.fontWeight;
+      if (wo && wo.style && wo.style.fontStyle === 'italic') out._italic[papel] = true;
     }
     processaLinha('top', lines[0]);
     processaLinha('mid', lines[1]);
@@ -44077,7 +44149,7 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       const escala = (anim.escalaInicial + (1 - anim.escalaInicial) * p) * fontScale;
       const deslocY = anim.subidaInicial * (1 - p);
       const texto = pTop.texto.toUpperCase();
-      _efeito25DesenhaBloco(ctx, texto, cx + offset.dx, cfg.y + offset.dy, cfg.fontSize, cfg.fontWeight, cfg.italic, fontFamily, cfg.letterSpacing, escala, deslocY, texts._cor.top);
+      _efeito25DesenhaBloco(ctx, texto, cx + offset.dx, cfg.y + offset.dy, cfg.fontSize, texts._fontWeight.top || cfg.fontWeight, texts._italic.top !== undefined ? texts._italic.top : cfg.italic, fontFamily, cfg.letterSpacing, escala, deslocY, texts._cor.top);
       const medidor = document.createElement('canvas').getContext('2d');
       medidor.font = _efeito25FonteCtx(fontFamily, cfg.fontSize * escala, cfg.fontWeight, cfg.italic);
       const w = Math.max(1, medidor.measureText(texto).width);
@@ -44133,7 +44205,7 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
         tpl.midMapa.forEach(([idx, s, e, dx, dy, rot]) => {
           if (f < s) return;
           const p = _efeito25Ease((f - s) / Math.max(1, e - s));
-          _efeito25DesenhaLetra(ctx, letras[idx], xs[idx], yBase, tamanho, cfg.fontWeight, cfg.italic, fontFamily, dx * (1 - p), dy * (1 - p), rot * (1 - p), 0.96 + 0.04 * p, 1, texts._cor.mid);
+          _efeito25DesenhaLetra(ctx, letras[idx], xs[idx], yBase, tamanho, texts._fontWeight.mid || cfg.fontWeight, texts._italic.mid !== undefined ? texts._italic.mid : cfg.italic, fontFamily, dx * (1 - p), dy * (1 - p), rot * (1 - p), 0.96 + 0.04 * p, 1, texts._cor.mid);
         });
         // 4 palavras conceituais fixas nesse padrão: "e"/"VEZ"/"QUE"/"EU"
         // — cada uma ocupa um intervalo contíguo de índices em `letras`.
@@ -44218,7 +44290,7 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
         }
         if (f < s) return;
         const p = _efeito25Ease((f - s) / Math.max(1, e - s));
-        _efeito25DesenhaLetra(ctx, char, xs[i], yBase, tamanho, cfg.fontWeight, cfg.italic, fontFamily, off[0] * (1 - p), off[1] * (1 - p), off[2] * (1 - p), 0.90 + 0.10 * p, 1, texts._cor.bot);
+        _efeito25DesenhaLetra(ctx, char, xs[i], yBase, tamanho, texts._fontWeight.bot || cfg.fontWeight, texts._italic.bot !== undefined ? texts._italic.bot : cfg.italic, fontFamily, off[0] * (1 - p), off[1] * (1 - p), off[2] * (1 - p), 0.90 + 0.10 * p, 1, texts._cor.bot);
       });
       _registrarRegiaoClique(tpl, pBot.wordId, cx + offset.dx - larguraTotal / 2, cfg.y + offset.dy - tamanho * 0.8, larguraTotal, tamanho * 1.1);
     }
@@ -44296,6 +44368,12 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
       if (wo && wo.style && wo.style.fontFamily) out._fontFamily[papel] = wo.style.fontFamily;
       if (wo && wo.style && wo.style.color) out._cor[papel] = wo.style.color;
       if (wo && wo.style && wo.style.frameExactOffset) out._offset[papel] = wo.style.frameExactOffset;
+      // BUG REAL CORRIGIDO (mesma varredura do Efeito 24 — "troquei o
+      // Montserrat, apliquei itálico, bold... e nada funcionou"): o
+      // objeto já declarava `_fontWeight`/`_italic`, mas nunca eram
+      // lidos de verdade.
+      if (wo && wo.style && wo.style.fontWeight) out._fontWeight[papel] = wo.style.fontWeight;
+      if (wo && wo.style && wo.style.fontStyle === 'italic') out._italic[papel] = true;
     }
     processaLinha('nada', lines[0]);
     processaLinha('mais', lines[1]);
@@ -44373,9 +44451,9 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
           : (cfg.escalaInicial + (cfg.escalaFinalDepoisMove - cfg.escalaInicial) * nbuild);
         const escala = escalaBase * fontScale;
         const texto = pNada.texto.toUpperCase();
-        const largura = _efeito26DesenhaMontagem(ctx, texto, cfg.letras, f, x, y, cfg.fontSize, fontFamily, 900, cfg.italicSkewDeg, escala, texts._cor.nada);
+        const largura = _efeito26DesenhaMontagem(ctx, texto, cfg.letras, f, x, y, cfg.fontSize, fontFamily, texts._fontWeight.nada || 900, cfg.italicSkewDeg, escala, texts._cor.nada);
         if (pNada.palavras && pNada.palavras.length > 1) {
-          ctx.save(); ctx.font = `900 ${cfg.fontSize}px ${_fontFamilyCanvas(fontFamily)}`;
+          ctx.save(); ctx.font = `${texts._fontWeight.nada || 900} ${cfg.fontSize}px ${_fontFamilyCanvas(fontFamily)}`;
           const medidor = ctx;
           const palavrasUpper = pNada.palavras.map(p => ({ id: p.id, texto: p.texto.toUpperCase() }));
           const larguraEspaco = medidor.measureText(' ').width * escala;
@@ -44405,9 +44483,9 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
         const escala = (cfg.escalaInicial + (cfg.escalaFinal - cfg.escalaInicial) * mbuild) * fontScale;
         const x = cfg.x / 100 * W + offset.dx, y = cfg.y / 100 * H + offset.dy;
         const texto = pMais.texto.toUpperCase();
-        const largura = _efeito26DesenhaMontagem(ctx, texto, cfg.letras, f, x, y, cfg.fontSize, fontFamily, 900, cfg.italicSkewDeg, escala, texts._cor.mais);
+        const largura = _efeito26DesenhaMontagem(ctx, texto, cfg.letras, f, x, y, cfg.fontSize, fontFamily, texts._fontWeight.mais || 900, cfg.italicSkewDeg, escala, texts._cor.mais);
         if (pMais.palavras && pMais.palavras.length > 1) {
-          ctx.save(); ctx.font = `900 ${cfg.fontSize}px ${_fontFamilyCanvas(fontFamily)}`;
+          ctx.save(); ctx.font = `${texts._fontWeight.mais || 900} ${cfg.fontSize}px ${_fontFamilyCanvas(fontFamily)}`;
           const palavrasUpper = pMais.palavras.map(p => ({ id: p.id, texto: p.texto.toUpperCase() }));
           const larguraEspaco = ctx.measureText(' ').width * escala;
           let cursorClique = x - largura / 2;
@@ -44439,8 +44517,10 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
         const escala = (cfg.escalaInicial + (cfg.escalaFinal - cfg.escalaInicial) * mep) * fontScale;
         const fontSizePx = cfg.fontSize * escala;
         const texto = pMe.texto.toLowerCase();
+        const pesoMe = texts._fontWeight.me || cfg.fontWeight;
+        const italicMe = texts._italic.me !== undefined ? texts._italic.me : cfg.italic;
         ctx.save();
-        ctx.font = `${cfg.italic ? 'italic ' : ''}${cfg.fontWeight} ${fontSizePx}px ${_fontFamilyCanvas(fontFamily)}`;
+        ctx.font = `${italicMe ? 'italic ' : ''}${pesoMe} ${fontSizePx}px ${_fontFamilyCanvas(fontFamily)}`;
         ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
         try { ctx.letterSpacing = `${cfg.letterSpacing * fontSizePx}px`; } catch (e) {}
         ctx.fillStyle = texts._cor.me || '#ffffff';
@@ -44449,7 +44529,7 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
         const largura = ctx.measureText(texto).width;
         ctx.restore();
         if (pMe.palavras && pMe.palavras.length > 1) {
-          _registrarRegioesCliquePorPalavra(tpl, ctx, pMe.palavras.map(p => ({ id: p.id, texto: p.texto.toLowerCase() })), x - largura / 2, y - fontSizePx * 0.6, fontSizePx * 1.2, `${cfg.italic ? 'italic ' : ''}${cfg.fontWeight} ${fontSizePx}px ${_fontFamilyCanvas(fontFamily)}`);
+          _registrarRegioesCliquePorPalavra(tpl, ctx, pMe.palavras.map(p => ({ id: p.id, texto: p.texto.toLowerCase() })), x - largura / 2, y - fontSizePx * 0.6, fontSizePx * 1.2, `${italicMe ? 'italic ' : ''}${pesoMe} ${fontSizePx}px ${_fontFamilyCanvas(fontFamily)}`);
         } else {
           _registrarRegiaoClique(tpl, pMe.wordId, x - largura / 2, y - fontSizePx * 0.6, largura, fontSizePx * 1.2);
         }
@@ -44468,10 +44548,12 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
         const sp = _efeito26Ease((f - cfg.travelInicio) / cfg.travelDur);
         const fontSizePx = cfg.fontSize * fontScale;
         const texto = pSat.texto;
+        const pesoSatisfaz = texts._fontWeight.satisfaz || cfg.fontWeight || 400;
+        const italicSatisfaz = texts._italic.satisfaz !== undefined ? texts._italic.satisfaz : !!cfg.italic;
         // Meço a palavra inteira pra saber sua largura total (preciso
         // pra converter "borda esquerda" em "centro" corretamente).
         ctx.save();
-        ctx.font = `${fontSizePx}px ${_fontFamilyCanvas(fontFamily)}`;
+        ctx.font = `${italicSatisfaz ? 'italic ' : ''}${pesoSatisfaz} ${fontSizePx}px ${_fontFamilyCanvas(fontFamily)}`;
         try { ctx.letterSpacing = `${cfg.letterSpacing * fontSizePx}px`; } catch (e) {}
         const larguraPalavra = ctx.measureText(texto).width;
         try { ctx.letterSpacing = '0px'; } catch (e) {}
@@ -44510,7 +44592,7 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
         }
 
         ctx.save();
-        ctx.font = `${fontSizePxAjustado}px ${_fontFamilyCanvas(fontFamily)}`;
+        ctx.font = `${italicSatisfaz ? 'italic ' : ''}${pesoSatisfaz} ${fontSizePxAjustado}px ${_fontFamilyCanvas(fontFamily)}`;
         ctx.textAlign = 'left'; ctx.textBaseline = 'top';
         try { ctx.letterSpacing = `${cfg.letterSpacing * fontSizePxAjustado}px`; } catch (e) {}
         const chars = [...texto];
