@@ -25802,7 +25802,7 @@ function initEditor() {
         const cur = document.getElementById('ctx-font-current');
         if (cur) cur.textContent = f;
         renderListaFontes(document.getElementById('ctx-fonts-search')?.value || '');
-        requestAnimationFrame(syncCtxToolbar);
+        requestAnimationFrame(() => { syncCtxToolbar(); if (typeof updateSelectionBox === 'function') updateSelectionBox(); });
       });
     });
   }
@@ -25855,7 +25855,7 @@ function initEditor() {
       const alvo = ehBold ? 400 : 700;
       const orig = document.querySelector(`.segmented button[data-weight="${alvo}"]`);
       if (orig) orig.click();
-      requestAnimationFrame(syncCtxToolbar);
+      requestAnimationFrame(() => { syncCtxToolbar(); if (typeof updateSelectionBox === 'function') updateSelectionBox(); });
     });
 
     // Seletor de peso (Regular/Medium/Semibold/Bold/Heavy): aciona os
@@ -25864,7 +25864,7 @@ function initEditor() {
     if (selWeight) selWeight.addEventListener('change', () => {
       const orig = document.querySelector(`.segmented button[data-weight="${selWeight.value}"]`);
       if (orig) orig.click();
-      requestAnimationFrame(syncCtxToolbar);
+      requestAnimationFrame(() => { syncCtxToolbar(); if (typeof updateSelectionBox === 'function') updateSelectionBox(); });
     });
 
     // Itálico: TOGGLE de verdade. O original tem 2 botões (Normal /
@@ -25876,7 +25876,7 @@ function initEditor() {
       const ehItalico = (s.fontStyle === 'italic');
       const orig = document.getElementById(ehItalico ? 'style-roman-btn' : 'style-italic-btn');
       if (orig) orig.click();
-      requestAnimationFrame(syncCtxToolbar);
+      requestAnimationFrame(() => { syncCtxToolbar(); if (typeof updateSelectionBox === 'function') updateSelectionBox(); });
     });
 
     // Tamanho − / + : mexe via aplicarEstiloSensivel (respeita seleção).
@@ -25941,7 +25941,7 @@ function initEditor() {
         const escalaAtual = (_ctxValorSelecao('fontSizeScale', 1) || 1);
         const nova = Math.max(0.2, Math.round((escalaAtual + delta * 0.1) * 100) / 100);
         if (_aplicarFontScaleFrameExact([...selectedWordIds], nova === 1 ? null : nova)) {
-          requestAnimationFrame(syncCtxToolbar);
+          requestAnimationFrame(() => { syncCtxToolbar(); if (typeof updateSelectionBox === 'function') updateSelectionBox(); });
           return;
         }
         if (typeof aplicarEstiloSensivel === 'function')
@@ -26064,7 +26064,7 @@ function initEditor() {
             });
           }
           _aplicarFontScaleFrameExact(idsFE, novaEscalaFE === 1 ? null : novaEscalaFE);
-          requestAnimationFrame(syncCtxToolbar);
+          requestAnimationFrame(() => { syncCtxToolbar(); if (typeof updateSelectionBox === 'function') updateSelectionBox(); });
           return;
         }
         const st = engine.parsed && engine.parsed.stanzas[engine.currentStanzaIndex];
@@ -26115,7 +26115,7 @@ function initEditor() {
         if (slider) { slider.value = novo; const v2 = document.getElementById('font-size-val'); if (v2) v2.textContent = novo; }
         if (typeof markDirty === 'function') markDirty();
       }
-      requestAnimationFrame(syncCtxToolbar);
+      requestAnimationFrame(() => { syncCtxToolbar(); if (typeof updateSelectionBox === 'function') updateSelectionBox(); });
     };
     const sMinus = document.getElementById('ctx-size-minus');
     const sPlus = document.getElementById('ctx-size-plus');
@@ -26135,7 +26135,7 @@ function initEditor() {
         const globalFs = ((_ctxEstiloEfetivo().fontSize) || 64);
         const novaEscala = Math.max(0.1, Math.round((px / globalFs) * 100) / 100);
         if (_aplicarFontScaleFrameExact([...selectedWordIds], novaEscala === 1 ? null : novaEscala)) {
-          requestAnimationFrame(syncCtxToolbar);
+          requestAnimationFrame(() => { syncCtxToolbar(); if (typeof updateSelectionBox === 'function') updateSelectionBox(); });
           return;
         }
         if (typeof aplicarEstiloSensivel === 'function')
@@ -26206,7 +26206,7 @@ function initEditor() {
             });
           }
           _aplicarFontScaleFrameExact(idsFE, novaEscalaFE === 1 ? null : novaEscalaFE);
-          requestAnimationFrame(syncCtxToolbar);
+          requestAnimationFrame(() => { syncCtxToolbar(); if (typeof updateSelectionBox === 'function') updateSelectionBox(); });
           return;
         }
         const st = engine.parsed && engine.parsed.stanzas[engine.currentStanzaIndex];
@@ -26242,7 +26242,7 @@ function initEditor() {
         if (slider) { slider.value = Math.min(140, px); const v2 = document.getElementById('font-size-val'); if (v2) v2.textContent = px; }
         if (typeof markDirty === 'function') markDirty();
       }
-      requestAnimationFrame(syncCtxToolbar);
+      requestAnimationFrame(() => { syncCtxToolbar(); if (typeof updateSelectionBox === 'function') updateSelectionBox(); });
     };
 
     // Campo de tamanho editável: digita o número e Enter (ou sai do campo)
@@ -26296,7 +26296,7 @@ function initEditor() {
         const em = Math.round((parseInt(lsRange.value, 10) / 100) * 100) / 100;
         if (typeof aplicarEstiloSensivel === 'function')
           aplicarEstiloSensivel('letterSpacing', em, { afetaLargura: true });
-        requestAnimationFrame(syncCtxToolbar);
+        requestAnimationFrame(() => { syncCtxToolbar(); if (typeof updateSelectionBox === 'function') updateSelectionBox(); });
       });
     }
     // Entre linhas: aciona o slider original #line-height (do slide).
@@ -26352,13 +26352,13 @@ function initEditor() {
         btn.addEventListener('click', () => {
           if (typeof aplicarEstiloSensivel === 'function') aplicarEstiloSensivel('color', btn.dataset.c);
           if (pop) pop.style.display = 'none';
-          requestAnimationFrame(syncCtxToolbar);
+          requestAnimationFrame(() => { syncCtxToolbar(); if (typeof updateSelectionBox === 'function') updateSelectionBox(); });
         });
       });
     }
     if (colorInput) colorInput.addEventListener('input', () => {
       if (typeof aplicarEstiloSensivel === 'function') aplicarEstiloSensivel('color', colorInput.value);
-      requestAnimationFrame(syncCtxToolbar);
+      requestAnimationFrame(() => { syncCtxToolbar(); if (typeof updateSelectionBox === 'function') updateSelectionBox(); });
     });
     if (bColor && pop) {
       bColor.addEventListener('click', (e) => {
@@ -26401,7 +26401,7 @@ function initEditor() {
           document.querySelectorAll('.text-case-btn').forEach(b =>
             b.classList.toggle('active', b.dataset.case === val));
           casePop.style.display = 'none';
-          requestAnimationFrame(syncCtxToolbar);
+          requestAnimationFrame(() => { syncCtxToolbar(); if (typeof updateSelectionBox === 'function') updateSelectionBox(); });
         });
       });
     }
@@ -43826,7 +43826,7 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
         }
         _registrarRegiaoClique(tpl, pMeio.wordId, tpl.logicalWidth / 2 - c.raio * fontScaleMeio + offsetMeio.dx, c.y - c.raio * fontScaleMeio + offsetMeio.dy + deslocamentoVerticalBloco, c.raio * 2 * fontScaleMeio, c.raio * 2 * fontScaleMeio);
       } else {
-        const fontSizeMeio = tpl.posicoes.linhaMeio.fontSize * fontScaleMeio;
+        let fontSizeMeio = tpl.posicoes.linhaMeio.fontSize * fontScaleMeio;
         // BUG REAL CORRIGIDO — 2ª tentativa ("ficou mais distante o
         // espaçamento entre linhas" — a 1ª correção, um ajuste fixo
         // de acento aplicado igual em toda linha, na verdade
@@ -43861,6 +43861,23 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
         // selecionar a linha do meio junto), a centralização não
         // acompanha automaticamente — mas isso é bem mais raro do que
         // simplesmente redimensionar tudo junto.
+        // BUG REAL CORRIGIDO ("a caixa de seleção não acompanha as
+        // palavras adicionadas" — reportado pelo usuário com captura
+        // de tela mostrando "PRA SUA" grande demais, sobrepondo "EU
+        // VIVO" e "GLÓRIA"): quando uma palavra da linha do meio tem
+        // um tamanho de fonte customizado grande (de um redimensiona-
+        // mento anterior, ou ao adicionar uma palavra nova numa linha
+        // que já tinha overrides), a fórmula de centralização calcula
+        // a posição certa, mas não tinha NENHUM limite pro TAMANHO da
+        // linha do meio em si — se ela for maior que o espaço
+        // disponível entre linha1 e linha2, ela ultrapassa os dois
+        // lados e sobrepõe as linhas vizinhas (dando a impressão de
+        // que "a caixa não bate com o texto", já que o texto visível
+        // extrapola pra fora de onde deveria estar). Agora mede o
+        // espaço vertical REAL disponível entre linha1 e linha2 e, se
+        // a altura da linha do meio ultrapassar 90% dele, reduz o
+        // tamanho da fonte proporcionalmente pra caber — preserva a
+        // legibilidade em vez de deixar sobrepor.
         let yMeio;
         if (p1 && texto1 && p2 && texto2) {
           const fontSize1Calc = tpl.posicoes.linha1.fontSize * fontScale1;
@@ -43871,7 +43888,14 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
           const baseline2 = y2Calc + fontSize2Calc * 0.76;
           const ascentReal2 = _efeito24MedeAscentReal(texto2, fontSize2Calc, fontFamily);
           const topoReal2 = baseline2 - ascentReal2;
-          const ascentRealMeio = _efeito24MedeAscentReal(textoMeio, fontSizeMeio, fontFamily);
+          const espacoDisponivel = Math.max(1, topoReal2 - baseline1);
+          let ascentRealMeio = _efeito24MedeAscentReal(textoMeio, fontSizeMeio, fontFamily);
+          const alturaMeioAprox = ascentRealMeio * 2; // aproxima ascent+descent
+          if (alturaMeioAprox > espacoDisponivel * 0.9) {
+            const fator = (espacoDisponivel * 0.9) / alturaMeioAprox;
+            fontSizeMeio *= fator;
+            ascentRealMeio = _efeito24MedeAscentReal(textoMeio, fontSizeMeio, fontFamily);
+          }
           const baselineMeioIdeal = (topoReal2 + baseline1 + ascentRealMeio) / 2;
           yMeio = (baselineMeioIdeal - fontSizeMeio * 0.76) + offsetMeio.dy + deslocamentoVerticalBloco;
         } else {
