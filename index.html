@@ -17722,7 +17722,31 @@ class VideoExporter {
           const fimUltimoSlide = slideStarts[slideStarts.length - 1] + durUltimo;
           slideStarts.push(Math.min(fimUltimoSlide, audioDurationMs));
         } else {
-          slideStarts.push(audioDurationMs);
+          // PEDIDO DO USUÁRIO ("quando não há próxima estrofe deixe 5
+          // segundos" — depois de reportar que a animação "sumia" na
+          // renderização: a causa real era essa estrofe indo até o
+          // FIM DO ÁUDIO INTEIRO, 9+ minutos, quando a animação em si
+          // dura só alguns segundos — ela ficava perdida dentro de um
+          // vídeo gigante). Agora usa a duração mínima que a própria
+          // animação precisa (a mesma conta usada pra estrofes com
+          // 'cortar no trecho' — getDurationMsComRitmo pra frame-exact,
+          // ou o padrão configurado pra o sistema antigo) mais 5
+          // segundos de descanso, em vez de esticar até o fim da
+          // música. Ainda respeita o fim real do áudio (não ultrapassa
+          // isso, mesmo que a marcação esteja perto do final).
+          const ultimoSlideSemProxima = this.slides[this.slides.length - 1];
+          const R_FE_ultimo = window.WM_FRAME_EXACT_RENDERER;
+          let durMinimaUltimoSlide;
+          if (ultimoSlideSemProxima.stanza && ultimoSlideSemProxima.stanza.frameExactTemplateId && R_FE_ultimo) {
+            durMinimaUltimoSlide = R_FE_ultimo.getDurationMsComRitmo(
+              ultimoSlideSemProxima.stanza.frameExactTemplateId, ultimoSlideSemProxima.stanza
+            );
+          } else {
+            durMinimaUltimoSlide = ((ultimoSlideSemProxima.animation && ultimoSlideSemProxima.animation.stanzaDuration)
+              || this.options.stanzaDuration || 5) * 1000;
+          }
+          const fimComDescanso = slideStarts[slideStarts.length - 1] + durMinimaUltimoSlide + 5000;
+          slideStarts.push(Math.min(fimComDescanso, audioDurationMs));
         }
         slideDurations = slideStarts.slice(1).map((end, i) => end - slideStarts[i]);
 
