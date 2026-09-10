@@ -45569,8 +45569,18 @@ const EFEITO8_NATURAL = {"want":{"w":572,"h":470,"ax":"d","ay":"b"},"it_1":{"w":
     // compartilhada — as duas linhas têm relação de tempo fixa entre
     // si no original).
     if (tpl.layout === 'efeito-24-style') {
-      if (referencia == null) return duracaoBase;
-      return Math.max(0, referencia * 1000) + duracaoBase;
+      // BUG REAL CORRIGIDO ("deu 37 segundos sendo que foi marcado na
+      // música 6 segundos" — reportado pelo usuário, com a estrofe
+      // marcada aos 34s no exemplo real): essa fórmula somava o
+      // próprio tempo ABSOLUTO da referência (ex: 34000ms) à duração
+      // da animação, em vez de retornar só a duração RELATIVA. A
+      // referência já é usada em outro lugar (o export) pra POSICIONAR
+      // a estrofe no ponto certo da música — a duração da estrofe em
+      // si (quanto tempo a animação leva pra entrar e assentar) não
+      // deveria incluir esse tempo absoluto de novo, senão uma
+      // marcação em 34s virava ~38s de "duração" quando deveria ser só
+      // os poucos segundos que a animação realmente leva.
+      return duracaoBase;
     }
 
     // Efeito 25: 3 papéis com timing INDEPENDENTE entre si (não uma
