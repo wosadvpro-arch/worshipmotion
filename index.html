@@ -17917,8 +17917,37 @@ class VideoExporter {
         const blankMudou = (blank !== (this._lastFrameBlank || false));
         const podePularRedesenho = estaticoAgora && mesmoSlide && this._lastFrameWasStatic && !blankMudou;
 
+        // BUG REAL CORRIGIDO ("na renderização, o efeito Silêncio não
+        // está saindo, e tudo que vem depois também some" — reportado
+        // pelo usuário): quando a estrofe frame-exact tem marcação de
+        // ritmo e o modo SYNC está ativo, `slideStarts[slideIdx]` já
+        // fica ANCORADO no tStart marcado (a mesma "referência" que
+        // `_efeitoXXQuadroEfetivo` usa) — então `elapsedInSlide`
+        // (tempo relativo ao INÍCIO DO SLIDE) já representa "quanto
+        // tempo passou desde a referência". Só que a função de render
+        // de cada efeito SUBTRAI essa referência DE NOVO por dentro —
+        // uma dupla subtração que deixa o cálculo sempre muito
+        // negativo (grudado no quadro inicial vazio) durante TODA a
+        // duração do slide. Como esse slide nunca "termina"
+        // visualmente, o slide seguinte também nunca é alcançado
+        // corretamente — daí "tudo que vem depois também some". Soma
+        // a referência de volta só pra essa chamada de desenho
+        // (isSlideStatic, alguns parágrafos acima, já usa o valor
+        // relativo correto e não deve ser tocado).
+        let elapsedParaDrawSlide = elapsedInSlide;
+        if (slide.stanza && slide.stanza.frameExactTemplateId && slide.hasAnyTStart) {
+          try {
+            const R_FE = window.WM_FRAME_EXACT_RENDERER;
+            const textsFE = R_FE.readTextsFromStanza(slide.stanza, slide.stanza.frameExactTemplateId, slide.wordOverrides, slide.style && slide.style.textTransform);
+            const referenciaFE = textsFE && textsFE._referenciaTStart;
+            if (referenciaFE != null) {
+              elapsedParaDrawSlide = elapsedInSlide + referenciaFE * 1000;
+            }
+          } catch (e) {}
+        }
+
         if (!podePularRedesenho) {
-          renderer.drawSlide(this.ctx, slide, elapsedInSlide, this.W, this.H, blank);
+          renderer.drawSlide(this.ctx, slide, elapsedParaDrawSlide, this.W, this.H, blank);
           // MARCA D'ÁGUA: desenha por cima do slide se o plano exigir (grátis).
           // Só quando o slide é redesenhado — frames pulados reusam o frame
           // anterior que já tem a marca.
