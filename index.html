@@ -19884,6 +19884,20 @@ class RenderEngineV2 {
       // duas vezes, zerando tudo de novo).
       if (referenciaTStart != null && audioTimeAtual != null && !isNaN(audioTimeAtual)) {
         offsetInicialFrameExactMs = Math.max(0, audioTimeAtual * 1000);
+      } else if (referenciaTStart != null) {
+        // BUG REAL CORRIGIDO ("a marcação de ritmo não está funcionando
+        // no efeito Silêncio, no preview" — reportado pelo usuário):
+        // sem áudio real tocando (testando a estrofe isoladamente no
+        // editor, sem dar play na música), `audioTimeAtual` fica null e
+        // caía no comportamento antigo — o loop reinicia do zero, mas a
+        // referência (ex: 5s marcados) ainda é subtraída por dentro da
+        // função de quadro, deixando a animação presa vazia até o
+        // cronômetro do PRÓPRIO loop alcançar artificialmente esses 5
+        // segundos. Sem contexto real de sincronização disponível, o
+        // certo é tocar a animação imediatamente, como se não houvesse
+        // marcação — soma a referência de volta aqui pra cancelar a
+        // subtração que vai acontecer lá dentro.
+        offsetInicialFrameExactMs = referenciaTStart * 1000;
       }
     } catch (e) {}
 
