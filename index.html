@@ -17958,6 +17958,22 @@ class VideoExporter {
         // a referência de volta só pra essa chamada de desenho
         // (isSlideStatic, alguns parágrafos acima, já usa o valor
         // relativo correto e não deve ser tocado).
+        // BUG REAL CORRIGIDO ("ainda continua a mesma coisa, no export
+        // não está aparecendo a animação" — encontrado capturando os
+        // frames reais do loop de exportação: nos primeiros frames do
+        // VÍDEO INTEIRO, antes desse slide oficialmente começar na
+        // linha do tempo, `elapsedInSlide` já vem NEGATIVO (ex: -8000
+        // quando a marcação é aos 8s) — mas a correção anterior somava
+        // a referência a esse valor negativo do mesmo jeito, dando um
+        // resultado ainda positivo e crescente. Isso fazia a animação
+        // tocar inteira já nos primeiríssimos frames do vídeo — bem
+        // antes do momento realmente marcado — e terminar/assentar
+        // muito cedo. No momento marcado (quando o usuário esperava
+        // VER a animação), ela já tinha acabado há muito tempo,
+        // sobrando só o quadro final estático. Agora trava em 0 antes
+        // de somar a referência: enquanto o slide não começou de
+        // verdade na timeline, mostra o quadro inicial (vazio), não
+        // um ponto já avançado da animação.
         let elapsedParaDrawSlide = elapsedInSlide;
         if (slide.stanza && slide.stanza.frameExactTemplateId && slide.hasAnyTStart) {
           try {
@@ -17965,7 +17981,7 @@ class VideoExporter {
             const textsFE = R_FE.readTextsFromStanza(slide.stanza, slide.stanza.frameExactTemplateId, slide.wordOverrides, slide.style && slide.style.textTransform);
             const referenciaFE = textsFE && textsFE._referenciaTStart;
             if (referenciaFE != null) {
-              elapsedParaDrawSlide = elapsedInSlide + referenciaFE * 1000;
+              elapsedParaDrawSlide = Math.max(0, elapsedInSlide) + referenciaFE * 1000;
             }
           } catch (e) {}
         }
