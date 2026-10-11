@@ -28411,14 +28411,15 @@ function initEditor() {
   //  - COM seleção: aumenta só a(s) palavra(s) selecionada(s).
   // Durante o arraste (input) mexemos direto no DOM (leve, sem piscar);
   // ao soltar (change) gravamos nos overrides e reflui (caso seleção).
-  if (typeof window.__lastFontSize !== 'number') window.__lastFontSize = parseInt($('#font-size').value, 10) || 64;
+  const _fontSizeSlider = $('#font-size');
+  if (typeof window.__lastFontSize !== 'number') window.__lastFontSize = (_fontSizeSlider ? parseInt(_fontSizeSlider.value, 10) : 0) || 64;
   let _fsDragBase = null;        // fontSize no início do arraste
   let _fsSelBaseScales = null;   // fontSizeScale base de cada palavra selecionada
 
   const _fsTemSelecao = () => (typeof selectedWordIds !== 'undefined'
     && selectedWordIds && selectedWordIds.size > 0);
 
-  $('#font-size').addEventListener('input', e => {
+  if (_fontSizeSlider) _fontSizeSlider.addEventListener('input', e => {
     const v = parseInt(e.target.value, 10);
     $('#font-size-val').textContent = v;
     const stz = (typeof getStanzaEl === 'function') ? getStanzaEl() : null;
@@ -28481,9 +28482,9 @@ function initEditor() {
     }
   });
 
-  $('#font-size').addEventListener('change', e => {
+  if (_fontSizeSlider) _fontSizeSlider.addEventListener('change', e => {
     const v = parseInt(e.target.value, 10);
-    $('#font-size-val').textContent = v;
+    const fsv = $('#font-size-val'); if (fsv) fsv.textContent = v;
 
     // IMPORTANTE: o caminho é decidido pelo CONTEXTO DO ARRASTE (capturado
     // no início), NUNCA pela seleção atual. Se decidisse pela seleção
@@ -28772,15 +28773,18 @@ function initEditor() {
     });
   }
 
-  // glow intensity
-  $('#glow').addEventListener('input', e => {
-    const v = parseInt(e.target.value, 10);
-    $('#glow-val').textContent = v;
-    aplicarEstiloSensivel('glow', v, { leve: true, cssProp: () => {} });
-  });
-  $('#glow').addEventListener('change', e => {
-    aplicarEstiloSensivel('glow', parseInt(e.target.value, 10));
-  });
+  // glow intensity (elementos removidos — protegido com null-check)
+  const _glowSlider = $('#glow');
+  if (_glowSlider) {
+    _glowSlider.addEventListener('input', e => {
+      const v = parseInt(e.target.value, 10);
+      const gv = $('#glow-val'); if (gv) gv.textContent = v;
+      aplicarEstiloSensivel('glow', v, { leve: true, cssProp: () => {} });
+    });
+    _glowSlider.addEventListener('change', e => {
+      aplicarEstiloSensivel('glow', parseInt(e.target.value, 10));
+    });
+  }
 
   // glow color (swatches predefinidos)
   $$('#glow-swatches .color-swatch').forEach(sw => {
@@ -28812,7 +28816,7 @@ function initEditor() {
   if (outlineSlider) {
     outlineSlider.addEventListener('input', e => {
       const v = parseFloat(e.target.value);
-      $('#outline-val').textContent = v;
+      const _ov = $('#outline-val'); if (_ov) _ov.textContent = v;
       aplicarEstiloSensivel('outline', v, { leve: true, afetaLargura: true });
     });
     outlineSlider.addEventListener('change', e => {
@@ -28846,7 +28850,7 @@ function initEditor() {
   if (shadowSlider) {
     shadowSlider.addEventListener('input', e => {
       const v = parseInt(e.target.value, 10);
-      $('#shadow-val').textContent = v;
+      const _sv = $('#shadow-val'); if (_sv) _sv.textContent = v;
       aplicarEstiloSensivel({ global: 'shadow', word: 'shadowBlur' }, v, { leve: true, cssProp: () => {} });
     });
     shadowSlider.addEventListener('change', e => {
@@ -28891,25 +28895,31 @@ function initEditor() {
     });
   }
 
-  // letter spacing
-  $('#letter-spacing').addEventListener('input', e => {
-    const raw = parseInt(e.target.value, 10);
-    const em = raw / 100;
-    $('#letter-spacing-val').textContent = `${em.toFixed(2)}em`;
-    aplicarEstiloSensivel('letterSpacing', em, { leve: true, afetaLargura: true });
-  });
-  $('#letter-spacing').addEventListener('change', e => {
-    const em = (parseInt(e.target.value, 10)) / 100;
-    aplicarEstiloSensivel('letterSpacing', em, { afetaLargura: true });
-  });
+  // letter spacing (elementos removidos — protegido com null-check)
+  const _letterSpacingSlider = $('#letter-spacing');
+  if (_letterSpacingSlider) {
+    _letterSpacingSlider.addEventListener('input', e => {
+      const raw = parseInt(e.target.value, 10);
+      const em = raw / 100;
+      const lv = $('#letter-spacing-val'); if (lv) lv.textContent = `${em.toFixed(2)}em`;
+      aplicarEstiloSensivel('letterSpacing', em, { leve: true, afetaLargura: true });
+    });
+    _letterSpacingSlider.addEventListener('change', e => {
+      const em = (parseInt(e.target.value, 10)) / 100;
+      aplicarEstiloSensivel('letterSpacing', em, { afetaLargura: true });
+    });
+  }
 
-  // line height
-  $('#line-height').addEventListener('input', e => {
-    const raw = parseInt(e.target.value, 10);
-    const lh = raw / 100;
-    $('#line-height-val').textContent = lh.toFixed(2);
-    engine.setStyle({ lineHeight: lh });
-  });
+  // line height (elementos removidos — protegido com null-check)
+  const _lineHeightSlider = $('#line-height');
+  if (_lineHeightSlider) {
+    _lineHeightSlider.addEventListener('input', e => {
+      const raw = parseInt(e.target.value, 10);
+      const lh = raw / 100;
+      const lv = $('#line-height-val'); if (lv) lv.textContent = lh.toFixed(2);
+      engine.setStyle({ lineHeight: lh });
+    });
+  }
 
   // background
   const BG_PRESETS = {
@@ -32656,18 +32666,18 @@ function initEditor() {
       // sincroniza UI dos controles de estilo
       const s = project.style;
       $$('.font-option').forEach(o => o.classList.toggle('selected', o.dataset.font === s.fontFamily));
-      if (s.fontSize) { $('#font-size').value = s.fontSize; $('#font-size-val').textContent = s.fontSize; window.__lastFontSize = s.fontSize; }
+      if (s.fontSize) { const _fs = $('#font-size'); if (_fs) _fs.value = s.fontSize; const _fsv = $('#font-size-val'); if (_fsv) _fsv.textContent = s.fontSize; window.__lastFontSize = s.fontSize; }
       // Sincroniza botão de caixa ativo (padrão = MAIÚSCULAS)
       const tcase = s.textTransform || 'uppercase';
       $$('.text-case-btn').forEach(b => b.classList.toggle('active', b.dataset.case === tcase));
       $$('.segmented button[data-weight]').forEach(b => b.classList.toggle('active', parseInt(b.dataset.weight) === s.fontWeight));
       $$('#color-swatches .color-swatch').forEach(sw => sw.classList.toggle('selected', sw.dataset.color === s.color));
-      if (s.glow !== undefined) { $('#glow').value = s.glow; $('#glow-val').textContent = s.glow; }
+      if (s.glow !== undefined) { const _g = $('#glow'); if (_g) _g.value = s.glow; const _gv = $('#glow-val'); if (_gv) _gv.textContent = s.glow; }
       $$('#glow-swatches .color-swatch').forEach(sw => sw.classList.toggle('selected', sw.dataset.glowColor === s.glowColor));
       if (s.letterSpacing !== undefined) {
         const raw = Math.round(s.letterSpacing * 100);
-        $('#letter-spacing').value = raw;
-        $('#letter-spacing-val').textContent = `${s.letterSpacing.toFixed(2)}em`;
+        const _ls = $('#letter-spacing'); if (_ls) _ls.value = raw;
+        const _lsv = $('#letter-spacing-val'); if (_lsv) _lsv.textContent = `${s.letterSpacing.toFixed(2)}em`;
       }
       if (s.lineHeight !== undefined) {
         // Usa o valor JÁ SANEADO pelo setStyle (engine.style.lineHeight),
@@ -32676,8 +32686,8 @@ function initEditor() {
         // que está sendo renderizado (1.3), não o lixo salvo (4.0).
         const lhReal = (engine.style && typeof engine.style.lineHeight === 'number')
           ? engine.style.lineHeight : 1.3;
-        $('#line-height').value = Math.round(lhReal * 100);
-        $('#line-height-val').textContent = lhReal.toFixed(2);
+        const _lh = $('#line-height'); if (_lh) _lh.value = Math.round(lhReal * 100);
+        const _lhv = $('#line-height-val'); if (_lhv) _lhv.textContent = lhReal.toFixed(2);
       }
       // Sync emphasis visual
       if (s.emphasisColor) {
