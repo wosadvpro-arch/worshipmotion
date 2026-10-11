@@ -7187,8 +7187,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
   <aside class="editor-left">
     <div class="panel-tabs">
       <button class="panel-tab active" data-panel="lyrics" data-i18n="panel.lyrics">Letra</button>
-      <button class="panel-tab" data-panel="animations" data-i18n="panel.animations">Animações</button>
-      <button class="panel-tab" data-panel="transitions" data-i18n="panel.transitions">Transições</button>
+      <button class="panel-tab" data-panel="bg" data-i18n="rp.bgMotion">Background</button>
     </div>
 
     <div class="panel-body">
@@ -7241,71 +7240,54 @@ Digno de toda honra"></textarea>
       </div>
 
       
-      <div class="panel-content" data-panel-content="animations" style="display:none;">
-        
-        <div class="anim-context-header" id="anim-context-header" style="display:none;">
-          <div class="anim-context-row">
-            <div class="anim-context-icon">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="9"/></svg>
+      <div class="panel-content" data-panel-content="bg" style="display:none;">
+        <div class="panel-section">
+          <div class="panel-section-title" data-i18n="bg.title">Background</div>
+          <div class="color-swatches" id="bg-swatches" style="grid-template-columns: repeat(5, 1fr);">
+            <div class="color-swatch" data-bg="brand" style="background: linear-gradient(135deg, #00E5CF, #3b82f6)"></div>
+            <div class="color-swatch" data-bg="divine" style="background: linear-gradient(135deg, #A855F7, #00E5CF)"></div>
+            <div class="color-swatch" data-bg="midnight" style="background: linear-gradient(135deg, #0f0f17, #1e1b4b)"></div>
+            <div class="color-swatch" data-bg="warm" style="background: linear-gradient(135deg, #7c2d12, #A855F7)"></div>
+            <div class="color-swatch selected" data-bg="black" style="background: #050507; border:1px solid var(--border-default);"></div>
+          </div>
+          <div id="stanza-bg-indicator" style="display:none; margin-top: 10px; padding: 9px 12px; background: linear-gradient(135deg, rgba(0, 229, 207, 0.15), rgba(99, 102, 241, 0.08)); border: 1px solid rgba(0, 229, 207, 0.35); border-radius: 7px; align-items: center; gap: 8px;">
+            <span style="flex: 1; font-size: 11px; color: var(--text-primary);" id="stanza-bg-text">
+              Estrofe <strong id="stanza-bg-num">1</strong> tem fundo próprio
+            </span>
+            <button class="btn-tiny" id="btn-clear-stanza-bg" data-i18n="ed.removeBg" data-i18n-attr="title:ed.useGlobalBg" title="Voltar a usar o fundo global">↺ Remover</button>
+          </div>
+          <div id="bg-apply-buttons" style="margin-top: 12px; display: none; flex-direction: column; gap: 6px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px;">
+              <p style="font-size: 10.5px; color: var(--text-secondary); margin: 0; font-weight: 500;">
+                <span data-i18n="bg.whereApply">Onde aplicar?</span>
+              </p>
+              <span style="font-size: 10px; color: var(--text-tertiary);">
+                Estrofe <span id="apply-stanza-num">1</span> de <span id="apply-total-stanzas">1</span>
+              </span>
             </div>
-            <div class="anim-context-text">
-              <span data-i18n="an.applyingIn">Aplicando em:</span> <strong id="anim-context-word">—</strong>
-            </div>
-            <button class="anim-context-clear" id="anim-context-clear" data-i18n-attr="title:an.backToStanza" title="Voltar pra estrofe">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            <button class="btn btn-primary btn-sm bg-apply-btn" id="btn-apply-bg-all">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+              <span data-i18n="ed.applyAllStanzas">Todas as estrofes</span>
+            </button>
+            <button class="btn btn-ghost btn-sm bg-apply-btn" id="btn-apply-bg-stanza">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span data-i18n="ed.applyThisStanza">Apenas esta estrofe</span>
             </button>
           </div>
-        </div>
-
-        <div class="panel-section">
-          <div class="panel-section-title" data-i18n="an.category">Categoria</div>
-          <div class="anim-category-tabs">
-            <button class="anim-cat-tab active" data-cat="entrance" data-i18n="an.entrance">Entrada</button>
-            <button class="anim-cat-tab" data-cat="exit" data-i18n="an.exit">Saída</button>
-            <button class="anim-cat-tab" data-cat="loop" data-i18n="an.loop">Loop</button>
-            <button class="anim-cat-tab" data-cat="emphasis" style="display:none;" data-i18n="an.emphasis">Destaque</button>
+          <div class="panel-section-subtitle" id="custom-bgs-header" style="margin-top: 12px; display: none;">
+            Meus backgrounds
           </div>
-        </div>
-
-        <div class="panel-section">
-          <button class="style-filter-toggle" id="style-filter-toggle" type="button">
-            <span data-i18n="an.filterStyle">Filtrar por estilo</span>
-            <span class="badge" id="anim-count">0</span>
-            <svg class="sft-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          <div class="color-swatches" id="custom-bg-grid" style="grid-template-columns: repeat(5, 1fr); margin-top: 6px;"></div>
+          <input type="file" id="custom-bg-input" accept=".jpg,.jpeg,.png,.webp,.mp4,.webm,.mov,image/*,video/*" style="display:none" multiple />
+          <button class="btn btn-ghost btn-sm" id="btn-upload-bg" style="margin-top: 8px; width: 100%;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            <span data-i18n="fp.addBg">Adicionar background (imagem ou vídeo)</span>
           </button>
-          <div class="style-filter" id="style-filter" style="display:none;">
-            
-          </div>
-        </div>
-
-        <div class="panel-section">
-          <input type="text" class="anim-search-input" id="anim-search-input" data-i18n-attr="placeholder:an.searchPh" placeholder="🔎 Buscar animação pelo nome..." autocomplete="off" />
-          <div class="anim-grid" id="anim-grid"></div>
-          <button class="btn btn-secondary btn-sm" id="btn-anim-aplicar-todos" style="width:100%; margin-top:10px; display:none;">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:5px; vertical-align:-2px;"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-            <span data-i18n="an.applyAll">Aplicar esta animação em todos os slides</span>
+          <button class="ctx-fonts-buypack" id="btn-buy-loops" style="margin-top: 8px;"
+            onclick="if(window.WM_LOOP_PACK_URL){window.open(window.WM_LOOP_PACK_URL,'_blank');}else{(window.wmAlert||window.alert)((window.WM_T?window.WM_T('fp.packSoon'):'Link do pack em breve!'));}">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+            <span data-i18n="fp.buyLoopPack">Adquirir Pack de Loops</span>
           </button>
-        </div>
-      </div>
-
-      <div class="panel-content" data-panel-content="transitions" style="display:none;">
-        <div class="panel-section">
-          <div class="panel-section-title" data-i18n="sp.transition">Transição entre estrofes</div>
-          <select id="transition-type" class="input" style="width:100%; font-size:11px; padding:6px 8px;">
-            <option value="cut" data-i18n="sp.trCut">Cut (instantâneo)</option>
-            <option value="crossfade" data-i18n="sp.trCrossfade">Crossfade (fade)</option>
-            <option value="slide-left" data-i18n="sp.trSlideLeft">Slide ← (vem da direita)</option>
-            <option value="slide-right" data-i18n="sp.trSlideRight">Slide → (vem da esquerda)</option>
-            <option value="slide-up" data-i18n="sp.trSlideUp">Slide ↑ (sobe)</option>
-            <option value="slide-down" data-i18n="sp.trSlideDown">Slide ↓ (desce)</option>
-            <option value="zoom-in" data-i18n="sp.trZoomIn">Zoom In</option>
-            <option value="zoom-out" data-i18n="sp.trZoomOut">Zoom Out</option>
-          </select>
-          <label class="label" style="font-size: 10px; margin-top: var(--space-2); margin-bottom: var(--space-1); display:block;" data-i18n="sp.duration">Duração</label>
-          <div style="display: flex; align-items: center; gap: var(--space-3);">
-            <input type="range" class="range" id="transition-duration" min="2" max="15" value="5" style="flex:1">
-            <span class="value-display" id="transition-duration-val">0.5s</span>
-          </div>
         </div>
       </div>
     </div>
@@ -7447,8 +7429,9 @@ Digno de toda honra"></textarea>
   
   <aside class="editor-right">
     <div class="panel-tabs">
+      <button class="panel-tab" data-rpanel="animations" data-i18n="panel.animations">Animações</button>
+      <button class="panel-tab" data-rpanel="transitions" data-i18n="panel.transitions">Transições</button>
       <button class="panel-tab active" data-rpanel="style" data-i18n="rp.effects">Efeitos</button>
-      <button class="panel-tab" data-rpanel="bg" data-i18n="rp.bgMotion">Fundo &amp; Movimento</button>
       <button class="panel-tab" data-rpanel="motion" style="display:none;" data-i18n="rp.motion">Motion</button>
       <button class="panel-tab" data-rpanel="scenes" style="display:none;" data-i18n="rp.scenes">Cenas</button>
       <button class="panel-tab" data-rpanel="word" style="display:none;" data-i18n="rp.word">Palavra</button>
@@ -7672,65 +7655,69 @@ Digno de toda honra"></textarea>
       </div>
 
       
-      <div class="panel-content" data-rpanel-content="bg" style="display:none;">
-        <div class="panel-section">
-          <div class="panel-section-title" data-i18n="bg.title">Background</div>
-          <div class="color-swatches" id="bg-swatches" style="grid-template-columns: repeat(5, 1fr);">
-            <div class="color-swatch" data-bg="brand" style="background: linear-gradient(135deg, #00E5CF, #3b82f6)"></div>
-            <div class="color-swatch" data-bg="divine" style="background: linear-gradient(135deg, #A855F7, #00E5CF)"></div>
-            <div class="color-swatch" data-bg="midnight" style="background: linear-gradient(135deg, #0f0f17, #1e1b4b)"></div>
-            <div class="color-swatch" data-bg="warm" style="background: linear-gradient(135deg, #7c2d12, #A855F7)"></div>
-            <div class="color-swatch selected" data-bg="black" style="background: #050507; border:1px solid var(--border-default);"></div>
-          </div>
-
-          
-          <div id="stanza-bg-indicator" style="display:none; margin-top: 10px; padding: 9px 12px; background: linear-gradient(135deg, rgba(0, 229, 207, 0.15), rgba(99, 102, 241, 0.08)); border: 1px solid rgba(0, 229, 207, 0.35); border-radius: 7px; align-items: center; gap: 8px;">
-            <span style="flex: 1; font-size: 11px; color: var(--text-primary);" id="stanza-bg-text">
-              Estrofe <strong id="stanza-bg-num">1</strong> tem fundo próprio
-            </span>
-            <button class="btn-tiny" id="btn-clear-stanza-bg" data-i18n="ed.removeBg" data-i18n-attr="title:ed.useGlobalBg" title="Voltar a usar o fundo global">↺ Remover</button>
-          </div>
-
-          
-          <div id="bg-apply-buttons" style="margin-top: 12px; display: none; flex-direction: column; gap: 6px;">
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px;">
-              <p style="font-size: 10.5px; color: var(--text-secondary); margin: 0; font-weight: 500;">
-                <span data-i18n="bg.whereApply">Onde aplicar?</span>
-              </p>
-              <span style="font-size: 10px; color: var(--text-tertiary);">
-                Estrofe <span id="apply-stanza-num">1</span> de <span id="apply-total-stanzas">1</span>
-              </span>
+      <div class="panel-content" data-rpanel-content="animations" style="display:none;">
+        <div class="anim-context-header" id="anim-context-header" style="display:none;">
+          <div class="anim-context-row">
+            <div class="anim-context-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="9"/></svg>
             </div>
-            <button class="btn btn-primary btn-sm bg-apply-btn" id="btn-apply-bg-all">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-              <span data-i18n="ed.applyAllStanzas">Todas as estrofes</span>
-            </button>
-            <button class="btn btn-ghost btn-sm bg-apply-btn" id="btn-apply-bg-stanza">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-              <span data-i18n="ed.applyThisStanza">Apenas esta estrofe</span>
+            <div class="anim-context-text">
+              <span data-i18n="an.applyingIn">Aplicando em:</span> <strong id="anim-context-word">—</strong>
+            </div>
+            <button class="anim-context-clear" id="anim-context-clear" data-i18n-attr="title:an.backToStanza" title="Voltar pra estrofe">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             </button>
           </div>
-
-          
-          <div class="panel-section-subtitle" id="custom-bgs-header" style="margin-top: 12px; display: none;">
-            Meus backgrounds
+        </div>
+        <div class="panel-section">
+          <div class="panel-section-title" data-i18n="an.category">Categoria</div>
+          <div class="anim-category-tabs">
+            <button class="anim-cat-tab active" data-cat="entrance" data-i18n="an.entrance">Entrada</button>
+            <button class="anim-cat-tab" data-cat="exit" data-i18n="an.exit">Saída</button>
+            <button class="anim-cat-tab" data-cat="loop" data-i18n="an.loop">Loop</button>
+            <button class="anim-cat-tab" data-cat="emphasis" style="display:none;" data-i18n="an.emphasis">Destaque</button>
           </div>
-          <div class="color-swatches" id="custom-bg-grid" style="grid-template-columns: repeat(5, 1fr); margin-top: 6px;"></div>
-
-          <input type="file" id="custom-bg-input" accept=".jpg,.jpeg,.png,.webp,.mp4,.webm,.mov,image/*,video/*" style="display:none" multiple />
-          <button class="btn btn-ghost btn-sm" id="btn-upload-bg" style="margin-top: 8px; width: 100%;">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            <span data-i18n="fp.addBg">Adicionar background (imagem ou vídeo)</span>
+        </div>
+        <div class="panel-section">
+          <button class="style-filter-toggle" id="style-filter-toggle" type="button">
+            <span data-i18n="an.filterStyle">Filtrar por estilo</span>
+            <span class="badge" id="anim-count">0</span>
+            <svg class="sft-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
           </button>
-          <button class="ctx-fonts-buypack" id="btn-buy-loops" style="margin-top: 8px;"
-            onclick="if(window.WM_LOOP_PACK_URL){window.open(window.WM_LOOP_PACK_URL,'_blank');}else{(window.wmAlert||window.alert)((window.WM_T?window.WM_T('fp.packSoon'):'Link do pack em breve!'));}">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-            <span data-i18n="fp.buyLoopPack">Adquirir Pack de Loops</span>
+          <div class="style-filter" id="style-filter" style="display:none;"></div>
+        </div>
+        <div class="panel-section">
+          <input type="text" class="anim-search-input" id="anim-search-input" data-i18n-attr="placeholder:an.searchPh" placeholder="🔎 Buscar animação pelo nome..." autocomplete="off" />
+          <div class="anim-grid" id="anim-grid"></div>
+          <button class="btn btn-secondary btn-sm" id="btn-anim-aplicar-todos" style="width:100%; margin-top:10px; display:none;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:5px; vertical-align:-2px;"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+            <span data-i18n="an.applyAll">Aplicar esta animação em todos os slides</span>
           </button>
         </div>
       </div>
 
-      
+      <div class="panel-content" data-rpanel-content="transitions" style="display:none;">
+        <div class="panel-section">
+          <div class="panel-section-title" data-i18n="sp.transition">Transição entre estrofes</div>
+          <select id="transition-type" class="input" style="width:100%; font-size:11px; padding:6px 8px;">
+            <option value="cut" data-i18n="sp.trCut">Cut (instantâneo)</option>
+            <option value="crossfade" data-i18n="sp.trCrossfade">Crossfade (fade)</option>
+            <option value="slide-left" data-i18n="sp.trSlideLeft">Slide ← (vem da direita)</option>
+            <option value="slide-right" data-i18n="sp.trSlideRight">Slide → (vem da esquerda)</option>
+            <option value="slide-up" data-i18n="sp.trSlideUp">Slide ↑ (sobe)</option>
+            <option value="slide-down" data-i18n="sp.trSlideDown">Slide ↓ (desce)</option>
+            <option value="zoom-in" data-i18n="sp.trZoomIn">Zoom In</option>
+            <option value="zoom-out" data-i18n="sp.trZoomOut">Zoom Out</option>
+          </select>
+          <label class="label" style="font-size: 10px; margin-top: var(--space-2); margin-bottom: var(--space-1); display:block;" data-i18n="sp.duration">Duração</label>
+          <div style="display: flex; align-items: center; gap: var(--space-3);">
+            <input type="range" class="range" id="transition-duration" min="2" max="15" value="5" style="flex:1">
+            <span class="value-display" id="transition-duration-val">0.5s</span>
+          </div>
+        </div>
+      </div>
+
+
       <div class="panel-content" data-rpanel-content="motion" style="display:none;">
 
         <div class="panel-section">
@@ -26588,11 +26575,11 @@ function initEditor() {
     // wordOverride; a estrofe só afeta quem não tem override).
     const bAnim = document.getElementById('ctx-anim');
     if (bAnim) bAnim.addEventListener('click', () => {
-      const tab = document.querySelector('.panel-tab[data-panel="animations"]');
+      const tab = document.querySelector('.panel-tab[data-rpanel="animations"]');
       if (tab) tab.click();
-      // Mobile: abre o painel esquerdo como bottom-sheet (no desktop não tem efeito).
-      document.body.classList.add('wm-sheet-left');
-      document.body.classList.remove('wm-sheet-right');
+      // Mobile: abre o painel direito como bottom-sheet (no desktop não tem efeito).
+      document.body.classList.add('wm-sheet-right');
+      document.body.classList.remove('wm-sheet-left');
       // Garante que o grid reflita o contexto atual (palavra vs estrofe).
       requestAnimationFrame(() => {
         if (typeof updateAnimContextHeader === 'function') updateAnimContextHeader();
@@ -32755,8 +32742,8 @@ function initEditor() {
           if (tab) tab.click();
           break;
         }
-        case 1: { // Animações → painel esquerdo aba "animations"
-          const tab = $('.panel-tab[data-panel="animations"]');
+        case 1: { // Animações → painel direito aba "animations"
+          const tab = $('.panel-tab[data-rpanel="animations"]');
           if (tab) tab.click();
           break;
         }
@@ -32772,8 +32759,8 @@ function initEditor() {
           if (fontSearch) setTimeout(() => fontSearch.focus(), 50);
           break;
         }
-        case 4: { // Backgrounds → painel direito aba "bg" (Fundo)
-          const tab = $('.panel-tab[data-rpanel="bg"]');
+        case 4: { // Backgrounds → painel esquerdo aba "bg" (Background)
+          const tab = $('.panel-tab[data-panel="bg"]');
           if (tab) tab.click();
           break;
         }
@@ -36142,7 +36129,7 @@ function initEditor() {
   // primeiro o fundo (o que se vê), depois o movimento (como anima).
   (function fundirMotionComFundo() {
     try {
-      const fundo = document.querySelector('.panel-content[data-rpanel-content="bg"]');
+      const fundo = document.querySelector('.panel-content[data-panel-content="bg"]');
       const motion = document.querySelector('.panel-content[data-rpanel-content="motion"]');
       if (fundo && motion && motion.parentNode) {
         while (motion.firstElementChild) {
