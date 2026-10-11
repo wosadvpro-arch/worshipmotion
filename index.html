@@ -7437,6 +7437,60 @@ Digno de toda honra"></textarea>
     <div class="panel-body">
       
       <div class="panel-content" data-rpanel-content="animations">
+        <div class="panel-section">
+          <div class="panel-section-title" data-i18n="rp.font">Fonte</div>
+
+          <div class="font-tabs" id="font-tabs">
+            <button class="font-tab active" data-font-tab="brand">WorshipMotion</button>
+            <button class="font-tab" data-font-tab="local">Computador</button>
+          </div>
+
+          <input type="text" id="font-search" placeholder="Buscar fonte..." class="font-search-input" />
+
+          <div class="font-tab-content" data-font-tab-content="brand">
+            <div class="font-grid" id="font-grid">
+              <div class="font-option selected" data-font="Montserrat">
+                <div class="font-option-sample" style="font-family: 'Montserrat'">Aa</div>
+                <div class="font-option-name">Montserrat</div>
+              </div>
+              <div class="font-option" data-font="Sora">
+                <div class="font-option-sample" style="font-family: 'Sora'">Aa</div>
+                <div class="font-option-name">Sora</div>
+              </div>
+              <div class="font-option" data-font="Inter">
+                <div class="font-option-sample" style="font-family: 'Inter'">Aa</div>
+                <div class="font-option-name">Inter</div>
+              </div>
+              <div class="font-option" data-font="Manrope">
+                <div class="font-option-sample" style="font-family: 'Manrope'">Aa</div>
+                <div class="font-option-name">Manrope</div>
+              </div>
+              <div class="font-option" data-font="Plus Jakarta Sans">
+                <div class="font-option-sample" style="font-family: 'Plus Jakarta Sans'">Aa</div>
+                <div class="font-option-name">Jakarta</div>
+              </div>
+              <div class="font-option" data-font="Space Grotesk">
+                <div class="font-option-sample" style="font-family: 'Space Grotesk'">Aa</div>
+                <div class="font-option-name">Grotesk</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="font-tab-content" data-font-tab-content="local" style="display: none;">
+            <div id="local-fonts-empty" class="font-empty-message">
+              Carregando fontes do computador...
+            </div>
+            <button id="btn-request-local-fonts" class="btn btn-secondary btn-sm" style="width: 100%; display: none; margin-bottom: 8px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              Permitir acesso a todas as fontes
+            </button>
+            <div class="font-grid" id="custom-font-grid" style="margin-bottom: 8px;"></div>
+            <div class="font-grid font-grid-scroll" id="local-font-grid"></div>
+            <div id="local-fonts-info" class="font-info-message"></div>
+            <input type="file" id="custom-font-input" accept=".ttf,.otf,.woff,.woff2" style="display:none" multiple />
+          </div>
+        </div>
+
         <div class="anim-context-header" id="anim-context-header" style="display:none;">
           <div class="anim-context-row">
             <div class="anim-context-icon">
@@ -28096,8 +28150,11 @@ function initEditor() {
     }
   }
 
-  $$('.font-tab').forEach(t => {
-    t.addEventListener('click', () => switchFontTab(t.dataset.fontTab));
+  // Delegação para .font-tab (funciona com elementos restaurados dinamicamente)
+  document.body.addEventListener('click', (ev) => {
+    const tab = ev.target.closest('.font-tab');
+    if (!tab || !tab.dataset.fontTab) return;
+    switchFontTab(tab.dataset.fontTab);
   });
 
   // === Busca ===
