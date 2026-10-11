@@ -1,9 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="0">
   <!-- Google tag (gtag.js) — Google Analytics -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-4JZV2T556W"></script>
   <script>
@@ -42,7 +39,7 @@
   <title>WorshipMotion — Letras animadas para igrejas</title>
   <meta name="description" content="Crie letras animadas profissionais para o telão da sua igreja em poucos minutos. Escolha o estilo, personalize e exporte o vídeo em MP4.">
   <link rel="canonical" href="https://worshipmotion.com.br/">
-  <meta name="theme-color" content="#00E5CF">
+  <meta name="theme-color" content="#8b5cf6">
 
   <!-- Compartilhamento (WhatsApp, Facebook, etc.) -->
   <meta property="og:type" content="website">
@@ -128,51 +125,39 @@
    ============================================================ */
 
 :root {
-  /* ---------- BACKGROUNDS (CapCut Dark Pro Studio) ---------- */
-  --bg-base:        #121212;   /* canvas/window background */
-  --bg-surface:     #1E1E1E;   /* main panels, library, inspector */
-  --bg-elevated:    #262626;   /* cards, dropdowns, secondary buttons */
-  --bg-overlay:     #2E2E2E;   /* hover states */
-  --bg-canvas:      #121212;   /* editor canvas/preview area */
-  --cc-bg-input:    #181818;   /* input fields */
-  --cc-bg-active:   #383838;   /* pressed/active state */
+  /* ---------- BACKGROUNDS ---------- */
+  --bg-base:        #0a0a0f;   /* fundo principal, quase preto com toque azulado */
+  --bg-surface:     #111118;   /* superfícies (cards, sidebars) */
+  --bg-elevated:    #181822;   /* elementos elevados, dropdowns */
+  --bg-overlay:     #1f1f2c;   /* hover states em superfícies */
+  --bg-canvas:      #050507;   /* área do canvas/preview do editor */
 
   /* ---------- BORDERS / DIVIDERS ---------- */
-  --border-subtle:  #2F2F2F;
-  --border-default: #404040;
-  --border-strong:  #404040;
-  --cc-border-focus: #00E5CF;
+  --border-subtle:  rgba(255, 255, 255, 0.06);
+  --border-default: rgba(255, 255, 255, 0.10);
+  --border-strong:  rgba(255, 255, 255, 0.16);
 
   /* ---------- TEXT ---------- */
-  --text-primary:   #FFFFFF;   /* titles, active buttons, typed text */
-  --text-secondary: #A1A1AA;   /* labels, categories, shortcuts */
-  --text-tertiary:  #52525B;   /* placeholders, hints */
-  --text-disabled:  #52525B;
-  --cc-text-on-cyan: #121212;  /* text on cyan accent buttons */
+  --text-primary:   #f4f4f7;   /* títulos, conteúdo principal */
+  --text-secondary: #a8a8b8;   /* labels, descrições */
+  --text-tertiary:  #6c6c80;   /* placeholders, hints */
+  --text-disabled:  #45455a;
 
-  /* ---------- BRAND / ACCENT (CapCut Cyan + Pro Purple) ---------- */
-  --accent:         #00E5CF;   /* primary CTA, active tabs, focus */
-  --accent-hover:   #00F5DD;
-  --accent-soft:    rgba(0, 229, 207, 0.15);
-  --accent-glow:    rgba(0, 229, 207, 0.35);
+  /* ---------- BRAND / ACCENT ---------- */
+  --accent:         #8b5cf6;   /* roxo principal */
+  --accent-hover:   #9d72f8;
+  --accent-soft:    rgba(139, 92, 246, 0.12);
+  --accent-glow:    rgba(139, 92, 246, 0.45);
 
-  --gold:           #A855F7;   /* Pro/Premium accent (was gold) */
-  --gold-soft:      rgba(168, 85, 247, 0.15);
-  --cc-accent-pro-gradient: linear-gradient(135deg, #A855F7 0%, #6366F1 100%);
+  --gold:           #d4a857;   /* dourado pontual (premium/glória) */
+  --gold-soft:      rgba(212, 168, 87, 0.14);
 
   /* gradientes da marca */
-  --gradient-brand: linear-gradient(135deg, #00E5CF 0%, #3B82F6 100%);
-  --gradient-divine: linear-gradient(135deg, #A855F7 0%, #6366F1 100%);
+  --gradient-brand: linear-gradient(135deg, #8b5cf6 0%, #6366f1 50%, #3b82f6 100%);
+  --gradient-divine: linear-gradient(135deg, #d4a857 0%, #8b5cf6 100%);
   --gradient-glow: radial-gradient(circle at center,
-                    rgba(0, 229, 207, 0.25) 0%,
-                    rgba(0, 229, 207, 0) 70%);
-
-  /* ---------- TIMELINE TRACK COLORS (CapCut semantic) ---------- */
-  --cc-track-video:  #1C595C;
-  --cc-track-video-bg: #143538;
-  --cc-track-text:   #E06D53;
-  --cc-track-audio:  #3B82F6;
-  --cc-track-effect: #8B5CF6;
+                    rgba(139, 92, 246, 0.25) 0%,
+                    rgba(139, 92, 246, 0) 70%);
 
   /* ---------- FEEDBACK ---------- */
   --success:        #4ade80;
@@ -180,9 +165,9 @@
   --error:          #f87171;
 
   /* ---------- TIPOGRAFIA ---------- */
-  --font-display:   'Inter', 'Sora', system-ui, -apple-system, sans-serif;
+  --font-display:   'Sora', 'Inter', system-ui, -apple-system, sans-serif;
   --font-body:      'Inter', system-ui, -apple-system, sans-serif;
-  --font-mono:      'JetBrains Mono', 'Fira Code', monospace;
+  --font-mono:      'JetBrains Mono', 'SF Mono', Consolas, monospace;
 
   /* escalas tipográficas */
   --text-xs:   11px;
@@ -299,7 +284,7 @@ body::before {
   position: fixed;
   inset: 0;
   background:
-    radial-gradient(ellipse at top left, rgba(0, 229, 207, 0.08), transparent 50%),
+    radial-gradient(ellipse at top left, rgba(139, 92, 246, 0.08), transparent 50%),
     radial-gradient(ellipse at bottom right, rgba(99, 102, 241, 0.06), transparent 50%);
   pointer-events: none;
   z-index: 0;
@@ -387,66 +372,66 @@ h1, h2, h3, h4, h5, h6 {
    WorshipMotion — Componentes UI
    ============================================================ */
 
-/* ============ BOTÕES (CapCut Style) ============ */
+/* ============ BOTÕES ============ */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 6px 14px;
+  gap: var(--space-2);
+  padding: 10px 18px;
   font-family: var(--font-body);
-  font-size: 12px;
+  font-size: var(--text-sm);
   font-weight: 500;
-  letter-spacing: 0.02em;
-  border-radius: var(--cc-radius-pill);
+  letter-spacing: -0.005em;
+  border-radius: var(--radius-md);
   border: 1px solid transparent;
   cursor: pointer;
   white-space: nowrap;
   user-select: none;
-  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  transition:
+    background var(--duration-default) var(--ease-out-quart),
+    border-color var(--duration-default) var(--ease-out-quart),
+    transform var(--duration-fast) var(--ease-out-quart),
+    box-shadow var(--duration-default) var(--ease-out-quart),
+    color var(--duration-default) var(--ease-out-quart);
 }
 
-.btn:active { transform: none; opacity: 0.85; }
-.btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.btn:active { transform: translateY(1px); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 
-.btn-icon { width: 32px; height: 32px; padding: 0; border-radius: var(--cc-radius-md); }
-.btn-sm { padding: 4px 10px; font-size: 11px; }
-.btn-lg { padding: 8px 20px; font-size: 13px; }
+.btn-icon { width: 36px; height: 36px; padding: 0; }
+.btn-sm { padding: 6px 12px; font-size: var(--text-xs); }
+.btn-lg { padding: 14px 24px; font-size: var(--text-md); }
 
-/* primário — ciano sólido CapCut */
+/* primário — gradiente da marca */
 .btn-primary {
-  background: var(--accent);
-  color: var(--cc-text-on-cyan);
-  border: none;
-  box-shadow: none;
-  font-weight: 600;
+  background: var(--gradient-brand);
+  color: white;
+  box-shadow: 0 1px 0 rgba(255,255,255,0.15) inset, 0 6px 20px -6px var(--accent-glow);
 }
 .btn-primary:hover {
-  background: var(--accent-hover);
-  box-shadow: none;
-  filter: none;
+  box-shadow: 0 1px 0 rgba(255,255,255,0.2) inset, 0 8px 28px -4px var(--accent-glow);
+  filter: brightness(1.08);
 }
 
-/* secundário — pílula neutra CapCut */
+/* secundário — outline sutil */
 .btn-secondary {
   background: var(--bg-elevated);
   color: var(--text-primary);
-  border: 1px solid var(--border-subtle);
-  box-shadow: none;
+  border-color: var(--border-default);
 }
 .btn-secondary:hover {
   background: var(--bg-overlay);
-  border-color: var(--border-subtle);
+  border-color: var(--border-strong);
 }
 
 /* ghost — sem fundo */
 .btn-ghost {
   background: transparent;
   color: var(--text-secondary);
-  border: none;
 }
 .btn-ghost:hover {
-  background: var(--bg-hover, #2E2E2E);
+  background: var(--bg-overlay);
   color: var(--text-primary);
 }
 
@@ -454,81 +439,82 @@ h1, h2, h3, h4, h5, h6 {
 .btn-danger {
   background: rgba(248, 113, 113, 0.1);
   color: var(--error);
-  border: 1px solid rgba(248, 113, 113, 0.15);
-  box-shadow: none;
+  border-color: rgba(248, 113, 113, 0.2);
 }
 .btn-danger:hover { background: rgba(248, 113, 113, 0.18); }
 
-/* ============ INPUTS (CapCut compact) ============ */
+/* ============ INPUTS ============ */
 .input,
 .textarea,
 .select {
   width: 100%;
-  padding: 6px 10px;
-  background: var(--cc-bg-input, #181818);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--cc-radius-sm);
-  font-size: 12px;
+  padding: 10px 14px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
   color: var(--text-primary);
-  transition: border-color 0.12s ease, background 0.12s ease;
+  transition: border-color var(--duration-default) var(--ease-out-quart),
+              background var(--duration-default) var(--ease-out-quart),
+              box-shadow var(--duration-default) var(--ease-out-quart);
 }
 
-.input::placeholder, .textarea::placeholder { color: var(--text-muted, #52525B); }
+.input::placeholder, .textarea::placeholder { color: var(--text-tertiary); }
 
-.input:hover, .textarea:hover, .select:hover { border-color: var(--border-default); }
+.input:hover, .textarea:hover, .select:hover { border-color: var(--border-strong); }
 
 .input:focus, .textarea:focus, .select:focus {
-  border-color: var(--cc-border-focus, #00E5CF);
-  box-shadow: 0 0 0 1px var(--cc-border-focus, #00E5CF);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
   outline: none;
 }
 
 .textarea {
-  min-height: 100px;
+  min-height: 120px;
   resize: vertical;
   font-family: var(--font-body);
-  line-height: 1.5;
+  line-height: var(--leading-normal);
 }
 
 .input-group {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--space-2);
 }
 
 .label {
-  font-size: 11px;
+  font-size: var(--text-xs);
   font-weight: 500;
   color: var(--text-secondary);
-  letter-spacing: 0.03em;
+  letter-spacing: var(--tracking-wide);
   text-transform: uppercase;
 }
 
-/* ============ BADGES (CapCut pill) ============ */
+/* ============ BADGES ============ */
 .badge {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 2px 8px;
-  font-size: 10px;
+  gap: 6px;
+  padding: 3px 10px;
+  font-size: 11px;
   font-weight: 500;
-  border-radius: var(--cc-radius-pill);
-  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-default);
   background: var(--bg-elevated);
   color: var(--text-secondary);
-  letter-spacing: 0.03em;
+  letter-spacing: var(--tracking-wide);
 }
 
 .badge-accent {
   background: var(--accent-soft);
   color: var(--accent);
-  border-color: rgba(0, 229, 207, 0.3);
+  border-color: rgba(139, 92, 246, 0.3);
 }
 
 .badge-gold {
   background: var(--gold-soft);
   color: var(--gold);
-  border-color: rgba(168, 85, 247, 0.3);
+  border-color: rgba(212, 168, 87, 0.3);
 }
 
 .badge-dot::before {
@@ -542,17 +528,17 @@ h1, h2, h3, h4, h5, h6 {
 
 /* ============ CARDS ============ */
 .card {
-  background: var(--bg-elevated);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--cc-radius-md);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
   overflow: hidden;
-  transition: border-color 0.12s ease, background 0.12s ease;
+  transition: border-color var(--duration-default) var(--ease-out-quart),
+              transform var(--duration-default) var(--ease-out-quart);
 }
 
 .card-hover:hover {
-  border-color: var(--border-default);
-  background: var(--bg-hover, #2E2E2E);
-  transform: none;
+  border-color: var(--border-strong);
+  transform: translateY(-2px);
 }
 
 /* ============ TOOLTIPS ============ */
@@ -650,22 +636,22 @@ h1, h2, h3, h4, h5, h6 {
 .range::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 12px;
-  height: 12px;
-  background: var(--accent);
-  border-radius: var(--cc-radius-pill);
-  box-shadow: none;
+  width: 14px;
+  height: 14px;
+  background: white;
+  border-radius: var(--radius-full);
+  box-shadow: 0 0 0 4px var(--accent), 0 2px 8px rgba(0,0,0,0.3);
   cursor: pointer;
-  transition: background 0.12s ease;
+  transition: transform var(--duration-fast) var(--ease-out-quart);
 }
-.range::-webkit-slider-thumb:hover { background: var(--accent-hover); transform: none; }
+.range::-webkit-slider-thumb:hover { transform: scale(1.15); }
 .range::-moz-range-thumb {
-  width: 12px;
-  height: 12px;
-  background: var(--accent);
+  width: 14px;
+  height: 14px;
+  background: white;
   border: none;
-  border-radius: var(--cc-radius-pill);
-  box-shadow: none;
+  border-radius: var(--radius-full);
+  box-shadow: 0 0 0 4px var(--accent), 0 2px 8px rgba(0,0,0,0.3);
   cursor: pointer;
 }
 
@@ -710,7 +696,7 @@ h1, h2, h3, h4, h5, h6 {
   aspect-ratio: 313 / 128;
   object-fit: contain;
   display: block;
-  filter: drop-shadow(0 2px 8px rgba(0, 229, 207, 0.3));
+  filter: drop-shadow(0 2px 8px rgba(139, 92, 246, 0.3));
 }
 .logo-mark-lg {
   height: 36px;
@@ -719,7 +705,7 @@ h1, h2, h3, h4, h5, h6 {
   height: 32px;
   width: auto;
   display: block;
-  filter: drop-shadow(0 4px 12px rgba(0, 229, 207, 0.25));
+  filter: drop-shadow(0 4px 12px rgba(139, 92, 246, 0.25));
 }
 .logo-full-lg {
   height: 44px;
@@ -755,23 +741,26 @@ h1, h2, h3, h4, h5, h6 {
 
 .editor-shell {
   display: grid;
-  grid-template-columns: 48px 280px 1fr 280px;
+  grid-template-columns: 64px 320px 1fr 320px;
   grid-template-rows: var(--topbar-height) 1fr;
   height: 100vh;
+  /* dvh = altura realmente visível (desconta as barras do navegador, incluindo
+     a barra fixa que o Chrome do iPhone passou a mostrar embaixo). A linha em
+     vh acima fica como reserva pra quem não conhecer dvh. */
   height: 100dvh;
-  background: var(--bg-canvas);
+  background: var(--bg-base);
   overflow: hidden;
 }
 
-/* ---------- TOPBAR (CapCut compact) ---------- */
+/* ---------- TOPBAR ---------- */
 .editor-topbar {
   grid-column: 1 / -1;
   display: flex;
   align-items: center;
-  padding: 0 12px;
+  padding: 0 var(--space-5);
   background: var(--bg-surface);
   border-bottom: 1px solid var(--border-subtle);
-  gap: 8px;
+  gap: var(--space-4);
   height: var(--topbar-height);
 }
 
@@ -798,30 +787,30 @@ h1, h2, h3, h4, h5, h6 {
   letter-spacing: 0.05em;
 }
 
-/* ---------- LEFT RAIL (CapCut compact icon rail) ---------- */
+/* ---------- LEFT RAIL (ícones de navegação) ---------- */
 .editor-rail {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 8px 0;
-  gap: 2px;
-  background: var(--bg-canvas);
+  padding: var(--space-3) 0;
+  gap: var(--space-2);
+  background: var(--bg-surface);
   border-right: 1px solid var(--border-subtle);
 }
 
 .rail-btn {
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: var(--cc-radius-sm);
-  color: var(--text-muted, #52525B);
-  transition: background 0.12s ease, color 0.12s ease;
+  border-radius: var(--radius-md);
+  color: var(--text-tertiary);
+  transition: all var(--duration-fast) var(--ease-out-quart);
   cursor: pointer;
   position: relative;
 }
-.rail-btn:hover { background: var(--bg-hover, #2E2E2E); color: var(--text-secondary); }
+.rail-btn:hover { background: var(--bg-overlay); color: var(--text-secondary); }
 .rail-btn.active {
   background: var(--accent-soft);
   color: var(--accent);
@@ -829,12 +818,12 @@ h1, h2, h3, h4, h5, h6 {
 .rail-btn.active::before {
   content: '';
   position: absolute;
-  left: 0; top: 50%;
-  width: 2px; height: 16px;
+  left: -8px; top: 50%;
+  width: 3px; height: 20px;
   background: var(--accent);
-  border-radius: 0 2px 2px 0;
+  border-radius: 0 var(--radius-full) var(--radius-full) 0;
   transform: translateY(-50%);
-  box-shadow: none;
+  box-shadow: 0 0 12px var(--accent-glow);
 }
 
 /* ---------- LEFT PANEL (lyrics + animações) ---------- */
@@ -849,48 +838,48 @@ h1, h2, h3, h4, h5, h6 {
 .panel-tabs {
   display: flex;
   border-bottom: 1px solid var(--border-subtle);
-  padding: 8px 12px 0;
-  gap: 4px;
+  padding: var(--space-3) var(--space-3) 0;
+  gap: var(--space-1);
 }
 .panel-tab {
   flex: 1;
-  padding: 6px 4px;
-  font-size: 11px;
+  padding: var(--space-2) var(--space-1);
+  font-size: var(--text-xs);
   font-weight: 500;
-  letter-spacing: 0.03em;
+  letter-spacing: var(--tracking-wide);
   text-transform: uppercase;
-  color: var(--text-muted, #52525B);
+  color: var(--text-tertiary);
   border-bottom: 2px solid transparent;
   margin-bottom: -1px;
-  transition: color 0.12s ease, border-color 0.12s ease;
+  transition: all var(--duration-fast) var(--ease-out-quart);
   text-align: center;
   white-space: nowrap;
 }
 .panel-tab:hover { color: var(--text-secondary); }
 .panel-tab.active {
-  color: var(--accent);
+  color: var(--text-primary);
   border-bottom-color: var(--accent);
 }
 
 .panel-body {
   flex: 1;
   overflow-y: auto;
-  padding: 12px;
+  padding: var(--space-5);
 }
 
-.panel-section { margin-bottom: 16px; }
+.panel-section { margin-bottom: var(--space-6); }
 .panel-section:last-child { margin-bottom: 0; }
 
 .panel-section-title {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.03em;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: var(--tracking-wide);
   text-transform: uppercase;
-  color: var(--text-muted, #52525B);
-  margin-bottom: 8px;
+  color: var(--text-tertiary);
+  margin-bottom: var(--space-3);
 }
 
 /* ---------- LYRICS INPUT ---------- */
@@ -951,7 +940,7 @@ h1, h2, h3, h4, h5, h6 {
 .stanza-item.active {
   border-color: var(--accent);
   background: var(--accent-soft);
-  box-shadow: 0 0 0 1px var(--accent), 0 4px 16px -4px rgba(0,229,207,0.4);
+  box-shadow: 0 0 0 1px var(--accent), 0 4px 16px -4px rgba(139,92,246,0.4);
 }
 /* Barra lateral indicando o slide ATUAL — "você está aqui" */
 .stanza-item.active::before {
@@ -959,7 +948,7 @@ h1, h2, h3, h4, h5, h6 {
   position: absolute;
   left: 0; top: 8px; bottom: 8px;
   width: 3px;
-  background: var(--accent, #00E5CF);
+  background: var(--accent, #8b5cf6);
   border-radius: 0 3px 3px 0;
 }
 
@@ -977,13 +966,13 @@ h1, h2, h3, h4, h5, h6 {
   font-weight: 800;
   letter-spacing: 0.08em;
   color: #fff;
-  background: var(--accent, #00E5CF);
+  background: var(--accent, #8b5cf6);
   padding: 2px 8px;
   border-radius: 5px;
 }
 .stanza-item.active .stanza-slide-num {
-  background: linear-gradient(135deg, #00F5DD, #00E5CF);
-  box-shadow: 0 0 10px -2px rgba(0,229,207,0.7);
+  background: linear-gradient(135deg, #a78bfa, #8b5cf6);
+  box-shadow: 0 0 10px -2px rgba(139,92,246,0.7);
 }
 .stanza-slide-of {
   font-size: 10px;
@@ -1113,17 +1102,17 @@ h1, h2, h3, h4, h5, h6 {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  background: rgba(5, 5, 10, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   z-index: 1000;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 24px;
+  padding: var(--space-8);
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.15s ease;
+  transition: opacity var(--duration-default) var(--ease-out-quart);
 }
 .modal-overlay.active {
   opacity: 1;
@@ -1141,36 +1130,36 @@ html.wm-modal-open, body.wm-modal-open {
   max-width: 1080px;
   max-height: 85vh;
   background: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--cc-radius-lg, 12px);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-xl);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  box-shadow: var(--cc-shadow-modal, 0 12px 32px rgba(0, 0, 0, 0.6));
-  transform: translateY(12px) scale(0.98);
-  transition: transform 0.15s ease;
+  box-shadow: 0 32px 80px -16px rgba(0,0,0,0.6);
+  transform: translateY(20px) scale(0.97);
+  transition: transform var(--duration-default) var(--ease-out-quart);
 }
 .modal-overlay.active .modal {
   transform: translateY(0) scale(1);
 }
 
 .modal-header {
-  padding: 12px 16px;
+  padding: var(--space-5) var(--space-6);
   border-bottom: 1px solid var(--border-subtle);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--space-4);
 }
 .modal-title {
-  font-family: var(--font-body);
-  font-size: 14px;
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
   font-weight: 600;
-  letter-spacing: 0.01em;
+  letter-spacing: var(--tracking-tight);
 }
 .modal-subtitle {
-  font-size: 11px;
-  color: var(--text-muted, #52525B);
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
   margin-top: 2px;
 }
 
@@ -1344,11 +1333,11 @@ html.wm-modal-open, body.wm-modal-open {
 }
 .tpl-filter-chip:hover { border-color: var(--border-strong, #666); }
 .tpl-filter-chip.active {
-  background: var(--accent, #00E5CF);
-  border-color: var(--accent, #00E5CF);
+  background: var(--accent, #8b5cf6);
+  border-color: var(--accent, #8b5cf6);
   color: #fff;
 }
-.template-card.tpl-recommended { border-color: var(--accent, #00E5CF); }
+.template-card.tpl-recommended { border-color: var(--accent, #8b5cf6); }
 .template-line-badge {
   position: absolute;
   top: 8px;
@@ -1367,7 +1356,7 @@ html.wm-modal-open, body.wm-modal-open {
   right: 8px;
   font-size: 10px;
   padding: 2px 7px;
-  background: linear-gradient(135deg, #00E5CF, #A855F7);
+  background: linear-gradient(135deg, #8b5cf6, #d4a857);
   border-radius: var(--radius-full);
   color: #fff;
   font-weight: 600;
@@ -1912,35 +1901,35 @@ body.wm-recording-mode::after {
   height: 100%;
   overflow: hidden;
   background:
-    radial-gradient(circle at 30% 20%, rgba(0, 229, 207, 0.06), transparent 50%),
+    radial-gradient(circle at 30% 20%, rgba(139, 92, 246, 0.06), transparent 50%),
     radial-gradient(circle at 70% 80%, rgba(59, 130, 246, 0.05), transparent 50%),
     var(--bg-base);
 }
 
 /* ===== BARRA CONTEXTUAL (estilo Canva) — Etapa 1 ===== */
 .ctx-toolbar {
-  display: flex; align-items: center; gap: 4px;
-  background: var(--bg-surface, #1E1E1E);
-  border: 1px solid var(--border-subtle, #2F2F2F);
-  border-radius: var(--cc-radius-md, 8px); padding: 4px 6px;
-  box-shadow: none;
+  display: flex; align-items: center; gap: 6px;
+  background: var(--bg-surface, #111118);
+  border: 1px solid var(--border-default, rgba(255,255,255,0.08));
+  border-radius: 12px; padding: 6px 8px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.35);
   flex: 0 0 auto; z-index: 5; max-width: 100%;
   flex-wrap: wrap; justify-content: center;
 }
 .ctx-scope { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-dim, #7a8499); padding: 0 6px; white-space: nowrap; }
-.ctx-scope-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent, #00E5CF); display: inline-block; }
+.ctx-scope-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent, #8b5cf6); display: inline-block; }
 .ctx-sep { width: 1px; height: 20px; background: var(--border-default, rgba(255,255,255,0.1)); }
 .ctx-font { height: 30px; font-size: 12px; padding: 0 6px; min-width: 110px; background: var(--bg-base, #0a0a0f); color: var(--text, #e8e8ee); border: 1px solid var(--border-default, rgba(255,255,255,0.1)); border-radius: 8px; }
 .ctx-weight { height: 30px; font-size: 12px; padding: 0 6px; background: var(--bg-base, #0a0a0f); color: var(--text, #e8e8ee); border: 1px solid var(--border-default, rgba(255,255,255,0.1)); border-radius: 8px; cursor: pointer; }
 .ctx-btn { height: 30px; min-width: 30px; padding: 0 8px; display: inline-flex; align-items: center; justify-content: center; background: transparent; color: var(--text, #e8e8ee); border: 1px solid var(--border-default, rgba(255,255,255,0.1)); border-radius: 8px; font-size: 13px; cursor: pointer; transition: background 0.15s, border-color 0.15s; }
 .ctx-btn:hover { background: rgba(255,255,255,0.06); }
-.ctx-btn.active { background: var(--accent, #00E5CF); border-color: var(--accent, #00E5CF); color: #fff; }
+.ctx-btn.active { background: var(--accent, #8b5cf6); border-color: var(--accent, #8b5cf6); color: #fff; }
 .ctx-mini { min-width: 26px; height: 26px; padding: 0; font-size: 14px; border-radius: 6px; }
 .ctx-stepper { display: inline-flex; align-items: center; gap: 3px; border: 1px solid var(--border-default, rgba(255,255,255,0.1)); border-radius: 8px; padding: 2px; }
 .ctx-stepper .ctx-mini { border: none; }
 .ctx-val { font-size: 12px; min-width: 26px; text-align: center; color: var(--text, #e8e8ee); cursor: text; border-radius: 4px; padding: 1px 3px; outline: none; }
 .ctx-val[contenteditable]:hover { background: rgba(255,255,255,0.06); }
-.ctx-val[contenteditable]:focus { background: rgba(0,229,207,0.18); box-shadow: 0 0 0 1px var(--accent, #00E5CF); }
+.ctx-val[contenteditable]:focus { background: rgba(139,92,246,0.18); box-shadow: 0 0 0 1px var(--accent, #8b5cf6); }
 .ctx-color-dot { width: 16px; height: 16px; border-radius: 50%; background: #ffffff; display: block; border: 1px solid rgba(255,255,255,0.3); }
 .ctx-ico { font-size: 10px; color: var(--text-dim, #7a8499); letter-spacing: -1px; padding: 0 2px; user-select: none; }
 .ctx-color { position: relative; }
@@ -1989,7 +1978,7 @@ body.wm-recording-mode::after {
   background: transparent; color: var(--text, #e8e8ee); font-size: 13px; cursor: pointer;
 }
 .ctx-case-opt:hover { background: rgba(255,255,255,0.06); }
-.ctx-case-opt.active { background: rgba(0,229,207,0.18); border-color: var(--accent, #00E5CF); }
+.ctx-case-opt.active { background: rgba(139,92,246,0.18); border-color: var(--accent, #8b5cf6); }
 /* Painel de fontes estilo Canva */
 .ctx-fonts-panel {
   position: fixed; top: 0; right: 0; height: 100vh; width: 300px; z-index: 9998;
@@ -2002,7 +1991,7 @@ body.wm-recording-mode::after {
 .ctx-fonts-cat { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-dim, #7a8499); margin: 10px 4px 4px; }
 .ctx-font-item { display: flex; align-items: center; justify-content: space-between; padding: 9px 12px; border-radius: 8px; cursor: pointer; color: var(--text, #e8e8ee); border: 1px solid transparent; transition: background 0.12s; }
 .ctx-font-item:hover { background: rgba(255,255,255,0.05); }
-.ctx-font-item.selected { background: rgba(0,229,207,0.18); border-color: var(--accent, #00E5CF); }
+.ctx-font-item.selected { background: rgba(139,92,246,0.18); border-color: var(--accent, #8b5cf6); }
 .ctx-font-item .ctx-font-name { font-size: 14px; line-height: 1.1; }
 .ctx-fonts-upload {
   width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;
@@ -2011,11 +2000,11 @@ body.wm-recording-mode::after {
   border: 1px dashed var(--border-default, rgba(255,255,255,0.2));
   font-size: 12px; cursor: pointer; transition: background 0.15s, border-color 0.15s;
 }
-.ctx-fonts-upload:hover { background: rgba(0,229,207,0.1); border-color: var(--accent, #00E5CF); }
+.ctx-fonts-upload:hover { background: rgba(139,92,246,0.1); border-color: var(--accent, #8b5cf6); }
 .ctx-fonts-buypack {
   width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;
   padding: 10px; margin-bottom: 12px; border-radius: 8px;
-  background: linear-gradient(135deg, #A855F7, #3B82F6); color: #fff;
+  background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: #fff;
   border: none; font-size: 12px; font-weight: 600; cursor: pointer;
   transition: filter 0.15s, transform 0.05s;
 }
@@ -2037,11 +2026,11 @@ body.wm-recording-mode::after {
   border: 1px solid var(--border-default, rgba(255,255,255,0.08));
   transition: background 0.15s, border-color 0.15s;
 }
-.videoaula-item:hover { background: rgba(0,229,207,0.1); border-color: var(--accent, #00E5CF); }
-.videoaula-item.is-active { background: rgba(0,229,207,0.16); border-color: var(--accent, #00E5CF); }
+.videoaula-item:hover { background: rgba(139,92,246,0.1); border-color: var(--accent, #8b5cf6); }
+.videoaula-item.is-active { background: rgba(139,92,246,0.16); border-color: var(--accent, #8b5cf6); }
 .videoaula-item .va-icon {
   flex: 0 0 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center;
-  background: linear-gradient(135deg, #A855F7, #3B82F6); color: #fff;
+  background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: #fff;
 }
 .videoaula-item .va-title { font-size: 13.5px; font-weight: 600; color: var(--text-primary, #e8e8ee); }
 .videoaulas-empty { text-align: center; padding: 28px 16px; color: var(--text-secondary); }
@@ -2159,7 +2148,7 @@ body.marking-open.marking-collapsed .editor-canvas {
   box-shadow:
     0 0 0 1px rgba(255,255,255,0.02) inset,
     0 24px 64px -16px rgba(0,0,0,0.6),
-    0 0 80px -20px rgba(0, 229, 207, 0.15);
+    0 0 80px -20px rgba(139, 92, 246, 0.15);
 }
 
 /* gradient background do canvas — pode trocar via JS */
@@ -2268,12 +2257,12 @@ body.marking-open.marking-collapsed .editor-canvas {
 /* Palavra em edição inline (duplo-clique): contorno claro + cursor de
    texto, pra ficar óbvio que está editável ali mesmo. */
 .lyric-word.is-inline-editing {
-  outline: 2px solid var(--accent, #00E5CF);
+  outline: 2px solid var(--accent, #8b5cf6);
   outline-offset: 3px;
   border-radius: 3px;
-  background: rgba(0, 229, 207, 0.12);
+  background: rgba(139, 92, 246, 0.12);
   cursor: text;
-  caret-color: var(--accent, #00E5CF);
+  caret-color: var(--accent, #8b5cf6);
   /* Garante que a animação não esconda o que está sendo editado. */
   opacity: 1 !important;
   visibility: visible !important;
@@ -2537,12 +2526,12 @@ body.timeline-collapsed .timeline-collapse-btn {
 .editor-timeline {
   grid-column: 2 / -1;
   height: var(--timeline-height);
-  background: var(--bg-canvas);
+  background: var(--bg-surface);
   border-top: 1px solid var(--border-subtle);
-  padding: 10px 12px;
+  padding: var(--space-4) var(--space-5);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-3);
 }
 
 .timeline-header {
@@ -2554,67 +2543,66 @@ body.timeline-collapsed .timeline-collapse-btn {
 .playback-controls {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-2);
 }
 
 .play-btn {
-  width: 32px;
-  height: 32px;
-  border-radius: var(--cc-radius-pill);
-  background: var(--accent);
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  background: var(--gradient-brand);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--cc-text-on-cyan, #121212);
-  box-shadow: none;
-  transition: background 0.12s ease;
+  color: white;
+  box-shadow: 0 4px 16px -4px var(--accent-glow);
+  transition: transform var(--duration-fast) var(--ease-out-quart);
 }
-.play-btn:hover { background: var(--accent-hover); transform: none; }
-.play-btn:active { opacity: 0.85; transform: none; }
+.play-btn:hover { transform: scale(1.05); }
+.play-btn:active { transform: scale(0.95); }
 
 .timeline-track {
   flex: 1;
-  background: var(--bg-surface);
+  background: var(--bg-base);
   border: 1px solid var(--border-subtle);
-  border-radius: var(--cc-radius-sm);
+  border-radius: var(--radius-md);
   position: relative;
   display: flex;
   align-items: center;
-  padding: 8px;
-  gap: 6px;
+  padding: var(--space-3);
+  gap: var(--space-2);
   overflow-x: auto;
 }
 
 .timeline-clip {
-  height: 48px;
-  min-width: 100px;
-  padding: 6px 10px;
-  background: var(--cc-track-video-bg, #143538);
-  border: 1px solid var(--cc-track-video, #1C595C);
-  border-top: 3px solid var(--cc-track-video, #1C595C);
-  border-radius: var(--cc-radius-sm);
+  height: 60px;
+  min-width: 120px;
+  padding: var(--space-2) var(--space-3);
+  background: linear-gradient(135deg, var(--accent-soft), rgba(99, 102, 241, 0.1));
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  border-radius: var(--radius-sm);
   display: flex;
   flex-direction: column;
   justify-content: center;
   cursor: pointer;
-  transition: background 0.12s ease, border-color 0.12s ease;
+  transition: all var(--duration-fast) var(--ease-out-quart);
   flex-shrink: 0;
 }
 .timeline-clip:hover {
-  background: rgba(28, 89, 92, 0.4);
-  border-color: var(--cc-track-video, #1C595C);
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.18), rgba(99, 102, 241, 0.14));
+  border-color: rgba(139, 92, 246, 0.5);
 }
 .timeline-clip.active {
-  background: rgba(28, 89, 92, 0.5);
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.25), rgba(99, 102, 241, 0.18));
   border-color: var(--accent);
-  box-shadow: 0 0 0 1px var(--accent);
+  box-shadow: 0 0 0 1px var(--accent), 0 4px 12px -4px var(--accent-glow);
 }
 .timeline-clip-label {
   font-size: 10px;
-  font-weight: 500;
-  letter-spacing: 0.03em;
+  font-weight: 600;
+  letter-spacing: var(--tracking-wider);
   text-transform: uppercase;
-  color: var(--text-secondary);
+  color: var(--accent);
   margin-bottom: 2px;
 }
 .timeline-clip-text {
@@ -3062,14 +3050,14 @@ body.timeline-collapsed .timeline-collapse-btn {
 .scene-control select option,
 #word-panel-content select option,
 #transition-type option {
-  background: #1E1E1E;
+  background: #1a1a24;
   color: #f4f4f7;
   padding: 4px 8px;
 }
 .scene-control select optgroup,
 #word-panel-content select optgroup {
   background: #0f0f17;
-  color: #00E5CF;
+  color: #8b5cf6;
   font-style: normal;
   font-weight: 700;
   text-transform: uppercase;
@@ -3078,7 +3066,7 @@ body.timeline-collapsed .timeline-collapse-btn {
 }
 .scene-control select option:checked,
 #word-panel-content select option:checked {
-  background: #00E5CF;
+  background: #8b5cf6;
   color: #ffffff;
 }
 .scene-card-actions {
@@ -3105,7 +3093,7 @@ body.timeline-collapsed .timeline-collapse-btn {
   transition: outline 0.12s ease;
 }
 .lyric-word:hover {
-  outline: 1px dashed rgba(0, 229, 207, 0.45);
+  outline: 1px dashed rgba(139, 92, 246, 0.45);
   outline-offset: 2px;
 }
 /* BUG REAL CORRIGIDO ("TESTE aparece duplicado/desalinhado ao
@@ -3279,7 +3267,7 @@ body.timeline-collapsed .timeline-collapse-btn {
 .word-font-option:hover { border-color: var(--border-strong); }
 .word-font-option.selected {
   border-color: var(--accent);
-  background: rgba(0, 229, 207, 0.12);
+  background: rgba(139, 92, 246, 0.12);
 }
 .word-font-sample {
   font-size: 18px;
@@ -3312,7 +3300,7 @@ body.timeline-collapsed .timeline-collapse-btn {
 }
 .word-weight-btn:hover { border-color: var(--border-strong); color: var(--text-primary); }
 .word-weight-btn.selected {
-  background: rgba(0, 229, 207, 0.18);
+  background: rgba(139, 92, 246, 0.18);
   border-color: var(--accent);
   color: var(--text-primary);
 }
@@ -3391,7 +3379,7 @@ body.is-dragging-word .lyric-word { cursor: grabbing !important; }
 
 /* Outline tracejado em palavras free (não durante drag) */
 .lyric-word.is-free-positioned:not(.is-being-dragged) {
-  outline: 1px dashed rgba(0, 229, 207, 0.35);
+  outline: 1px dashed rgba(139, 92, 246, 0.35);
   outline-offset: 3px;
   border-radius: 4px;
 }
@@ -3404,7 +3392,7 @@ body.is-dragging-word .lyric-word { cursor: grabbing !important; }
   position: absolute;
   pointer-events: none; /* só os handles capturam mouse */
   z-index: 50;
-  border: 2px solid var(--accent, #00E5CF);
+  border: 2px solid var(--accent, #8b5cf6);
   border-radius: 2px;
   display: none;
   box-sizing: border-box;
@@ -3423,7 +3411,7 @@ body.is-dragging-word .lyric-word { cursor: grabbing !important; }
   width: 12px;
   height: 12px;
   background: #fff;
-  border: 2px solid var(--accent, #00E5CF);
+  border: 2px solid var(--accent, #8b5cf6);
   border-radius: 50%;
   pointer-events: auto;
   box-sizing: border-box;
@@ -3432,7 +3420,7 @@ body.is-dragging-word .lyric-word { cursor: grabbing !important; }
 }
 .selection-handle:hover {
   transform: scale(1.25);
-  background: var(--accent, #00E5CF);
+  background: var(--accent, #8b5cf6);
 }
 
 /* Posicionamento dos 8 handles */
@@ -3460,7 +3448,7 @@ body.is-dragging-word .lyric-word { cursor: grabbing !important; }
   width: 16px;
   height: 16px;
   background: #fff;
-  border: 2px solid var(--accent, #00E5CF);
+  border: 2px solid var(--accent, #8b5cf6);
   border-radius: 50%;
   pointer-events: auto;
   cursor: grab;
@@ -3488,11 +3476,11 @@ body.is-dragging-word .lyric-word { cursor: grabbing !important; }
   transform: translateX(-50%);
   width: 2px;
   height: 16px;
-  background: var(--accent, #00E5CF);
+  background: var(--accent, #8b5cf6);
 }
 .selection-rotate:hover {
   transform: translateX(-50%) scale(1.15);
-  background: var(--accent, #00E5CF);
+  background: var(--accent, #8b5cf6);
 }
 
 /* Display do tamanho atual (em cima da seleção durante resize) */
@@ -3501,7 +3489,7 @@ body.is-dragging-word .lyric-word { cursor: grabbing !important; }
   top: -28px;
   right: 0;
   padding: 2px 8px;
-  background: var(--accent, #00E5CF);
+  background: var(--accent, #8b5cf6);
   color: white;
   font-size: 10px;
   font-weight: 600;
@@ -3642,8 +3630,8 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
 .marquee-selection {
   position: absolute;
   pointer-events: none;
-  border: 1.5px solid var(--accent, #00E5CF);
-  background: rgba(0, 229, 207, 0.12);
+  border: 1.5px solid var(--accent, #8b5cf6);
+  background: rgba(139, 92, 246, 0.12);
   border-radius: 2px;
   z-index: 90;
   display: none;
@@ -3665,7 +3653,7 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
   font-size: 13px;
   font-weight: 600;
   border-radius: 8px;
-  border: 1px solid var(--accent, #00E5CF);
+  border: 1px solid var(--accent, #8b5cf6);
   box-shadow: 0 6px 24px rgba(0,0,0,0.4);
   opacity: 0;
   pointer-events: none;
@@ -3739,7 +3727,7 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
   transition: border-color 0.15s;
 }
 .wm-dialog-input:focus {
-  border-color: var(--accent, #00E5CF);
+  border-color: var(--accent, #8b5cf6);
 }
 .wm-dialog-actions {
   display: flex;
@@ -3765,7 +3753,7 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
   color: var(--text-primary, #fff);
 }
 .wm-dialog-btn-confirm {
-  background: var(--accent, #00E5CF);
+  background: var(--accent, #8b5cf6);
   color: #fff;
 }
 .wm-dialog-btn-confirm:hover {
@@ -3793,13 +3781,13 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
 /* ============ SMART GUIDES (linhas de alinhamento) ============ */
 .smart-guide {
   position: absolute;
-  background: var(--accent, #00E5CF);
+  background: var(--accent, #8b5cf6);
   pointer-events: none;
   z-index: 95;
   opacity: 0;
   transition: opacity 0.08s ease-out;
-  box-shadow: 0 0 0 0.5px rgba(0, 229, 207, 0.4),
-              0 0 8px rgba(0, 229, 207, 0.6);
+  box-shadow: 0 0 0 0.5px rgba(139, 92, 246, 0.4),
+              0 0 8px rgba(139, 92, 246, 0.6);
 }
 .smart-guide.is-visible {
   opacity: 0.9;
@@ -3824,9 +3812,9 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
 }
 /* Quando AMBAS guias estão visíveis (alinhamento perfeito), ficam mais brilhantes */
 .smart-guide.is-perfect {
-  background: #A855F7;
-  box-shadow: 0 0 0 0.5px rgba(168, 85, 247, 0.6),
-              0 0 12px rgba(168, 85, 247, 0.9);
+  background: #d4a857;
+  box-shadow: 0 0 0 0.5px rgba(212, 168, 87, 0.6),
+              0 0 12px rgba(212, 168, 87, 0.9);
 }
 
 /* ============ CUSTOM FONTS / BACKGROUNDS UI ============ */
@@ -3872,7 +3860,7 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
   right: 2px;
   padding: 1px 5px;
   border-radius: 999px;
-  background: linear-gradient(135deg, #00E5CF, #3B82F6);
+  background: linear-gradient(135deg, #8b5cf6, #6366f1);
   color: #fff;
   font-size: 8.5px;
   font-weight: 700;
@@ -3946,7 +3934,7 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
 }
 .font-tab:hover { color: var(--text-secondary); }
 .font-tab.active {
-  background: var(--accent, #00E5CF);
+  background: var(--accent, #8b5cf6);
   color: white;
 }
 
@@ -3962,7 +3950,7 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
 }
 .font-search-input:focus {
   outline: none;
-  border-color: var(--accent, #00E5CF);
+  border-color: var(--accent, #8b5cf6);
 }
 
 .font-grid-scroll {
@@ -3982,7 +3970,7 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
   border-radius: 3px;
 }
 .font-grid-scroll::-webkit-scrollbar-thumb:hover {
-  background: var(--accent, #00E5CF);
+  background: var(--accent, #8b5cf6);
 }
 
 .font-empty-message {
@@ -4046,7 +4034,7 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
   background: conic-gradient(
     from 180deg,
     #ef4444, #f59e0b, #fbbf24, #84cc16, #10b981,
-    #06b6d4, #3b82f6, #00E5CF, #ec4899, #ef4444
+    #06b6d4, #3b82f6, #8b5cf6, #ec4899, #ef4444
   ) !important;
   cursor: pointer;
   display: flex;
@@ -4222,7 +4210,7 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
 }
 .anim-picker-card.selected {
   border-color: var(--accent);
-  background: rgba(0, 229, 207, 0.1);
+  background: rgba(139, 92, 246, 0.1);
 }
 .anim-picker-card.selected::after {
   content: '';
@@ -4233,7 +4221,7 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
   height: 6px;
   border-radius: 50%;
   background: var(--accent);
-  box-shadow: 0 0 6px rgba(0, 229, 207, 0.7);
+  box-shadow: 0 0 6px rgba(139, 92, 246, 0.7);
 }
 .anim-picker-card-preview {
   height: 42px;
@@ -4320,8 +4308,8 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
 .anim-context-header {
   margin: 0 0 12px;
   padding: 10px 12px;
-  background: linear-gradient(135deg, rgba(0, 229, 207, 0.15), rgba(99, 102, 241, 0.08));
-  border: 1px solid rgba(0, 229, 207, 0.35);
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(99, 102, 241, 0.08));
+  border: 1px solid rgba(139, 92, 246, 0.35);
   border-radius: 8px;
 }
 .anim-context-row {
@@ -4331,7 +4319,7 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
 }
 .anim-context-icon {
   flex-shrink: 0;
-  color: var(--accent, #00E5CF);
+  color: var(--accent, #8b5cf6);
   display: flex;
 }
 .anim-context-text {
@@ -4344,7 +4332,7 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
 }
 .anim-context-text strong {
   font-weight: 600;
-  color: var(--accent, #00E5CF);
+  color: var(--accent, #8b5cf6);
 }
 .anim-context-clear {
   flex-shrink: 0;
@@ -4398,7 +4386,7 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
 }
 .word-anim-tab:hover { color: var(--text-secondary); }
 .word-anim-tab.active {
-  background: var(--accent, #00E5CF);
+  background: var(--accent, #8b5cf6);
   color: white;
 }
 .anim-search-input {
@@ -4490,7 +4478,7 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
 }
 .word-anim-card.selected {
   border-color: var(--accent);
-  background: rgba(0, 229, 207, 0.1);
+  background: rgba(139, 92, 246, 0.1);
 }
 /* Animações isoladas: funcionam só na linha inteira, não por palavra.
    Esmaecidas e com cursor de "não permitido" pra deixar claro. */
@@ -4516,7 +4504,7 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
   height: 5px;
   border-radius: 50%;
   background: var(--accent);
-  box-shadow: 0 0 5px rgba(0, 229, 207, 0.7);
+  box-shadow: 0 0 5px rgba(139, 92, 246, 0.7);
 }
 .word-anim-card-preview {
   height: 32px;
@@ -4671,16 +4659,16 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 229, 207, 0.18);
-  border: 1px solid rgba(0, 229, 207, 0.45);
+  background: rgba(139, 92, 246, 0.18);
+  border: 1px solid rgba(139, 92, 246, 0.45);
   border-radius: 6px;
-  color: rgba(0, 229, 207, 0.5);
+  color: #c4b5fd;
   cursor: pointer;
   padding: 0;
   transition: 0.12s;
 }
 .stanza-move button:hover:not(:disabled) {
-  background: rgba(0, 229, 207, 0.32);
+  background: rgba(139, 92, 246, 0.32);
   color: #fff;
   border-color: var(--accent);
 }
@@ -4696,10 +4684,10 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
   opacity: 0.45;
 }
 .stanza-item.wm-drop-before {
-  box-shadow: 0 -3px 0 -1px var(--accent, #00E5CF);
+  box-shadow: 0 -3px 0 -1px var(--accent, #8b5cf6);
 }
 .stanza-item.wm-drop-after {
-  box-shadow: 0 3px 0 -1px var(--accent, #00E5CF);
+  box-shadow: 0 3px 0 -1px var(--accent, #8b5cf6);
 }
 .stanza-item-dup {
   position: absolute;
@@ -4722,9 +4710,9 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
 }
 .stanza-item:hover .stanza-item-dup { opacity: 1; }
 .stanza-item-dup:hover {
-  background: rgba(0, 229, 207, 0.15);
+  background: rgba(139, 92, 246, 0.15);
   color: var(--accent);
-  border-color: rgba(0, 229, 207, 0.4);
+  border-color: rgba(139, 92, 246, 0.4);
 }
 @media (pointer: coarse) {
   .stanza-item-dup, .stanza-item-delete, .stanza-item-clearmarks { opacity: 1; }
@@ -4763,13 +4751,13 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
   font-size: 11px;
   padding: 3px 10px;
   border-radius: 6px;
-  background: rgba(0, 229, 207, 0.12);
-  border: 1px solid rgba(0, 229, 207, 0.4);
-  color: rgba(0, 229, 207, 0.5);
+  background: rgba(139, 92, 246, 0.12);
+  border: 1px solid rgba(139, 92, 246, 0.4);
+  color: #c4b5fd;
   cursor: pointer;
   transition: 0.12s;
 }
-.stanza-select-toggle:hover { background: rgba(0, 229, 207, 0.22); color: #fff; }
+.stanza-select-toggle:hover { background: rgba(139, 92, 246, 0.22); color: #fff; }
 .stanza-select-toggle.is-active { background: var(--accent); color: #fff; border-color: var(--accent); }
 .stanza-select-bar {
   display: flex;
@@ -4779,7 +4767,7 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
   padding: 8px 10px;
   margin: 6px 0;
   background: rgba(30, 27, 46, 0.96);
-  border: 1px solid rgba(0, 229, 207, 0.5);
+  border: 1px solid rgba(139, 92, 246, 0.5);
   border-radius: 8px;
   flex-wrap: wrap;
   position: sticky;
@@ -4788,7 +4776,7 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
   backdrop-filter: blur(4px);
   box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
-.stanza-select-count { font-size: 12px; color: rgba(0, 229, 207, 0.5); font-weight: 600; }
+.stanza-select-count { font-size: 12px; color: #c4b5fd; font-weight: 600; }
 .stanza-select-actions { display: flex; gap: 6px; }
 #btn-del-selected {
   background: rgba(239, 68, 68, 0.9);
@@ -4800,7 +4788,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
 .stanza-item.is-selected {
   outline: 2px solid var(--accent);
   outline-offset: -2px;
-  background: rgba(0, 229, 207, 0.14);
+  background: rgba(139, 92, 246, 0.14);
 }
 .stanza-item.is-selected::after {
   content: '✓';
@@ -4912,14 +4900,14 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
 }
 .bg-scope-tab:hover { color: var(--text-secondary); }
 .bg-scope-tab.active {
-  background: var(--accent, #00E5CF);
+  background: var(--accent, #8b5cf6);
   color: white;
 }
 .bg-scope-current {
   margin-top: 10px;
   padding: 10px 12px;
-  background: linear-gradient(135deg, rgba(0, 229, 207, 0.12), rgba(99, 102, 241, 0.06));
-  border: 1px solid rgba(0, 229, 207, 0.3);
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.12), rgba(99, 102, 241, 0.06));
+  border: 1px solid rgba(139, 92, 246, 0.3);
   border-radius: 8px;
   display: flex;
   align-items: center;
@@ -4936,7 +4924,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
 }
 .bg-scope-current-text strong {
   font-weight: 600;
-  color: var(--accent, #00E5CF);
+  color: var(--accent, #8b5cf6);
   font-size: 11px;
 }
 .bg-scope-current-text span {
@@ -4960,7 +4948,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
   border-radius: 2px;
 }
 .timeline-clip.has-custom-bg {
-  border-color: rgba(0, 229, 207, 0.5);
+  border-color: rgba(139, 92, 246, 0.5);
 }
 
 /* ============ FAVORITOS (estrela em cards) ============ */
@@ -5049,14 +5037,14 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
 .word-panel-multi-header {
   margin-bottom: 14px;
   padding: 10px 12px;
-  background: linear-gradient(135deg, rgba(0, 229, 207, 0.18), rgba(99, 102, 241, 0.08));
-  border: 1px solid rgba(0, 229, 207, 0.4);
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.18), rgba(99, 102, 241, 0.08));
+  border: 1px solid rgba(139, 92, 246, 0.4);
   border-radius: 8px;
 }
 .word-panel-multi-count {
   font-size: 12px;
   font-weight: 700;
-  color: var(--accent, #00E5CF);
+  color: var(--accent, #8b5cf6);
   margin-bottom: 4px;
 }
 .word-panel-multi-preview {
@@ -5142,11 +5130,11 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
   top: 0;
   bottom: 0;
   width: 2px;
-  background: #00E5CF;
+  background: #8b5cf6;
   pointer-events: none;
   left: 0;
   transition: left 0.05s linear;
-  box-shadow: 0 0 8px rgba(0, 229, 207, 0.6);
+  box-shadow: 0 0 8px rgba(139, 92, 246, 0.6);
   z-index: 5;
 }
 .timeline-playhead::before {
@@ -5156,12 +5144,12 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
   left: -4px;
   width: 10px;
   height: 10px;
-  background: #00E5CF;
+  background: #8b5cf6;
   border-radius: 50%;
-  box-shadow: 0 0 12px rgba(0, 229, 207, 0.8);
+  box-shadow: 0 0 12px rgba(139, 92, 246, 0.8);
 }
 .timeline-audio-track:hover .timeline-playhead {
-  background: #00F5DD;
+  background: #a78bfa;
 }
 .timeline-audio-track.is-loading {
   cursor: progress;
@@ -5231,14 +5219,14 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
 .tl-mark-nav {
   width: 24px; height: 24px;
   display: flex; align-items: center; justify-content: center;
-  background: rgba(0, 229, 207, 0.18);
-  border: 1px solid rgba(0, 229, 207, 0.45);
+  background: rgba(139, 92, 246, 0.18);
+  border: 1px solid rgba(139, 92, 246, 0.45);
   border-radius: 6px;
-  color: rgba(0, 229, 207, 0.5);
+  color: #c4b5fd;
   font-size: 16px; line-height: 1;
   cursor: pointer; padding: 0;
 }
-.tl-mark-nav:hover:not(:disabled) { background: rgba(0, 229, 207, 0.32); color: #fff; }
+.tl-mark-nav:hover:not(:disabled) { background: rgba(139, 92, 246, 0.32); color: #fff; }
 .tl-mark-nav:disabled { opacity: 0.3; cursor: default; }
 .tl-mark-title {
   font-size: 12px; font-weight: 700; color: var(--text-primary);
@@ -5299,7 +5287,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
   min-width: 50px;
   max-width: 100px;
   padding: 0 6px;
-  background: rgba(0, 229, 207, 0.9);
+  background: rgba(139, 92, 246, 0.9);
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 4px;
   cursor: pointer;
@@ -5358,7 +5346,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
   height: 60vh;
   background: linear-gradient(180deg, rgba(22, 20, 32, 0.99), rgba(14, 12, 20, 0.99));
   backdrop-filter: blur(20px);
-  border-top: 1px solid rgba(0, 229, 207, 0.28);
+  border-top: 1px solid rgba(139, 92, 246, 0.28);
   box-shadow: 0 -24px 70px rgba(0, 0, 0, 0.7);
   z-index: 1000;
   transform: translateY(100%);
@@ -5405,9 +5393,9 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
 .marking-panel-progress {
   font-size: 11px;
   font-weight: 700;
-  color: var(--accent, #00F5DD);
-  background: rgba(0, 229, 207, 0.14);
-  border: 1px solid rgba(0, 229, 207, 0.32);
+  color: var(--accent, #a78bfa);
+  background: rgba(139, 92, 246, 0.14);
+  border: 1px solid rgba(139, 92, 246, 0.32);
   padding: 3px 10px;
   border-radius: 999px;
   font-variant-numeric: tabular-nums;
@@ -5466,7 +5454,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
   padding: 11px 22px;
   font-size: 11.5px;
   color: var(--text-tertiary);
-  background: rgba(0, 229, 207, 0.04);
+  background: rgba(139, 92, 246, 0.04);
   border-bottom: 1px solid rgba(255, 255, 255, 0.04);
   flex-shrink: 0;
   line-height: 1.5;
@@ -5488,7 +5476,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
   position: relative;
   height: 56px;
   margin: 6px 16px 10px;
-  background: rgba(0, 229, 207, 0.06);
+  background: rgba(139, 92, 246, 0.06);
   border: 1px solid var(--border-default, rgba(255,255,255,0.08));
   border-radius: 8px;
   cursor: pointer;
@@ -5534,21 +5522,21 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
 .marking-tap-bar {
   display: flex; align-items: center; gap: 12px;
   padding: 7px 14px; border-bottom: 1px solid var(--border-default);
-  background: rgba(0,229,207,0.06);
+  background: rgba(139,92,246,0.06);
 }
 .tap-big-btn {
   flex: 0 0 auto; min-width: 112px; height: 40px;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: 0; border: none; border-radius: 12px; cursor: pointer;
-  background: linear-gradient(135deg,#A855F7,#3B82F6); color: #fff;
-  box-shadow: 0 6px 20px -6px rgba(0,229,207,0.6);
+  background: linear-gradient(135deg,#8b5cf6,#6d28d9); color: #fff;
+  box-shadow: 0 6px 20px -6px rgba(139,92,246,0.6);
   font-family: inherit; transition: transform .08s ease, box-shadow .2s ease;
   user-select: none; -webkit-tap-highlight-color: transparent;
 }
 .tap-big-btn:active { transform: scale(0.96); }
 .tap-big-btn.is-running { background: linear-gradient(135deg,#22c55e,#15803d); box-shadow: 0 6px 20px -6px rgba(34,197,94,0.6); }
 .tap-big-btn.is-counting { background: linear-gradient(135deg,#f59e0b,#b45309); }
-.tap-big-btn.is-paused { background: linear-gradient(135deg,#A855F7,#3B82F6); }
+.tap-big-btn.is-paused { background: linear-gradient(135deg,#8b5cf6,#6d28d9); }
 .tap-actions { display: flex; gap: 8px; align-items: center; }
 /* Desktop: tap-bar numa ÚNICA linha — preenche o espaço horizontal vazio e
    libera altura pra lista de palavras (que estava espremida). Usa .marking-tap-bar
@@ -5585,8 +5573,8 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
   transition: 0.15s;
 }
 .mark-stanza.is-active {
-  background: rgba(0, 229, 207, 0.06);
-  border-color: rgba(0, 229, 207, 0.3);
+  background: rgba(139, 92, 246, 0.06);
+  border-color: rgba(139, 92, 246, 0.3);
 }
 
 .mark-stanza-header {
@@ -5699,13 +5687,13 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
   font-family: inherit;
 }
 .mark-word:hover {
-  background: rgba(0, 229, 207, 0.2);
-  border-color: rgba(0, 229, 207, 0.5);
+  background: rgba(139, 92, 246, 0.2);
+  border-color: rgba(139, 92, 246, 0.5);
   color: var(--text-primary);
 }
 .mark-word.is-marked {
-  background: rgba(0, 229, 207, 0.25);
-  border-color: rgba(0, 229, 207, 0.6);
+  background: rgba(139, 92, 246, 0.25);
+  border-color: rgba(139, 92, 246, 0.6);
   color: var(--text-primary);
 }
 .mark-word.is-next {
@@ -5766,12 +5754,12 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
   justify-content: center;
   width: 28px;
   height: 28px;
-  background: var(--accent, #00E5CF);
+  background: var(--accent, #8b5cf6);
   color: #fff;
   border: none;
   border-radius: 50%;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0, 229, 207, 0.4);
+  box-shadow: 0 2px 8px rgba(139, 92, 246, 0.4);
   transition: transform 0.1s;
   flex-shrink: 0;
 }
@@ -5847,15 +5835,15 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
   color: var(--text-secondary);
 }
 .text-case-btn:hover {
-  background: rgba(0, 229, 207, 0.08);
-  border-color: rgba(0, 229, 207, 0.4);
+  background: rgba(139, 92, 246, 0.08);
+  border-color: rgba(139, 92, 246, 0.4);
   color: var(--text-primary);
 }
 .text-case-btn.active {
-  background: rgba(0, 229, 207, 0.15);
-  border-color: var(--accent, #00E5CF);
+  background: rgba(139, 92, 246, 0.15);
+  border-color: var(--accent, #8b5cf6);
   color: var(--text-primary);
-  box-shadow: 0 0 0 1px var(--accent, #00E5CF);
+  box-shadow: 0 0 0 1px var(--accent, #8b5cf6);
 }
 .text-case-sample {
   font-size: 18px;
@@ -5888,8 +5876,8 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
 }
 .keyword-input:focus {
   outline: none;
-  border-color: var(--accent, #00E5CF);
-  background: rgba(0, 229, 207, 0.05);
+  border-color: var(--accent, #8b5cf6);
+  background: rgba(139, 92, 246, 0.05);
 }
 .keyword-input::placeholder {
   color: var(--text-tertiary);
@@ -5918,8 +5906,8 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
   align-items: center;
   gap: 4px;
   padding: 3px 4px 3px 9px;
-  background: rgba(0, 229, 207, 0.18);
-  border: 1px solid rgba(0, 229, 207, 0.35);
+  background: rgba(139, 92, 246, 0.18);
+  border: 1px solid rgba(139, 92, 246, 0.35);
   border-radius: 12px;
   font-size: 11px;
   font-weight: 600;
@@ -6076,7 +6064,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
   top: 50%; left: 50%;
   transform: translate(-50%, -50%);
   width: 900px; height: 900px;
-  background: radial-gradient(circle, rgba(0, 229, 207, 0.15) 0%, transparent 60%);
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.15) 0%, transparent 60%);
   pointer-events: none;
   filter: blur(40px);
 }
@@ -6092,8 +6080,8 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
   gap: var(--space-2);
   padding: 6px 14px;
   margin-bottom: var(--space-6);
-  background: rgba(0, 229, 207, 0.08);
-  border: 1px solid rgba(0, 229, 207, 0.25);
+  background: rgba(139, 92, 246, 0.08);
+  border: 1px solid rgba(139, 92, 246, 0.25);
   border-radius: var(--radius-full);
   font-size: var(--text-xs);
   color: var(--text-secondary);
@@ -6151,7 +6139,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
   box-shadow:
     0 0 0 1px rgba(255,255,255,0.02) inset,
     0 32px 80px -16px rgba(0,0,0,0.6),
-    0 0 120px -20px rgba(0, 229, 207, 0.2);
+    0 0 120px -20px rgba(139, 92, 246, 0.2);
   overflow: hidden;
   position: relative;
   display: flex;
@@ -6168,7 +6156,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
 .hero-demo .canvas-bg {
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, #00E5CF, #3b82f6);
+  background: linear-gradient(135deg, #8b5cf6, #3b82f6);
   opacity: 0.5;
 }
 .hero-demo .demo-content > span { display: inline-block; }
@@ -6299,7 +6287,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
 .auth-side {
   position: relative;
   background:
-    radial-gradient(circle at 30% 20%, rgba(0, 229, 207, 0.4), transparent 60%),
+    radial-gradient(circle at 30% 20%, rgba(139, 92, 246, 0.4), transparent 60%),
     radial-gradient(circle at 70% 80%, rgba(99, 102, 241, 0.3), transparent 60%),
     linear-gradient(135deg, #0a0a0f, #1e1b4b);
   display: flex;
@@ -6397,7 +6385,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
 .page-login .wm-login-aurora {
   position: absolute; inset: -25%;
   background:
-    radial-gradient(40% 50% at 25% 30%, rgba(0,229,207,0.45), transparent 70%),
+    radial-gradient(40% 50% at 25% 30%, rgba(139,92,246,0.45), transparent 70%),
     radial-gradient(45% 55% at 78% 25%, rgba(99,102,241,0.40), transparent 70%),
     radial-gradient(52% 62% at 60% 82%, rgba(224,182,92,0.20), transparent 70%),
     radial-gradient(45% 55% at 12% 88%, rgba(56,189,248,0.16), transparent 70%);
@@ -6446,8 +6434,8 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
   text-shadow: 0 4px 24px rgba(0,0,0,0.5);
 }
 .page-login .wm-login-word { display: inline-block; margin: 0 0.16em; will-change: transform, opacity; backface-visibility: hidden; }
-.page-login .wm-login-word.wm-login-emph { color: var(--lp-accent-3, rgba(0, 229, 207, 0.5)); text-shadow: 0 0 24px rgba(167,139,250,0.6); }
-.page-login .wm-login-word.is-gold { color: var(--lp-gold, #A855F7) !important; text-shadow: 0 0 24px rgba(224,182,92,0.65); }
+.page-login .wm-login-word.wm-login-emph { color: var(--lp-accent-3, #c4b5fd); text-shadow: 0 0 24px rgba(167,139,250,0.6); }
+.page-login .wm-login-word.is-gold { color: var(--lp-gold, #e0b65c) !important; text-shadow: 0 0 24px rgba(224,182,92,0.65); }
 
 /* Conteúdo por cima da cena */
 .page-login .wm-login-content {
@@ -6588,18 +6576,18 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
    Escopo: .page-landing
    ============================================================ */
 .page-landing {
-  --lp-bg: #121212;
-  --lp-surface: #1E1E1E;
-  --lp-surface-2: #262626;
-  --lp-line: #2F2F2F;
-  --lp-line-strong: #404040;
-  --lp-text: #FFFFFF;
-  --lp-text-dim: #A1A1AA;
-  --lp-text-faint: #52525B;
-  --lp-accent: #00E5CF;
-  --lp-accent-2: #00F5DD;
-  --lp-accent-3: rgba(0, 229, 207, 0.5);
-  --lp-gold: #A855F7;
+  --lp-bg: #07070d;
+  --lp-surface: #0e0e17;
+  --lp-surface-2: #15151f;
+  --lp-line: rgba(255,255,255,0.08);
+  --lp-line-strong: rgba(255,255,255,0.15);
+  --lp-text: #f6f6f9;
+  --lp-text-dim: #a2a2b4;
+  --lp-text-faint: #6c6c80;
+  --lp-accent: #8b5cf6;
+  --lp-accent-2: #a78bfa;
+  --lp-accent-3: #c4b5fd;
+  --lp-gold: #e0b65c;
   background: var(--lp-bg);
   color: var(--lp-text);
   font-family: 'Inter', system-ui, sans-serif;
@@ -6610,7 +6598,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
 .page-landing::before {
   content: ''; position: absolute; top: 0; left: 0; right: 0; height: 700px; z-index: 0; pointer-events: none;
   background:
-    radial-gradient(700px 400px at 50% -50px, rgba(0,229,207,0.18), transparent 70%),
+    radial-gradient(700px 400px at 50% -50px, rgba(139,92,246,0.18), transparent 70%),
     radial-gradient(500px 300px at 85% 100px, rgba(224,182,92,0.06), transparent 70%);
 }
 .page-landing > * { position: relative; z-index: 1; }
@@ -6635,8 +6623,8 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
   text-decoration: none; border: 1px solid transparent; white-space: nowrap;
   max-width: 100%; box-sizing: border-box; text-align: center;
 }
-.page-landing .lp-btn-primary { background: linear-gradient(120deg, var(--lp-accent), var(--lp-accent-2)); color: #fff; box-shadow: 0 4px 18px -4px rgba(0,229,207,0.5); }
-.page-landing .lp-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 28px -4px rgba(0,229,207,0.7); }
+.page-landing .lp-btn-primary { background: linear-gradient(120deg, var(--lp-accent), var(--lp-accent-2)); color: #fff; box-shadow: 0 4px 18px -4px rgba(139,92,246,0.5); }
+.page-landing .lp-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 28px -4px rgba(139,92,246,0.7); }
 .page-landing .lp-btn-ghost { background: rgba(255,255,255,0.03); color: var(--lp-text); border-color: var(--lp-line-strong); }
 .page-landing .lp-btn-ghost:hover { background: rgba(255,255,255,0.08); border-color: var(--lp-accent-2); }
 .page-landing .lp-btn-lg { padding: 14px 26px; font-size: 15px; border-radius: 11px; }
@@ -6647,7 +6635,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
 .page-landing .hero-inner { max-width: 920px; margin: 0 auto; }
 .page-landing .hero-badge {
   display: inline-flex; align-items: center; gap: 8px; padding: 7px 16px 7px 13px; margin-bottom: 26px;
-  background: rgba(0,229,207,0.1); border: 1px solid rgba(0,229,207,0.3); border-radius: 100px;
+  background: rgba(139,92,246,0.1); border: 1px solid rgba(139,92,246,0.3); border-radius: 100px;
   font-size: 13px; font-weight: 500; color: var(--lp-accent-3); letter-spacing: -0.01em;
 }
 .page-landing .hero-badge::before { content: ''; width: 7px; height: 7px; background: #4ade80; border-radius: 50%; box-shadow: 0 0 10px #4ade80; }
@@ -6668,7 +6656,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
 .page-landing .lp-stage {
   position: relative; aspect-ratio: 16/9; border-radius: 18px; overflow: hidden;
   border: 1px solid var(--lp-line-strong);
-  box-shadow: 0 50px 130px -40px rgba(0,229,207,0.45), 0 0 0 1px rgba(255,255,255,0.03) inset;
+  box-shadow: 0 50px 130px -40px rgba(139,92,246,0.45), 0 0 0 1px rgba(255,255,255,0.03) inset;
   background: #000;
 }
 .page-landing .lp-stage-bg {
@@ -6708,10 +6696,10 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
 .page-landing .lp-style-btn:hover { color: var(--lp-text); border-color: var(--lp-accent-2); }
 .page-landing .lp-style-btn.active {
   background: linear-gradient(120deg, var(--lp-accent), var(--lp-accent-2)); color: #fff; border-color: transparent;
-  box-shadow: 0 4px 16px -4px rgba(0,229,207,0.6);
+  box-shadow: 0 4px 16px -4px rgba(139,92,246,0.6);
 }
 .page-landing .lp-stage-hint { text-align: center; margin-top: 14px; font-size: 13px; color: var(--lp-text-faint); }
-.page-landing .lp-video { position: relative; width: 100%; aspect-ratio: 16 / 9; border-radius: 16px; overflow: hidden; border: 1px solid var(--lp-line-strong); box-shadow: 0 28px 64px -28px rgba(0,229,207,0.45); background: #000; }
+.page-landing .lp-video { position: relative; width: 100%; aspect-ratio: 16 / 9; border-radius: 16px; overflow: hidden; border: 1px solid var(--lp-line-strong); box-shadow: 0 28px 64px -28px rgba(139,92,246,0.45); background: #000; }
 .page-landing .lp-video iframe, .page-landing .lp-video #lp-yt-player { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
 .page-landing .lp-video-shield { position: absolute; inset: 0; z-index: 1; cursor: pointer; background: transparent; }
 .page-landing .lp-video-unmute { position: absolute; bottom: 16px; right: 16px; z-index: 2; display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.25); background: rgba(15,15,20,0.72); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); color: #fff; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.18s, transform 0.18s, opacity 0.25s; box-shadow: 0 4px 16px -4px rgba(0,0,0,0.5); }
@@ -6762,7 +6750,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
 .page-landing .lp-depo-name { font-size: 14px; font-weight: 600; color: var(--lp-text); }
 .page-landing .lp-depo-role { font-size: 13px; color: var(--lp-text-dim); margin-top: 3px; }
 .page-landing .feature-card:hover { transform: translateY(-4px); border-color: var(--lp-line-strong); }
-.page-landing .feature-icon { width: 44px; height: 44px; border-radius: 12px; background: linear-gradient(135deg, rgba(0,229,207,0.25), rgba(0,229,207,0.05)); border: 1px solid rgba(0,229,207,0.3); display: flex; align-items: center; justify-content: center; color: var(--lp-accent-3); margin-bottom: 18px; }
+.page-landing .feature-icon { width: 44px; height: 44px; border-radius: 12px; background: linear-gradient(135deg, rgba(139,92,246,0.25), rgba(139,92,246,0.05)); border: 1px solid rgba(139,92,246,0.3); display: flex; align-items: center; justify-content: center; color: var(--lp-accent-3); margin-bottom: 18px; }
 .page-landing .feature-title { font-size: 17px; font-weight: 600; letter-spacing: -0.02em; margin-bottom: 8px; }
 .page-landing .feature-desc { font-size: 14px; color: var(--lp-text-dim); line-height: 1.6; }
 
@@ -6770,8 +6758,8 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
 .page-landing .lp-pricing-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 18px; margin-top: 44px; }
 .page-landing .lp-price-card { background: var(--lp-surface); border: 1px solid var(--lp-line); border-radius: 18px; padding: 34px 28px; position: relative; display: flex; flex-direction: column; transition: transform 0.25s; }
 .page-landing .lp-price-card:hover { transform: translateY(-4px); }
-.page-landing .lp-price-card.featured { border-color: var(--lp-accent); background: linear-gradient(180deg, rgba(0,229,207,0.12), var(--lp-surface) 55%); box-shadow: 0 0 0 1px var(--lp-accent), 0 28px 64px -28px rgba(0,229,207,0.55); }
-.page-landing .lp-price-badge { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: linear-gradient(120deg, var(--lp-accent), var(--lp-accent-2)); color: #fff; font-size: 11px; font-weight: 700; letter-spacing: 0.04em; padding: 5px 16px; border-radius: 100px; box-shadow: 0 6px 18px -4px rgba(0,229,207,0.6); }
+.page-landing .lp-price-card.featured { border-color: var(--lp-accent); background: linear-gradient(180deg, rgba(139,92,246,0.12), var(--lp-surface) 55%); box-shadow: 0 0 0 1px var(--lp-accent), 0 28px 64px -28px rgba(139,92,246,0.55); }
+.page-landing .lp-price-badge { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: linear-gradient(120deg, var(--lp-accent), var(--lp-accent-2)); color: #fff; font-size: 11px; font-weight: 700; letter-spacing: 0.04em; padding: 5px 16px; border-radius: 100px; box-shadow: 0 6px 18px -4px rgba(139,92,246,0.6); }
 .page-landing .lp-price-name { font-family: 'Sora',sans-serif; font-size: 19px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 6px; }
 .page-landing .lp-price-value { font-family: 'Sora',sans-serif; font-size: 42px; font-weight: 800; letter-spacing: -0.04em; line-height: 1; margin-bottom: 4px; }
 .page-landing .lp-price-value small { font-size: 15px; font-weight: 500; color: var(--lp-text-dim); }
@@ -6785,8 +6773,8 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
 .page-landing .lp-price-card.featured .lp-price-btn { background: linear-gradient(120deg, var(--lp-accent), var(--lp-accent-2)); border-color: transparent; color: #fff; }
 .page-landing .lp-price-card.featured .lp-price-btn:hover { transform: translateY(-2px); }
 /* Destaque sutil (diferente do roxo sólido do Pro Plus) para Começar grátis e Assinar Pro */
-.page-landing .lp-price-btn-destaque { border-color: var(--lp-accent); color: #fff; background: rgba(0,229,207,0.14); box-shadow: 0 0 0 1px rgba(0,229,207,0.35), 0 6px 20px -8px rgba(0,229,207,0.5); }
-.page-landing .lp-price-btn-destaque:hover { background: rgba(0,229,207,0.24); border-color: var(--lp-accent-2); transform: translateY(-2px); box-shadow: 0 0 0 1px var(--lp-accent-2), 0 10px 26px -8px rgba(0,229,207,0.6); }
+.page-landing .lp-price-btn-destaque { border-color: var(--lp-accent); color: #fff; background: rgba(139,92,246,0.14); box-shadow: 0 0 0 1px rgba(139,92,246,0.35), 0 6px 20px -8px rgba(139,92,246,0.5); }
+.page-landing .lp-price-btn-destaque:hover { background: rgba(139,92,246,0.24); border-color: var(--lp-accent-2); transform: translateY(-2px); box-shadow: 0 0 0 1px var(--lp-accent-2), 0 10px 26px -8px rgba(139,92,246,0.6); }
 .page-landing .lp-pricing-foot { text-align: center; margin-top: 28px; font-size: 13px; color: var(--lp-text-faint); }
 
 /* ---------- POSITIONING ---------- */
@@ -6800,7 +6788,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
 
 /* ---------- FINAL CTA ---------- */
 .page-landing .lp-cta { max-width: 1120px; margin: 0 auto; padding: 0 32px 96px; }
-.page-landing .lp-cta-inner { position: relative; overflow: hidden; background: radial-gradient(ellipse at 50% 0%, rgba(0,229,207,0.2), var(--lp-surface) 70%); border: 1px solid var(--lp-line-strong); border-radius: 22px; padding: 76px 32px; text-align: center; }
+.page-landing .lp-cta-inner { position: relative; overflow: hidden; background: radial-gradient(ellipse at 50% 0%, rgba(139,92,246,0.2), var(--lp-surface) 70%); border: 1px solid var(--lp-line-strong); border-radius: 22px; padding: 76px 32px; text-align: center; }
 .page-landing .lp-cta h2 { font-family: 'Sora',sans-serif; font-size: clamp(30px,3.6vw,44px); font-weight: 700; letter-spacing: -0.03em; margin-bottom: 14px; }
 .page-landing .lp-cta p { font-size: 17px; color: var(--lp-text-dim); margin-bottom: 32px; letter-spacing: -0.01em; }
 
@@ -7103,11 +7091,11 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
         <span data-i18n="tb.myProjects">Meus projetos</span>
       </button>
-      <button class="btn btn-sm" id="btn-videoaulas" data-tooltip="Videoaulas" style="background:#A855F7; color:#fff; border:none; box-shadow:none;">
+      <button class="btn btn-sm" id="btn-videoaulas" data-tooltip="Videoaulas" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9); color:#fff; border:1px solid transparent; box-shadow:0 2px 10px rgba(139,92,246,0.35);">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><polygon points="10 9 15 12 10 15 10 9" fill="currentColor" stroke="none"/></svg>
         <span data-i18n="tb.videos">Videoaulas</span>
       </button>
-      <button class="btn btn-sm" id="btn-comparafontes" data-tooltip="Comparar fontes (Pro Plus)" style="background:#00E5CF; color:#121212; border:none; box-shadow:none; font-weight:600;">
+      <button class="btn btn-sm" id="btn-comparafontes" data-tooltip="Comparar fontes (Pro Plus)" style="background:linear-gradient(135deg,#34e0ff,#8a7bff); color:#04121a; border:1px solid transparent; box-shadow:0 2px 10px rgba(52,224,255,0.32); font-weight:600;">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg>
         <span data-i18n="tb.compareFonts">Comparar fontes</span>
         <span style="margin-left:6px; background:rgba(4,18,26,0.28); color:#04121a; font-size:9px; font-weight:800; letter-spacing:.04em; padding:2px 6px; border-radius:6px; line-height:1;">Pro Plus</span>
@@ -7124,7 +7112,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
       </button>
       </div><!-- /topbar-scroll: daqui pra frente fica FIXO (créditos, Salvar, Exportar) -->
       <div style="width:1px; height:20px; background:var(--border-default); margin: 0 4px;"></div>
-      <div id="wm-credits-badge" data-i18n-attr="title:ed.creditsTip" title="Créditos disponíveis neste mês" style="display:inline-flex; align-items:center; gap:6px; padding:5px 12px; border-radius:20px; background:rgba(0,229,207,0.12); border:1px solid rgba(0,229,207,0.3); color:rgba(0, 229, 207, 0.5); font-size:13px; font-weight:600; cursor:default;">
+      <div id="wm-credits-badge" data-i18n-attr="title:ed.creditsTip" title="Créditos disponíveis neste mês" style="display:inline-flex; align-items:center; gap:6px; padding:5px 12px; border-radius:20px; background:rgba(139,92,246,0.12); border:1px solid rgba(139,92,246,0.3); color:#c4b5fd; font-size:13px; font-weight:600; cursor:default;">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
         <span id="wm-credits-text">—</span>
       </div>
@@ -7136,9 +7124,9 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
         <span data-i18n="tb.saveTemplate">Salvar template</span>
       </button>
-      <button class="btn btn-secondary btn-sm" id="btn-create-template-from-slide" style="display:none;border-color:#00E5CF;" data-tooltip="[Admin] Criar template oficial a partir deste slide">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(0, 229, 207, 0.5)" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-        <span style="color:rgba(0, 229, 207, 0.5);">Criar template do slide</span>
+      <button class="btn btn-secondary btn-sm" id="btn-create-template-from-slide" style="display:none;border-color:#8b5cf6;" data-tooltip="[Admin] Criar template oficial a partir deste slide">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#c4b5fd" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        <span style="color:#c4b5fd;">Criar template do slide</span>
       </button>
       <button class="btn btn-primary btn-sm" id="btn-export" data-tooltip="Exportar vídeo (MP4)">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -7187,7 +7175,8 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
   <aside class="editor-left">
     <div class="panel-tabs">
       <button class="panel-tab active" data-panel="lyrics" data-i18n="panel.lyrics">Letra</button>
-      <button class="panel-tab" data-panel="bg" data-i18n="rp.bgMotion">Background</button>
+      <button class="panel-tab" data-panel="animations" data-i18n="panel.animations">Animações</button>
+      <button class="panel-tab" data-panel="transitions" data-i18n="panel.transitions">Transições</button>
     </div>
 
     <div class="panel-body">
@@ -7240,54 +7229,71 @@ Digno de toda honra"></textarea>
       </div>
 
       
-      <div class="panel-content" data-panel-content="bg" style="display:none;">
-        <div class="panel-section">
-          <div class="panel-section-title" data-i18n="bg.title">Background</div>
-          <div class="color-swatches" id="bg-swatches" style="grid-template-columns: repeat(5, 1fr);">
-            <div class="color-swatch" data-bg="brand" style="background: linear-gradient(135deg, #00E5CF, #3b82f6)"></div>
-            <div class="color-swatch" data-bg="divine" style="background: linear-gradient(135deg, #A855F7, #00E5CF)"></div>
-            <div class="color-swatch" data-bg="midnight" style="background: linear-gradient(135deg, #0f0f17, #1e1b4b)"></div>
-            <div class="color-swatch" data-bg="warm" style="background: linear-gradient(135deg, #7c2d12, #A855F7)"></div>
-            <div class="color-swatch selected" data-bg="black" style="background: #050507; border:1px solid var(--border-default);"></div>
-          </div>
-          <div id="stanza-bg-indicator" style="display:none; margin-top: 10px; padding: 9px 12px; background: linear-gradient(135deg, rgba(0, 229, 207, 0.15), rgba(99, 102, 241, 0.08)); border: 1px solid rgba(0, 229, 207, 0.35); border-radius: 7px; align-items: center; gap: 8px;">
-            <span style="flex: 1; font-size: 11px; color: var(--text-primary);" id="stanza-bg-text">
-              Estrofe <strong id="stanza-bg-num">1</strong> tem fundo próprio
-            </span>
-            <button class="btn-tiny" id="btn-clear-stanza-bg" data-i18n="ed.removeBg" data-i18n-attr="title:ed.useGlobalBg" title="Voltar a usar o fundo global">↺ Remover</button>
-          </div>
-          <div id="bg-apply-buttons" style="margin-top: 12px; display: none; flex-direction: column; gap: 6px;">
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px;">
-              <p style="font-size: 10.5px; color: var(--text-secondary); margin: 0; font-weight: 500;">
-                <span data-i18n="bg.whereApply">Onde aplicar?</span>
-              </p>
-              <span style="font-size: 10px; color: var(--text-tertiary);">
-                Estrofe <span id="apply-stanza-num">1</span> de <span id="apply-total-stanzas">1</span>
-              </span>
+      <div class="panel-content" data-panel-content="animations" style="display:none;">
+        
+        <div class="anim-context-header" id="anim-context-header" style="display:none;">
+          <div class="anim-context-row">
+            <div class="anim-context-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="9"/></svg>
             </div>
-            <button class="btn btn-primary btn-sm bg-apply-btn" id="btn-apply-bg-all">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-              <span data-i18n="ed.applyAllStanzas">Todas as estrofes</span>
-            </button>
-            <button class="btn btn-ghost btn-sm bg-apply-btn" id="btn-apply-bg-stanza">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-              <span data-i18n="ed.applyThisStanza">Apenas esta estrofe</span>
+            <div class="anim-context-text">
+              <span data-i18n="an.applyingIn">Aplicando em:</span> <strong id="anim-context-word">—</strong>
+            </div>
+            <button class="anim-context-clear" id="anim-context-clear" data-i18n-attr="title:an.backToStanza" title="Voltar pra estrofe">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             </button>
           </div>
-          <div class="panel-section-subtitle" id="custom-bgs-header" style="margin-top: 12px; display: none;">
-            Meus backgrounds
+        </div>
+
+        <div class="panel-section">
+          <div class="panel-section-title" data-i18n="an.category">Categoria</div>
+          <div class="anim-category-tabs">
+            <button class="anim-cat-tab active" data-cat="entrance" data-i18n="an.entrance">Entrada</button>
+            <button class="anim-cat-tab" data-cat="exit" data-i18n="an.exit">Saída</button>
+            <button class="anim-cat-tab" data-cat="loop" data-i18n="an.loop">Loop</button>
+            <button class="anim-cat-tab" data-cat="emphasis" style="display:none;" data-i18n="an.emphasis">Destaque</button>
           </div>
-          <div class="color-swatches" id="custom-bg-grid" style="grid-template-columns: repeat(5, 1fr); margin-top: 6px;"></div>
-          <input type="file" id="custom-bg-input" accept=".jpg,.jpeg,.png,.webp,.mp4,.webm,.mov,image/*,video/*" style="display:none" multiple />
-          <button class="btn btn-ghost btn-sm" id="btn-upload-bg" style="margin-top: 8px; width: 100%;">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            <span data-i18n="fp.addBg">Adicionar background (imagem ou vídeo)</span>
+        </div>
+
+        <div class="panel-section">
+          <button class="style-filter-toggle" id="style-filter-toggle" type="button">
+            <span data-i18n="an.filterStyle">Filtrar por estilo</span>
+            <span class="badge" id="anim-count">0</span>
+            <svg class="sft-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
           </button>
-          <button class="ctx-fonts-buypack" id="btn-buy-loops" style="margin-top: 8px;"
-            onclick="if(window.WM_LOOP_PACK_URL){window.open(window.WM_LOOP_PACK_URL,'_blank');}else{(window.wmAlert||window.alert)((window.WM_T?window.WM_T('fp.packSoon'):'Link do pack em breve!'));}">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-            <span data-i18n="fp.buyLoopPack">Adquirir Pack de Loops</span>
+          <div class="style-filter" id="style-filter" style="display:none;">
+            
+          </div>
+        </div>
+
+        <div class="panel-section">
+          <input type="text" class="anim-search-input" id="anim-search-input" data-i18n-attr="placeholder:an.searchPh" placeholder="🔎 Buscar animação pelo nome..." autocomplete="off" />
+          <div class="anim-grid" id="anim-grid"></div>
+          <button class="btn btn-secondary btn-sm" id="btn-anim-aplicar-todos" style="width:100%; margin-top:10px; display:none;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:5px; vertical-align:-2px;"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+            <span data-i18n="an.applyAll">Aplicar esta animação em todos os slides</span>
           </button>
+        </div>
+      </div>
+
+      <div class="panel-content" data-panel-content="transitions" style="display:none;">
+        <div class="panel-section">
+          <div class="panel-section-title" data-i18n="sp.transition">Transição entre estrofes</div>
+          <select id="transition-type" class="input" style="width:100%; font-size:11px; padding:6px 8px;">
+            <option value="cut" data-i18n="sp.trCut">Cut (instantâneo)</option>
+            <option value="crossfade" data-i18n="sp.trCrossfade">Crossfade (fade)</option>
+            <option value="slide-left" data-i18n="sp.trSlideLeft">Slide ← (vem da direita)</option>
+            <option value="slide-right" data-i18n="sp.trSlideRight">Slide → (vem da esquerda)</option>
+            <option value="slide-up" data-i18n="sp.trSlideUp">Slide ↑ (sobe)</option>
+            <option value="slide-down" data-i18n="sp.trSlideDown">Slide ↓ (desce)</option>
+            <option value="zoom-in" data-i18n="sp.trZoomIn">Zoom In</option>
+            <option value="zoom-out" data-i18n="sp.trZoomOut">Zoom Out</option>
+          </select>
+          <label class="label" style="font-size: 10px; margin-top: var(--space-2); margin-bottom: var(--space-1); display:block;" data-i18n="sp.duration">Duração</label>
+          <div style="display: flex; align-items: center; gap: var(--space-3);">
+            <input type="range" class="range" id="transition-duration" min="2" max="15" value="5" style="flex:1">
+            <span class="value-display" id="transition-duration-val">0.5s</span>
+          </div>
         </div>
       </div>
     </div>
@@ -7429,24 +7435,29 @@ Digno de toda honra"></textarea>
   
   <aside class="editor-right">
     <div class="panel-tabs">
-      <button class="panel-tab active" data-rpanel="animations" data-i18n="panel.animations">Animações</button>
-                  <button class="panel-tab" data-rpanel="motion" style="display:none;" data-i18n="rp.motion">Motion</button>
+      <button class="panel-tab active" data-rpanel="style" data-i18n="rp.effects">Efeitos</button>
+      <button class="panel-tab" data-rpanel="bg" data-i18n="rp.bgMotion">Fundo &amp; Movimento</button>
+      <button class="panel-tab" data-rpanel="motion" style="display:none;" data-i18n="rp.motion">Motion</button>
       <button class="panel-tab" data-rpanel="scenes" style="display:none;" data-i18n="rp.scenes">Cenas</button>
-          </div>
+      <button class="panel-tab" data-rpanel="word" style="display:none;" data-i18n="rp.word">Palavra</button>
+    </div>
 
     <div class="panel-body">
       
-      <div class="panel-content" data-rpanel-content="animations">
-        <div class="panel-section">
+      <div class="panel-content" data-rpanel-content="style">
+        <div class="panel-section" style="display:none;">
           <div class="panel-section-title" data-i18n="rp.font">Fonte</div>
 
+          
           <div class="font-tabs" id="font-tabs">
             <button class="font-tab active" data-font-tab="brand">WorshipMotion</button>
             <button class="font-tab" data-font-tab="local">Computador</button>
           </div>
 
+          
           <input type="text" id="font-search" placeholder="Buscar fonte..." class="font-search-input" />
 
+          
           <div class="font-tab-content" data-font-tab-content="brand">
             <div class="font-grid" id="font-grid">
               <div class="font-option selected" data-font="Montserrat">
@@ -7476,6 +7487,7 @@ Digno de toda honra"></textarea>
             </div>
           </div>
 
+          
           <div class="font-tab-content" data-font-tab-content="local" style="display: none;">
             <div id="local-fonts-empty" class="font-empty-message">
               Carregando fontes do computador...
@@ -7484,56 +7496,309 @@ Digno de toda honra"></textarea>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
               Permitir acesso a todas as fontes
             </button>
+            
             <div class="font-grid" id="custom-font-grid" style="margin-bottom: 8px;"></div>
             <div class="font-grid font-grid-scroll" id="local-font-grid"></div>
             <div id="local-fonts-info" class="font-info-message"></div>
+            
             <input type="file" id="custom-font-input" accept=".ttf,.otf,.woff,.woff2" style="display:none" multiple />
           </div>
         </div>
 
-        <div class="anim-context-header" id="anim-context-header" style="display:none;">
-          <div class="anim-context-row">
-            <div class="anim-context-icon">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="9"/></svg>
-            </div>
-            <div class="anim-context-text">
-              <span data-i18n="an.applyingIn">Aplicando em:</span> <strong id="anim-context-word">—</strong>
-            </div>
-            <button class="anim-context-clear" id="anim-context-clear" data-i18n-attr="title:an.backToStanza" title="Voltar pra estrofe">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        <div class="panel-section" style="display:none;">
+          <div class="panel-section-title" data-i18n="rp.case">Caixa</div>
+          <div class="text-case-grid">
+            <button class="text-case-btn" data-case="none" title="Como digitou">
+              <span class="text-case-sample">Ab</span>
+              <span class="text-case-label" data-i18n="rp.caseOriginal">Original</span>
+            </button>
+            <button class="text-case-btn active" data-case="uppercase" title="Tudo maiúscula">
+              <span class="text-case-sample">AB</span>
+              <span class="text-case-label" data-i18n="rp.caseUpper">MAIÚSCULAS</span>
+            </button>
+            <button class="text-case-btn" data-case="lowercase" title="Tudo minúscula">
+              <span class="text-case-sample">ab</span>
+              <span class="text-case-label" data-i18n="rp.caseLower">minúsculas</span>
+            </button>
+            <button class="text-case-btn" data-case="capitalize" title="Primeira letra de cada palavra">
+              <span class="text-case-sample">Ab Cd</span>
+              <span class="text-case-label" data-i18n="rp.caseTitle">Cada Palavra</span>
             </button>
           </div>
         </div>
-        <div class="panel-section">
-          <div class="panel-section-title" data-i18n="an.category">Categoria</div>
-          <div class="anim-category-tabs">
-            <button class="anim-cat-tab active" data-cat="entrance" data-i18n="an.entrance">Entrada</button>
-            <button class="anim-cat-tab" data-cat="exit" data-i18n="an.exit">Saída</button>
-            <button class="anim-cat-tab" data-cat="loop" data-i18n="an.loop">Loop</button>
-            <button class="anim-cat-tab" data-cat="emphasis" style="display:none;" data-i18n="an.emphasis">Destaque</button>
+
+        <div class="panel-section" style="display:none;">
+          <div class="panel-section-title" data-i18n="rp.size">Tamanho</div>
+          <div style="display: flex; align-items: center; gap: var(--space-3);">
+            <input type="range" class="range" id="font-size" min="20" max="140" value="64" style="flex:1">
+            <span class="value-display" id="font-size-val">64</span>
           </div>
         </div>
-        <div class="panel-section">
-          <button class="style-filter-toggle" id="style-filter-toggle" type="button">
-            <span data-i18n="an.filterStyle">Filtrar por estilo</span>
-            <span class="badge" id="anim-count">0</span>
-            <svg class="sft-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-          </button>
-          <div class="style-filter" id="style-filter" style="display:none;"></div>
+
+        <div class="panel-section" style="display:none;">
+          <div class="panel-section-title" data-i18n="rp.weight">Peso</div>
+          <div class="segmented" style="width:100%; display:flex;">
+            <button data-weight="400" style="flex:1; padding:6px 4px;" title="Regular (400)">Reg</button>
+            <button data-weight="500" style="flex:1; padding:6px 4px;" title="Medium (500)">Med</button>
+            <button class="active" data-weight="600" style="flex:1; padding:6px 4px;" title="Semibold (600)">Semi</button>
+            <button data-weight="700" style="flex:1; padding:6px 4px;" title="Bold (700)">Bold</button>
+            <button data-weight="800" style="flex:1; padding:6px 4px;" title="Heavy (800)">Heavy</button>
+          </div>
         </div>
+
+        <div class="panel-section" style="display:none;">
+          <div class="panel-section-title" data-i18n="rp.style">Estilo</div>
+          <div class="segmented" style="width:100%; display:flex;">
+            <button class="active" id="style-roman-btn" style="flex:1; padding:6px 4px;" title="Normal" data-i18n="rp.styleNormal">Normal</button>
+            <button id="style-italic-btn" style="flex:1; padding:6px 4px; font-style:italic;" title="Itálico" data-i18n="rp.styleItalic">Itálico</button>
+          </div>
+        </div>
+
+        <div class="panel-section" style="display:none;">
+          <div class="panel-section-title" data-i18n="rp.textColor">Cor do texto</div>
+          <div class="color-swatches" id="color-swatches">
+            <div class="color-swatch selected" data-color="#f4f4f7" style="background:#f4f4f7"></div>
+            <div class="color-swatch" data-color="#ffffff" style="background:#ffffff"></div>
+            <div class="color-swatch" data-color="#d4a857" style="background:#d4a857"></div>
+            <div class="color-swatch" data-color="#8b5cf6" style="background:#8b5cf6"></div>
+            <div class="color-swatch" data-color="#60a5fa" style="background:#60a5fa"></div>
+            <div class="color-swatch" data-color="#f472b6" style="background:#f472b6"></div>
+            <div class="color-swatch" data-color="#0f0f17" style="background:#0f0f17"></div>
+            <label class="color-swatch color-swatch-custom" data-color-custom="text" title="Escolher cor personalizada">
+              <input type="color" id="text-color-custom" value="#ffffff" style="position:absolute; opacity:0; pointer-events:none; width:0; height:0;" />
+            </label>
+          </div>
+        </div>
+
         <div class="panel-section">
-          <input type="text" class="anim-search-input" id="anim-search-input" data-i18n-attr="placeholder:an.searchPh" placeholder="🔎 Buscar animação pelo nome..." autocomplete="off" />
-          <div class="anim-grid" id="anim-grid"></div>
-          <button class="btn btn-secondary btn-sm" id="btn-anim-aplicar-todos" style="width:100%; margin-top:10px; display:none;">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:5px; vertical-align:-2px;"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-            <span data-i18n="an.applyAll">Aplicar esta animação em todos os slides</span>
+          <div class="panel-section-title" data-i18n="rp.glow">Brilho (Glow)</div>
+          <div style="display: flex; align-items: center; gap: var(--space-3);">
+            <input type="range" class="range" id="glow" min="0" max="60" value="12" style="flex:1">
+            <span class="value-display" id="glow-val">12</span>
+          </div>
+        </div>
+
+        <div class="panel-section">
+          <div class="panel-section-title" data-i18n="rp.glowColor">Cor do brilho</div>
+          <div class="color-swatches" id="glow-swatches">
+            <div class="color-swatch selected" data-glow-color="#8b5cf6" style="background:#8b5cf6"></div>
+            <div class="color-swatch" data-glow-color="#d4a857" style="background:#d4a857"></div>
+            <div class="color-swatch" data-glow-color="#60a5fa" style="background:#60a5fa"></div>
+            <div class="color-swatch" data-glow-color="#ffffff" style="background:#ffffff"></div>
+            <div class="color-swatch" data-glow-color="#f472b6" style="background:#f472b6"></div>
+            <label class="color-swatch color-swatch-custom" data-color-custom="glow" title="Escolher cor personalizada">
+              <input type="color" id="glow-color-custom" value="#8b5cf6" style="position:absolute; opacity:0; pointer-events:none; width:0; height:0;" />
+            </label>
+          </div>
+        </div>
+
+        <div class="panel-section">
+          <div class="panel-section-title" data-i18n="rp.outline">Contorno (Outline)</div>
+          <div style="display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-3);">
+            <input type="range" class="range" id="outline" min="0" max="8" step="0.5" value="0" style="flex:1">
+            <span class="value-display" id="outline-val">0</span>
+          </div>
+          <div class="color-swatches" id="outline-swatches" style="grid-template-columns: repeat(7, 1fr);">
+            <div class="color-swatch selected" data-outline-color="#000000" style="background:#000000; border:1px solid var(--border-default);"></div>
+            <div class="color-swatch" data-outline-color="#ffffff" style="background:#ffffff"></div>
+            <div class="color-swatch" data-outline-color="#d4a857" style="background:#d4a857"></div>
+            <div class="color-swatch" data-outline-color="#8b5cf6" style="background:#8b5cf6"></div>
+            <div class="color-swatch" data-outline-color="#ef4444" style="background:#ef4444"></div>
+            <div class="color-swatch" data-outline-color="#60a5fa" style="background:#60a5fa"></div>
+            <label class="color-swatch color-swatch-custom" data-color-custom="outline" title="Cor personalizada">
+              <input type="color" id="outline-color-custom" value="#000000" style="position:absolute; opacity:0; pointer-events:none; width:0; height:0;" />
+            </label>
+          </div>
+        </div>
+
+        <div class="panel-section">
+          <div class="panel-section-title" data-i18n="rp.dropShadow">Sombra projetada</div>
+          <div style="display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-3);">
+            <input type="range" class="range" id="shadow" min="0" max="30" value="0" style="flex:1">
+            <span class="value-display" id="shadow-val">0</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--space-2); margin-bottom: var(--space-3);">
+            <div>
+              <label class="label" style="font-size: 9px; margin-bottom: 2px; display:block;">X</label>
+              <input type="number" class="input" id="shadow-x" min="-30" max="30" value="4" style="font-size: 11px; padding: 4px;">
+            </div>
+            <div>
+              <label class="label" style="font-size: 9px; margin-bottom: 2px; display:block;">Y</label>
+              <input type="number" class="input" id="shadow-y" min="-30" max="30" value="4" style="font-size: 11px; padding: 4px;">
+            </div>
+            <div>
+              <label class="label" style="font-size: 9px; margin-bottom: 2px; display:block;">Blur</label>
+              <input type="number" class="input" id="shadow-blur" min="0" max="50" value="8" style="font-size: 11px; padding: 4px;">
+            </div>
+          </div>
+          <div class="color-swatches" id="shadow-swatches" style="grid-template-columns: repeat(7, 1fr);">
+            <div class="color-swatch selected" data-shadow-color="#000000" style="background:#000000; border:1px solid var(--border-default);"></div>
+            <div class="color-swatch" data-shadow-color="#1e1b4b" style="background:#1e1b4b"></div>
+            <div class="color-swatch" data-shadow-color="#7c2d12" style="background:#7c2d12"></div>
+            <div class="color-swatch" data-shadow-color="#8b5cf6" style="background:#8b5cf6"></div>
+            <div class="color-swatch" data-shadow-color="#d4a857" style="background:#d4a857"></div>
+            <div class="color-swatch" data-shadow-color="#ffffff" style="background:#ffffff"></div>
+            <label class="color-swatch color-swatch-custom" data-color-custom="shadow" title="Cor personalizada">
+              <input type="color" id="shadow-color-custom" value="#000000" style="position:absolute; opacity:0; pointer-events:none; width:0; height:0;" />
+            </label>
+          </div>
+        </div>
+
+        <div class="panel-section" style="display:none;">
+          <div class="panel-section-title" data-i18n="rp.spacing">Espaçamento</div>
+          <label class="label" style="font-size: 10px; margin-bottom: var(--space-1); display:block;"><span data-i18n="rp.letterSpacing">Entre letras</span> <span data-i18n="rp.wholeStanza" style="color:var(--text-tertiary); font-weight:400;">(estrofe toda)</span></label>
+          <div style="display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-3);">
+            <input type="range" class="range" id="letter-spacing" min="-5" max="20" value="-2" style="flex:1">
+            <span class="value-display" id="letter-spacing-val">-0.02em</span>
+          </div>
+          <label class="label" style="font-size: 10px; margin-bottom: var(--space-1); display:block;" data-i18n="rp.lineSpacing">Entre linhas</label>
+          <div style="display: flex; align-items: center; gap: var(--space-3);">
+            <input type="range" class="range" id="line-height" min="100" max="200" value="112" style="flex:1">
+            <span class="value-display" id="line-height-val">1.12</span>
+          </div>
+        </div>
+      </div>
+
+      
+      <div class="panel-content" data-rpanel-content="bg" style="display:none;">
+        <div class="panel-section">
+          <div class="panel-section-title" data-i18n="bg.title">Background</div>
+          <div class="color-swatches" id="bg-swatches" style="grid-template-columns: repeat(5, 1fr);">
+            <div class="color-swatch" data-bg="brand" style="background: linear-gradient(135deg, #8b5cf6, #3b82f6)"></div>
+            <div class="color-swatch" data-bg="divine" style="background: linear-gradient(135deg, #d4a857, #8b5cf6)"></div>
+            <div class="color-swatch" data-bg="midnight" style="background: linear-gradient(135deg, #0f0f17, #1e1b4b)"></div>
+            <div class="color-swatch" data-bg="warm" style="background: linear-gradient(135deg, #7c2d12, #d4a857)"></div>
+            <div class="color-swatch selected" data-bg="black" style="background: #050507; border:1px solid var(--border-default);"></div>
+          </div>
+
+          
+          <div id="stanza-bg-indicator" style="display:none; margin-top: 10px; padding: 9px 12px; background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(99, 102, 241, 0.08)); border: 1px solid rgba(139, 92, 246, 0.35); border-radius: 7px; align-items: center; gap: 8px;">
+            <span style="flex: 1; font-size: 11px; color: var(--text-primary);" id="stanza-bg-text">
+              Estrofe <strong id="stanza-bg-num">1</strong> tem fundo próprio
+            </span>
+            <button class="btn-tiny" id="btn-clear-stanza-bg" data-i18n="ed.removeBg" data-i18n-attr="title:ed.useGlobalBg" title="Voltar a usar o fundo global">↺ Remover</button>
+          </div>
+
+          
+          <div id="bg-apply-buttons" style="margin-top: 12px; display: none; flex-direction: column; gap: 6px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px;">
+              <p style="font-size: 10.5px; color: var(--text-secondary); margin: 0; font-weight: 500;">
+                <span data-i18n="bg.whereApply">Onde aplicar?</span>
+              </p>
+              <span style="font-size: 10px; color: var(--text-tertiary);">
+                Estrofe <span id="apply-stanza-num">1</span> de <span id="apply-total-stanzas">1</span>
+              </span>
+            </div>
+            <button class="btn btn-primary btn-sm bg-apply-btn" id="btn-apply-bg-all">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+              <span data-i18n="ed.applyAllStanzas">Todas as estrofes</span>
+            </button>
+            <button class="btn btn-ghost btn-sm bg-apply-btn" id="btn-apply-bg-stanza">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span data-i18n="ed.applyThisStanza">Apenas esta estrofe</span>
+            </button>
+          </div>
+
+          
+          <div class="panel-section-subtitle" id="custom-bgs-header" style="margin-top: 12px; display: none;">
+            Meus backgrounds
+          </div>
+          <div class="color-swatches" id="custom-bg-grid" style="grid-template-columns: repeat(5, 1fr); margin-top: 6px;"></div>
+
+          <input type="file" id="custom-bg-input" accept=".jpg,.jpeg,.png,.webp,.mp4,.webm,.mov,image/*,video/*" style="display:none" multiple />
+          <button class="btn btn-ghost btn-sm" id="btn-upload-bg" style="margin-top: 8px; width: 100%;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            <span data-i18n="fp.addBg">Adicionar background (imagem ou vídeo)</span>
+          </button>
+          <button class="ctx-fonts-buypack" id="btn-buy-loops" style="margin-top: 8px;"
+            onclick="if(window.WM_LOOP_PACK_URL){window.open(window.WM_LOOP_PACK_URL,'_blank');}else{(window.wmAlert||window.alert)((window.WM_T?window.WM_T('fp.packSoon'):'Link do pack em breve!'));}">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+            <span data-i18n="fp.buyLoopPack">Adquirir Pack de Loops</span>
           </button>
         </div>
       </div>
 
       
-
       <div class="panel-content" data-rpanel-content="motion" style="display:none;">
+
+        <div class="panel-section">
+          <div class="panel-section-title" data-i18n="ed.granularity">Granularidade</div>
+          <div class="granularity-choice" id="granularity">
+            <button data-grain="stanza" data-i18n="gr.stanza">Estrofe</button>
+            <button data-grain="line" data-i18n="gr.line">Linha</button>
+            <button class="active" data-grain="word" data-i18n="gr.word">Palavra</button>
+            <button data-grain="char" data-i18n="gr.letter">Letra</button>
+          </div>
+          <p style="font-size: 11px; color: var(--text-tertiary); margin-top: var(--space-2); line-height: 1.5;">
+            <span data-i18n="gr.note">Define como os elementos são animados — todo de uma vez ou um a um.</span>
+          </p>
+        </div>
+
+        <div class="panel-section" style="display:none;">
+          <div class="panel-section-title" data-i18n="sp.highlightVisual">Visual das destacadas</div>
+          <p style="font-size: 11px; color: var(--text-tertiary); margin-bottom: var(--space-3); line-height: 1.5;">
+            <span data-i18n="sp.highlightVisualNote">Estilo aplicado às palavras marcadas como destaque (ícone ⭐).</span>
+          </p>
+
+          <label class="label" style="font-size: 10px; margin-bottom: var(--space-1); display:block;" data-i18n="emp.color">Cor</label>
+          <div id="emphasis-color-swatches" class="color-swatches" style="margin-bottom: var(--space-3);">
+            <button class="color-swatch selected" data-emp-color="#fbbf24" style="background:#fbbf24" title="Dourado"></button>
+            <button class="color-swatch" data-emp-color="#ffffff" style="background:#ffffff" title="Branco"></button>
+            <button class="color-swatch" data-emp-color="#f87171" style="background:#f87171" title="Vermelho"></button>
+            <button class="color-swatch" data-emp-color="#34d399" style="background:#34d399" title="Verde"></button>
+            <button class="color-swatch" data-emp-color="#60a5fa" style="background:#60a5fa" title="Azul"></button>
+            <button class="color-swatch" data-emp-color="#f472b6" style="background:#f472b6" title="Rosa"></button>
+            <label class="color-swatch color-swatch-custom" style="position:relative;">
+              <input type="color" id="emphasis-color-custom" value="#fbbf24" style="position:absolute; inset:0; opacity:0; cursor:pointer;">
+              <span style="font-size:10px;">+</span>
+            </label>
+          </div>
+
+          <label class="label" style="font-size: 10px; margin-bottom: var(--space-1); display:block;" data-i18n="emp.size">Tamanho</label>
+          <div style="display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-3);">
+            <input type="range" class="range" id="emphasis-scale" min="80" max="200" value="100" style="flex:1">
+            <span class="value-display" id="emphasis-scale-val">1.0x</span>
+          </div>
+
+          <label class="label" style="font-size: 10px; margin-bottom: var(--space-1); display:block;" data-i18n="emp.extraGlow">Brilho extra</label>
+          <div style="display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-3);">
+            <input type="range" class="range" id="emphasis-glow" min="0" max="30" value="0" style="flex:1">
+            <span class="value-display" id="emphasis-glow-val">0</span>
+          </div>
+
+          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 12px;">
+            <input type="checkbox" id="emphasis-bold">
+            <span data-i18n="emp.boldExtra">Negrito extra</span>
+          </label>
+        </div>
+
+        <div class="panel-section">
+          <div class="panel-section-title" data-i18n="sp.speed">Velocidade</div>
+          <label class="label" style="font-size: 10px; margin-bottom: var(--space-1); display:block;" data-i18n="sp.duration">Duração</label>
+          <div style="display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-3);">
+            <input type="range" class="range" id="duration" min="3" max="25" value="10" style="flex:1">
+            <span class="value-display" id="duration-val">1.0s</span>
+          </div>
+          <label class="label" style="font-size: 10px; margin-bottom: var(--space-1); display:block;" data-i18n="sp.stagger">Stagger (atraso entre elementos)</label>
+          <div style="display: flex; align-items: center; gap: var(--space-3);">
+            <input type="range" class="range" id="stagger" min="0" max="30" value="6" style="flex:1">
+            <span class="value-display" id="stagger-val">0.06s</span>
+          </div>
+        </div>
+
+        <div class="panel-section">
+          <div class="panel-section-title">
+            <span data-i18n="sp.currentAnim">Animação atual</span>
+          </div>
+          <div id="current-anim-display" style="padding: var(--space-3); background: var(--bg-elevated); border:1px solid var(--border-default); border-radius: var(--radius-md);">
+            <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-2);">
+              <span class="badge badge-accent" data-i18n="an.entrance">Entrada</span>
+              <span style="font-size: 10px; color: var(--text-tertiary);">cinematic</span>
+            </div>
+            <div style="font-size: var(--text-sm); font-weight: 500;">Cinematic Reveal</div>
+            <div style="font-size: 11px; color: var(--text-tertiary); margin-top: 2px;">Revelação dramática com profundidade</div>
+          </div>
+        </div>
 
         <div class="panel-section" style="display:none;">
           <div class="panel-section-title" data-i18n="sp.keywords">Palavras de destaque</div>
@@ -7579,7 +7844,21 @@ Digno de toda honra"></textarea>
       </div>
 
       
+      <div class="panel-content" data-rpanel-content="word" style="display:none;">
+        <div class="panel-section">
+          <div class="panel-section-title" data-i18n="sp.wordTitle">Animação por palavra</div>
+          <div style="font-size: 11px; color: var(--text-tertiary); margin-bottom: 12px;">
+            <span data-i18n="sp.wordNote">Clique numa palavra no canvas para selecioná-la e dar uma animação exclusiva.</span>
           </div>
+          <div id="word-panel-content">
+            <div class="word-panel-empty">
+              <strong data-i18n="sp.noWordSel">Nenhuma palavra selecionada</strong>
+              <span data-i18n="sp.noWordSelSub">Clique em qualquer palavra do canvas</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </aside>
 
   
@@ -7786,13 +8065,13 @@ Digno de toda honra"></textarea>
 <div class="modal-overlay" id="comparafontes-upsell-overlay">
   <div class="modal" style="max-width: 440px;">
     <div class="modal-body" style="padding: 28px; text-align: center;">
-      <div style="width:56px; height:56px; margin:0 auto 16px; border-radius:16px; display:flex; align-items:center; justify-content:center; background:#A855F7; box-shadow:none;">
+      <div style="width:56px; height:56px; margin:0 auto 16px; border-radius:16px; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg,#34e0ff,#8a7bff); box-shadow:0 8px 24px -8px rgba(52,224,255,0.5);">
         <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#04121a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg>
       </div>
-      <div style="display:inline-block; font-size:10px; font-weight:800; letter-spacing:.06em; color:#A855F7; background:rgba(168,85,247,0.12); padding:4px 10px; border-radius:8px; margin-bottom:12px;" data-i18n="md.proPlusBadge">RECURSO PRO PLUS</div>
+      <div style="display:inline-block; font-size:10px; font-weight:800; letter-spacing:.06em; color:#8a7bff; background:rgba(138,123,255,0.12); padding:4px 10px; border-radius:8px; margin-bottom:12px;" data-i18n="md.proPlusBadge">RECURSO PRO PLUS</div>
       <h2 style="margin:0 0 8px; font-size:20px; font-weight:700; color:var(--text-primary);" data-i18n="md.compareUpTitle">Comparar fontes é do Pro Plus</h2>
       <p style="margin:0 0 22px; font-size:14px; line-height:1.6; color:var(--text-secondary);" data-i18n="md.compareUpText">Visualize e compare todas as fontes lado a lado, incluindo as 123 fontes exclusivas do pack. Faça upgrade pro Pro Plus e desbloqueie esse e outros recursos.</p>
-      <button id="comparafontes-upsell-cta" class="btn btn-primary" style="width:100%; padding:13px; font-weight:700; background:linear-gradient(135deg,#A855F7,#3B82F6); border:none; color:#fff;" data-i18n="md.seePlans">Ver planos</button>
+      <button id="comparafontes-upsell-cta" class="btn btn-primary" style="width:100%; padding:13px; font-weight:700; background:linear-gradient(135deg,#8b5cf6,#6d28d9); border:none; color:#fff;" data-i18n="md.seePlans">Ver planos</button>
       <button id="comparafontes-upsell-close" class="btn btn-ghost btn-sm" style="width:100%; margin-top:8px;" data-i18n="md.notNow">Agora não</button>
     </div>
   </div>
@@ -7801,13 +8080,13 @@ Digno de toda honra"></textarea>
 <div class="modal-overlay" id="tpl-upsell-overlay">
   <div class="modal" style="max-width: 440px;">
     <div class="modal-body" style="padding: 28px; text-align: center;">
-      <div style="width:56px; height:56px; margin:0 auto 16px; border-radius:16px; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg,#00E5CF,#A855F7); box-shadow:0 8px 24px -8px rgba(0,229,207,0.5);">
+      <div style="width:56px; height:56px; margin:0 auto 16px; border-radius:16px; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg,#8b5cf6,#d4a857); box-shadow:0 8px 24px -8px rgba(139,92,246,0.5);">
         <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
       </div>
-      <div style="display:inline-block; font-size:10px; font-weight:800; letter-spacing:.06em; color:#A855F7; background:rgba(168,85,247,0.12); padding:4px 10px; border-radius:8px; margin-bottom:12px;">RECURSO PRO PLUS</div>
+      <div style="display:inline-block; font-size:10px; font-weight:800; letter-spacing:.06em; color:#8a7bff; background:rgba(138,123,255,0.12); padding:4px 10px; border-radius:8px; margin-bottom:12px;">RECURSO PRO PLUS</div>
       <h2 style="margin:0 0 8px; font-size:20px; font-weight:700; color:var(--text-primary);">Templates Inteligentes são exclusivos do Pro Plus</h2>
       <p style="margin:0 0 22px; font-size:14px; line-height:1.6; color:var(--text-secondary);">Não comece cada slide do zero. Escolha uma composição profissional e transforme sua letra em segundos.</p>
-      <button id="tpl-upsell-cta" class="btn btn-primary" style="width:100%; padding:13px; font-weight:700; background:linear-gradient(135deg,#A855F7,#3B82F6); border:none; color:#fff;">Conhecer o Pro Plus</button>
+      <button id="tpl-upsell-cta" class="btn btn-primary" style="width:100%; padding:13px; font-weight:700; background:linear-gradient(135deg,#8b5cf6,#6d28d9); border:none; color:#fff;">Conhecer o Pro Plus</button>
       <button id="tpl-upsell-close" class="btn btn-ghost btn-sm" style="width:100%; margin-top:8px;">Agora não</button>
     </div>
   </div>
@@ -7846,7 +8125,7 @@ Digno de toda honra"></textarea>
               <div id="export-slide-checklist" style="max-height:180px; overflow-y:auto; border:1px solid var(--border-default); border-radius:8px; padding:6px; display:flex; flex-direction:column; gap:2px;"></div>
               <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px;">
                 <div style="display:flex; gap:10px;">
-                  <button type="button" id="export-slides-all" style="background:none; border:none; color:var(--accent, #00E5CF); font-size:11px; cursor:pointer; padding:0;" data-i18n="ex.markAll">Marcar todos</button>
+                  <button type="button" id="export-slides-all" style="background:none; border:none; color:var(--accent, #8b5cf6); font-size:11px; cursor:pointer; padding:0;" data-i18n="ex.markAll">Marcar todos</button>
                   <button type="button" id="export-slides-none" style="background:none; border:none; color:var(--text-tertiary); font-size:11px; cursor:pointer; padding:0;" data-i18n="ex.clear">Limpar</button>
                 </div>
                 <span id="export-slides-count" style="font-size:11px; color:var(--text-tertiary);">0 selecionados</span>
@@ -7915,7 +8194,7 @@ Digno de toda honra"></textarea>
           <svg viewBox="0 0 120 120">
             <defs>
               <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#00E5CF"/>
+                <stop offset="0%" stop-color="#8b5cf6"/>
                 <stop offset="100%" stop-color="#3b82f6"/>
               </linearGradient>
             </defs>
@@ -14305,10 +14584,10 @@ window.WM_TEMPLATES = {
    ============================================================ */
 
 const BG_GRADIENTS = {
-  brand:    { type: 'linear', angle: 135, stops: [['#00E5CF', 0], ['#3B82F6', 0.5], ['#3b82f6', 1]] },
-  divine:   { type: 'linear', angle: 135, stops: [['#A855F7', 0], ['#00E5CF', 1]] },
+  brand:    { type: 'linear', angle: 135, stops: [['#8b5cf6', 0], ['#6366f1', 0.5], ['#3b82f6', 1]] },
+  divine:   { type: 'linear', angle: 135, stops: [['#d4a857', 0], ['#8b5cf6', 1]] },
   midnight: { type: 'linear', angle: 135, stops: [['#0f0f17', 0], ['#1e1b4b', 1]] },
-  warm:     { type: 'linear', angle: 135, stops: [['#7c2d12', 0], ['#A855F7', 1]] },
+  warm:     { type: 'linear', angle: 135, stops: [['#7c2d12', 0], ['#d4a857', 1]] },
   black:    { type: 'solid',  color: '#050507' },
 };
 
@@ -16058,7 +16337,7 @@ const CanvasRenderer = {
       const baseGlow = style?.glow || 0;
       const effectiveGlow = userGlow !== null ? userGlow : baseGlow;
       if (effectiveGlow > 0) {
-        const glowColor = wordStyleOverride?.glowColor || style?.glowColor || '#00E5CF';
+        const glowColor = wordStyleOverride?.glowColor || style?.glowColor || '#8b5cf6';
         ctx.shadowColor = glowColor;
         ctx.shadowBlur = effectiveGlow;
       }
@@ -16210,7 +16489,7 @@ const CanvasRenderer = {
     const hasUserShadow = userShadowBlur > 0 || userShadowOffsetX !== 0 || userShadowOffsetY !== 0;
 
     const baseGlow = style?.glow || 0;
-    const baseGlowColor = style?.glowColor || '#00E5CF';
+    const baseGlowColor = style?.glowColor || '#8b5cf6';
     const glowIntensity = state.glowIntensity || 1;
 
     // === SOMBRA GLOBAL (drop shadow estilizado, separado do glow) ===
@@ -16229,7 +16508,7 @@ const CanvasRenderer = {
       ctx.shadowOffsetY = userShadowOffsetY * scale;
     } else if (hasUserGlow) {
       // Glow do usuário (sem offset)
-      ctx.shadowColor = _hexToRgba(wordStyleOverride.glowColor || '#00E5CF', 0.8);
+      ctx.shadowColor = _hexToRgba(wordStyleOverride.glowColor || '#8b5cf6', 0.8);
       ctx.shadowBlur = userGlow * 1.5 * scale;
       ctx.shadowOffsetX = 0;
       ctx.shadowOffsetY = 0;
@@ -18107,7 +18386,7 @@ class RenderEngineV2 {
       color: '#f4f4f7',
       textAlign: 'center',
       glow: 0,
-      glowColor: '#00E5CF',
+      glowColor: '#8b5cf6',
       // Outline (contorno do texto)
       outline: 0,                  // 0 = sem outline, 1-8 = espessura
       outlineColor: '#000000',
@@ -18348,11 +18627,11 @@ class RenderEngineV2 {
     });
 
     // Keyframe especial: transição de cor para palavras emphasized
-    // (0% = cor base, 100% = dourado #A855F7)
+    // (0% = cor base, 100% = dourado #d4a857)
     css += `
 @keyframes wm-emphasis-gold {
   0%   { color: inherit; }
-  100% { color: #A855F7; }
+  100% { color: #d4a857; }
 }
 `;
 
@@ -18653,7 +18932,7 @@ class RenderEngineV2 {
     // PEDIDO DO USUÁRIO ("sobra azul nas palavras, parece estranho
     // com fundo preto"): esse filtro genérico (pensado pro texto
     // NORMAL, não-frame-exact) usa a cor de brilho PADRÃO do app
-    // (#00E5CF, o mesmo roxo/azul do gradiente "brand") — pra
+    // (#8b5cf6, o mesmo roxo/azul do gradiente "brand") — pra
     // estrofes frame-exact, cada efeito já desenha seu PRÓPRIO brilho
     // certo direto no canvas (calibrado pra bater com o vídeo de
     // referência de cada um). Aplicar ESSE filtro genérico por cima
@@ -18689,7 +18968,7 @@ class RenderEngineV2 {
   }
 
   _hexToRgba(hex, alpha = 1) {
-    const h = (hex || '#00E5CF').replace('#', '');
+    const h = (hex || '#8b5cf6').replace('#', '');
     const r = parseInt(h.substring(0, 2), 16);
     const g = parseInt(h.substring(2, 4), 16);
     const b = parseInt(h.substring(4, 6), 16);
@@ -18839,7 +19118,7 @@ class RenderEngineV2 {
                             (typeof ws.shadowOffsetY === 'number' && ws.shadowOffsetY !== 0);
 
           if (hasGlow) {
-            const gc = ws.glowColor || '#00E5CF';
+            const gc = ws.glowColor || '#8b5cf6';
             const gp = ws.glow;
             // Halo: blur grande com cor + blur menor mais denso
             textShadows.push(`0 0 ${gp * 1.5}px ${gc}`);
@@ -19447,7 +19726,7 @@ class RenderEngineV2 {
         } else {
           if (typeof window.selectWord === 'function') window.selectWord(wordId);
         }
-        const tab = document.querySelector('.panel-tab[data-rpanel="animations"]');
+        const tab = document.querySelector('.panel-tab[data-rpanel="style"]');
         if (tab) tab.click();
       });
     }
@@ -22306,7 +22585,7 @@ function initEditor() {
         selectWholeLineOf(wordId);
         dragState._lineSelected = true;
         if (navigator.vibrate) { try { navigator.vibrate(25); } catch (e) {} }
-        const tab = $('.panel-tab[data-rpanel="animations"]');
+        const tab = $('.panel-tab[data-rpanel="style"]');
         if (tab) tab.click();
       }
     }, 450);
@@ -22502,8 +22781,8 @@ function initEditor() {
       } else {
         setSelection([wid]);
       }
-      // A aba Palavra foi unida à Animações — abre Animações ao selecionar.
-      const tab = $('.panel-tab[data-rpanel="animations"]');
+      // A aba Palavra foi unida à Efeitos — abre Efeitos ao selecionar.
+      const tab = $('.panel-tab[data-rpanel="style"]');
       if (tab) tab.click();
     }
 
@@ -26297,11 +26576,11 @@ function initEditor() {
     // wordOverride; a estrofe só afeta quem não tem override).
     const bAnim = document.getElementById('ctx-anim');
     if (bAnim) bAnim.addEventListener('click', () => {
-      const tab = document.querySelector('.panel-tab[data-rpanel="animations"]');
+      const tab = document.querySelector('.panel-tab[data-panel="animations"]');
       if (tab) tab.click();
-      // Mobile: abre o painel direito como bottom-sheet (no desktop não tem efeito).
-      document.body.classList.add('wm-sheet-right');
-      document.body.classList.remove('wm-sheet-left');
+      // Mobile: abre o painel esquerdo como bottom-sheet (no desktop não tem efeito).
+      document.body.classList.add('wm-sheet-left');
+      document.body.classList.remove('wm-sheet-right');
       // Garante que o grid reflita o contexto atual (palavra vs estrofe).
       requestAnimationFrame(() => {
         if (typeof updateAnimContextHeader === 'function') updateAnimContextHeader();
@@ -26977,9 +27256,9 @@ function initEditor() {
 
     function applyGlowPreset(name) {
       const presets = {
-        soft:   { glow: 8,  glowColor: '#00E5CF', shadowBlur: 0, shadowOffsetX: 0, shadowOffsetY: 0 },
-        strong: { glow: 24, glowColor: '#00E5CF', shadowBlur: 0, shadowOffsetX: 0, shadowOffsetY: 0 },
-        gold:   { glow: 16, glowColor: '#A855F7', shadowBlur: 0, shadowOffsetX: 0, shadowOffsetY: 0 },
+        soft:   { glow: 8,  glowColor: '#8b5cf6', shadowBlur: 0, shadowOffsetX: 0, shadowOffsetY: 0 },
+        strong: { glow: 24, glowColor: '#8b5cf6', shadowBlur: 0, shadowOffsetX: 0, shadowOffsetY: 0 },
+        gold:   { glow: 16, glowColor: '#d4a857', shadowBlur: 0, shadowOffsetX: 0, shadowOffsetY: 0 },
         shadow: { glow: 0,  shadowBlur: 8, shadowOffsetX: 3, shadowOffsetY: 4, shadowColor: 'rgba(0,0,0,0.6)' },
         clear:  { glow: null, glowColor: null, shadowBlur: null, shadowOffsetX: null, shadowOffsetY: null, shadowColor: null },
       };
@@ -28150,11 +28429,8 @@ function initEditor() {
     }
   }
 
-  // Delegação para .font-tab (funciona com elementos restaurados dinamicamente)
-  document.body.addEventListener('click', (ev) => {
-    const tab = ev.target.closest('.font-tab');
-    if (!tab || !tab.dataset.fontTab) return;
-    switchFontTab(tab.dataset.fontTab);
+  $$('.font-tab').forEach(t => {
+    t.addEventListener('click', () => switchFontTab(t.dataset.fontTab));
   });
 
   // === Busca ===
@@ -28875,10 +29151,10 @@ function initEditor() {
 
   // background
   const BG_PRESETS = {
-    brand:    'linear-gradient(135deg, #00E5CF 0%, #3B82F6 50%, #3b82f6 100%)',
-    divine:   'linear-gradient(135deg, #A855F7 0%, #00E5CF 100%)',
+    brand:    'linear-gradient(135deg, #8b5cf6 0%, #6366f1 50%, #3b82f6 100%)',
+    divine:   'linear-gradient(135deg, #d4a857 0%, #8b5cf6 100%)',
     midnight: 'linear-gradient(135deg, #0f0f17 0%, #1e1b4b 100%)',
-    warm:     'linear-gradient(135deg, #7c2d12 0%, #A855F7 100%)',
+    warm:     'linear-gradient(135deg, #7c2d12 0%, #d4a857 100%)',
     black:    '#050507',
   };
 
@@ -29733,9 +30009,9 @@ function initEditor() {
 
     // Gradient pra parecer profissional
     const grad = ctx.createLinearGradient(0, 0, 0, rect.height);
-    grad.addColorStop(0, 'rgba(0, 229, 207, 0.7)');
-    grad.addColorStop(0.5, 'rgba(0, 229, 207, 0.85)');
-    grad.addColorStop(1, 'rgba(0, 229, 207, 0.7)');
+    grad.addColorStop(0, 'rgba(139, 92, 246, 0.7)');
+    grad.addColorStop(0.5, 'rgba(139, 92, 246, 0.85)');
+    grad.addColorStop(1, 'rgba(139, 92, 246, 0.7)');
 
     ctx.fillStyle = grad;
     audioPeaks.forEach((peak, i) => {
@@ -30145,9 +30421,9 @@ function initEditor() {
 
   // Cores por estrofe (cíclicas)
   const STANZA_COLORS = [
-    'rgba(0, 229, 207, 0.85)',   // roxo
+    'rgba(139, 92, 246, 0.85)',   // roxo
     'rgba(96, 165, 250, 0.85)',   // azul
-    'rgba(168, 85, 247, 0.85)',   // dourado
+    'rgba(212, 168, 87, 0.85)',   // dourado
     'rgba(244, 114, 182, 0.85)',  // rosa
     'rgba(52, 211, 153, 0.85)',   // verde
     'rgba(248, 113, 113, 0.85)',  // vermelho
@@ -30815,7 +31091,7 @@ function initEditor() {
       const x = i * barW;
       ctx.fillStyle = (x < playedX)
         ? 'rgba(167, 139, 250, 0.95)'   // já tocado: vivo
-        : 'rgba(0, 229, 207, 0.32)';   // a tocar: apagado
+        : 'rgba(139, 92, 246, 0.32)';   // a tocar: apagado
       // Cantos levemente arredondados nas barras (acabamento)
       const w = Math.max(1.5, barW - 1.5);
       const y = centerY - h / 2;
@@ -32065,7 +32341,7 @@ function initEditor() {
     overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
 
     const card = document.createElement('div');
-    card.style.cssText = 'background:#1E1E1E;border:1px solid #333;border-radius:14px;padding:24px;max-width:400px;width:90%;color:#f4f4f7;font-family:Inter,sans-serif;box-shadow:0 20px 60px rgba(0,0,0,0.5);';
+    card.style.cssText = 'background:#1a1a1f;border:1px solid #333;border-radius:14px;padding:24px;max-width:400px;width:90%;color:#f4f4f7;font-family:Inter,sans-serif;box-shadow:0 20px 60px rgba(0,0,0,0.5);';
 
     const inicial = (email && email[0]) ? email[0].toUpperCase() : '\u{1F464}';
 
@@ -32075,25 +32351,25 @@ function initEditor() {
       + '</div>'
       + '<div style="display:flex;flex-direction:column;gap:14px;">'
       + '  <div style="background:linear-gradient(135deg,#1e2230,#262b3d);border:1px solid #3a4256;border-radius:10px;padding:18px;text-align:center;">'
-      + '    <div style="width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#00E5CF,#3B82F6);display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:700;color:#fff;margin:0 auto 12px;">' + inicial + '</div>'
+      + '    <div style="width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#8b5cf6,#6366f1);display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:700;color:#fff;margin:0 auto 12px;">' + inicial + '</div>'
       + '    <div style="font-weight:600;font-size:14px;word-break:break-all;">' + email + '</div>'
       + '    <div style="font-size:12px;color:#7a8499;margin-top:4px;">Conectado</div>'
       + '  </div>'
-      + '  <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:rgba(0,229,207,0.1);border:1px solid rgba(0,229,207,0.25);border-radius:10px;">'
+      + '  <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.25);border-radius:10px;">'
       + '    <span style="font-size:13px;color:#9aa;">Plano</span>'
-      + '    <span style="font-size:14px;font-weight:700;color:rgba(0, 229, 207, 0.5);">' + nomePlano + '</span>'
+      + '    <span style="font-size:14px;font-weight:700;color:#c4b5fd;">' + nomePlano + '</span>'
       + '  </div>'
       + '  <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:rgba(255,255,255,0.04);border-radius:10px;">'
       + '    <span style="font-size:13px;color:#9aa;">'+(window.WM_T?window.WM_T('dyn.creditsMonth'):'Créditos este mês')+'</span>'
       + '    <span style="font-size:14px;font-weight:700;">' + creditos + '</span>'
       + '  </div>'
       + (ehGratis
-        ? '  <button id="wm-acc-upgrade" style="width:100%;padding:12px;background:linear-gradient(135deg,#00E5CF,#3B82F6);border:none;color:#fff;border-radius:10px;cursor:pointer;font-family:inherit;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:4px;box-shadow:0 4px 14px rgba(0,229,207,0.35);">'
+        ? '  <button id="wm-acc-upgrade" style="width:100%;padding:12px;background:linear-gradient(135deg,#8b5cf6,#6366f1);border:none;color:#fff;border-radius:10px;cursor:pointer;font-family:inherit;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:4px;box-shadow:0 4px 14px rgba(139,92,246,0.35);">'
           + '    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9 12 2"/></svg>'
           + '    Fazer upgrade'
           + '  </button>'
         : (planoCodigo === 'pro'
-          ? '  <button id="wm-acc-proplus" style="width:100%;padding:12px;background:linear-gradient(135deg,#00E5CF,#3B82F6);border:none;color:#fff;border-radius:10px;cursor:pointer;font-family:inherit;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:4px;box-shadow:0 4px 14px rgba(0,229,207,0.35);">'
+          ? '  <button id="wm-acc-proplus" style="width:100%;padding:12px;background:linear-gradient(135deg,#8b5cf6,#6366f1);border:none;color:#fff;border-radius:10px;cursor:pointer;font-family:inherit;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:4px;box-shadow:0 4px 14px rgba(139,92,246,0.35);">'
             + '    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9 12 2"/></svg>'
             + '    Mudar para Pro Plus'
             + '  </button>'
@@ -32165,7 +32441,7 @@ function initEditor() {
     overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.75);display:flex;backdrop-filter:blur(4px);padding:20px;overflow-y:auto;';
 
     const card = document.createElement('div');
-    card.style.cssText = 'background:#1E1E1E;border:1px solid #262626;border-radius:16px;padding:28px;max-width:760px;width:100%;margin:auto;color:#f4f4f7;font-family:Inter,sans-serif;box-shadow:0 24px 70px rgba(0,0,0,0.6);';
+    card.style.cssText = 'background:#15151b;border:1px solid #2a2a35;border-radius:16px;padding:28px;max-width:760px;width:100%;margin:auto;color:#f4f4f7;font-family:Inter,sans-serif;box-shadow:0 24px 70px rgba(0,0,0,0.6);';
 
     card.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">'
       + '  <h2 style="margin:0;font-size:22px;font-weight:700;">Escolha seu plano</h2>'
@@ -32184,11 +32460,11 @@ function initEditor() {
       + '      <li>✓ Exportação em 1080p</li>'
       + '      <li>✓ Todas as animações</li>'
       + '    </ul>'
-      + '    <button class="wm-btn-assinar" data-plano="pro" style="width:100%;padding:13px;background:#262626;border:1px solid #4a4a5a;color:#fff;border-radius:10px;cursor:pointer;font-family:inherit;font-size:15px;font-weight:700;">Assinar Pro</button>'
+      + '    <button class="wm-btn-assinar" data-plano="pro" style="width:100%;padding:13px;background:#2a2a38;border:1px solid #4a4a5a;color:#fff;border-radius:10px;cursor:pointer;font-family:inherit;font-size:15px;font-weight:700;">Assinar Pro</button>'
       + '  </div>'
       // PRO PLUS
-      + '  <div style="border:2px solid #00E5CF;border-radius:14px;padding:22px;position:relative;background:linear-gradient(180deg,rgba(0,229,207,0.08),transparent);">'
-      + '    <div style="position:absolute;top:-11px;left:50%;transform:translateX(-50%);background:#00E5CF;color:#fff;font-size:11px;font-weight:700;padding:3px 12px;border-radius:10px;">MAIS POPULAR</div>'
+      + '  <div style="border:2px solid #8b5cf6;border-radius:14px;padding:22px;position:relative;background:linear-gradient(180deg,rgba(139,92,246,0.08),transparent);">'
+      + '    <div style="position:absolute;top:-11px;left:50%;transform:translateX(-50%);background:#8b5cf6;color:#fff;font-size:11px;font-weight:700;padding:3px 12px;border-radius:10px;">MAIS POPULAR</div>'
       + '    <div style="font-size:18px;font-weight:700;margin-bottom:4px;">Pro Plus</div>'
       + '    <div style="font-size:30px;font-weight:800;margin-bottom:2px;">R$67<span style="font-size:14px;font-weight:500;color:#9aa;">/mês</span></div>'
       + '    <div style="font-size:13px;color:#9aa;margin-bottom:16px;">~20 produções por mês</div>'
@@ -32201,7 +32477,7 @@ function initEditor() {
       + '      <li>✓ Compara Fontes</li>'
       + '      <li>✓ e muito mais...</li>'
       + '    </ul>'
-      + '    <button class="wm-btn-assinar" data-plano="pro_plus" style="width:100%;padding:13px;background:linear-gradient(135deg,#00E5CF,#3B82F6);border:none;color:#fff;border-radius:10px;cursor:pointer;font-family:inherit;font-size:15px;font-weight:700;">Assinar Pro Plus</button>'
+      + '    <button class="wm-btn-assinar" data-plano="pro_plus" style="width:100%;padding:13px;background:linear-gradient(135deg,#8b5cf6,#6366f1);border:none;color:#fff;border-radius:10px;cursor:pointer;font-family:inherit;font-size:15px;font-weight:700;">Assinar Pro Plus</button>'
       + '  </div>'
       + '</div>'
       + '<p style="margin:18px 0 0;text-align:center;color:#777;font-size:12px;">Pagamento seguro via Hotmart · Pix ou cartão · Cancele quando quiser</p>';
@@ -32244,7 +32520,7 @@ function initEditor() {
     overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
 
     const card = document.createElement('div');
-    card.style.cssText = 'background:#1E1E1E;border:1px solid #333;border-radius:12px;padding:24px;max-width:440px;width:90%;color:#f4f4f7;font-family:Inter,sans-serif;box-shadow:0 20px 60px rgba(0,0,0,0.5);max-height:80vh;overflow:auto;';
+    card.style.cssText = 'background:#1a1a1f;border:1px solid #333;border-radius:12px;padding:24px;max-width:440px;width:90%;color:#f4f4f7;font-family:Inter,sans-serif;box-shadow:0 20px 60px rgba(0,0,0,0.5);max-height:80vh;overflow:auto;';
 
     const numFontesLocais = window.__localFontsByFamily
       ? Object.keys(window.__localFontsByFamily).length
@@ -32467,8 +32743,8 @@ function initEditor() {
           if (tab) tab.click();
           break;
         }
-        case 1: { // Animações → painel direito aba "animations"
-          const tab = $('.panel-tab[data-rpanel="animations"]');
+        case 1: { // Animações → painel esquerdo aba "animations"
+          const tab = $('.panel-tab[data-panel="animations"]');
           if (tab) tab.click();
           break;
         }
@@ -32477,15 +32753,15 @@ function initEditor() {
           break;
         }
         case 3: { // Fontes → painel direito aba "style" (onde ficam as fontes)
-          const tab = $('.panel-tab[data-rpanel="animations"]');
+          const tab = $('.panel-tab[data-rpanel="style"]');
           if (tab) tab.click();
           // Foca o campo de busca de fonte pra deixar claro onde está
           const fontSearch = $('#font-search');
           if (fontSearch) setTimeout(() => fontSearch.focus(), 50);
           break;
         }
-        case 4: { // Backgrounds → painel esquerdo aba "bg" (Background)
-          const tab = $('.panel-tab[data-panel="bg"]');
+        case 4: { // Backgrounds → painel direito aba "bg" (Fundo)
+          const tab = $('.panel-tab[data-rpanel="bg"]');
           if (tab) tab.click();
           break;
         }
@@ -33492,7 +33768,7 @@ function initEditor() {
       isPremium: !!ehPremium,
       requiredPlan: ehPremium ? 'pro_plus' : 'free',
       isActive: true,
-      accent: '#00E5CF',
+      accent: '#8b5cf6',
       config: {
         // SEM lyrics real, SEM bg original, SEM áudio, SEM ID do projeto —
         // só a composição visual/tipográfica/de animação.
@@ -33518,7 +33794,7 @@ function initEditor() {
     const ov = document.createElement('div');
     ov.style.cssText = 'position:fixed;inset:0;z-index:999999;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;padding:24px;';
     const box = document.createElement('div');
-    box.style.cssText = 'background:var(--bg-secondary,#1a1a2e);color:var(--text-primary,#f4f4f7);border:1px solid #00E5CF;border-radius:12px;max-width:680px;width:100%;max-height:85vh;overflow:auto;padding:24px;font-family:system-ui,sans-serif;';
+    box.style.cssText = 'background:var(--bg-secondary,#1a1a2e);color:var(--text-primary,#f4f4f7);border:1px solid #8b5cf6;border-radius:12px;max-width:680px;width:100%;max-height:85vh;overflow:auto;padding:24px;font-family:system-ui,sans-serif;';
     box.innerHTML =
       '<h3 style="margin:0 0 8px;font-size:18px;">✓ Template oficial "' + escapeHtml(nome) + '" criado (' + lineCount + ' ' + (lineCount === 1 ? 'linha' : 'linhas') + ')</h3>'
       + '<p style="margin:0 0 16px;font-size:13px;color:var(--text-tertiary,#999);line-height:1.5;">'
@@ -33587,7 +33863,7 @@ function initEditor() {
       name: nome,
       description: desc || 'Template personalizado.',
       tags: ['meu'],
-      accent: (cfg.style && cfg.style.glowColor) || '#00E5CF',
+      accent: (cfg.style && cfg.style.glowColor) || '#8b5cf6',
       config: cfg,
     };
 
@@ -33881,10 +34157,10 @@ function initEditor() {
   function renderTemplateGrid() {
     const grid = $('#template-grid');
     const BG_CSS = {
-      brand: 'linear-gradient(135deg, #00E5CF, #3b82f6)',
-      divine: 'linear-gradient(135deg, #A855F7, #00E5CF)',
+      brand: 'linear-gradient(135deg, #8b5cf6, #3b82f6)',
+      divine: 'linear-gradient(135deg, #d4a857, #8b5cf6)',
       midnight: 'linear-gradient(135deg, #0f0f17, #1e1b4b)',
-      warm: 'linear-gradient(135deg, #7c2d12, #A855F7)',
+      warm: 'linear-gradient(135deg, #7c2d12, #d4a857)',
       black: '#050507',
     };
 
@@ -34504,7 +34780,7 @@ function initEditor() {
       overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
 
       const card = document.createElement('div');
-      card.style.cssText = 'background:#1E1E1E;border:1px solid #aa6622;border-radius:12px;padding:24px;max-width:520px;width:90%;color:#f4f4f7;font-family:Inter,sans-serif;box-shadow:0 20px 60px rgba(0,0,0,0.5);';
+      card.style.cssText = 'background:#1a1a1f;border:1px solid #aa6622;border-radius:12px;padding:24px;max-width:520px;width:90%;color:#f4f4f7;font-family:Inter,sans-serif;box-shadow:0 20px 60px rgba(0,0,0,0.5);';
 
       // Monta texto descritivo das incompatibilidades
       const detalhes = incompatibilidades.slice(0, 3).map(inc => {
@@ -34530,7 +34806,7 @@ function initEditor() {
         + '</p>'
         + '<div style="display:flex;gap:8px;justify-content:flex-end;">'
         + '  <button id="mm-cancel" style="padding:10px 16px;background:transparent;border:1px solid #444;border-radius:8px;color:#a0a0aa;cursor:pointer;font-family:inherit;font-size:13px;">Cancelar</button>'
-        + '  <button id="mm-continuar" style="padding:10px 16px;background:#262626;border:1px solid #fb0;border-radius:8px;color:#fb0;cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;">'+(window.WM_T?window.WM_T('dyn.applyAnyway'):'Aplicar mesmo assim')+'</button>'
+        + '  <button id="mm-continuar" style="padding:10px 16px;background:#2a2a35;border:1px solid #fb0;border-radius:8px;color:#fb0;cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;">'+(window.WM_T?window.WM_T('dyn.applyAnyway'):'Aplicar mesmo assim')+'</button>'
         + '</div>';
 
       const fechar = (resp) => {
@@ -35053,16 +35329,16 @@ function initEditor() {
     overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
 
     const card = document.createElement('div');
-    card.style.cssText = 'background:#1E1E1E;border:1px solid #333;border-radius:12px;padding:24px;max-width:440px;width:90%;color:#f4f4f7;font-family:Inter,sans-serif;box-shadow:0 20px 60px rgba(0,0,0,0.5);';
+    card.style.cssText = 'background:#1a1a1f;border:1px solid #333;border-radius:12px;padding:24px;max-width:440px;width:90%;color:#f4f4f7;font-family:Inter,sans-serif;box-shadow:0 20px 60px rgba(0,0,0,0.5);';
 
     card.innerHTML = '<h3 style="margin:0 0 8px;font-size:18px;font-weight:600;">Aplicar animação de ' + catLabel + '</h3>'
       + '<p style="margin:0 0 20px;font-size:14px;color:#a0a0aa;line-height:1.5;">'+(window.WM_T?window.WM_T('dyn.whereApplyAnim'):'Onde quer aplicar essa animação?')+'</p>'
       + '<div style="display:flex;flex-direction:column;gap:8px;">'
-      + '  <button id="anim-scope-slide" style="text-align:left;padding:14px;background:#262626;border:2px solid #4a8;border-radius:8px;color:#f4f4f7;cursor:pointer;font-family:inherit;">'
+      + '  <button id="anim-scope-slide" style="text-align:left;padding:14px;background:#2a2a35;border:2px solid #4a8;border-radius:8px;color:#f4f4f7;cursor:pointer;font-family:inherit;">'
       + '    <div style="font-weight:600;font-size:14px;margin-bottom:4px;color:#9fd;">★ Só neste slide (recomendado)</div>'
       + '    <div style="font-size:12px;color:#a0a0aa;line-height:1.4;">Aplica a animação apenas na estrofe/slide atual. Os outros slides mantêm suas animações.</div>'
       + '  </button>'
-      + '  <button id="anim-scope-todos" style="text-align:left;padding:14px;background:#262626;border:1px solid #444;border-radius:8px;color:#f4f4f7;cursor:pointer;font-family:inherit;">'
+      + '  <button id="anim-scope-todos" style="text-align:left;padding:14px;background:#2a2a35;border:1px solid #444;border-radius:8px;color:#f4f4f7;cursor:pointer;font-family:inherit;">'
       + '    <div style="font-weight:600;font-size:14px;margin-bottom:4px;">Todos os slides</div>'
       + '    <div style="font-size:12px;color:#a0a0aa;line-height:1.4;">Aplica a mesma animação em todos os slides do projeto.</div>'
       + '  </button>'
@@ -35085,7 +35361,7 @@ function initEditor() {
         btn.style.borderColor = hoverBorder;
       });
       btn.addEventListener('mouseleave', () => {
-        btn.style.background = '#262626';
+        btn.style.background = '#2a2a35';
         btn.style.borderColor = baseBorder;
       });
     });
@@ -35122,26 +35398,26 @@ function initEditor() {
     overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
 
     const card = document.createElement('div');
-    card.style.cssText = 'background:#1E1E1E;border:1px solid #333;border-radius:12px;padding:24px;max-width:480px;width:90%;color:#f4f4f7;font-family:Inter,sans-serif;box-shadow:0 20px 60px rgba(0,0,0,0.5);';
+    card.style.cssText = 'background:#1a1a1f;border:1px solid #333;border-radius:12px;padding:24px;max-width:480px;width:90%;color:#f4f4f7;font-family:Inter,sans-serif;box-shadow:0 20px 60px rgba(0,0,0,0.5);';
 
     card.innerHTML = '<h3 style="margin:0 0 8px;font-size:18px;font-weight:600;">Aplicar template "' + (tpl.name || '') + '"</h3>'
       + '<p style="margin:0 0 20px;font-size:14px;color:#a0a0aa;line-height:1.5;">Como quer aplicar o template na sua letra?</p>'
       + '<div style="display:flex;flex-direction:column;gap:8px;">'
-      + '  <button id="tpl-mode-estrofe" style="text-align:left;padding:14px;background:#262626;border:2px solid #4a8;border-radius:8px;color:#f4f4f7;cursor:pointer;font-family:inherit;">'
+      + '  <button id="tpl-mode-estrofe" style="text-align:left;padding:14px;background:#2a2a35;border:2px solid #4a8;border-radius:8px;color:#f4f4f7;cursor:pointer;font-family:inherit;">'
       + '    <div style="font-weight:600;font-size:14px;margin-bottom:4px;color:#9fd;">★ Aplicar SÓ na estrofe atual (recomendado)</div>'
       + '    <div style="font-size:12px;color:#a0a0aa;line-height:1.4;">Aplica fontes individuais, posições, tamanhos, animação, cor e efeitos do template <b>apenas na estrofe selecionada</b>. Outras estrofes ficam intactas. <b>Fundo não é aplicado</b>.</div>'
       + '  </button>'
       + (mostrarLote
-        ? '  <button id="tpl-mode-compativeis" style="text-align:left;padding:14px;background:#262626;border:1px solid #00E5CF;border-radius:8px;color:#f4f4f7;cursor:pointer;font-family:inherit;">'
-        + '    <div style="font-weight:600;font-size:14px;margin-bottom:4px;color:rgba(0, 229, 207, 0.5);">Aplicar em slides semelhantes (' + compatIdxs.length + ')</div>'
+        ? '  <button id="tpl-mode-compativeis" style="text-align:left;padding:14px;background:#2a2a35;border:1px solid #8b5cf6;border-radius:8px;color:#f4f4f7;cursor:pointer;font-family:inherit;">'
+        + '    <div style="font-weight:600;font-size:14px;margin-bottom:4px;color:#c4b5fd;">Aplicar em slides semelhantes (' + compatIdxs.length + ')</div>'
         + '    <div style="font-size:12px;color:#a0a0aa;line-height:1.4;">Aplica em todos os ' + compatIdxs.length + ' slides com ' + tplLineCount + ' ' + (tplLineCount === 1 ? 'linha' : 'linhas') + '. Slides com outra quantidade de linhas não são alterados.</div>'
         + '  </button>'
         : '')
-      + '  <button id="tpl-mode-todas" style="text-align:left;padding:14px;background:#262626;border:1px solid #444;border-radius:8px;color:#f4f4f7;cursor:pointer;font-family:inherit;">'
+      + '  <button id="tpl-mode-todas" style="text-align:left;padding:14px;background:#2a2a35;border:1px solid #444;border-radius:8px;color:#f4f4f7;cursor:pointer;font-family:inherit;">'
       + '    <div style="font-weight:600;font-size:14px;margin-bottom:4px;">'+(window.WM_T?window.WM_T('dyn.applyAllStanzas'):'Aplicar em TODAS as estrofes')+'</div>'
       + '    <div style="font-size:12px;color:#a0a0aa;line-height:1.4;">Replica o template em cada estrofe do projeto, mesmo as com outra quantidade de linhas. Cada uma recebe fontes individuais e layout do template (pela ordem das palavras de cada estrofe). <b>Fundo não é aplicado</b>.</div>'
       + '  </button>'
-      + '  <button id="tpl-mode-exemplo" style="text-align:left;padding:14px;background:#262626;border:1px solid #444;border-radius:8px;color:#f4f4f7;cursor:pointer;font-family:inherit;">'
+      + '  <button id="tpl-mode-exemplo" style="text-align:left;padding:14px;background:#2a2a35;border:1px solid #444;border-radius:8px;color:#f4f4f7;cursor:pointer;font-family:inherit;">'
       + '    <div style="font-weight:600;font-size:14px;margin-bottom:4px;">⚠ SUBSTITUIR todo o projeto pela letra de exemplo</div>'
       + '    <div style="font-size:12px;color:#a0a0aa;line-height:1.4;">Apaga TUDO e carrega a letra exemplo do template. Útil só pra ver como o template foi criado originalmente.</div>'
       + '  </button>'
@@ -35158,14 +35434,14 @@ function initEditor() {
       const btn = card.querySelector('#' + id);
       if (!btn) return;
       const isPrincipal = (id === 'tpl-mode-estrofe');
-      const baseBorder = isPrincipal ? '#4a8' : (id === 'tpl-mode-compativeis' ? '#00E5CF' : '#444');
-      const hoverBorder = isPrincipal ? '#5fa' : (id === 'tpl-mode-compativeis' ? '#00F5DD' : '#666');
+      const baseBorder = isPrincipal ? '#4a8' : (id === 'tpl-mode-compativeis' ? '#8b5cf6' : '#444');
+      const hoverBorder = isPrincipal ? '#5fa' : (id === 'tpl-mode-compativeis' ? '#a78bfa' : '#666');
       btn.addEventListener('mouseenter', () => {
         btn.style.background = '#3a3a48';
         btn.style.borderColor = hoverBorder;
       });
       btn.addEventListener('mouseleave', () => {
-        btn.style.background = '#262626';
+        btn.style.background = '#2a2a35';
         btn.style.borderColor = baseBorder;
       });
     });
@@ -35217,13 +35493,13 @@ function initEditor() {
       const overlay = document.createElement('div');
       overlay.style.cssText = 'position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
       const card = document.createElement('div');
-      card.style.cssText = 'background:#1E1E1E;border:1px solid #00E5CF;border-radius:12px;padding:24px;max-width:440px;width:90%;color:#f4f4f7;font-family:Inter,sans-serif;box-shadow:0 20px 60px rgba(0,0,0,0.5);';
+      card.style.cssText = 'background:#1a1a1f;border:1px solid #8b5cf6;border-radius:12px;padding:24px;max-width:440px;width:90%;color:#f4f4f7;font-family:Inter,sans-serif;box-shadow:0 20px 60px rgba(0,0,0,0.5);';
       const linhaTxt = lineCount === 1 ? 'linha' : 'linhas';
       card.innerHTML = '<h3 style="margin:0 0 12px;font-size:17px;font-weight:600;">Aplicar em ' + n + ' slides</h3>'
         + '<p style="margin:0 0 20px;font-size:14px;color:#ccc;line-height:1.5;">Este template será aplicado em <b>' + n + ' slides de ' + lineCount + ' ' + linhaTxt + '</b>. Os demais slides não serão alterados.</p>'
         + '<div style="display:flex;gap:8px;justify-content:flex-end;">'
         + '  <button id="ba-cancel" style="padding:10px 16px;background:transparent;border:1px solid #444;border-radius:8px;color:#a0a0aa;cursor:pointer;font-family:inherit;font-size:13px;">Cancelar</button>'
-        + '  <button id="ba-ok" style="padding:10px 16px;background:#00E5CF;border:none;border-radius:8px;color:#fff;cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;">Aplicar em ' + n + ' slides</button>'
+        + '  <button id="ba-ok" style="padding:10px 16px;background:#8b5cf6;border:none;border-radius:8px;color:#fff;cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;">Aplicar em ' + n + ' slides</button>'
         + '</div>';
       overlay.appendChild(card);
       document.body.appendChild(overlay);
@@ -35493,9 +35769,9 @@ function initEditor() {
   $('#btn-redo')?.addEventListener('click', () => performRedo());
   $('#btn-select-all')?.addEventListener('click', () => {
     selectAllWords();
-    // Abre a aba de Animações pra já poder editar a seleção,
+    // Abre a aba de Efeitos (Palavra) pra já poder editar a seleção,
     // igual ao fluxo de selecionar uma palavra.
-    const tab = $('.panel-tab[data-rpanel="animations"]');
+    const tab = $('.panel-tab[data-rpanel="style"]');
     if (tab) tab.click();
   });
 
@@ -35827,12 +36103,34 @@ function initEditor() {
     } catch (e) {}
   }, 800);
 
+  // Une a aba Palavra à aba Efeitos: move o conteúdo de palavra (camadas)
+  // pra dentro do painel Efeitos, no fim. Assim vira uma aba só ("Efeitos")
+  // com os efeitos (brilho/contorno/sombra) + os controles de palavra
+  // (camadas), e a aba Palavra some.
+  (function fundirPalavraComEfeitos() {
+    try {
+      const efeitos = document.querySelector('.panel-content[data-rpanel-content="style"]');
+      const palavra = document.querySelector('.panel-content[data-rpanel-content="word"]');
+      if (efeitos && palavra && palavra.parentNode) {
+        // Move as seções da aba palavra pro INÍCIO da aba efeitos, mantendo
+        // a ordem original (animação por palavra → camadas), pra que ao
+        // selecionar uma palavra apareçam PRIMEIRO os controles de palavra
+        // e DEPOIS os efeitos (brilho/contorno/sombra).
+        const ancora = efeitos.firstElementChild; // primeiro efeito
+        const secoes = [...palavra.children];
+        secoes.forEach(sec => efeitos.insertBefore(sec, ancora));
+        // Remove o container vazio da aba palavra.
+        palavra.parentNode.removeChild(palavra);
+      }
+    } catch (e) {}
+  })();
+
   // Une a aba Motion à aba Fundo: move as seções de Motion (granularidade,
   // velocidade, transição) pro FIM da aba Fundo. Vira "Fundo & Movimento":
   // primeiro o fundo (o que se vê), depois o movimento (como anima).
   (function fundirMotionComFundo() {
     try {
-      const fundo = document.querySelector('.panel-content[data-panel-content="bg"]');
+      const fundo = document.querySelector('.panel-content[data-rpanel-content="bg"]');
       const motion = document.querySelector('.panel-content[data-rpanel-content="motion"]');
       if (fundo && motion && motion.parentNode) {
         while (motion.firstElementChild) {
@@ -36747,7 +37045,7 @@ function initEditor() {
     setTimeout(parseAndRender, 200);
   }
 
-  console.log('%cWorshipMotion Editor', 'color:#00E5CF; font-weight: bold; font-size: 14px;');
+  console.log('%cWorshipMotion Editor', 'color:#8b5cf6; font-weight: bold; font-size: 14px;');
   console.log('Pressione Espaço para reproduzir, ← → para navegar, Ctrl+S para salvar');
 }
 
@@ -36843,7 +37141,7 @@ function initLandingAnims() {
         const span = document.createElement('span');
         span.className = 'lp-stage-word' + (emph ? ' lp-emph' : '');
         span.textContent = emph ? w.slice(1) : w;
-        if (style.gold && emph) span.style.color = '#A855F7';
+        if (style.gold && emph) span.style.color = '#e0b65c';
         span.style.opacity = '0';
         textEl.appendChild(span);
         return span;
@@ -37656,7 +37954,7 @@ window.__wmMostrarDiag = function (forcar) {
 
   const btnCopiar = document.createElement('button');
   btnCopiar.textContent = 'Copiar diagnóstico';
-  btnCopiar.style.cssText = 'display:block;width:100%;margin-bottom:8px;padding:11px;background:linear-gradient(135deg,#00E5CF,#3b82f6);color:#fff;border:none;border-radius:10px;font-size:13.5px;font-weight:600;cursor:pointer;';
+  btnCopiar.style.cssText = 'display:block;width:100%;margin-bottom:8px;padding:11px;background:linear-gradient(135deg,#8b5cf6,#3b82f6);color:#fff;border:none;border-radius:10px;font-size:13.5px;font-weight:600;cursor:pointer;';
   btnCopiar.onclick = function () {
     const done = function () { btnCopiar.textContent = '✓ Copiado — cole aqui na conversa'; };
     try {
@@ -37805,7 +38103,7 @@ window.__wmMostrarRecuperacao = function (itens) {
   box.style.cssText = [
     'position:fixed', 'top:16px', 'left:50%', 'transform:translateX(-50%)',
     'z-index:99999', 'width:calc(100% - 32px)', 'max-width:400px',
-    'background:#16162a', 'border:1px solid rgba(0,229,207,0.6)',
+    'background:#16162a', 'border:1px solid rgba(139,92,246,0.6)',
     'border-radius:14px', 'box-shadow:0 12px 40px rgba(0,0,0,0.5)',
     'padding:16px', 'color:#e9e9f2', 'font-family:inherit'
   ].join(';');
@@ -37833,7 +38131,7 @@ window.__wmMostrarRecuperacao = function (itens) {
     const btn = document.createElement('button');
     btn.style.cssText = [
       'display:block', 'width:100%', 'margin-bottom:8px', 'padding:12px 14px',
-      'background:linear-gradient(135deg,#00E5CF,#3b82f6)', 'color:#fff',
+      'background:linear-gradient(135deg,#8b5cf6,#3b82f6)', 'color:#fff',
       'border:none', 'border-radius:10px', 'font-size:14px', 'font-weight:600',
       'cursor:pointer', 'text-align:center'
     ].join(';');
@@ -48589,7 +48887,7 @@ function wmSampleAnimState(anim, progress) {
 <style>
   #wmTestV2Toggle {
     position: fixed; right: 16px; bottom: 16px; z-index: 999999;
-    background: #A855F7; color: #fff; border: none; border-radius: 999px;
+    background: #6d28d9; color: #fff; border: none; border-radius: 999px;
     padding: 10px 16px; font: 600 13px/1 system-ui, sans-serif; cursor: pointer;
     box-shadow: 0 4px 14px rgba(0,0,0,.35);
   }
