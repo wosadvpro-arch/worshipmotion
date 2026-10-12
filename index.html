@@ -957,12 +957,12 @@ h1, h2, h3, h4, h5, h6 {
    A seleção padrão do tema escuro tinha contraste fraco — ficava difícil
    ver o que estava marcado. Azul escuro + branco resolve a leitura. */
 .lyrics-textarea::selection {
-  background: #1e3a8a;          /* azul escuro */
-  color: #ffffff;
+  background: var(--cc-bg-elevated);
+  color: var(--cc-text-primary);
 }
 .lyrics-textarea::-moz-selection {
-  background: #1e3a8a;
-  color: #ffffff;
+  background: var(--cc-bg-elevated);
+  color: var(--cc-text-primary);
 }
 
 /* ---------- STANZA LIST ---------- */
@@ -1041,7 +1041,7 @@ h1, h2, h3, h4, h5, h6 {
   font-variant-numeric: tabular-nums;
 }
 .stanza-sync-badge.is-full {
-  color: #34d399;
+  color: var(--success);
   background: rgba(52,211,153,0.12);
   border-color: rgba(52,211,153,0.35);
 }
@@ -1376,7 +1376,7 @@ html.wm-modal-open, body.wm-modal-open {
   background: var(--bg-base);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-full);
-  color: var(--text-secondary, #a0a0aa);
+  color: var(--text-secondary);
   cursor: pointer;
   font-family: inherit;
   transition: background .15s, border-color .15s, color .15s;
@@ -1966,22 +1966,22 @@ body.wm-recording-mode::after {
   flex: 0 0 auto; z-index: 5; max-width: 100%;
   flex-wrap: wrap; justify-content: center;
 }
-.ctx-scope { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-dim, #7a8499); padding: 0 6px; white-space: nowrap; }
+.ctx-scope { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; color: var(--cc-text-muted); padding: 0 6px; white-space: nowrap; }
 .ctx-scope-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); display: inline-block; }
 .ctx-sep { width: 1px; height: 20px; background: var(--border-default, rgba(255,255,255,0.1)); }
-.ctx-font { height: 30px; font-size: 12px; padding: 0 6px; min-width: 110px; background: var(--bg-base); color: var(--text, #e8e8ee); border: 1px solid var(--border-default, rgba(255,255,255,0.1)); border-radius: 8px; }
-.ctx-weight { height: 30px; font-size: 12px; padding: 0 6px; background: var(--bg-base); color: var(--text, #e8e8ee); border: 1px solid var(--border-default, rgba(255,255,255,0.1)); border-radius: 8px; cursor: pointer; }
-.ctx-btn { height: 30px; min-width: 30px; padding: 0 8px; display: inline-flex; align-items: center; justify-content: center; background: transparent; color: var(--text, #e8e8ee); border: 1px solid var(--border-default, rgba(255,255,255,0.1)); border-radius: 8px; font-size: 13px; cursor: pointer; transition: background 0.15s, border-color 0.15s; }
+.ctx-font { height: 30px; font-size: 12px; padding: 0 6px; min-width: 110px; background: var(--bg-base); color: var(--text-primary); border: 1px solid var(--border-default, rgba(255,255,255,0.1)); border-radius: 8px; }
+.ctx-weight { height: 30px; font-size: 12px; padding: 0 6px; background: var(--bg-base); color: var(--text-primary); border: 1px solid var(--border-default, rgba(255,255,255,0.1)); border-radius: 8px; cursor: pointer; }
+.ctx-btn { height: 30px; min-width: 30px; padding: 0 8px; display: inline-flex; align-items: center; justify-content: center; background: transparent; color: var(--text-primary); border: 1px solid var(--border-default, rgba(255,255,255,0.1)); border-radius: 8px; font-size: 13px; cursor: pointer; transition: background 0.15s, border-color 0.15s; }
 .ctx-btn:hover { background: rgba(255,255,255,0.06); }
 .ctx-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
 .ctx-mini { min-width: 26px; height: 26px; padding: 0; font-size: 14px; border-radius: 6px; }
 .ctx-stepper { display: inline-flex; align-items: center; gap: 3px; border: 1px solid var(--border-default, rgba(255,255,255,0.1)); border-radius: 8px; padding: 2px; }
 .ctx-stepper .ctx-mini { border: none; }
-.ctx-val { font-size: 12px; min-width: 26px; text-align: center; color: var(--text, #e8e8ee); cursor: text; border-radius: 4px; padding: 1px 3px; outline: none; }
+.ctx-val { font-size: 12px; min-width: 26px; text-align: center; color: var(--text-primary); cursor: text; border-radius: 4px; padding: 1px 3px; outline: none; }
 .ctx-val[contenteditable]:hover { background: rgba(255,255,255,0.06); }
 .ctx-val[contenteditable]:focus { background: rgba(0,229,207,0.18); box-shadow: 0 0 0 1px var(--accent); }
 .ctx-color-dot { width: 16px; height: 16px; border-radius: 50%; background: #ffffff; display: block; border: 1px solid rgba(255,255,255,0.3); }
-.ctx-ico { font-size: 10px; color: var(--text-dim, #7a8499); letter-spacing: -1px; padding: 0 2px; user-select: none; }
+.ctx-ico { font-size: 10px; color: var(--cc-text-muted); letter-spacing: -1px; padding: 0 2px; user-select: none; }
 .ctx-color { position: relative; }
 .ctx-color-pop {
   position: fixed; z-index: 9999;
@@ -1994,7 +1994,7 @@ body.wm-recording-mode::after {
   cursor: pointer; padding: 0;
 }
 .ctx-color-grid button:hover { transform: scale(1.08); }
-.ctx-color-custom { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 11px; color: var(--text-dim, #7a8499); }
+.ctx-color-custom { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 11px; color: var(--cc-text-muted); }
 .ctx-color-custom input[type=color] { width: 34px; height: 26px; padding: 0; border: 1px solid var(--border-default, rgba(255,255,255,0.15)); border-radius: 6px; background: none; cursor: pointer; }
 /* Popover de espaçamento (entre letras + entre linhas) */
 .ctx-spacing-pop {
@@ -2013,9 +2013,9 @@ body.wm-recording-mode::after {
 }
 .ctx-spacing-row { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
 .ctx-spacing-row:last-child { margin-bottom: 0; }
-.ctx-spacing-row label { font-size: 12px; color: var(--text, #e8e8ee); font-weight: 500; }
+.ctx-spacing-row label { font-size: 12px; color: var(--text-primary); font-weight: 500; }
 .ctx-spacing-row input[type=range] { width: 100%; }
-.ctx-spacing-val { font-size: 11px; color: var(--text-dim, #7a8499); align-self: flex-end; margin-top: -2px; }
+.ctx-spacing-val { font-size: 11px; color: var(--cc-text-muted); align-self: flex-end; margin-top: -2px; }
 /* Popover de caixa (maiúsculas/minúsculas) */
 .ctx-case-pop {
   position: fixed; z-index: 9999;
@@ -2025,7 +2025,7 @@ body.wm-recording-mode::after {
 }
 .ctx-case-opt {
   text-align: left; padding: 9px 12px; border-radius: 8px; border: 1px solid transparent;
-  background: transparent; color: var(--text, #e8e8ee); font-size: 13px; cursor: pointer;
+  background: transparent; color: var(--text-primary); font-size: 13px; cursor: pointer;
 }
 .ctx-case-opt:hover { background: rgba(255,255,255,0.06); }
 .ctx-case-opt.active { background: rgba(0,229,207,0.18); border-color: var(--accent); }
@@ -2035,18 +2035,18 @@ body.wm-recording-mode::after {
   background: var(--bg-surface); border-left: 1px solid var(--border-default, rgba(255,255,255,0.1));
   box-shadow: -8px 0 30px rgba(0,0,0,0.4); display: flex; flex-direction: column; padding: 14px;
 }
-.ctx-fonts-head { display: flex; align-items: center; justify-content: space-between; font-size: 14px; font-weight: 600; color: var(--text, #e8e8ee); margin-bottom: 12px; }
-.ctx-fonts-search { width: 100%; height: 36px; padding: 0 10px; margin-bottom: 12px; background: var(--bg-base); color: var(--text, #e8e8ee); border: 1px solid var(--border-default, rgba(255,255,255,0.12)); border-radius: 8px; font-size: 13px; }
+.ctx-fonts-head { display: flex; align-items: center; justify-content: space-between; font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 12px; }
+.ctx-fonts-search { width: 100%; height: 36px; padding: 0 10px; margin-bottom: 12px; background: var(--bg-base); color: var(--text-primary); border: 1px solid var(--border-default, rgba(255,255,255,0.12)); border-radius: 8px; font-size: 13px; }
 .ctx-fonts-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; }
-.ctx-fonts-cat { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-dim, #7a8499); margin: 10px 4px 4px; }
-.ctx-font-item { display: flex; align-items: center; justify-content: space-between; padding: 9px 12px; border-radius: 8px; cursor: pointer; color: var(--text, #e8e8ee); border: 1px solid transparent; transition: background 0.12s; }
+.ctx-fonts-cat { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--cc-text-muted); margin: 10px 4px 4px; }
+.ctx-font-item { display: flex; align-items: center; justify-content: space-between; padding: 9px 12px; border-radius: 8px; cursor: pointer; color: var(--text-primary); border: 1px solid transparent; transition: background 0.12s; }
 .ctx-font-item:hover { background: rgba(255,255,255,0.05); }
 .ctx-font-item.selected { background: rgba(0,229,207,0.18); border-color: var(--accent); }
 .ctx-font-item .ctx-font-name { font-size: 14px; line-height: 1.1; }
 .ctx-fonts-upload {
   width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;
   padding: 9px; margin-bottom: 12px; border-radius: 8px;
-  background: var(--bg-base); color: var(--text, #e8e8ee);
+  background: var(--bg-base); color: var(--text-primary);
   border: 1px dashed var(--border-default, rgba(255,255,255,0.2));
   font-size: 12px; cursor: pointer; transition: background 0.15s, border-color 0.15s;
 }
@@ -2082,12 +2082,12 @@ body.wm-recording-mode::after {
   flex: 0 0 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center;
   background: var(--cc-accent-pro-gradient); color: #fff;
 }
-.videoaula-item .va-title { font-size: 13.5px; font-weight: 600; color: var(--text-primary, #e8e8ee); }
+.videoaula-item .va-title { font-size: 13.5px; font-weight: 600; color: var(--text-primary); }
 .videoaulas-empty { text-align: center; padding: 28px 16px; color: var(--text-secondary); }
 .ctx-font-item { gap: 8px; padding: 7px 12px; }
 .ctx-font-star {
   flex: 0 0 auto; width: 26px; height: 26px; padding: 4px; border: none; background: transparent;
-  cursor: pointer; color: var(--text-dim, #7a8499); opacity: 0.5; border-radius: 6px;
+  cursor: pointer; color: var(--cc-text-muted); opacity: 0.5; border-radius: 6px;
   display: inline-flex; align-items: center; justify-content: center;
 }
 .ctx-font-item:hover .ctx-font-star { opacity: 0.9; }
@@ -2326,7 +2326,7 @@ body.marking-open.marking-collapsed .editor-canvas {
   will-change: transform, opacity;
 }
 .lyric-word.is-emphasized {
-  color: var(--wm-emphasis-color, #fbbf24);
+  color: var(--gold);
   font-weight: var(--wm-emphasis-weight, inherit);
   font-size: calc(1em * var(--wm-emphasis-scale, 1));
   text-shadow: var(--wm-emphasis-shadow, none);
@@ -2532,7 +2532,7 @@ body.marking-open.marking-collapsed .editor-canvas {
   user-select: none;
   letter-spacing: 0.02em;
 }
-body.timeline-collapsed .timeline-collapse-hint { color: #3b82f6; }
+body.timeline-collapsed .timeline-collapse-hint { color: var(--cc-accent-cyan); }
 .timeline-collapse-btn {
   margin-left: 8px;
   display: inline-flex;
@@ -2570,7 +2570,7 @@ body.timeline-collapsed .editor-timeline:hover {
 }
 body.timeline-collapsed .timeline-collapse-btn {
   border-color: rgba(59, 130, 246, 0.5);
-  color: #3b82f6;
+  color: var(--cc-accent-cyan);
 }
 
 .editor-timeline {
@@ -2811,7 +2811,7 @@ body.timeline-collapsed .timeline-collapse-btn {
   .editor-left::before, .editor-right::before {
     content: ''; flex: 0 0 auto; width: 40px; height: 4px;
     margin: 8px auto 2px; border-radius: 999px;
-    background: var(--border-strong, #3a3a4a);
+    background: var(--border-strong);
   }
 
   .editor-left .panel-body, .editor-right .panel-body {
@@ -3100,13 +3100,13 @@ body.timeline-collapsed .timeline-collapse-btn {
 .scene-control select option,
 #word-panel-content select option,
 #transition-type option {
-  background: #1a1a24;
-  color: #f4f4f7;
+  background: var(--cc-bg-surface);
+  color: var(--cc-text-primary);
   padding: 4px 8px;
 }
 .scene-control select optgroup,
 #word-panel-content select optgroup {
-  background: #0f0f17;
+  background: var(--cc-bg-canvas);
   color: var(--cc-accent-cyan);
   font-style: normal;
   font-weight: 700;
@@ -3647,7 +3647,7 @@ body.is-dragging-word .lyric-word { cursor: grabbing !important; }
 }
 .audio-btn-icon:hover {
   background: rgba(239, 68, 68, 0.15);
-  color: #ef4444;
+  color: var(--error);
 }
 
 /* ===== Arrastar-e-soltar áudio (PC) + estado de carregamento do upload ===== */
@@ -3758,7 +3758,7 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
 }
 .wm-dialog-message {
   font-size: 14px;
-  color: var(--text-secondary, #b4b4c0);
+  color: var(--text-secondary);
   line-height: 1.55;
   margin: 0 0 20px;
   white-space: pre-wrap;
@@ -3796,7 +3796,7 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
 .wm-dialog-btn-cancel {
   background: transparent;
   border-color: var(--border-default, rgba(255,255,255,0.15));
-  color: var(--text-secondary, #b4b4c0);
+  color: var(--text-secondary);
 }
 .wm-dialog-btn-cancel:hover {
   background: var(--bg-elevated, rgba(255,255,255,0.06));
@@ -3811,11 +3811,11 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
 }
 /* Variante perigosa (excluir, apagar) */
 .wm-dialog-btn-danger {
-  background: #dc2626;
+  background: var(--error);
   color: #fff;
 }
 .wm-dialog-btn-danger:hover {
-  background: #b91c1c;
+  background: var(--error);
 }
 
 /* Botões icon-only no topbar */
@@ -4083,8 +4083,8 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
   position: relative;
   background: conic-gradient(
     from 180deg,
-    #ef4444, #f59e0b, #fbbf24, #84cc16, #10b981,
-    #06b6d4, #3b82f6, #00E5CF, #ec4899, #ef4444
+    var(--error), var(--warning), var(--gold), #84cc16, #10b981,
+    #06b6d4, #3b82f6, #00E5CF, #ec4899, var(--error)
   ) !important;
   cursor: pointer;
   display: flex;
@@ -4095,7 +4095,7 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
   content: '';
   position: absolute;
   inset: 35%;
-  background: var(--bg-elevated, #1a1a23);
+  background: var(--bg-elevated);
   border-radius: 50%;
   pointer-events: none;
 }
@@ -4159,7 +4159,7 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
 }
 .anim-picker-dialog {
   position: relative;
-  background: var(--bg-elevated, #1a1a23);
+  background: var(--bg-elevated);
   border: 1px solid var(--border-default);
   border-radius: 14px;
   width: 100%;
@@ -4201,7 +4201,7 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
 .anim-picker-search {
   width: 100%;
   padding: 8px 12px;
-  background: var(--bg-3, #0e0e15);
+  background: var(--bg-3);
   border: 1px solid var(--border-default);
   border-radius: 8px;
   color: var(--text-primary);
@@ -4246,7 +4246,7 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
   flex: 1;
 }
 .anim-picker-card {
-  background: var(--bg-3, #0e0e15);
+  background: var(--bg-3);
   border: 1px solid var(--border-default);
   border-radius: 8px;
   padding: 8px;
@@ -4322,7 +4322,7 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
   justify-content: space-between;
   width: 100%;
   padding: 10px 12px;
-  background: var(--bg-3, #0e0e15);
+  background: var(--bg-3);
   border: 1px solid var(--border-default);
   border-radius: 8px;
   color: var(--text-primary);
@@ -4402,7 +4402,7 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
 .anim-context-clear:hover {
   background: rgba(239, 68, 68, 0.15);
   border-color: rgba(239, 68, 68, 0.5);
-  color: #ef4444;
+  color: var(--error);
 }
 
 /* ============ WORD ANIM INLINE (sem modal) ============ */
@@ -4410,7 +4410,7 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
   display: flex;
   flex-direction: column;
   gap: 8px;
-  background: var(--bg-3, #0e0e15);
+  background: var(--bg-3);
   border: 1px solid var(--border-default);
   border-radius: 10px;
   padding: 10px;
@@ -4662,7 +4662,7 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
   align-items: center;
   gap: 6px;
   padding: 8px 10px;
-  background: var(--bg-3, #0e0e15);
+  background: var(--bg-3);
   border: 1px solid var(--border-default);
   border-radius: 6px;
   color: var(--text-primary);
@@ -4712,7 +4712,7 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
   background: var(--cc-accent-cyan-subtle);
   border: 1px solid rgba(0, 229, 207, 0.45);
   border-radius: 6px;
-  color: #c4b5fd;
+  color: var(--cc-accent-cyan);
   cursor: pointer;
   padding: 0;
   transition: 0.12s;
@@ -4790,7 +4790,7 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
 .stanza-item:hover .stanza-item-clearmarks { opacity: 1; }
 .stanza-item-clearmarks:hover {
   background: rgba(245, 158, 11, 0.15);
-  color: #f59e0b;
+  color: var(--warning);
   border-color: rgba(245, 158, 11, 0.4);
 }
 /* Com o botão limpar-ritmo presente, reserva mais espaço à direita */
@@ -4803,7 +4803,7 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
   border-radius: 6px;
   background: var(--cc-accent-cyan-subtle);
   border: 1px solid rgba(0, 229, 207, 0.4);
-  color: #c4b5fd;
+  color: var(--cc-accent-cyan);
   cursor: pointer;
   transition: 0.12s;
 }
@@ -4826,7 +4826,7 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
   backdrop-filter: blur(4px);
   box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
-.stanza-select-count { font-size: 12px; color: #c4b5fd; font-weight: 600; }
+.stanza-select-count { font-size: 12px; color: var(--cc-accent-cyan); font-weight: 600; }
 .stanza-select-actions { display: flex; gap: 6px; }
 #btn-del-selected {
   background: rgba(239, 68, 68, 0.9);
@@ -4859,7 +4859,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
   border-radius: 5px;
   background: rgba(245, 158, 11, 0.15);
   border: 1px solid rgba(245, 158, 11, 0.4);
-  color: #fbbf24;
+  color: var(--gold);
   cursor: pointer;
   white-space: nowrap;
 }
@@ -4889,7 +4889,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
 .stanza-item-delete:hover {
   background: rgba(239, 68, 68, 0.15);
   border-color: rgba(239, 68, 68, 0.4);
-  color: #ef4444;
+  color: var(--error);
 }
 
 .timeline-clip {
@@ -5029,7 +5029,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
 }
 .fav-star:hover {
   background: rgba(0, 0, 0, 0.7);
-  color: #fbbf24;
+  color: var(--gold);
   transform: scale(1.1);
 }
 /* Hover no card pai mostra a estrela */
@@ -5043,7 +5043,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
 .word-anim-card.is-fav .fav-star,
 .font-option.is-fav .fav-star {
   opacity: 1;
-  color: #fbbf24;
+  color: var(--gold);
 }
 /* Cards favoritados ganham brilho amarelado no border */
 .anim-card.is-fav,
@@ -5068,7 +5068,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
   top: -7px;
   left: 50%;
   transform: translateX(-50%);
-  background: var(--bg-elevated, #1a1a23);
+  background: var(--bg-elevated);
   color: var(--text-tertiary);
   font-size: 9px;
   font-weight: 600;
@@ -5106,13 +5106,13 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
 
 /* Caixa de seleção de MÚLTIPLAS palavras (grupo) */
 .selection-box.is-multi {
-  border-color: #fbbf24;
+  border-color: var(--gold);
   border-width: 2px;
   border-style: dashed;
 }
 .selection-box.is-multi .selection-handle {
-  background: #fbbf24;
-  border-color: #fbbf24;
+  background: var(--gold);
+  border-color: var(--gold);
 }
 .selection-box.is-multi .selection-rotate {
   display: none; /* rotação em grupo é complexo, deixa só pra solo */
@@ -5199,7 +5199,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
   box-shadow: 0 0 12px rgba(0, 229, 207, 0.8);
 }
 .timeline-audio-track:hover .timeline-playhead {
-  background: #a78bfa;
+  background: var(--cc-accent-pro);
 }
 .timeline-audio-track.is-loading {
   cursor: progress;
@@ -5226,12 +5226,12 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
 }
 .timeline-audio-track.is-scrubbing .timeline-playhead {
   width: 3px;
-  background: #fbbf24;
+  background: var(--gold);
   box-shadow: 0 0 12px rgba(251, 191, 36, 0.8);
   transition: none;
 }
 .timeline-audio-track.is-scrubbing .timeline-playhead::before {
-  background: #fbbf24;
+  background: var(--gold);
   box-shadow: 0 0 16px rgba(251, 191, 36, 1);
 }
 
@@ -5272,7 +5272,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
   background: var(--cc-accent-cyan-subtle);
   border: 1px solid rgba(0, 229, 207, 0.45);
   border-radius: 6px;
-  color: #c4b5fd;
+  color: var(--cc-accent-cyan);
   font-size: 16px; line-height: 1;
   cursor: pointer; padding: 0;
 }
@@ -5443,7 +5443,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
 .marking-panel-progress {
   font-size: 11px;
   font-weight: 700;
-  color: var(--accent, #a78bfa);
+  color: var(--accent, var(--cc-accent-pro));
   background: rgba(0, 229, 207, 0.14);
   border: 1px solid rgba(0, 229, 207, 0.32);
   padding: 3px 10px;
@@ -5578,15 +5578,15 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
   flex: 0 0 auto; min-width: 112px; height: 40px;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: 0; border: none; border-radius: 12px; cursor: pointer;
-  background: linear-gradient(135deg,#00E5CF,#6d28d9); color: #fff;
+  background: var(--cc-accent-pro-gradient); color: #fff;
   box-shadow: 0 6px 20px -6px rgba(0,229,207,0.6);
   font-family: inherit; transition: transform .08s ease, box-shadow .2s ease;
   user-select: none; -webkit-tap-highlight-color: transparent;
 }
 .tap-big-btn:active { transform: scale(0.96); }
 .tap-big-btn.is-running { background: linear-gradient(135deg,#22c55e,#15803d); box-shadow: 0 6px 20px -6px rgba(34,197,94,0.6); }
-.tap-big-btn.is-counting { background: linear-gradient(135deg,#f59e0b,#b45309); }
-.tap-big-btn.is-paused { background: linear-gradient(135deg,#00E5CF,#6d28d9); }
+.tap-big-btn.is-counting { background: linear-gradient(135deg,var(--warning),#b45309); }
+.tap-big-btn.is-paused { background: var(--cc-accent-pro-gradient); }
 .tap-actions { display: flex; gap: 8px; align-items: center; }
 /* Desktop: tap-bar numa ÚNICA linha — preenche o espaço horizontal vazio e
    libera altura pra lista de palavras (que estava espremida). Usa .marking-tap-bar
@@ -5748,7 +5748,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
 }
 .mark-word.is-next {
   background: rgba(251, 191, 36, 0.2);
-  border: 2px solid #fbbf24;
+  border: 2px solid var(--gold);
   color: #fff;
   animation: mark-word-pulse 1.4s ease-in-out infinite;
   padding: 5px 9px;
@@ -5781,7 +5781,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
   left: 50%;
   transform: translateX(-50%);
   background: rgba(0, 0, 0, 0.85);
-  color: #fbbf24;
+  color: var(--gold);
   font-size: 10px;
   font-weight: 700;
   padding: 2px 6px;
@@ -6004,7 +6004,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
   color: var(--text-primary);
 }
 .word-emphasis-label svg {
-  color: #fbbf24;
+  color: var(--gold);
 }
 
 /* Switch mini (compacto) */
@@ -6040,7 +6040,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
   transition: 0.2s;
 }
 .switch-mini input:checked + .switch-mini-slider {
-  background: #fbbf24;
+  background: var(--gold);
 }
 .switch-mini input:checked + .switch-mini-slider::before {
   transform: translateX(14px);
@@ -6152,7 +6152,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
   line-height: 1.05;
   letter-spacing: -0.03em;
   margin-bottom: var(--space-6);
-  background: linear-gradient(180deg, #ffffff 0%, #a8a8b8 100%);
+  background: linear-gradient(180deg, var(--cc-text-primary) 0%, var(--cc-text-secondary) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -6206,7 +6206,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
 .hero-demo .canvas-bg {
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, #00E5CF, #3b82f6);
+  background: var(--cc-accent-pro-gradient);
   opacity: 0.5;
 }
 .hero-demo .demo-content > span { display: inline-block; }
@@ -6339,7 +6339,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
   background:
     radial-gradient(circle at 30% 20%, rgba(0, 229, 207, 0.4), transparent 60%),
     radial-gradient(circle at 70% 80%, rgba(99, 102, 241, 0.3), transparent 60%),
-    linear-gradient(135deg, var(--cc-bg-canvas), #1e1b4b);
+    linear-gradient(135deg, var(--cc-bg-canvas), #1E1E1E);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -6426,7 +6426,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
 .auth-footer a:hover { text-decoration: underline; }
 
 /* ---- Tela de login IMERSIVA (cena de louvor + cartão de vidro) — escopado, não afeta a landing ---- */
-.page-login.auth-shell { position: relative; min-height: 100vh; background: #05050b; overflow: hidden; }
+.page-login.auth-shell { position: relative; min-height: 100vh; background: var(--cc-bg-canvas); overflow: hidden; }
 /* vence a regra do roteador .page-auth.active{display:grid} via especificidade */
 .page-login.page-auth.active { display: block; }
 
@@ -6484,8 +6484,8 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
   text-shadow: 0 4px 24px rgba(0,0,0,0.5);
 }
 .page-login .wm-login-word { display: inline-block; margin: 0 0.16em; will-change: transform, opacity; backface-visibility: hidden; }
-.page-login .wm-login-word.wm-login-emph { color: var(--lp-accent-3, #c4b5fd); text-shadow: 0 0 24px rgba(167,139,250,0.6); }
-.page-login .wm-login-word.is-gold { color: var(--lp-gold, #e0b65c) !important; text-shadow: 0 0 24px rgba(224,182,92,0.65); }
+.page-login .wm-login-word.wm-login-emph { color: var(--lp-accent-3, var(--cc-accent-pro)); text-shadow: 0 0 24px rgba(167,139,250,0.6); }
+.page-login .wm-login-word.is-gold { color: var(--gold) !important; text-shadow: 0 0 24px rgba(224,182,92,0.65); }
 
 /* Conteúdo por cima da cena */
 .page-login .wm-login-content {
@@ -6527,7 +6527,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
 .wm-lang-menu {
   position: absolute; top: calc(100% + 4px); right: 0; z-index: 100;
   min-width: 170px; margin: 0; padding: 4px; list-style: none;
-  background: #1a1030; border: 1px solid var(--border-strong); border-radius: 10px;
+  background: var(--cc-bg-elevated); border: 1px solid var(--border-strong); border-radius: 10px;
   box-shadow: 0 12px 32px rgba(0,0,0,0.45);
   opacity: 0; visibility: hidden; transform: translateY(-4px);
   transition: opacity .15s, transform .15s, visibility .15s;
@@ -6545,7 +6545,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
 }
 .wm-lang-opt:hover { background: rgba(255,255,255,0.07); color: #fff; }
 .wm-lang-opt.is-sel { color: #fff; background: rgba(108,77,246,0.18); }
-.wm-lang-opt small { color: var(--text-tertiary, #9a90b0); font-size: 11px; }
+.wm-lang-opt small { color: var(--cc-text-muted); font-size: 11px; }
 
 /* Seletor de idioma na barra lateral do editor (rail) — botão só-bandeira,
    menu abre pro LADO (a rail é estreita e fica na borda esquerda).
@@ -6589,7 +6589,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
   .wm-lang-menu-rail::after {
     content: ''; position: absolute; top: 100%; left: 50%;
     transform: translateX(-50%);
-    border: 7px solid transparent; border-top-color: #1a1030;
+    border: 7px solid transparent; border-top-color: var(--cc-bg-elevated);
   }
   .wm-lang-rail-toggle { width: 44px; height: 44px; }
   .wm-lang-menu-rail .wm-lang-opt { padding: 12px 14px; font-size: 15px; }
@@ -6626,18 +6626,18 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
    Escopo: .page-landing
    ============================================================ */
 .page-landing {
-  --lp-bg: #07070d;
-  --lp-surface: #0e0e17;
-  --lp-surface-2: #15151f;
+  --lp-bg: var(--cc-bg-canvas);
+  --lp-surface: var(--cc-bg-surface);
+  --lp-surface-2: var(--cc-bg-elevated);
   --lp-line: rgba(255,255,255,0.08);
   --lp-line-strong: rgba(255,255,255,0.15);
-  --lp-text: #f6f6f9;
-  --lp-text-dim: #a2a2b4;
-  --lp-text-faint: #6c6c80;
-  --lp-accent: #00E5CF;
-  --lp-accent-2: #a78bfa;
-  --lp-accent-3: #c4b5fd;
-  --lp-gold: #e0b65c;
+  --lp-text: var(--cc-text-primary);
+  --lp-text-dim: var(--cc-text-secondary);
+  --lp-text-faint: var(--cc-text-muted);
+  --lp-accent: var(--cc-accent-cyan);
+  --lp-accent-2: var(--cc-accent-pro);
+  --lp-accent-3: var(--cc-accent-pro);
+  --lp-gold: var(--gold);
   background: var(--lp-bg);
   color: var(--lp-text);
   font-family: 'Inter', system-ui, sans-serif;
@@ -6711,7 +6711,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
 }
 .page-landing .lp-stage-bg {
   position: absolute; inset: 0; transition: background 0.8s ease;
-  background: radial-gradient(ellipse at 50% 40%, #1a1530, #07060d 75%);
+  background: radial-gradient(ellipse at 50% 40%, var(--cc-bg-elevated), var(--cc-bg-canvas) 75%);
 }
 .page-landing .lp-stage-bar {
   position: absolute; top: 0; left: 0; right: 0; z-index: 4; height: 40px;
@@ -6873,7 +6873,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
   .modal-overlay { padding: 10px; align-items: center; }
   .modal { max-width: 100%; width: 100%; max-height: 90vh; max-height: 90dvh; border-radius: 18px; position: relative; }
   /* alça de arrastar no topo do modal (mobile) */
-  .modal::before { content: ''; position: absolute; top: 8px; left: 50%; transform: translateX(-50%); width: 40px; height: 4px; border-radius: 999px; background: var(--border-strong, #3a3a4a); z-index: 3; pointer-events: none; }
+  .modal::before { content: ''; position: absolute; top: 8px; left: 50%; transform: translateX(-50%); width: 40px; height: 4px; border-radius: 999px; background: var(--border-strong); z-index: 3; pointer-events: none; }
   .modal-header { padding: 22px 18px 14px; }
   /* botão de fechar maior e mais fácil de tocar */
   .modal-header .icon-btn { width: 40px; height: 40px; }
@@ -7141,14 +7141,14 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
         <span data-i18n="tb.myProjects">Meus projetos</span>
       </button>
-      <button class="btn btn-sm" id="btn-videoaulas" data-tooltip="Videoaulas" style="background:linear-gradient(135deg,#00E5CF,#6d28d9); color:#fff; border:1px solid transparent; box-shadow:0 2px 10px rgba(0,229,207,0.35);">
+      <button class="btn btn-sm" id="btn-videoaulas" data-tooltip="Videoaulas" style="background:var(--cc-accent-pro-gradient); color:#fff; border:1px solid transparent; box-shadow:0 2px 10px rgba(0,229,207,0.35);">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><polygon points="10 9 15 12 10 15 10 9" fill="currentColor" stroke="none"/></svg>
         <span data-i18n="tb.videos">Videoaulas</span>
       </button>
-      <button class="btn btn-sm" id="btn-comparafontes" data-tooltip="Comparar fontes (Pro Plus)" style="background:linear-gradient(135deg,#34e0ff,#8a7bff); color:#04121a; border:1px solid transparent; box-shadow:0 2px 10px rgba(52,224,255,0.32); font-weight:600;">
+      <button class="btn btn-sm" id="btn-comparafontes" data-tooltip="Comparar fontes (Pro Plus)" style="background: var(--cc-accent-cyan); color: var(--cc-bg-canvas); border:1px solid transparent; box-shadow:0 2px 10px rgba(0,229,207,0.32); font-weight:600;">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg>
         <span data-i18n="tb.compareFonts">Comparar fontes</span>
-        <span style="margin-left:6px; background:rgba(4,18,26,0.28); color:#04121a; font-size:9px; font-weight:800; letter-spacing:.04em; padding:2px 6px; border-radius:6px; line-height:1;">Pro Plus</span>
+        <span style="margin-left:6px; background:rgba(4,18,26,0.28); color:#121212; font-size:9px; font-weight:800; letter-spacing:.04em; padding:2px 6px; border-radius:6px; line-height:1;">Pro Plus</span>
       </button>
       <div style="width:1px; height:20px; background:var(--border-default); margin: 0 4px;"></div>
       <button class="btn btn-ghost btn-sm icon-only" id="btn-undo" disabled data-tooltip="Desfazer (Ctrl+Z)">
@@ -7162,7 +7162,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
       </button>
       </div><!-- /topbar-scroll: daqui pra frente fica FIXO (créditos, Salvar, Exportar) -->
       <div style="width:1px; height:20px; background:var(--border-default); margin: 0 4px;"></div>
-      <div id="wm-credits-badge" data-i18n-attr="title:ed.creditsTip" title="Créditos disponíveis neste mês" style="display:inline-flex; align-items:center; gap:6px; padding:5px 12px; border-radius:20px; background:rgba(0,229,207,0.12); border:1px solid rgba(0,229,207,0.3); color:#c4b5fd; font-size:13px; font-weight:600; cursor:default;">
+      <div id="wm-credits-badge" data-i18n-attr="title:ed.creditsTip" title="Créditos disponíveis neste mês" style="display:inline-flex; align-items:center; gap:6px; padding:5px 12px; border-radius:20px; background:rgba(0,229,207,0.12); border:1px solid rgba(0,229,207,0.3); color:var(--cc-accent-pro); font-size:13px; font-weight:600; cursor:default;">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
         <span id="wm-credits-text">—</span>
       </div>
@@ -7175,8 +7175,8 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
         <span data-i18n="tb.saveTemplate">Salvar template</span>
       </button>
       <button class="btn btn-secondary btn-sm" id="btn-create-template-from-slide" style="display:none;border-color:#00E5CF;" data-tooltip="[Admin] Criar template oficial a partir deste slide">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#c4b5fd" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-        <span style="color:#c4b5fd;">Criar template do slide</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--cc-accent-pro)" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        <span style="color:var(--cc-accent-pro);">Criar template do slide</span>
       </button>
       <button class="btn btn-primary btn-sm" id="btn-export" data-tooltip="Exportar vídeo (MP4)">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -7613,7 +7613,7 @@ Digno de toda honra"></textarea>
             <div class="color-swatch" data-color="#00E5CF" style="background:#00E5CF"></div>
             <div class="color-swatch" data-color="#60a5fa" style="background:#60a5fa"></div>
             <div class="color-swatch" data-color="#f472b6" style="background:#f472b6"></div>
-            <div class="color-swatch" data-color="#0f0f17" style="background:#0f0f17"></div>
+            <div class="color-swatch" data-color="#121212" style="background:#121212"></div>
             <label class="color-swatch color-swatch-custom" data-color-custom="text" title="Escolher cor personalizada">
               <input type="color" id="text-color-custom" value="#ffffff" style="position:absolute; opacity:0; pointer-events:none; width:0; height:0;" />
             </label>
@@ -7653,7 +7653,7 @@ Digno de toda honra"></textarea>
             <div class="color-swatch" data-outline-color="#ffffff" style="background:#ffffff"></div>
             <div class="color-swatch" data-outline-color="#d4a857" style="background:#d4a857"></div>
             <div class="color-swatch" data-outline-color="#00E5CF" style="background:#00E5CF"></div>
-            <div class="color-swatch" data-outline-color="#ef4444" style="background:#ef4444"></div>
+            <div class="color-swatch" data-outline-color="var(--error)" style="background:var(--error)"></div>
             <div class="color-swatch" data-outline-color="#60a5fa" style="background:#60a5fa"></div>
             <label class="color-swatch color-swatch-custom" data-color-custom="outline" title="Cor personalizada">
               <input type="color" id="outline-color-custom" value="#000000" style="position:absolute; opacity:0; pointer-events:none; width:0; height:0;" />
@@ -7683,7 +7683,7 @@ Digno de toda honra"></textarea>
           </div>
           <div class="color-swatches" id="shadow-swatches" style="grid-template-columns: repeat(7, 1fr);">
             <div class="color-swatch selected" data-shadow-color="#000000" style="background:#000000; border:1px solid var(--border-default);"></div>
-            <div class="color-swatch" data-shadow-color="#1e1b4b" style="background:#1e1b4b"></div>
+            <div class="color-swatch" data-shadow-color="#1E1E1E" style="background:#1E1E1E"></div>
             <div class="color-swatch" data-shadow-color="#7c2d12" style="background:#7c2d12"></div>
             <div class="color-swatch" data-shadow-color="#00E5CF" style="background:#00E5CF"></div>
             <div class="color-swatch" data-shadow-color="#d4a857" style="background:#d4a857"></div>
@@ -7714,9 +7714,9 @@ Digno de toda honra"></textarea>
         <div class="panel-section">
           <div class="panel-section-title" data-i18n="bg.title">Background</div>
           <div class="color-swatches" id="bg-swatches" style="grid-template-columns: repeat(5, 1fr);">
-            <div class="color-swatch" data-bg="brand" style="background: linear-gradient(135deg, #00E5CF, #3b82f6)"></div>
+            <div class="color-swatch" data-bg="brand" style="background: var(--gradient-divine)"></div>
             <div class="color-swatch" data-bg="divine" style="background: linear-gradient(135deg, #d4a857, #00E5CF)"></div>
-            <div class="color-swatch" data-bg="midnight" style="background: linear-gradient(135deg, #0f0f17, #1e1b4b)"></div>
+            <div class="color-swatch" data-bg="midnight" style="background: linear-gradient(135deg, var(--cc-bg-canvas), #1E1E1E)"></div>
             <div class="color-swatch" data-bg="warm" style="background: linear-gradient(135deg, #7c2d12, #d4a857)"></div>
             <div class="color-swatch selected" data-bg="black" style="background: var(--cc-bg-canvas); border:1px solid var(--border-default);"></div>
           </div>
@@ -7792,14 +7792,14 @@ Digno de toda honra"></textarea>
 
           <label class="label" style="font-size: 10px; margin-bottom: var(--space-1); display:block;" data-i18n="emp.color">Cor</label>
           <div id="emphasis-color-swatches" class="color-swatches" style="margin-bottom: var(--space-3);">
-            <button class="color-swatch selected" data-emp-color="#fbbf24" style="background:#fbbf24" title="Dourado"></button>
+            <button class="color-swatch selected" data-emp-color="var(--gold)" style="background:var(--gold)" title="Dourado"></button>
             <button class="color-swatch" data-emp-color="#ffffff" style="background:#ffffff" title="Branco"></button>
             <button class="color-swatch" data-emp-color="#f87171" style="background:#f87171" title="Vermelho"></button>
-            <button class="color-swatch" data-emp-color="#34d399" style="background:#34d399" title="Verde"></button>
+            <button class="color-swatch" data-emp-color="var(--success)" style="background:var(--success)" title="Verde"></button>
             <button class="color-swatch" data-emp-color="#60a5fa" style="background:#60a5fa" title="Azul"></button>
             <button class="color-swatch" data-emp-color="#f472b6" style="background:#f472b6" title="Rosa"></button>
             <label class="color-swatch color-swatch-custom" style="position:relative;">
-              <input type="color" id="emphasis-color-custom" value="#fbbf24" style="position:absolute; inset:0; opacity:0; cursor:pointer;">
+              <input type="color" id="emphasis-color-custom" value="var(--gold)" style="position:absolute; inset:0; opacity:0; cursor:pointer;">
               <span style="font-size:10px;">+</span>
             </label>
           </div>
@@ -8116,12 +8116,12 @@ Digno de toda honra"></textarea>
   <div class="modal" style="max-width: 440px;">
     <div class="modal-body" style="padding: 28px; text-align: center;">
       <div style="width:56px; height:56px; margin:0 auto 16px; border-radius:16px; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg,#34e0ff,#8a7bff); box-shadow:0 8px 24px -8px rgba(52,224,255,0.5);">
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#04121a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg>
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#121212" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg>
       </div>
       <div style="display:inline-block; font-size:10px; font-weight:800; letter-spacing:.06em; color:#8a7bff; background:rgba(138,123,255,0.12); padding:4px 10px; border-radius:8px; margin-bottom:12px;" data-i18n="md.proPlusBadge">RECURSO PRO PLUS</div>
       <h2 style="margin:0 0 8px; font-size:20px; font-weight:700; color:var(--text-primary);" data-i18n="md.compareUpTitle">Comparar fontes é do Pro Plus</h2>
       <p style="margin:0 0 22px; font-size:14px; line-height:1.6; color:var(--text-secondary);" data-i18n="md.compareUpText">Visualize e compare todas as fontes lado a lado, incluindo as 123 fontes exclusivas do pack. Faça upgrade pro Pro Plus e desbloqueie esse e outros recursos.</p>
-      <button id="comparafontes-upsell-cta" class="btn btn-primary" style="width:100%; padding:13px; font-weight:700; background:linear-gradient(135deg,#00E5CF,#6d28d9); border:none; color:#fff;" data-i18n="md.seePlans">Ver planos</button>
+      <button id="comparafontes-upsell-cta" class="btn btn-primary" style="width:100%; padding:13px; font-weight:700; background:var(--cc-accent-pro-gradient); border:none; color:#fff;" data-i18n="md.seePlans">Ver planos</button>
       <button id="comparafontes-upsell-close" class="btn btn-ghost btn-sm" style="width:100%; margin-top:8px;" data-i18n="md.notNow">Agora não</button>
     </div>
   </div>
@@ -8136,7 +8136,7 @@ Digno de toda honra"></textarea>
       <div style="display:inline-block; font-size:10px; font-weight:800; letter-spacing:.06em; color:#8a7bff; background:rgba(138,123,255,0.12); padding:4px 10px; border-radius:8px; margin-bottom:12px;">RECURSO PRO PLUS</div>
       <h2 style="margin:0 0 8px; font-size:20px; font-weight:700; color:var(--text-primary);">Templates Inteligentes são exclusivos do Pro Plus</h2>
       <p style="margin:0 0 22px; font-size:14px; line-height:1.6; color:var(--text-secondary);">Não comece cada slide do zero. Escolha uma composição profissional e transforme sua letra em segundos.</p>
-      <button id="tpl-upsell-cta" class="btn btn-primary" style="width:100%; padding:13px; font-weight:700; background:linear-gradient(135deg,#00E5CF,#6d28d9); border:none; color:#fff;">Conhecer o Pro Plus</button>
+      <button id="tpl-upsell-cta" class="btn btn-primary" style="width:100%; padding:13px; font-weight:700; background:var(--cc-accent-pro-gradient); border:none; color:#fff;">Conhecer o Pro Plus</button>
       <button id="tpl-upsell-close" class="btn btn-ghost btn-sm" style="width:100%; margin-top:8px;">Agora não</button>
     </div>
   </div>
@@ -8259,7 +8259,7 @@ Digno de toda honra"></textarea>
 
         <div style="margin-top:14px;padding:10px 14px;background:rgba(251,191,36,0.12);border:1px solid rgba(251,191,36,0.4);border-radius:8px;display:flex;align-items:center;gap:10px;max-width:340px;">
           <span style="font-size:18px;">⚠️</span>
-          <span style="font-size:12px;color:#fbbf24;line-height:1.4;text-align:left;">Mantenha esta aba aberta e visível durante a exportação. Trocar de aba pode deixar o processo muito mais lento.</span>
+          <span style="font-size:12px;color:var(--gold);line-height:1.4;text-align:left;">Mantenha esta aba aberta e visível durante a exportação. Trocar de aba pode deixar o processo muito mais lento.</span>
         </div>
 
         
@@ -14636,7 +14636,7 @@ window.WM_TEMPLATES = {
 const BG_GRADIENTS = {
   brand:    { type: 'linear', angle: 135, stops: [['#00E5CF', 0], ['#6366f1', 0.5], ['#3b82f6', 1]] },
   divine:   { type: 'linear', angle: 135, stops: [['#d4a857', 0], ['#00E5CF', 1]] },
-  midnight: { type: 'linear', angle: 135, stops: [['#0f0f17', 0], ['#1e1b4b', 1]] },
+  midnight: { type: 'linear', angle: 135, stops: [['#121212', 0], ['#1E1E1E', 1]] },
   warm:     { type: 'linear', angle: 135, stops: [['#7c2d12', 0], ['#d4a857', 1]] },
   black:    { type: 'solid',  color: '#121212' },
 };
@@ -15284,12 +15284,12 @@ const CanvasRenderer = {
 
     // 1. Base escura — igual --bg-canvas
     ctx.globalAlpha = 1;
-    ctx.fillStyle = '#0f0f17';
+    ctx.fillStyle = '#121212';
     ctx.fillRect(0, 0, W, H);
 
     if (cfg.type === 'solid') {
       // Preto puro: apenas a base
-      if (cfg.color !== '#121212' && cfg.color !== '#0f0f17') {
+      if (cfg.color !== '#121212' && cfg.color !== '#121212') {
         ctx.fillStyle = cfg.color;
         ctx.fillRect(0, 0, W, H);
       }
@@ -16589,7 +16589,7 @@ const CanvasRenderer = {
     // como base — mas ainda permite transição p/ cor de destaque se emphasized.
     const baseTextColor = wordStyleOverride?.color || style?.color || '#f4f4f7';
     // Cor de destaque configurável (default dourado)
-    const empColor = style?.emphasisColor || '#fbbf24';
+    const empColor = style?.emphasisColor || 'var(--gold)';
     let textColor;
     if (word.emphasized && colorProgress > 0) {
       textColor = _mixColors(baseTextColor, empColor, colorProgress);
@@ -18449,7 +18449,7 @@ class RenderEngineV2 {
       textTransform: 'uppercase',
       backgroundType: 'gradient',
       // Estilo das palavras destacadas (emphasized)
-      emphasisColor: '#fbbf24',          // cor dourada default
+      emphasisColor: 'var(--gold)',          // cor dourada default
       emphasisSizeScale: 1.0,            // multiplicador do tamanho (0.8 a 2.0)
       emphasisBold: false,               // negrito extra
       emphasisGlow: 0,                   // brilho extra (0 a 30)
@@ -18946,13 +18946,13 @@ class RenderEngineV2 {
     stanzaEl.style.textTransform = s.textTransform;
 
     // Variáveis CSS pra estilo das palavras destacadas (.is-emphasized)
-    stanzaEl.style.setProperty('--wm-emphasis-color', s.emphasisColor || '#fbbf24');
+    stanzaEl.style.setProperty('--wm-emphasis-color', s.emphasisColor || 'var(--gold)');
     stanzaEl.style.setProperty('--wm-emphasis-scale', String(s.emphasisSizeScale || 1.0));
     stanzaEl.style.setProperty('--wm-emphasis-weight', s.emphasisBold ? String(Math.min(900, (s.fontWeight || 600) + 200)) : String(s.fontWeight || 600));
     // Brilho extra: monta text-shadow
     const eGlow = s.emphasisGlow || 0;
     if (eGlow > 0) {
-      const eColor = s.emphasisColor || '#fbbf24';
+      const eColor = s.emphasisColor || 'var(--gold)';
       stanzaEl.style.setProperty('--wm-emphasis-shadow',
         `0 0 ${eGlow}px ${eColor}, 0 0 ${eGlow * 2}px ${eColor}`);
     } else {
@@ -26864,7 +26864,7 @@ function initEditor() {
 
         <div class="word-emphasis-row">
           <div class="word-emphasis-label">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="${info.word.emphasized ? '#fbbf24' : 'none'}" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="${info.word.emphasized ? 'var(--gold)' : 'none'}" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
             <span>${window.WM_T?window.WM_T("wp.emphasizeWord"):"Destacar palavra"}</span>
           </div>
           <label class="switch-mini">
@@ -27677,7 +27677,7 @@ function initEditor() {
   // Estrela SVG reutilizável — preenchida quando favorita
   function favStarSVG(filled) {
     return filled
-      ? `<svg viewBox="0 0 24 24" fill="#fbbf24" stroke="#fbbf24" stroke-width="1.5" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`
+      ? `<svg viewBox="0 0 24 24" fill="var(--gold)" stroke="var(--gold)" stroke-width="1.5" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`
       : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
   }
 
@@ -29203,7 +29203,7 @@ function initEditor() {
   const BG_PRESETS = {
     brand:    'linear-gradient(135deg, #00E5CF 0%, #6366f1 50%, #3b82f6 100%)',
     divine:   'linear-gradient(135deg, #d4a857 0%, #00E5CF 100%)',
-    midnight: 'linear-gradient(135deg, #0f0f17 0%, #1e1b4b 100%)',
+    midnight: 'linear-gradient(135deg, #121212 0%, #1E1E1E 100%)',
     warm:     'linear-gradient(135deg, #7c2d12 0%, #d4a857 100%)',
     black:    '#121212',
   };
@@ -32407,7 +32407,7 @@ function initEditor() {
       + '  </div>'
       + '  <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:rgba(0,229,207,0.1);border:1px solid rgba(0,229,207,0.25);border-radius:10px;">'
       + '    <span style="font-size:13px;color:#9aa;">Plano</span>'
-      + '    <span style="font-size:14px;font-weight:700;color:#c4b5fd;">' + nomePlano + '</span>'
+      + '    <span style="font-size:14px;font-weight:700;color:var(--cc-accent-pro);">' + nomePlano + '</span>'
       + '  </div>'
       + '  <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:rgba(255,255,255,0.04);border-radius:10px;">'
       + '    <span style="font-size:13px;color:#9aa;">'+(window.WM_T?window.WM_T('dyn.creditsMonth'):'Créditos este mês')+'</span>'
@@ -34209,7 +34209,7 @@ function initEditor() {
     const BG_CSS = {
       brand: 'linear-gradient(135deg, #00E5CF, #3b82f6)',
       divine: 'linear-gradient(135deg, #d4a857, #00E5CF)',
-      midnight: 'linear-gradient(135deg, #0f0f17, #1e1b4b)',
+      midnight: 'linear-gradient(135deg, #121212, #1E1E1E)',
       warm: 'linear-gradient(135deg, #7c2d12, #d4a857)',
       black: '#121212',
     };
@@ -35459,7 +35459,7 @@ function initEditor() {
       + '  </button>'
       + (mostrarLote
         ? '  <button id="tpl-mode-compativeis" style="text-align:left;padding:14px;background:#2a2a35;border:1px solid #00E5CF;border-radius:8px;color:#f4f4f7;cursor:pointer;font-family:inherit;">'
-        + '    <div style="font-weight:600;font-size:14px;margin-bottom:4px;color:#c4b5fd;">Aplicar em slides semelhantes (' + compatIdxs.length + ')</div>'
+        + '    <div style="font-weight:600;font-size:14px;margin-bottom:4px;color:var(--cc-accent-pro);">Aplicar em slides semelhantes (' + compatIdxs.length + ')</div>'
         + '    <div style="font-size:12px;color:#a0a0aa;line-height:1.4;">Aplica em todos os ' + compatIdxs.length + ' slides com ' + tplLineCount + ' ' + (tplLineCount === 1 ? 'linha' : 'linhas') + '. Slides com outra quantidade de linhas não são alterados.</div>'
         + '  </button>'
         : '')
@@ -35485,7 +35485,7 @@ function initEditor() {
       if (!btn) return;
       const isPrincipal = (id === 'tpl-mode-estrofe');
       const baseBorder = isPrincipal ? '#4a8' : (id === 'tpl-mode-compativeis' ? '#00E5CF' : '#444');
-      const hoverBorder = isPrincipal ? '#5fa' : (id === 'tpl-mode-compativeis' ? '#a78bfa' : '#666');
+      const hoverBorder = isPrincipal ? '#5fa' : (id === 'tpl-mode-compativeis' ? 'var(--cc-accent-pro)' : '#666');
       btn.addEventListener('mouseenter', () => {
         btn.style.background = '#3a3a48';
         btn.style.borderColor = hoverBorder;
@@ -38004,7 +38004,7 @@ window.__wmMostrarDiag = function (forcar) {
 
   const btnCopiar = document.createElement('button');
   btnCopiar.textContent = 'Copiar diagnóstico';
-  btnCopiar.style.cssText = 'display:block;width:100%;margin-bottom:8px;padding:11px;background:linear-gradient(135deg,#00E5CF,#3b82f6);color:#fff;border:none;border-radius:10px;font-size:13.5px;font-weight:600;cursor:pointer;';
+  btnCopiar.style.cssText = 'display:block;width:100%;margin-bottom:8px;padding:11px;background:var(--gradient-divine);color:#fff;border:none;border-radius:10px;font-size:13.5px;font-weight:600;cursor:pointer;';
   btnCopiar.onclick = function () {
     const done = function () { btnCopiar.textContent = '✓ Copiado — cole aqui na conversa'; };
     try {
@@ -38181,7 +38181,7 @@ window.__wmMostrarRecuperacao = function (itens) {
     const btn = document.createElement('button');
     btn.style.cssText = [
       'display:block', 'width:100%', 'margin-bottom:8px', 'padding:12px 14px',
-      'background:linear-gradient(135deg,#00E5CF,#3b82f6)', 'color:#fff',
+      'background:var(--gradient-divine)', 'color:#fff',
       'border:none', 'border-radius:10px', 'font-size:14px', 'font-weight:600',
       'cursor:pointer', 'text-align:center'
     ].join(';');
