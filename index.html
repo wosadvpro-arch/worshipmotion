@@ -7446,8 +7446,8 @@ Digno de toda honra"></textarea>
   
   <aside class="editor-right">
     <div class="panel-tabs">
-      <button class="panel-tab active" data-rpanel="style" data-i18n="rp.effects" style="display:none;">Efeitos</button>
-      <button class="panel-tab" data-rpanel="animations" data-i18n="panel.animations">Animações</button>
+      <button class="panel-tab" data-rpanel="style" data-i18n="rp.effects" style="display:none;">Efeitos</button>
+      <button class="panel-tab active" data-rpanel="animations" data-i18n="panel.animations">Animações</button>
       <button class="panel-tab" data-rpanel="motion" style="display:none;" data-i18n="rp.motion">Motion</button>
       <button class="panel-tab" data-rpanel="scenes" style="display:none;" data-i18n="rp.scenes">Cenas</button>
       <button class="panel-tab" data-rpanel="word" style="display:none;" data-i18n="rp.word">Palavra</button>
@@ -7455,7 +7455,7 @@ Digno de toda honra"></textarea>
 
     <div class="panel-body">
       
-      <div class="panel-content" data-rpanel-content="style">
+      <div class="panel-content" data-rpanel-content="style" style="display:none;">
         <div class="panel-section" style="display:none;">
           <div class="panel-section-title" data-i18n="rp.font">Fonte</div>
 
@@ -7671,7 +7671,7 @@ Digno de toda honra"></textarea>
       </div>
 
       
-      <div class="panel-content" data-rpanel-content="animations" style="display:none;">
+      <div class="panel-content" data-rpanel-content="animations">
 
  <div class="anim-context-header" id="anim-context-header" style="display:none;">
  <div class="anim-context-row">
@@ -27850,34 +27850,37 @@ function initEditor() {
       });
     });
 
-    // CELULAR: não há hover, então o preview das animações nunca tocava.
-    // Aqui tocamos automaticamente os cards VISÍVEIS na tela, repetindo a cada
-    // ~2.6s (e parando quando a aba fecha). Só no celular.
-    if (window.matchMedia && window.matchMedia('(max-width: 1080px)').matches) {
-      if (grid._wmAnimTimer) { clearInterval(grid._wmAnimTimer); grid._wmAnimTimer = null; }
-      const rootEl = grid.closest('.editor-left') || grid.closest('.editor-right');
-      const tocarVisiveis = () => {
-        // não faz nada se a aba de animações não está visível
-        if (!grid.offsetParent) return;
-        const rr = rootEl ? rootEl.getBoundingClientRect() : { top: 0, bottom: window.innerHeight };
-        grid.querySelectorAll('.anim-card').forEach((card) => {
-          const cr = card.getBoundingClientRect();
-          const visivel = cr.bottom > rr.top + 4 && cr.top < rr.bottom - 4;
-          const preview = card.querySelector('.anim-card-preview');
-          if (!preview) return;
-          if (visivel) {
-            try { previewAnimInCard(card.dataset.id, preview); } catch (e) {}
-          } else if (preview._wmPreviewInst) {
-            try { preview._wmPreviewInst.stop(); } catch (e) {}
-            preview._wmPreviewInst = null;
-          }
-        });
-      };
-      // toca já e repete
-      setTimeout(tocarVisiveis, 60);
-      grid._wmAnimTimer = setInterval(tocarVisiveis, 2600);
-      grid._wmTocarVisiveis = tocarVisiveis; // exposto p/ o scroll chamar ao rolar
-    }
+    // DESKTOP + CELULAR: toca automaticamente os cards VISÍVEIS na tela,
+    // repetindo a cada ~2.6s (e parando quando a aba fecha). Antes era só
+    // no celular; agora no desktop também pra o usuário ver os previews
+    // assim que entra na aba, sem precisar passar o mouse em cada card.
+    if (grid._wmAnimTimer) { clearInterval(grid._wmAnimTimer); grid._wmAnimTimer = null; }
+    const rootEl = grid.closest('.editor-left') || grid.closest('.editor-right');
+    const tocarVisiveis = () => {
+      // Se o grid ainda não tem cards renderizados, tenta renderizar agora
+      if (grid.children.length === 0 && typeof renderAnimGrid === 'function') {
+        renderAnimGrid(currentAnimCategory || 'entrance');
+      }
+      // Só pula se realmente não há cards após tentativa de render
+      if (grid.children.length === 0) return;
+      const rr = rootEl ? rootEl.getBoundingClientRect() : { top: 0, bottom: window.innerHeight };
+      grid.querySelectorAll('.anim-card').forEach((card) => {
+        const cr = card.getBoundingClientRect();
+        const visivel = cr.bottom > rr.top + 4 && cr.top < rr.bottom - 4;
+        const preview = card.querySelector('.anim-card-preview');
+        if (!preview) return;
+        if (visivel) {
+          try { previewAnimInCard(card.dataset.id, preview); } catch (e) {}
+        } else if (preview._wmPreviewInst) {
+          try { preview._wmPreviewInst.stop(); } catch (e) {}
+          preview._wmPreviewInst = null;
+        }
+      });
+    };
+    // toca já e repete
+    setTimeout(tocarVisiveis, 60);
+    grid._wmAnimTimer = setInterval(tocarVisiveis, 2600);
+    grid._wmTocarVisiveis = tocarVisiveis; // exposto p/ o scroll chamar ao rolar
   }
 
   function previewAnimInCard(animId, container) {
@@ -28220,6 +28223,9 @@ function initEditor() {
       }
       if (name === 'word' && typeof renderWordPanel === 'function') {
         renderWordPanel();
+      }
+      if (name === 'animations' && typeof renderAnimGrid === 'function') {
+        renderAnimGrid(currentAnimCategory || 'entrance');
       }
     });
   });
@@ -36103,25 +36109,17 @@ function initEditor() {
     } catch (e) {}
   }, 800);
 
-  // Une a aba Palavra à aba Efeitos: move o conteúdo de palavra (camadas)
-  // pra dentro do painel Efeitos, no fim. Assim vira uma aba só ("Efeitos")
-  // com os efeitos (brilho/contorno/sombra) + os controles de palavra
-  // (camadas), e a aba Palavra some.
-  (function fundirPalavraComEfeitos() {
+  // CORREÇÃO DEFINITIVA: Remove completamente os painéis "style" e "word" do DOM
+  // para garantir que NENHUM conteúdo de "Animação por Palavra" apareça no lugar
+  // dos previews de animações. Isso resolve o problema onde o conteúdo fundido
+  // continuava aparecendo apesar das tentativas anteriores com CSS !important.
+  (function removeWordAndStylePanels() {
     try {
-      const efeitos = document.querySelector('.panel-content[data-rpanel-content="style"]');
-      const palavra = document.querySelector('.panel-content[data-rpanel-content="word"]');
-      if (efeitos && palavra && palavra.parentNode) {
-        // Move as seções da aba palavra pro INÍCIO da aba efeitos, mantendo
-        // a ordem original (animação por palavra → camadas), pra que ao
-        // selecionar uma palavra apareçam PRIMEIRO os controles de palavra
-        // e DEPOIS os efeitos (brilho/contorno/sombra).
-        const ancora = efeitos.firstElementChild; // primeiro efeito
-        const secoes = [...palavra.children];
-        secoes.forEach(sec => efeitos.insertBefore(sec, ancora));
-        // Remove o container vazio da aba palavra.
-        palavra.parentNode.removeChild(palavra);
-      }
+      const stylePanel = document.querySelector('.panel-content[data-rpanel-content="style"]');
+      const wordPanel = document.querySelector('.panel-content[data-rpanel-content="word"]');
+      // Remove completamente do DOM para evitar qualquer vazamento visual
+      if (stylePanel && stylePanel.parentNode) stylePanel.parentNode.removeChild(stylePanel);
+      if (wordPanel && wordPanel.parentNode) wordPanel.parentNode.removeChild(wordPanel);
     } catch (e) {}
   })();
 
@@ -37027,6 +37025,97 @@ function initEditor() {
   // popula filtro de estilo e grid de animações
   renderStyleFilter('entrance');
   renderAnimGrid('entrance');
+
+  // CORREÇÃO DEFINITIVA: Garante que o painel Animações seja o único visível
+  // e que os previews toquem automaticamente ao carregar.
+  (function initAnimationsPanelCorrectly() {
+    try {
+      // 1. Remove qualquer injeção CSS anterior para evitar duplicatas
+      const oldCss = document.getElementById('wm-anim-panel-fix');
+      if (oldCss) oldCss.remove();
+
+      // 2. Injeta CSS com !important pra garantir que só o painel animations fique visível
+      const cssOverride = document.createElement('style');
+      cssOverride.id = 'wm-anim-panel-fix';
+      cssOverride.textContent = `
+        /* Esconde TODOS os painéis direitos exceto animations */
+        .panel-content[data-rpanel-content]:not([data-rpanel-content="animations"]) {
+          display: none !important;
+          visibility: hidden !important;
+          position: absolute !important;
+          left: -9999px !important;
+          pointer-events: none !important;
+          opacity: 0 !important;
+        }
+        /* Garante que o painel de animações esteja visível e funcional */
+        .panel-content[data-rpanel-content="animations"] {
+          display: block !important;
+          visibility: visible !important;
+          position: relative !important;
+          left: auto !important;
+          opacity: 1 !important;
+          pointer-events: auto !important;
+        }
+      `;
+      document.head.appendChild(cssOverride);
+
+      // 3. Atualiza classes visuais das abas
+      const allTabs = document.querySelectorAll('.panel-tab[data-rpanel]');
+      allTabs.forEach(t => {
+        const isActive = t.dataset.rpanel === 'animations';
+        t.classList.toggle('active', isActive);
+      });
+
+      // 4. Força inline style nos painéis como camada extra de segurança
+      const allPanels = document.querySelectorAll('.panel-content[data-rpanel-content]');
+      allPanels.forEach(p => {
+        if (p.dataset.rpanelContent === 'animations') {
+          p.style.display = 'block';
+          p.style.visibility = 'visible';
+          p.style.position = 'relative';
+          p.style.left = 'auto';
+          p.style.opacity = '1';
+        } else {
+          p.style.display = 'none';
+          p.style.visibility = 'hidden';
+          p.style.position = 'absolute';
+          p.style.left = '-9999px';
+          p.style.opacity = '0';
+        }
+      });
+
+      // 5. Renderiza o grid de animações AGORA que o container está garantidamente visível
+      if (typeof renderAnimGrid === 'function') {
+        const cat = (typeof currentAnimCategory === 'string') ? currentAnimCategory : 'entrance';
+        renderAnimGrid(cat);
+      }
+
+      // 6. Fallback: Se o grid ainda estiver vazio após 300ms, tenta renderizar novamente
+      setTimeout(() => {
+        const grid = document.getElementById('anim-grid');
+        if (grid && grid.children.length === 0 && typeof renderAnimGrid === 'function') {
+          console.warn('[WM-Fix] Grid vazio na inicialização, re-renderizando...');
+          renderAnimGrid(currentAnimCategory || 'entrance');
+        }
+      }, 300);
+
+      // 7. Fallback final: Após 800ms, verifica novamente e força se necessário
+      setTimeout(() => {
+        const grid = document.getElementById('anim-grid');
+        const animPanel = document.querySelector('.panel-content[data-rpanel-content="animations"]');
+        if (grid && grid.children.length === 0 && typeof renderAnimGrid === 'function') {
+          console.warn('[WM-Fix] Grid ainda vazio após 800ms, forçando render...');
+          if (animPanel) {
+            animPanel.style.display = 'block';
+            animPanel.style.visibility = 'visible';
+          }
+          renderAnimGrid(currentAnimCategory || 'entrance');
+        }
+      }, 800);
+    } catch (err) {
+      console.error('[WM-Fix] Erro ao forçar painel de animações:', err);
+    }
+  })();
 
   // glow inicial — antes do render
   engine.setStyle({ glow: 12 });
