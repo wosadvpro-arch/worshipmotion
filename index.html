@@ -39,7 +39,7 @@
   <title>WorshipMotion — Letras animadas para igrejas</title>
   <meta name="description" content="Crie letras animadas profissionais para o telão da sua igreja em poucos minutos. Escolha o estilo, personalize e exporte o vídeo em MP4.">
   <link rel="canonical" href="https://worshipmotion.com.br/">
-  <meta name="theme-color" content="#00E5CF">
+  <meta name="theme-color" content="#8b5cf6">
 
   <!-- Compartilhamento (WhatsApp, Facebook, etc.) -->
   <meta property="og:type" content="website">
@@ -125,101 +125,51 @@
    ============================================================ */
 
 :root {
-  /* ============================================================
-     CapCut Design System — Dark Pro Studio + Cyber-Neon
-     Migrado de WorshipMotion original em 2026-10-12
-     Backup: index.html.backup-capcut-20261012
-     ============================================================ */
+  /* ---------- BACKGROUNDS ---------- */
+  --bg-base:        #0a0a0f;   /* fundo principal, quase preto com toque azulado */
+  --bg-surface:     #111118;   /* superfícies (cards, sidebars) */
+  --bg-elevated:    #181822;   /* elementos elevados, dropdowns */
+  --bg-overlay:     #1f1f2c;   /* hover states em superfícies */
+  --bg-canvas:      #050507;   /* área do canvas/preview do editor */
 
-  /* --- Superfícies e Fundos (CapCut Core) --- */
-  --cc-bg-canvas:    #121212;
-  --cc-bg-surface:   #1E1E1E;
-  --cc-bg-elevated:  #262626;
-  --cc-bg-hover:     #2E2E2E;
-  --cc-bg-active:    #383838;
-
-  /* --- Bordas e Divisórias --- */
-  --cc-border-subtle: #2F2F2F;
-  --cc-border-focus:  #00E5CF;
-
-  /* --- Cores de Acento (Brand Accents) --- */
-  --cc-accent-cyan:         #00E5CF;
-  --cc-accent-cyan-hover:   #00F5DD;
-  --cc-accent-cyan-subtle:  rgba(0, 229, 207, 0.15);
-  --cc-accent-pro:          #A855F7;
-  --cc-accent-pro-gradient: linear-gradient(135deg, #A855F7 0%, #6366F1 100%);
-
-  /* --- Cores Semânticas de Mídia (Timeline Tracks) --- */
-  --cc-track-video:  #1C595C;
-  --cc-track-text:   #E06D53;
-  --cc-track-audio:  #3B82F6;
-  --cc-track-effect: #8B5CF6;
-
-  /* --- Tipografia e Ícones --- */
-  --cc-text-primary:   #FFFFFF;
-  --cc-text-secondary: #A1A1AA;
-  --cc-text-muted:     #52525B;
-
-  /* --- Border Radius (CapCut) --- */
-  --cc-radius-pill: 9999px;
-  --cc-radius-md:   8px;
-  --cc-radius-sm:   4px;
-
-  /* ============================================================
-     Aliases de Compatibilidade — mapeiam tokens antigos para
-     os novos tokens CapCut, garantindo que referências
-     existentes continuem funcionando sem reescrita massiva.
-     ============================================================ */
-
-  /* Backwards-compat: backgrounds */
-  --bg-base:      var(--cc-bg-canvas);
-  --bg-surface:   var(--cc-bg-surface);
-  --bg-elevated:  var(--cc-bg-elevated);
-  --bg-overlay:   var(--cc-bg-hover);
-  --bg-canvas:    var(--cc-bg-canvas);
-  --bg-2:         var(--cc-bg-elevated);
-  --bg-3:         var(--cc-bg-active);
-
-  /* Backwards-compat: borders */
-  --border-subtle:  var(--cc-border-subtle);
+  /* ---------- BORDERS / DIVIDERS ---------- */
+  --border-subtle:  rgba(255, 255, 255, 0.06);
   --border-default: rgba(255, 255, 255, 0.10);
   --border-strong:  rgba(255, 255, 255, 0.16);
 
-  /* Backwards-compat: text */
-  --text-primary:   var(--cc-text-primary);
-  --text-secondary: var(--cc-text-secondary);
-  --text-tertiary:  var(--cc-text-muted);
-  --text-disabled:  var(--cc-text-muted);
-  --text:           var(--cc-text-primary);
+  /* ---------- TEXT ---------- */
+  --text-primary:   #f4f4f7;   /* títulos, conteúdo principal */
+  --text-secondary: #a8a8b8;   /* labels, descrições */
+  --text-tertiary:  #6c6c80;   /* placeholders, hints */
+  --text-disabled:  #45455a;
 
-  /* Backwards-compat: accent → ciano CapCut */
-  --accent:       var(--cc-accent-cyan);
-  --accent-hover: var(--cc-accent-cyan-hover);
-  --accent-soft:  var(--cc-accent-cyan-subtle);
-  --accent-glow:  rgba(0, 229, 207, 0.45);
+  /* ---------- BRAND / ACCENT ---------- */
+  --accent:         #8b5cf6;   /* roxo principal */
+  --accent-hover:   #9d72f8;
+  --accent-soft:    rgba(139, 92, 246, 0.12);
+  --accent-glow:    rgba(139, 92, 246, 0.45);
 
-  /* Gold mantido para elementos premium/worship */
-  --gold:      #d4a857;
-  --gold-soft: rgba(212, 168, 87, 0.14);
+  --gold:           #d4a857;   /* dourado pontual (premium/glória) */
+  --gold-soft:      rgba(212, 168, 87, 0.14);
 
-  /* Gradientes atualizados com paleta CapCut */
-  --gradient-brand: var(--cc-accent-pro-gradient);
-  --gradient-divine: linear-gradient(135deg, #d4a857 0%, #00E5CF 100%);
+  /* gradientes da marca */
+  --gradient-brand: linear-gradient(135deg, #8b5cf6 0%, #6366f1 50%, #3b82f6 100%);
+  --gradient-divine: linear-gradient(135deg, #d4a857 0%, #8b5cf6 100%);
   --gradient-glow: radial-gradient(circle at center,
-                    rgba(0, 229, 207, 0.25) 0%,
-                    rgba(0, 229, 207, 0) 70%);
+                    rgba(139, 92, 246, 0.25) 0%,
+                    rgba(139, 92, 246, 0) 70%);
 
-  /* Feedback colors */
-  --success: #4ade80;
-  --warning: #facc15;
-  --error:   #f87171;
+  /* ---------- FEEDBACK ---------- */
+  --success:        #4ade80;
+  --warning:        #facc15;
+  --error:          #f87171;
 
-  /* Tipografia — CapCut usa Inter como base */
-  --font-display: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
-  --font-body:    'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
-  --font-mono:    'JetBrains Mono', 'SF Mono', Consolas, monospace;
+  /* ---------- TIPOGRAFIA ---------- */
+  --font-display:   'Sora', 'Inter', system-ui, -apple-system, sans-serif;
+  --font-body:      'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono:      'JetBrains Mono', 'SF Mono', Consolas, monospace;
 
-  /* Escalas tipográficas (mantidas) */
+  /* escalas tipográficas */
   --text-xs:   11px;
   --text-sm:   13px;
   --text-base: 14px;
@@ -241,7 +191,7 @@
   --tracking-wide:   0.05em;
   --tracking-wider:  0.12em;
 
-  /* Espaçamento (mantido) */
+  /* ---------- ESPAÇAMENTO ---------- */
   --space-1:  4px;
   --space-2:  8px;
   --space-3:  12px;
@@ -255,24 +205,24 @@
   --space-20: 80px;
   --space-24: 96px;
 
-  /* Border Radius — unificado com CapCut */
-  --radius-xs:   var(--cc-radius-sm);
-  --radius-sm:   var(--cc-radius-sm);
-  --radius-md:   var(--cc-radius-md);
-  --radius-lg:   12px;
-  --radius-xl:   16px;
-  --radius-2xl:  20px;
-  --radius-full: var(--cc-radius-pill);
+  /* ---------- BORDER RADIUS ---------- */
+  --radius-xs:  4px;
+  --radius-sm:  6px;
+  --radius-md:  8px;
+  --radius-lg:  12px;
+  --radius-xl:  16px;
+  --radius-2xl: 20px;
+  --radius-full: 9999px;
 
-  /* Sombras — mais sutis, estilo CapCut flat/minimal */
-  --shadow-sm:    0 1px 2px rgba(0, 0, 0, 0.4);
-  --shadow-md:    0 4px 12px rgba(0, 0, 0, 0.45);
-  --shadow-lg:    0 12px 32px rgba(0, 0, 0, 0.5);
-  --shadow-xl:    0 24px 64px rgba(0, 0, 0, 0.6);
-  --shadow-glow:  0 0 24px rgba(0, 229, 207, 0.35);
+  /* ---------- SOMBRAS ---------- */
+  --shadow-sm:   0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md:   0 4px 12px rgba(0, 0, 0, 0.35);
+  --shadow-lg:   0 12px 32px rgba(0, 0, 0, 0.45);
+  --shadow-xl:   0 24px 64px rgba(0, 0, 0, 0.55);
+  --shadow-glow: 0 0 32px var(--accent-glow);
   --shadow-inner: inset 0 1px 0 rgba(255, 255, 255, 0.04);
 
-  /* Motion (mantido) */
+  /* ---------- MOTION ---------- */
   --ease-out-quart: cubic-bezier(0.165, 0.84, 0.44, 1);
   --ease-out-expo:  cubic-bezier(0.19, 1, 0.22, 1);
   --ease-in-out:    cubic-bezier(0.65, 0, 0.35, 1);
@@ -283,7 +233,7 @@
   --duration-slow:    400ms;
   --duration-slower:  600ms;
 
-  /* Z-Index (mantido) */
+  /* ---------- Z-INDEX ---------- */
   --z-base:     1;
   --z-dropdown: 50;
   --z-sticky:   100;
@@ -291,11 +241,11 @@
   --z-modal:    1000;
   --z-toast:    2000;
 
-  /* Layout (mantido) */
-  --sidebar-width:   260px;
-  --topbar-height:   56px;
+  /* ---------- LAYOUT ---------- */
+  --sidebar-width: 260px;
+  --topbar-height: 56px;
   --timeline-height: 260px;
-  --panel-width:     320px;
+  --panel-width: 320px;
 }
 
 
@@ -334,7 +284,7 @@ body::before {
   position: fixed;
   inset: 0;
   background:
-    radial-gradient(ellipse at top left, rgba(0, 229, 207, 0.08), transparent 50%),
+    radial-gradient(ellipse at top left, rgba(139, 92, 246, 0.08), transparent 50%),
     radial-gradient(ellipse at bottom right, rgba(99, 102, 241, 0.06), transparent 50%);
   pointer-events: none;
   z-index: 0;
@@ -558,7 +508,7 @@ h1, h2, h3, h4, h5, h6 {
 .badge-accent {
   background: var(--accent-soft);
   color: var(--accent);
-  border-color: rgba(0, 229, 207, 0.3);
+  border-color: rgba(139, 92, 246, 0.3);
 }
 
 .badge-gold {
@@ -746,7 +696,7 @@ h1, h2, h3, h4, h5, h6 {
   aspect-ratio: 313 / 128;
   object-fit: contain;
   display: block;
-  filter: drop-shadow(0 2px 8px rgba(0, 229, 207, 0.3));
+  filter: drop-shadow(0 2px 8px rgba(139, 92, 246, 0.3));
 }
 .logo-mark-lg {
   height: 36px;
@@ -755,7 +705,7 @@ h1, h2, h3, h4, h5, h6 {
   height: 32px;
   width: auto;
   display: block;
-  filter: drop-shadow(0 4px 12px rgba(0, 229, 207, 0.25));
+  filter: drop-shadow(0 4px 12px rgba(139, 92, 246, 0.25));
 }
 .logo-full-lg {
   height: 44px;
@@ -957,12 +907,12 @@ h1, h2, h3, h4, h5, h6 {
    A seleção padrão do tema escuro tinha contraste fraco — ficava difícil
    ver o que estava marcado. Azul escuro + branco resolve a leitura. */
 .lyrics-textarea::selection {
-  background: var(--cc-bg-elevated);
-  color: var(--cc-text-primary);
+  background: #1e3a8a;          /* azul escuro */
+  color: #ffffff;
 }
 .lyrics-textarea::-moz-selection {
-  background: var(--cc-bg-elevated);
-  color: var(--cc-text-primary);
+  background: #1e3a8a;
+  color: #ffffff;
 }
 
 /* ---------- STANZA LIST ---------- */
@@ -990,7 +940,7 @@ h1, h2, h3, h4, h5, h6 {
 .stanza-item.active {
   border-color: var(--accent);
   background: var(--accent-soft);
-  box-shadow: 0 0 0 1px var(--accent), 0 4px 16px -4px rgba(0,229,207,0.4);
+  box-shadow: 0 0 0 1px var(--accent), 0 4px 16px -4px rgba(139,92,246,0.4);
 }
 /* Barra lateral indicando o slide ATUAL — "você está aqui" */
 .stanza-item.active::before {
@@ -998,7 +948,7 @@ h1, h2, h3, h4, h5, h6 {
   position: absolute;
   left: 0; top: 8px; bottom: 8px;
   width: 3px;
-  background: var(--accent);
+  background: var(--accent, #8b5cf6);
   border-radius: 0 3px 3px 0;
 }
 
@@ -1016,13 +966,13 @@ h1, h2, h3, h4, h5, h6 {
   font-weight: 800;
   letter-spacing: 0.08em;
   color: #fff;
-  background: var(--accent);
+  background: var(--accent, #8b5cf6);
   padding: 2px 8px;
   border-radius: 5px;
 }
 .stanza-item.active .stanza-slide-num {
-  background: var(--cc-accent-pro-gradient);
-  box-shadow: 0 0 10px -2px rgba(0,229,207,0.7);
+  background: linear-gradient(135deg, #a78bfa, #8b5cf6);
+  box-shadow: 0 0 10px -2px rgba(139,92,246,0.7);
 }
 .stanza-slide-of {
   font-size: 10px;
@@ -1041,7 +991,7 @@ h1, h2, h3, h4, h5, h6 {
   font-variant-numeric: tabular-nums;
 }
 .stanza-sync-badge.is-full {
-  color: var(--success);
+  color: #34d399;
   background: rgba(52,211,153,0.12);
   border-color: rgba(52,211,153,0.35);
 }
@@ -1376,18 +1326,18 @@ html.wm-modal-open, body.wm-modal-open {
   background: var(--bg-base);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-full);
-  color: var(--text-secondary);
+  color: var(--text-secondary, #a0a0aa);
   cursor: pointer;
   font-family: inherit;
   transition: background .15s, border-color .15s, color .15s;
 }
 .tpl-filter-chip:hover { border-color: var(--border-strong, #666); }
 .tpl-filter-chip.active {
-  background: var(--accent);
-  border-color: var(--accent);
+  background: var(--accent, #8b5cf6);
+  border-color: var(--accent, #8b5cf6);
   color: #fff;
 }
-.template-card.tpl-recommended { border-color: var(--accent); }
+.template-card.tpl-recommended { border-color: var(--accent, #8b5cf6); }
 .template-line-badge {
   position: absolute;
   top: 8px;
@@ -1406,7 +1356,7 @@ html.wm-modal-open, body.wm-modal-open {
   right: 8px;
   font-size: 10px;
   padding: 2px 7px;
-  background: linear-gradient(135deg, var(--cc-accent-cyan), var(--gold));
+  background: linear-gradient(135deg, #8b5cf6, #d4a857);
   border-radius: var(--radius-full);
   color: #fff;
   font-weight: 600;
@@ -1951,7 +1901,7 @@ body.wm-recording-mode::after {
   height: 100%;
   overflow: hidden;
   background:
-    radial-gradient(circle at 30% 20%, rgba(0, 229, 207, 0.06), transparent 50%),
+    radial-gradient(circle at 30% 20%, rgba(139, 92, 246, 0.06), transparent 50%),
     radial-gradient(circle at 70% 80%, rgba(59, 130, 246, 0.05), transparent 50%),
     var(--bg-base);
 }
@@ -1959,33 +1909,33 @@ body.wm-recording-mode::after {
 /* ===== BARRA CONTEXTUAL (estilo Canva) — Etapa 1 ===== */
 .ctx-toolbar {
   display: flex; align-items: center; gap: 6px;
-  background: var(--bg-surface);
+  background: var(--bg-surface, #111118);
   border: 1px solid var(--border-default, rgba(255,255,255,0.08));
   border-radius: 12px; padding: 6px 8px;
   box-shadow: 0 6px 20px rgba(0,0,0,0.35);
   flex: 0 0 auto; z-index: 5; max-width: 100%;
   flex-wrap: wrap; justify-content: center;
 }
-.ctx-scope { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; color: var(--cc-text-muted); padding: 0 6px; white-space: nowrap; }
-.ctx-scope-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); display: inline-block; }
+.ctx-scope { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-dim, #7a8499); padding: 0 6px; white-space: nowrap; }
+.ctx-scope-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent, #8b5cf6); display: inline-block; }
 .ctx-sep { width: 1px; height: 20px; background: var(--border-default, rgba(255,255,255,0.1)); }
-.ctx-font { height: 30px; font-size: 12px; padding: 0 6px; min-width: 110px; background: var(--bg-base); color: var(--text-primary); border: 1px solid var(--border-default, rgba(255,255,255,0.1)); border-radius: 8px; }
-.ctx-weight { height: 30px; font-size: 12px; padding: 0 6px; background: var(--bg-base); color: var(--text-primary); border: 1px solid var(--border-default, rgba(255,255,255,0.1)); border-radius: 8px; cursor: pointer; }
-.ctx-btn { height: 30px; min-width: 30px; padding: 0 8px; display: inline-flex; align-items: center; justify-content: center; background: transparent; color: var(--text-primary); border: 1px solid var(--border-default, rgba(255,255,255,0.1)); border-radius: 8px; font-size: 13px; cursor: pointer; transition: background 0.15s, border-color 0.15s; }
+.ctx-font { height: 30px; font-size: 12px; padding: 0 6px; min-width: 110px; background: var(--bg-base, #0a0a0f); color: var(--text, #e8e8ee); border: 1px solid var(--border-default, rgba(255,255,255,0.1)); border-radius: 8px; }
+.ctx-weight { height: 30px; font-size: 12px; padding: 0 6px; background: var(--bg-base, #0a0a0f); color: var(--text, #e8e8ee); border: 1px solid var(--border-default, rgba(255,255,255,0.1)); border-radius: 8px; cursor: pointer; }
+.ctx-btn { height: 30px; min-width: 30px; padding: 0 8px; display: inline-flex; align-items: center; justify-content: center; background: transparent; color: var(--text, #e8e8ee); border: 1px solid var(--border-default, rgba(255,255,255,0.1)); border-radius: 8px; font-size: 13px; cursor: pointer; transition: background 0.15s, border-color 0.15s; }
 .ctx-btn:hover { background: rgba(255,255,255,0.06); }
-.ctx-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.ctx-btn.active { background: var(--accent, #8b5cf6); border-color: var(--accent, #8b5cf6); color: #fff; }
 .ctx-mini { min-width: 26px; height: 26px; padding: 0; font-size: 14px; border-radius: 6px; }
 .ctx-stepper { display: inline-flex; align-items: center; gap: 3px; border: 1px solid var(--border-default, rgba(255,255,255,0.1)); border-radius: 8px; padding: 2px; }
 .ctx-stepper .ctx-mini { border: none; }
-.ctx-val { font-size: 12px; min-width: 26px; text-align: center; color: var(--text-primary); cursor: text; border-radius: 4px; padding: 1px 3px; outline: none; }
+.ctx-val { font-size: 12px; min-width: 26px; text-align: center; color: var(--text, #e8e8ee); cursor: text; border-radius: 4px; padding: 1px 3px; outline: none; }
 .ctx-val[contenteditable]:hover { background: rgba(255,255,255,0.06); }
-.ctx-val[contenteditable]:focus { background: rgba(0,229,207,0.18); box-shadow: 0 0 0 1px var(--accent); }
+.ctx-val[contenteditable]:focus { background: rgba(139,92,246,0.18); box-shadow: 0 0 0 1px var(--accent, #8b5cf6); }
 .ctx-color-dot { width: 16px; height: 16px; border-radius: 50%; background: #ffffff; display: block; border: 1px solid rgba(255,255,255,0.3); }
-.ctx-ico { font-size: 10px; color: var(--cc-text-muted); letter-spacing: -1px; padding: 0 2px; user-select: none; }
+.ctx-ico { font-size: 10px; color: var(--text-dim, #7a8499); letter-spacing: -1px; padding: 0 2px; user-select: none; }
 .ctx-color { position: relative; }
 .ctx-color-pop {
   position: fixed; z-index: 9999;
-  background: var(--bg-surface); border: 1px solid var(--border-default, rgba(255,255,255,0.12));
+  background: var(--bg-surface, #111118); border: 1px solid var(--border-default, rgba(255,255,255,0.12));
   border-radius: 12px; padding: 10px; box-shadow: 0 8px 28px rgba(0,0,0,0.45); width: 188px;
 }
 .ctx-color-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; margin-bottom: 8px; }
@@ -1994,12 +1944,12 @@ body.wm-recording-mode::after {
   cursor: pointer; padding: 0;
 }
 .ctx-color-grid button:hover { transform: scale(1.08); }
-.ctx-color-custom { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 11px; color: var(--cc-text-muted); }
+.ctx-color-custom { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 11px; color: var(--text-dim, #7a8499); }
 .ctx-color-custom input[type=color] { width: 34px; height: 26px; padding: 0; border: 1px solid var(--border-default, rgba(255,255,255,0.15)); border-radius: 6px; background: none; cursor: pointer; }
 /* Popover de espaçamento (entre letras + entre linhas) */
 .ctx-spacing-pop {
   position: fixed; z-index: 9999;
-  background: var(--bg-surface); border: 1px solid var(--border-default, rgba(255,255,255,0.12));
+  background: var(--bg-surface, #111118); border: 1px solid var(--border-default, rgba(255,255,255,0.12));
   border-radius: 12px; padding: 14px; box-shadow: 0 8px 28px rgba(0,0,0,0.45); width: 248px;
 }
 @media (max-width: 1080px) {
@@ -2013,48 +1963,48 @@ body.wm-recording-mode::after {
 }
 .ctx-spacing-row { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
 .ctx-spacing-row:last-child { margin-bottom: 0; }
-.ctx-spacing-row label { font-size: 12px; color: var(--text-primary); font-weight: 500; }
+.ctx-spacing-row label { font-size: 12px; color: var(--text, #e8e8ee); font-weight: 500; }
 .ctx-spacing-row input[type=range] { width: 100%; }
-.ctx-spacing-val { font-size: 11px; color: var(--cc-text-muted); align-self: flex-end; margin-top: -2px; }
+.ctx-spacing-val { font-size: 11px; color: var(--text-dim, #7a8499); align-self: flex-end; margin-top: -2px; }
 /* Popover de caixa (maiúsculas/minúsculas) */
 .ctx-case-pop {
   position: fixed; z-index: 9999;
-  background: var(--bg-surface); border: 1px solid var(--border-default, rgba(255,255,255,0.12));
+  background: var(--bg-surface, #111118); border: 1px solid var(--border-default, rgba(255,255,255,0.12));
   border-radius: 12px; padding: 6px; box-shadow: 0 8px 28px rgba(0,0,0,0.45); width: 180px;
   display: flex; flex-direction: column; gap: 2px;
 }
 .ctx-case-opt {
   text-align: left; padding: 9px 12px; border-radius: 8px; border: 1px solid transparent;
-  background: transparent; color: var(--text-primary); font-size: 13px; cursor: pointer;
+  background: transparent; color: var(--text, #e8e8ee); font-size: 13px; cursor: pointer;
 }
 .ctx-case-opt:hover { background: rgba(255,255,255,0.06); }
-.ctx-case-opt.active { background: rgba(0,229,207,0.18); border-color: var(--accent); }
+.ctx-case-opt.active { background: rgba(139,92,246,0.18); border-color: var(--accent, #8b5cf6); }
 /* Painel de fontes estilo Canva */
 .ctx-fonts-panel {
   position: fixed; top: 0; right: 0; height: 100vh; width: 300px; z-index: 9998;
-  background: var(--bg-surface); border-left: 1px solid var(--border-default, rgba(255,255,255,0.1));
+  background: var(--bg-surface, #111118); border-left: 1px solid var(--border-default, rgba(255,255,255,0.1));
   box-shadow: -8px 0 30px rgba(0,0,0,0.4); display: flex; flex-direction: column; padding: 14px;
 }
-.ctx-fonts-head { display: flex; align-items: center; justify-content: space-between; font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 12px; }
-.ctx-fonts-search { width: 100%; height: 36px; padding: 0 10px; margin-bottom: 12px; background: var(--bg-base); color: var(--text-primary); border: 1px solid var(--border-default, rgba(255,255,255,0.12)); border-radius: 8px; font-size: 13px; }
+.ctx-fonts-head { display: flex; align-items: center; justify-content: space-between; font-size: 14px; font-weight: 600; color: var(--text, #e8e8ee); margin-bottom: 12px; }
+.ctx-fonts-search { width: 100%; height: 36px; padding: 0 10px; margin-bottom: 12px; background: var(--bg-base, #0a0a0f); color: var(--text, #e8e8ee); border: 1px solid var(--border-default, rgba(255,255,255,0.12)); border-radius: 8px; font-size: 13px; }
 .ctx-fonts-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; }
-.ctx-fonts-cat { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--cc-text-muted); margin: 10px 4px 4px; }
-.ctx-font-item { display: flex; align-items: center; justify-content: space-between; padding: 9px 12px; border-radius: 8px; cursor: pointer; color: var(--text-primary); border: 1px solid transparent; transition: background 0.12s; }
+.ctx-fonts-cat { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-dim, #7a8499); margin: 10px 4px 4px; }
+.ctx-font-item { display: flex; align-items: center; justify-content: space-between; padding: 9px 12px; border-radius: 8px; cursor: pointer; color: var(--text, #e8e8ee); border: 1px solid transparent; transition: background 0.12s; }
 .ctx-font-item:hover { background: rgba(255,255,255,0.05); }
-.ctx-font-item.selected { background: rgba(0,229,207,0.18); border-color: var(--accent); }
+.ctx-font-item.selected { background: rgba(139,92,246,0.18); border-color: var(--accent, #8b5cf6); }
 .ctx-font-item .ctx-font-name { font-size: 14px; line-height: 1.1; }
 .ctx-fonts-upload {
   width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;
   padding: 9px; margin-bottom: 12px; border-radius: 8px;
-  background: var(--bg-base); color: var(--text-primary);
+  background: var(--bg-base, #0a0a0f); color: var(--text, #e8e8ee);
   border: 1px dashed var(--border-default, rgba(255,255,255,0.2));
   font-size: 12px; cursor: pointer; transition: background 0.15s, border-color 0.15s;
 }
-.ctx-fonts-upload:hover { background: rgba(0,229,207,0.1); border-color: var(--accent); }
+.ctx-fonts-upload:hover { background: rgba(139,92,246,0.1); border-color: var(--accent, #8b5cf6); }
 .ctx-fonts-buypack {
   width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;
   padding: 10px; margin-bottom: 12px; border-radius: 8px;
-  background: var(--cc-accent-pro-gradient); color: #fff;
+  background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: #fff;
   border: none; font-size: 12px; font-weight: 600; cursor: pointer;
   transition: filter 0.15s, transform 0.05s;
 }
@@ -2076,18 +2026,18 @@ body.wm-recording-mode::after {
   border: 1px solid var(--border-default, rgba(255,255,255,0.08));
   transition: background 0.15s, border-color 0.15s;
 }
-.videoaula-item:hover { background: rgba(0,229,207,0.1); border-color: var(--accent); }
-.videoaula-item.is-active { background: rgba(0,229,207,0.16); border-color: var(--accent); }
+.videoaula-item:hover { background: rgba(139,92,246,0.1); border-color: var(--accent, #8b5cf6); }
+.videoaula-item.is-active { background: rgba(139,92,246,0.16); border-color: var(--accent, #8b5cf6); }
 .videoaula-item .va-icon {
   flex: 0 0 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center;
-  background: var(--cc-accent-pro-gradient); color: #fff;
+  background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: #fff;
 }
-.videoaula-item .va-title { font-size: 13.5px; font-weight: 600; color: var(--text-primary); }
+.videoaula-item .va-title { font-size: 13.5px; font-weight: 600; color: var(--text-primary, #e8e8ee); }
 .videoaulas-empty { text-align: center; padding: 28px 16px; color: var(--text-secondary); }
 .ctx-font-item { gap: 8px; padding: 7px 12px; }
 .ctx-font-star {
   flex: 0 0 auto; width: 26px; height: 26px; padding: 4px; border: none; background: transparent;
-  cursor: pointer; color: var(--cc-text-muted); opacity: 0.5; border-radius: 6px;
+  cursor: pointer; color: var(--text-dim, #7a8499); opacity: 0.5; border-radius: 6px;
   display: inline-flex; align-items: center; justify-content: center;
 }
 .ctx-font-item:hover .ctx-font-star { opacity: 0.9; }
@@ -2198,14 +2148,14 @@ body.marking-open.marking-collapsed .editor-canvas {
   box-shadow:
     0 0 0 1px rgba(255,255,255,0.02) inset,
     0 24px 64px -16px rgba(0,0,0,0.6),
-    0 0 80px -20px rgba(0, 229, 207, 0.15);
+    0 0 80px -20px rgba(139, 92, 246, 0.15);
 }
 
 /* gradient background do canvas — pode trocar via JS */
 .canvas-bg {
   position: absolute;
   inset: 0;
-  background: var(--cc-bg-canvas);
+  background: #050507;
   opacity: 1;
   pointer-events: none;
 }
@@ -2307,12 +2257,12 @@ body.marking-open.marking-collapsed .editor-canvas {
 /* Palavra em edição inline (duplo-clique): contorno claro + cursor de
    texto, pra ficar óbvio que está editável ali mesmo. */
 .lyric-word.is-inline-editing {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--accent, #8b5cf6);
   outline-offset: 3px;
   border-radius: 3px;
-  background: var(--cc-accent-cyan-subtle);
+  background: rgba(139, 92, 246, 0.12);
   cursor: text;
-  caret-color: var(--accent);
+  caret-color: var(--accent, #8b5cf6);
   /* Garante que a animação não esconda o que está sendo editado. */
   opacity: 1 !important;
   visibility: visible !important;
@@ -2326,7 +2276,7 @@ body.marking-open.marking-collapsed .editor-canvas {
   will-change: transform, opacity;
 }
 .lyric-word.is-emphasized {
-  color: var(--gold);
+  color: var(--wm-emphasis-color, #fbbf24);
   font-weight: var(--wm-emphasis-weight, inherit);
   font-size: calc(1em * var(--wm-emphasis-scale, 1));
   text-shadow: var(--wm-emphasis-shadow, none);
@@ -2532,7 +2482,7 @@ body.marking-open.marking-collapsed .editor-canvas {
   user-select: none;
   letter-spacing: 0.02em;
 }
-body.timeline-collapsed .timeline-collapse-hint { color: var(--cc-accent-cyan); }
+body.timeline-collapsed .timeline-collapse-hint { color: #3b82f6; }
 .timeline-collapse-btn {
   margin-left: 8px;
   display: inline-flex;
@@ -2570,7 +2520,7 @@ body.timeline-collapsed .editor-timeline:hover {
 }
 body.timeline-collapsed .timeline-collapse-btn {
   border-color: rgba(59, 130, 246, 0.5);
-  color: var(--cc-accent-cyan);
+  color: #3b82f6;
 }
 
 .editor-timeline {
@@ -2629,7 +2579,7 @@ body.timeline-collapsed .timeline-collapse-btn {
   min-width: 120px;
   padding: var(--space-2) var(--space-3);
   background: linear-gradient(135deg, var(--accent-soft), rgba(99, 102, 241, 0.1));
-  border: 1px solid rgba(0, 229, 207, 0.3);
+  border: 1px solid rgba(139, 92, 246, 0.3);
   border-radius: var(--radius-sm);
   display: flex;
   flex-direction: column;
@@ -2639,11 +2589,11 @@ body.timeline-collapsed .timeline-collapse-btn {
   flex-shrink: 0;
 }
 .timeline-clip:hover {
-  background: linear-gradient(135deg, var(--cc-accent-cyan-subtle), rgba(99, 102, 241, 0.14));
-  border-color: rgba(0, 229, 207, 0.5);
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.18), rgba(99, 102, 241, 0.14));
+  border-color: rgba(139, 92, 246, 0.5);
 }
 .timeline-clip.active {
-  background: linear-gradient(135deg, rgba(0, 229, 207, 0.25), rgba(99, 102, 241, 0.18));
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.25), rgba(99, 102, 241, 0.18));
   border-color: var(--accent);
   box-shadow: 0 0 0 1px var(--accent), 0 4px 12px -4px var(--accent-glow);
 }
@@ -2811,7 +2761,7 @@ body.timeline-collapsed .timeline-collapse-btn {
   .editor-left::before, .editor-right::before {
     content: ''; flex: 0 0 auto; width: 40px; height: 4px;
     margin: 8px auto 2px; border-radius: 999px;
-    background: var(--border-strong);
+    background: var(--border-strong, #3a3a4a);
   }
 
   .editor-left .panel-body, .editor-right .panel-body {
@@ -3100,14 +3050,14 @@ body.timeline-collapsed .timeline-collapse-btn {
 .scene-control select option,
 #word-panel-content select option,
 #transition-type option {
-  background: var(--cc-bg-surface);
-  color: var(--cc-text-primary);
+  background: #1a1a24;
+  color: #f4f4f7;
   padding: 4px 8px;
 }
 .scene-control select optgroup,
 #word-panel-content select optgroup {
-  background: var(--cc-bg-canvas);
-  color: var(--cc-accent-cyan);
+  background: #0f0f17;
+  color: #8b5cf6;
   font-style: normal;
   font-weight: 700;
   text-transform: uppercase;
@@ -3116,7 +3066,7 @@ body.timeline-collapsed .timeline-collapse-btn {
 }
 .scene-control select option:checked,
 #word-panel-content select option:checked {
-  background: var(--cc-accent-cyan);
+  background: #8b5cf6;
   color: #ffffff;
 }
 .scene-card-actions {
@@ -3143,7 +3093,7 @@ body.timeline-collapsed .timeline-collapse-btn {
   transition: outline 0.12s ease;
 }
 .lyric-word:hover {
-  outline: 1px dashed rgba(0, 229, 207, 0.45);
+  outline: 1px dashed rgba(139, 92, 246, 0.45);
   outline-offset: 2px;
 }
 /* BUG REAL CORRIGIDO ("TESTE aparece duplicado/desalinhado ao
@@ -3317,7 +3267,7 @@ body.timeline-collapsed .timeline-collapse-btn {
 .word-font-option:hover { border-color: var(--border-strong); }
 .word-font-option.selected {
   border-color: var(--accent);
-  background: var(--cc-accent-cyan-subtle);
+  background: rgba(139, 92, 246, 0.12);
 }
 .word-font-sample {
   font-size: 18px;
@@ -3350,7 +3300,7 @@ body.timeline-collapsed .timeline-collapse-btn {
 }
 .word-weight-btn:hover { border-color: var(--border-strong); color: var(--text-primary); }
 .word-weight-btn.selected {
-  background: var(--cc-accent-cyan-subtle);
+  background: rgba(139, 92, 246, 0.18);
   border-color: var(--accent);
   color: var(--text-primary);
 }
@@ -3429,7 +3379,7 @@ body.is-dragging-word .lyric-word { cursor: grabbing !important; }
 
 /* Outline tracejado em palavras free (não durante drag) */
 .lyric-word.is-free-positioned:not(.is-being-dragged) {
-  outline: 1px dashed rgba(0, 229, 207, 0.35);
+  outline: 1px dashed rgba(139, 92, 246, 0.35);
   outline-offset: 3px;
   border-radius: 4px;
 }
@@ -3442,7 +3392,7 @@ body.is-dragging-word .lyric-word { cursor: grabbing !important; }
   position: absolute;
   pointer-events: none; /* só os handles capturam mouse */
   z-index: 50;
-  border: 2px solid var(--accent);
+  border: 2px solid var(--accent, #8b5cf6);
   border-radius: 2px;
   display: none;
   box-sizing: border-box;
@@ -3461,7 +3411,7 @@ body.is-dragging-word .lyric-word { cursor: grabbing !important; }
   width: 12px;
   height: 12px;
   background: #fff;
-  border: 2px solid var(--accent);
+  border: 2px solid var(--accent, #8b5cf6);
   border-radius: 50%;
   pointer-events: auto;
   box-sizing: border-box;
@@ -3470,7 +3420,7 @@ body.is-dragging-word .lyric-word { cursor: grabbing !important; }
 }
 .selection-handle:hover {
   transform: scale(1.25);
-  background: var(--accent);
+  background: var(--accent, #8b5cf6);
 }
 
 /* Posicionamento dos 8 handles */
@@ -3498,7 +3448,7 @@ body.is-dragging-word .lyric-word { cursor: grabbing !important; }
   width: 16px;
   height: 16px;
   background: #fff;
-  border: 2px solid var(--accent);
+  border: 2px solid var(--accent, #8b5cf6);
   border-radius: 50%;
   pointer-events: auto;
   cursor: grab;
@@ -3526,11 +3476,11 @@ body.is-dragging-word .lyric-word { cursor: grabbing !important; }
   transform: translateX(-50%);
   width: 2px;
   height: 16px;
-  background: var(--accent);
+  background: var(--accent, #8b5cf6);
 }
 .selection-rotate:hover {
   transform: translateX(-50%) scale(1.15);
-  background: var(--accent);
+  background: var(--accent, #8b5cf6);
 }
 
 /* Display do tamanho atual (em cima da seleção durante resize) */
@@ -3539,7 +3489,7 @@ body.is-dragging-word .lyric-word { cursor: grabbing !important; }
   top: -28px;
   right: 0;
   padding: 2px 8px;
-  background: var(--accent);
+  background: var(--accent, #8b5cf6);
   color: white;
   font-size: 10px;
   font-weight: 600;
@@ -3647,7 +3597,7 @@ body.is-dragging-word .lyric-word { cursor: grabbing !important; }
 }
 .audio-btn-icon:hover {
   background: rgba(239, 68, 68, 0.15);
-  color: var(--error);
+  color: #ef4444;
 }
 
 /* ===== Arrastar-e-soltar áudio (PC) + estado de carregamento do upload ===== */
@@ -3680,8 +3630,8 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
 .marquee-selection {
   position: absolute;
   pointer-events: none;
-  border: 1.5px solid var(--accent);
-  background: var(--cc-accent-cyan-subtle);
+  border: 1.5px solid var(--accent, #8b5cf6);
+  background: rgba(139, 92, 246, 0.12);
   border-radius: 2px;
   z-index: 90;
   display: none;
@@ -3703,7 +3653,7 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
   font-size: 13px;
   font-weight: 600;
   border-radius: 8px;
-  border: 1px solid var(--accent);
+  border: 1px solid var(--accent, #8b5cf6);
   box-shadow: 0 6px 24px rgba(0,0,0,0.4);
   opacity: 0;
   pointer-events: none;
@@ -3758,7 +3708,7 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
 }
 .wm-dialog-message {
   font-size: 14px;
-  color: var(--text-secondary);
+  color: var(--text-secondary, #b4b4c0);
   line-height: 1.55;
   margin: 0 0 20px;
   white-space: pre-wrap;
@@ -3777,7 +3727,7 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
   transition: border-color 0.15s;
 }
 .wm-dialog-input:focus {
-  border-color: var(--accent);
+  border-color: var(--accent, #8b5cf6);
 }
 .wm-dialog-actions {
   display: flex;
@@ -3796,14 +3746,14 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
 .wm-dialog-btn-cancel {
   background: transparent;
   border-color: var(--border-default, rgba(255,255,255,0.15));
-  color: var(--text-secondary);
+  color: var(--text-secondary, #b4b4c0);
 }
 .wm-dialog-btn-cancel:hover {
   background: var(--bg-elevated, rgba(255,255,255,0.06));
   color: var(--text-primary, #fff);
 }
 .wm-dialog-btn-confirm {
-  background: var(--accent);
+  background: var(--accent, #8b5cf6);
   color: #fff;
 }
 .wm-dialog-btn-confirm:hover {
@@ -3811,11 +3761,11 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
 }
 /* Variante perigosa (excluir, apagar) */
 .wm-dialog-btn-danger {
-  background: var(--error);
+  background: #dc2626;
   color: #fff;
 }
 .wm-dialog-btn-danger:hover {
-  background: var(--error);
+  background: #b91c1c;
 }
 
 /* Botões icon-only no topbar */
@@ -3831,13 +3781,13 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
 /* ============ SMART GUIDES (linhas de alinhamento) ============ */
 .smart-guide {
   position: absolute;
-  background: var(--accent);
+  background: var(--accent, #8b5cf6);
   pointer-events: none;
   z-index: 95;
   opacity: 0;
   transition: opacity 0.08s ease-out;
-  box-shadow: 0 0 0 0.5px rgba(0, 229, 207, 0.4),
-              0 0 8px rgba(0, 229, 207, 0.6);
+  box-shadow: 0 0 0 0.5px rgba(139, 92, 246, 0.4),
+              0 0 8px rgba(139, 92, 246, 0.6);
 }
 .smart-guide.is-visible {
   opacity: 0.9;
@@ -3910,7 +3860,7 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
   right: 2px;
   padding: 1px 5px;
   border-radius: 999px;
-  background: var(--cc-accent-pro-gradient);
+  background: linear-gradient(135deg, #8b5cf6, #6366f1);
   color: #fff;
   font-size: 8.5px;
   font-weight: 700;
@@ -3984,7 +3934,7 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
 }
 .font-tab:hover { color: var(--text-secondary); }
 .font-tab.active {
-  background: var(--accent);
+  background: var(--accent, #8b5cf6);
   color: white;
 }
 
@@ -4000,7 +3950,7 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
 }
 .font-search-input:focus {
   outline: none;
-  border-color: var(--accent);
+  border-color: var(--accent, #8b5cf6);
 }
 
 .font-grid-scroll {
@@ -4020,7 +3970,7 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
   border-radius: 3px;
 }
 .font-grid-scroll::-webkit-scrollbar-thumb:hover {
-  background: var(--accent);
+  background: var(--accent, #8b5cf6);
 }
 
 .font-empty-message {
@@ -4083,8 +4033,8 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
   position: relative;
   background: conic-gradient(
     from 180deg,
-    var(--error), var(--warning), var(--gold), #84cc16, #10b981,
-    #06b6d4, #3b82f6, #00E5CF, #ec4899, var(--error)
+    #ef4444, #f59e0b, #fbbf24, #84cc16, #10b981,
+    #06b6d4, #3b82f6, #8b5cf6, #ec4899, #ef4444
   ) !important;
   cursor: pointer;
   display: flex;
@@ -4095,7 +4045,7 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
   content: '';
   position: absolute;
   inset: 35%;
-  background: var(--bg-elevated);
+  background: var(--bg-elevated, #1a1a23);
   border-radius: 50%;
   pointer-events: none;
 }
@@ -4159,7 +4109,7 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
 }
 .anim-picker-dialog {
   position: relative;
-  background: var(--bg-elevated);
+  background: var(--bg-elevated, #1a1a23);
   border: 1px solid var(--border-default);
   border-radius: 14px;
   width: 100%;
@@ -4201,7 +4151,7 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
 .anim-picker-search {
   width: 100%;
   padding: 8px 12px;
-  background: var(--bg-3);
+  background: var(--bg-3, #0e0e15);
   border: 1px solid var(--border-default);
   border-radius: 8px;
   color: var(--text-primary);
@@ -4246,7 +4196,7 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
   flex: 1;
 }
 .anim-picker-card {
-  background: var(--bg-3);
+  background: var(--bg-3, #0e0e15);
   border: 1px solid var(--border-default);
   border-radius: 8px;
   padding: 8px;
@@ -4260,7 +4210,7 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
 }
 .anim-picker-card.selected {
   border-color: var(--accent);
-  background: var(--cc-accent-cyan-subtle);
+  background: rgba(139, 92, 246, 0.1);
 }
 .anim-picker-card.selected::after {
   content: '';
@@ -4271,7 +4221,7 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
   height: 6px;
   border-radius: 50%;
   background: var(--accent);
-  box-shadow: 0 0 6px rgba(0, 229, 207, 0.7);
+  box-shadow: 0 0 6px rgba(139, 92, 246, 0.7);
 }
 .anim-picker-card-preview {
   height: 42px;
@@ -4279,7 +4229,7 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
   align-items: center;
   justify-content: center;
   margin-bottom: 6px;
-  background: var(--bg-canvas);
+  background: var(--bg-canvas, #050507);
   border-radius: 6px;
   overflow: hidden;
 }
@@ -4322,7 +4272,7 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
   justify-content: space-between;
   width: 100%;
   padding: 10px 12px;
-  background: var(--bg-3);
+  background: var(--bg-3, #0e0e15);
   border: 1px solid var(--border-default);
   border-radius: 8px;
   color: var(--text-primary);
@@ -4358,8 +4308,8 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
 .anim-context-header {
   margin: 0 0 12px;
   padding: 10px 12px;
-  background: linear-gradient(135deg, rgba(0, 229, 207, 0.15), rgba(99, 102, 241, 0.08));
-  border: 1px solid rgba(0, 229, 207, 0.35);
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(99, 102, 241, 0.08));
+  border: 1px solid rgba(139, 92, 246, 0.35);
   border-radius: 8px;
 }
 .anim-context-row {
@@ -4369,7 +4319,7 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
 }
 .anim-context-icon {
   flex-shrink: 0;
-  color: var(--accent);
+  color: var(--accent, #8b5cf6);
   display: flex;
 }
 .anim-context-text {
@@ -4382,7 +4332,7 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
 }
 .anim-context-text strong {
   font-weight: 600;
-  color: var(--accent);
+  color: var(--accent, #8b5cf6);
 }
 .anim-context-clear {
   flex-shrink: 0;
@@ -4402,7 +4352,7 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
 .anim-context-clear:hover {
   background: rgba(239, 68, 68, 0.15);
   border-color: rgba(239, 68, 68, 0.5);
-  color: var(--error);
+  color: #ef4444;
 }
 
 /* ============ WORD ANIM INLINE (sem modal) ============ */
@@ -4410,7 +4360,7 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
   display: flex;
   flex-direction: column;
   gap: 8px;
-  background: var(--bg-3);
+  background: var(--bg-3, #0e0e15);
   border: 1px solid var(--border-default);
   border-radius: 10px;
   padding: 10px;
@@ -4436,7 +4386,7 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
 }
 .word-anim-tab:hover { color: var(--text-secondary); }
 .word-anim-tab.active {
-  background: var(--accent);
+  background: var(--accent, #8b5cf6);
   color: white;
 }
 .anim-search-input {
@@ -4528,7 +4478,7 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
 }
 .word-anim-card.selected {
   border-color: var(--accent);
-  background: var(--cc-accent-cyan-subtle);
+  background: rgba(139, 92, 246, 0.1);
 }
 /* Animações isoladas: funcionam só na linha inteira, não por palavra.
    Esmaecidas e com cursor de "não permitido" pra deixar claro. */
@@ -4554,7 +4504,7 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
   height: 5px;
   border-radius: 50%;
   background: var(--accent);
-  box-shadow: 0 0 5px rgba(0, 229, 207, 0.7);
+  box-shadow: 0 0 5px rgba(139, 92, 246, 0.7);
 }
 .word-anim-card-preview {
   height: 32px;
@@ -4562,7 +4512,7 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
   align-items: center;
   justify-content: center;
   margin-bottom: 4px;
-  background: var(--bg-canvas);
+  background: var(--bg-canvas, #050507);
   border-radius: 5px;
   overflow: hidden;
 }
@@ -4662,7 +4612,7 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
   align-items: center;
   gap: 6px;
   padding: 8px 10px;
-  background: var(--bg-3);
+  background: var(--bg-3, #0e0e15);
   border: 1px solid var(--border-default);
   border-radius: 6px;
   color: var(--text-primary);
@@ -4709,16 +4659,16 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--cc-accent-cyan-subtle);
-  border: 1px solid rgba(0, 229, 207, 0.45);
+  background: rgba(139, 92, 246, 0.18);
+  border: 1px solid rgba(139, 92, 246, 0.45);
   border-radius: 6px;
-  color: var(--cc-accent-cyan);
+  color: #c4b5fd;
   cursor: pointer;
   padding: 0;
   transition: 0.12s;
 }
 .stanza-move button:hover:not(:disabled) {
-  background: rgba(0, 229, 207, 0.32);
+  background: rgba(139, 92, 246, 0.32);
   color: #fff;
   border-color: var(--accent);
 }
@@ -4734,10 +4684,10 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
   opacity: 0.45;
 }
 .stanza-item.wm-drop-before {
-  box-shadow: 0 -3px 0 -1px var(--accent);
+  box-shadow: 0 -3px 0 -1px var(--accent, #8b5cf6);
 }
 .stanza-item.wm-drop-after {
-  box-shadow: 0 3px 0 -1px var(--accent);
+  box-shadow: 0 3px 0 -1px var(--accent, #8b5cf6);
 }
 .stanza-item-dup {
   position: absolute;
@@ -4760,9 +4710,9 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
 }
 .stanza-item:hover .stanza-item-dup { opacity: 1; }
 .stanza-item-dup:hover {
-  background: rgba(0, 229, 207, 0.15);
+  background: rgba(139, 92, 246, 0.15);
   color: var(--accent);
-  border-color: rgba(0, 229, 207, 0.4);
+  border-color: rgba(139, 92, 246, 0.4);
 }
 @media (pointer: coarse) {
   .stanza-item-dup, .stanza-item-delete, .stanza-item-clearmarks { opacity: 1; }
@@ -4790,7 +4740,7 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
 .stanza-item:hover .stanza-item-clearmarks { opacity: 1; }
 .stanza-item-clearmarks:hover {
   background: rgba(245, 158, 11, 0.15);
-  color: var(--warning);
+  color: #f59e0b;
   border-color: rgba(245, 158, 11, 0.4);
 }
 /* Com o botão limpar-ritmo presente, reserva mais espaço à direita */
@@ -4801,13 +4751,13 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
   font-size: 11px;
   padding: 3px 10px;
   border-radius: 6px;
-  background: var(--cc-accent-cyan-subtle);
-  border: 1px solid rgba(0, 229, 207, 0.4);
-  color: var(--cc-accent-cyan);
+  background: rgba(139, 92, 246, 0.12);
+  border: 1px solid rgba(139, 92, 246, 0.4);
+  color: #c4b5fd;
   cursor: pointer;
   transition: 0.12s;
 }
-.stanza-select-toggle:hover { background: rgba(0, 229, 207, 0.22); color: #fff; }
+.stanza-select-toggle:hover { background: rgba(139, 92, 246, 0.22); color: #fff; }
 .stanza-select-toggle.is-active { background: var(--accent); color: #fff; border-color: var(--accent); }
 .stanza-select-bar {
   display: flex;
@@ -4817,7 +4767,7 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
   padding: 8px 10px;
   margin: 6px 0;
   background: rgba(30, 27, 46, 0.96);
-  border: 1px solid rgba(0, 229, 207, 0.5);
+  border: 1px solid rgba(139, 92, 246, 0.5);
   border-radius: 8px;
   flex-wrap: wrap;
   position: sticky;
@@ -4826,7 +4776,7 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
   backdrop-filter: blur(4px);
   box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
-.stanza-select-count { font-size: 12px; color: var(--cc-accent-cyan); font-weight: 600; }
+.stanza-select-count { font-size: 12px; color: #c4b5fd; font-weight: 600; }
 .stanza-select-actions { display: flex; gap: 6px; }
 #btn-del-selected {
   background: rgba(239, 68, 68, 0.9);
@@ -4838,7 +4788,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
 .stanza-item.is-selected {
   outline: 2px solid var(--accent);
   outline-offset: -2px;
-  background: rgba(0, 229, 207, 0.14);
+  background: rgba(139, 92, 246, 0.14);
 }
 .stanza-item.is-selected::after {
   content: '✓';
@@ -4859,7 +4809,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
   border-radius: 5px;
   background: rgba(245, 158, 11, 0.15);
   border: 1px solid rgba(245, 158, 11, 0.4);
-  color: var(--gold);
+  color: #fbbf24;
   cursor: pointer;
   white-space: nowrap;
 }
@@ -4889,7 +4839,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
 .stanza-item-delete:hover {
   background: rgba(239, 68, 68, 0.15);
   border-color: rgba(239, 68, 68, 0.4);
-  color: var(--error);
+  color: #ef4444;
 }
 
 .timeline-clip {
@@ -4950,14 +4900,14 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
 }
 .bg-scope-tab:hover { color: var(--text-secondary); }
 .bg-scope-tab.active {
-  background: var(--accent);
+  background: var(--accent, #8b5cf6);
   color: white;
 }
 .bg-scope-current {
   margin-top: 10px;
   padding: 10px 12px;
-  background: linear-gradient(135deg, var(--cc-accent-cyan-subtle), rgba(99, 102, 241, 0.06));
-  border: 1px solid rgba(0, 229, 207, 0.3);
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.12), rgba(99, 102, 241, 0.06));
+  border: 1px solid rgba(139, 92, 246, 0.3);
   border-radius: 8px;
   display: flex;
   align-items: center;
@@ -4974,7 +4924,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
 }
 .bg-scope-current-text strong {
   font-weight: 600;
-  color: var(--accent);
+  color: var(--accent, #8b5cf6);
   font-size: 11px;
 }
 .bg-scope-current-text span {
@@ -4998,7 +4948,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
   border-radius: 2px;
 }
 .timeline-clip.has-custom-bg {
-  border-color: rgba(0, 229, 207, 0.5);
+  border-color: rgba(139, 92, 246, 0.5);
 }
 
 /* ============ FAVORITOS (estrela em cards) ============ */
@@ -5029,7 +4979,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
 }
 .fav-star:hover {
   background: rgba(0, 0, 0, 0.7);
-  color: var(--gold);
+  color: #fbbf24;
   transform: scale(1.1);
 }
 /* Hover no card pai mostra a estrela */
@@ -5043,7 +4993,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
 .word-anim-card.is-fav .fav-star,
 .font-option.is-fav .fav-star {
   opacity: 1;
-  color: var(--gold);
+  color: #fbbf24;
 }
 /* Cards favoritados ganham brilho amarelado no border */
 .anim-card.is-fav,
@@ -5068,7 +5018,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
   top: -7px;
   left: 50%;
   transform: translateX(-50%);
-  background: var(--bg-elevated);
+  background: var(--bg-elevated, #1a1a23);
   color: var(--text-tertiary);
   font-size: 9px;
   font-weight: 600;
@@ -5087,14 +5037,14 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
 .word-panel-multi-header {
   margin-bottom: 14px;
   padding: 10px 12px;
-  background: linear-gradient(135deg, var(--cc-accent-cyan-subtle), rgba(99, 102, 241, 0.08));
-  border: 1px solid rgba(0, 229, 207, 0.4);
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.18), rgba(99, 102, 241, 0.08));
+  border: 1px solid rgba(139, 92, 246, 0.4);
   border-radius: 8px;
 }
 .word-panel-multi-count {
   font-size: 12px;
   font-weight: 700;
-  color: var(--accent);
+  color: var(--accent, #8b5cf6);
   margin-bottom: 4px;
 }
 .word-panel-multi-preview {
@@ -5106,13 +5056,13 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
 
 /* Caixa de seleção de MÚLTIPLAS palavras (grupo) */
 .selection-box.is-multi {
-  border-color: var(--gold);
+  border-color: #fbbf24;
   border-width: 2px;
   border-style: dashed;
 }
 .selection-box.is-multi .selection-handle {
-  background: var(--gold);
-  border-color: var(--gold);
+  background: #fbbf24;
+  border-color: #fbbf24;
 }
 .selection-box.is-multi .selection-rotate {
   display: none; /* rotação em grupo é complexo, deixa só pra solo */
@@ -5180,11 +5130,11 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
   top: 0;
   bottom: 0;
   width: 2px;
-  background: var(--cc-accent-cyan);
+  background: #8b5cf6;
   pointer-events: none;
   left: 0;
   transition: left 0.05s linear;
-  box-shadow: 0 0 8px rgba(0, 229, 207, 0.6);
+  box-shadow: 0 0 8px rgba(139, 92, 246, 0.6);
   z-index: 5;
 }
 .timeline-playhead::before {
@@ -5194,12 +5144,12 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
   left: -4px;
   width: 10px;
   height: 10px;
-  background: var(--cc-accent-cyan);
+  background: #8b5cf6;
   border-radius: 50%;
-  box-shadow: 0 0 12px rgba(0, 229, 207, 0.8);
+  box-shadow: 0 0 12px rgba(139, 92, 246, 0.8);
 }
 .timeline-audio-track:hover .timeline-playhead {
-  background: var(--cc-accent-pro);
+  background: #a78bfa;
 }
 .timeline-audio-track.is-loading {
   cursor: progress;
@@ -5226,12 +5176,12 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
 }
 .timeline-audio-track.is-scrubbing .timeline-playhead {
   width: 3px;
-  background: var(--gold);
+  background: #fbbf24;
   box-shadow: 0 0 12px rgba(251, 191, 36, 0.8);
   transition: none;
 }
 .timeline-audio-track.is-scrubbing .timeline-playhead::before {
-  background: var(--gold);
+  background: #fbbf24;
   box-shadow: 0 0 16px rgba(251, 191, 36, 1);
 }
 
@@ -5269,14 +5219,14 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
 .tl-mark-nav {
   width: 24px; height: 24px;
   display: flex; align-items: center; justify-content: center;
-  background: var(--cc-accent-cyan-subtle);
-  border: 1px solid rgba(0, 229, 207, 0.45);
+  background: rgba(139, 92, 246, 0.18);
+  border: 1px solid rgba(139, 92, 246, 0.45);
   border-radius: 6px;
-  color: var(--cc-accent-cyan);
+  color: #c4b5fd;
   font-size: 16px; line-height: 1;
   cursor: pointer; padding: 0;
 }
-.tl-mark-nav:hover:not(:disabled) { background: rgba(0, 229, 207, 0.32); color: #fff; }
+.tl-mark-nav:hover:not(:disabled) { background: rgba(139, 92, 246, 0.32); color: #fff; }
 .tl-mark-nav:disabled { opacity: 0.3; cursor: default; }
 .tl-mark-title {
   font-size: 12px; font-weight: 700; color: var(--text-primary);
@@ -5337,7 +5287,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
   min-width: 50px;
   max-width: 100px;
   padding: 0 6px;
-  background: rgba(0, 229, 207, 0.9);
+  background: rgba(139, 92, 246, 0.9);
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 4px;
   cursor: pointer;
@@ -5396,7 +5346,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
   height: 60vh;
   background: linear-gradient(180deg, rgba(22, 20, 32, 0.99), rgba(14, 12, 20, 0.99));
   backdrop-filter: blur(20px);
-  border-top: 1px solid rgba(0, 229, 207, 0.28);
+  border-top: 1px solid rgba(139, 92, 246, 0.28);
   box-shadow: 0 -24px 70px rgba(0, 0, 0, 0.7);
   z-index: 1000;
   transform: translateY(100%);
@@ -5443,9 +5393,9 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
 .marking-panel-progress {
   font-size: 11px;
   font-weight: 700;
-  color: var(--accent, var(--cc-accent-pro));
-  background: rgba(0, 229, 207, 0.14);
-  border: 1px solid rgba(0, 229, 207, 0.32);
+  color: var(--accent, #a78bfa);
+  background: rgba(139, 92, 246, 0.14);
+  border: 1px solid rgba(139, 92, 246, 0.32);
   padding: 3px 10px;
   border-radius: 999px;
   font-variant-numeric: tabular-nums;
@@ -5504,7 +5454,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
   padding: 11px 22px;
   font-size: 11.5px;
   color: var(--text-tertiary);
-  background: rgba(0, 229, 207, 0.04);
+  background: rgba(139, 92, 246, 0.04);
   border-bottom: 1px solid rgba(255, 255, 255, 0.04);
   flex-shrink: 0;
   line-height: 1.5;
@@ -5526,7 +5476,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
   position: relative;
   height: 56px;
   margin: 6px 16px 10px;
-  background: rgba(0, 229, 207, 0.06);
+  background: rgba(139, 92, 246, 0.06);
   border: 1px solid var(--border-default, rgba(255,255,255,0.08));
   border-radius: 8px;
   cursor: pointer;
@@ -5572,21 +5522,21 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
 .marking-tap-bar {
   display: flex; align-items: center; gap: 12px;
   padding: 7px 14px; border-bottom: 1px solid var(--border-default);
-  background: rgba(0,229,207,0.06);
+  background: rgba(139,92,246,0.06);
 }
 .tap-big-btn {
   flex: 0 0 auto; min-width: 112px; height: 40px;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: 0; border: none; border-radius: 12px; cursor: pointer;
-  background: var(--cc-accent-pro-gradient); color: #fff;
-  box-shadow: 0 6px 20px -6px rgba(0,229,207,0.6);
+  background: linear-gradient(135deg,#8b5cf6,#6d28d9); color: #fff;
+  box-shadow: 0 6px 20px -6px rgba(139,92,246,0.6);
   font-family: inherit; transition: transform .08s ease, box-shadow .2s ease;
   user-select: none; -webkit-tap-highlight-color: transparent;
 }
 .tap-big-btn:active { transform: scale(0.96); }
 .tap-big-btn.is-running { background: linear-gradient(135deg,#22c55e,#15803d); box-shadow: 0 6px 20px -6px rgba(34,197,94,0.6); }
-.tap-big-btn.is-counting { background: linear-gradient(135deg,var(--warning),#b45309); }
-.tap-big-btn.is-paused { background: var(--cc-accent-pro-gradient); }
+.tap-big-btn.is-counting { background: linear-gradient(135deg,#f59e0b,#b45309); }
+.tap-big-btn.is-paused { background: linear-gradient(135deg,#8b5cf6,#6d28d9); }
 .tap-actions { display: flex; gap: 8px; align-items: center; }
 /* Desktop: tap-bar numa ÚNICA linha — preenche o espaço horizontal vazio e
    libera altura pra lista de palavras (que estava espremida). Usa .marking-tap-bar
@@ -5623,8 +5573,8 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
   transition: 0.15s;
 }
 .mark-stanza.is-active {
-  background: rgba(0, 229, 207, 0.06);
-  border-color: rgba(0, 229, 207, 0.3);
+  background: rgba(139, 92, 246, 0.06);
+  border-color: rgba(139, 92, 246, 0.3);
 }
 
 .mark-stanza-header {
@@ -5737,18 +5687,18 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
   font-family: inherit;
 }
 .mark-word:hover {
-  background: rgba(0, 229, 207, 0.2);
-  border-color: rgba(0, 229, 207, 0.5);
+  background: rgba(139, 92, 246, 0.2);
+  border-color: rgba(139, 92, 246, 0.5);
   color: var(--text-primary);
 }
 .mark-word.is-marked {
-  background: rgba(0, 229, 207, 0.25);
-  border-color: rgba(0, 229, 207, 0.6);
+  background: rgba(139, 92, 246, 0.25);
+  border-color: rgba(139, 92, 246, 0.6);
   color: var(--text-primary);
 }
 .mark-word.is-next {
   background: rgba(251, 191, 36, 0.2);
-  border: 2px solid var(--gold);
+  border: 2px solid #fbbf24;
   color: #fff;
   animation: mark-word-pulse 1.4s ease-in-out infinite;
   padding: 5px 9px;
@@ -5781,7 +5731,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
   left: 50%;
   transform: translateX(-50%);
   background: rgba(0, 0, 0, 0.85);
-  color: var(--gold);
+  color: #fbbf24;
   font-size: 10px;
   font-weight: 700;
   padding: 2px 6px;
@@ -5804,12 +5754,12 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
   justify-content: center;
   width: 28px;
   height: 28px;
-  background: var(--accent);
+  background: var(--accent, #8b5cf6);
   color: #fff;
   border: none;
   border-radius: 50%;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0, 229, 207, 0.4);
+  box-shadow: 0 2px 8px rgba(139, 92, 246, 0.4);
   transition: transform 0.1s;
   flex-shrink: 0;
 }
@@ -5885,15 +5835,15 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
   color: var(--text-secondary);
 }
 .text-case-btn:hover {
-  background: rgba(0, 229, 207, 0.08);
-  border-color: rgba(0, 229, 207, 0.4);
+  background: rgba(139, 92, 246, 0.08);
+  border-color: rgba(139, 92, 246, 0.4);
   color: var(--text-primary);
 }
 .text-case-btn.active {
-  background: rgba(0, 229, 207, 0.15);
-  border-color: var(--accent);
+  background: rgba(139, 92, 246, 0.15);
+  border-color: var(--accent, #8b5cf6);
   color: var(--text-primary);
-  box-shadow: 0 0 0 1px var(--accent);
+  box-shadow: 0 0 0 1px var(--accent, #8b5cf6);
 }
 .text-case-sample {
   font-size: 18px;
@@ -5926,8 +5876,8 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
 }
 .keyword-input:focus {
   outline: none;
-  border-color: var(--accent);
-  background: rgba(0, 229, 207, 0.05);
+  border-color: var(--accent, #8b5cf6);
+  background: rgba(139, 92, 246, 0.05);
 }
 .keyword-input::placeholder {
   color: var(--text-tertiary);
@@ -5956,8 +5906,8 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
   align-items: center;
   gap: 4px;
   padding: 3px 4px 3px 9px;
-  background: var(--cc-accent-cyan-subtle);
-  border: 1px solid rgba(0, 229, 207, 0.35);
+  background: rgba(139, 92, 246, 0.18);
+  border: 1px solid rgba(139, 92, 246, 0.35);
   border-radius: 12px;
   font-size: 11px;
   font-weight: 600;
@@ -6004,7 +5954,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
   color: var(--text-primary);
 }
 .word-emphasis-label svg {
-  color: var(--gold);
+  color: #fbbf24;
 }
 
 /* Switch mini (compacto) */
@@ -6040,7 +5990,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
   transition: 0.2s;
 }
 .switch-mini input:checked + .switch-mini-slider {
-  background: var(--gold);
+  background: #fbbf24;
 }
 .switch-mini input:checked + .switch-mini-slider::before {
   transform: translateX(14px);
@@ -6114,7 +6064,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
   top: 50%; left: 50%;
   transform: translate(-50%, -50%);
   width: 900px; height: 900px;
-  background: radial-gradient(circle, rgba(0, 229, 207, 0.15) 0%, transparent 60%);
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.15) 0%, transparent 60%);
   pointer-events: none;
   filter: blur(40px);
 }
@@ -6130,8 +6080,8 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
   gap: var(--space-2);
   padding: 6px 14px;
   margin-bottom: var(--space-6);
-  background: rgba(0, 229, 207, 0.08);
-  border: 1px solid rgba(0, 229, 207, 0.25);
+  background: rgba(139, 92, 246, 0.08);
+  border: 1px solid rgba(139, 92, 246, 0.25);
   border-radius: var(--radius-full);
   font-size: var(--text-xs);
   color: var(--text-secondary);
@@ -6152,7 +6102,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
   line-height: 1.05;
   letter-spacing: -0.03em;
   margin-bottom: var(--space-6);
-  background: linear-gradient(180deg, var(--cc-text-primary) 0%, var(--cc-text-secondary) 100%);
+  background: linear-gradient(180deg, #ffffff 0%, #a8a8b8 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -6189,7 +6139,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
   box-shadow:
     0 0 0 1px rgba(255,255,255,0.02) inset,
     0 32px 80px -16px rgba(0,0,0,0.6),
-    0 0 120px -20px rgba(0, 229, 207, 0.2);
+    0 0 120px -20px rgba(139, 92, 246, 0.2);
   overflow: hidden;
   position: relative;
   display: flex;
@@ -6206,7 +6156,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
 .hero-demo .canvas-bg {
   position: absolute;
   inset: 0;
-  background: var(--cc-accent-pro-gradient);
+  background: linear-gradient(135deg, #8b5cf6, #3b82f6);
   opacity: 0.5;
 }
 .hero-demo .demo-content > span { display: inline-block; }
@@ -6337,9 +6287,9 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
 .auth-side {
   position: relative;
   background:
-    radial-gradient(circle at 30% 20%, rgba(0, 229, 207, 0.4), transparent 60%),
+    radial-gradient(circle at 30% 20%, rgba(139, 92, 246, 0.4), transparent 60%),
     radial-gradient(circle at 70% 80%, rgba(99, 102, 241, 0.3), transparent 60%),
-    linear-gradient(135deg, var(--cc-bg-canvas), #1E1E1E);
+    linear-gradient(135deg, #0a0a0f, #1e1b4b);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -6426,7 +6376,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
 .auth-footer a:hover { text-decoration: underline; }
 
 /* ---- Tela de login IMERSIVA (cena de louvor + cartão de vidro) — escopado, não afeta a landing ---- */
-.page-login.auth-shell { position: relative; min-height: 100vh; background: var(--cc-bg-canvas); overflow: hidden; }
+.page-login.auth-shell { position: relative; min-height: 100vh; background: #05050b; overflow: hidden; }
 /* vence a regra do roteador .page-auth.active{display:grid} via especificidade */
 .page-login.page-auth.active { display: block; }
 
@@ -6435,7 +6385,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
 .page-login .wm-login-aurora {
   position: absolute; inset: -25%;
   background:
-    radial-gradient(40% 50% at 25% 30%, rgba(0,229,207,0.45), transparent 70%),
+    radial-gradient(40% 50% at 25% 30%, rgba(139,92,246,0.45), transparent 70%),
     radial-gradient(45% 55% at 78% 25%, rgba(99,102,241,0.40), transparent 70%),
     radial-gradient(52% 62% at 60% 82%, rgba(224,182,92,0.20), transparent 70%),
     radial-gradient(45% 55% at 12% 88%, rgba(56,189,248,0.16), transparent 70%);
@@ -6484,8 +6434,8 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
   text-shadow: 0 4px 24px rgba(0,0,0,0.5);
 }
 .page-login .wm-login-word { display: inline-block; margin: 0 0.16em; will-change: transform, opacity; backface-visibility: hidden; }
-.page-login .wm-login-word.wm-login-emph { color: var(--lp-accent-3, var(--cc-accent-pro)); text-shadow: 0 0 24px rgba(167,139,250,0.6); }
-.page-login .wm-login-word.is-gold { color: var(--gold) !important; text-shadow: 0 0 24px rgba(224,182,92,0.65); }
+.page-login .wm-login-word.wm-login-emph { color: var(--lp-accent-3, #c4b5fd); text-shadow: 0 0 24px rgba(167,139,250,0.6); }
+.page-login .wm-login-word.is-gold { color: var(--lp-gold, #e0b65c) !important; text-shadow: 0 0 24px rgba(224,182,92,0.65); }
 
 /* Conteúdo por cima da cena */
 .page-login .wm-login-content {
@@ -6527,7 +6477,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
 .wm-lang-menu {
   position: absolute; top: calc(100% + 4px); right: 0; z-index: 100;
   min-width: 170px; margin: 0; padding: 4px; list-style: none;
-  background: var(--cc-bg-elevated); border: 1px solid var(--border-strong); border-radius: 10px;
+  background: #1a1030; border: 1px solid var(--border-strong); border-radius: 10px;
   box-shadow: 0 12px 32px rgba(0,0,0,0.45);
   opacity: 0; visibility: hidden; transform: translateY(-4px);
   transition: opacity .15s, transform .15s, visibility .15s;
@@ -6545,7 +6495,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
 }
 .wm-lang-opt:hover { background: rgba(255,255,255,0.07); color: #fff; }
 .wm-lang-opt.is-sel { color: #fff; background: rgba(108,77,246,0.18); }
-.wm-lang-opt small { color: var(--cc-text-muted); font-size: 11px; }
+.wm-lang-opt small { color: var(--text-tertiary, #9a90b0); font-size: 11px; }
 
 /* Seletor de idioma na barra lateral do editor (rail) — botão só-bandeira,
    menu abre pro LADO (a rail é estreita e fica na borda esquerda).
@@ -6589,7 +6539,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
   .wm-lang-menu-rail::after {
     content: ''; position: absolute; top: 100%; left: 50%;
     transform: translateX(-50%);
-    border: 7px solid transparent; border-top-color: var(--cc-bg-elevated);
+    border: 7px solid transparent; border-top-color: #1a1030;
   }
   .wm-lang-rail-toggle { width: 44px; height: 44px; }
   .wm-lang-menu-rail .wm-lang-opt { padding: 12px 14px; font-size: 15px; }
@@ -6626,18 +6576,18 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
    Escopo: .page-landing
    ============================================================ */
 .page-landing {
-  --lp-bg: var(--cc-bg-canvas);
-  --lp-surface: var(--cc-bg-surface);
-  --lp-surface-2: var(--cc-bg-elevated);
+  --lp-bg: #07070d;
+  --lp-surface: #0e0e17;
+  --lp-surface-2: #15151f;
   --lp-line: rgba(255,255,255,0.08);
   --lp-line-strong: rgba(255,255,255,0.15);
-  --lp-text: var(--cc-text-primary);
-  --lp-text-dim: var(--cc-text-secondary);
-  --lp-text-faint: var(--cc-text-muted);
-  --lp-accent: var(--cc-accent-cyan);
-  --lp-accent-2: var(--cc-accent-pro);
-  --lp-accent-3: var(--cc-accent-pro);
-  --lp-gold: var(--gold);
+  --lp-text: #f6f6f9;
+  --lp-text-dim: #a2a2b4;
+  --lp-text-faint: #6c6c80;
+  --lp-accent: #8b5cf6;
+  --lp-accent-2: #a78bfa;
+  --lp-accent-3: #c4b5fd;
+  --lp-gold: #e0b65c;
   background: var(--lp-bg);
   color: var(--lp-text);
   font-family: 'Inter', system-ui, sans-serif;
@@ -6648,7 +6598,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
 .page-landing::before {
   content: ''; position: absolute; top: 0; left: 0; right: 0; height: 700px; z-index: 0; pointer-events: none;
   background:
-    radial-gradient(700px 400px at 50% -50px, rgba(0,229,207,0.18), transparent 70%),
+    radial-gradient(700px 400px at 50% -50px, rgba(139,92,246,0.18), transparent 70%),
     radial-gradient(500px 300px at 85% 100px, rgba(224,182,92,0.06), transparent 70%);
 }
 .page-landing > * { position: relative; z-index: 1; }
@@ -6673,8 +6623,8 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
   text-decoration: none; border: 1px solid transparent; white-space: nowrap;
   max-width: 100%; box-sizing: border-box; text-align: center;
 }
-.page-landing .lp-btn-primary { background: linear-gradient(120deg, var(--lp-accent), var(--lp-accent-2)); color: #fff; box-shadow: 0 4px 18px -4px rgba(0,229,207,0.5); }
-.page-landing .lp-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 28px -4px rgba(0,229,207,0.7); }
+.page-landing .lp-btn-primary { background: linear-gradient(120deg, var(--lp-accent), var(--lp-accent-2)); color: #fff; box-shadow: 0 4px 18px -4px rgba(139,92,246,0.5); }
+.page-landing .lp-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 28px -4px rgba(139,92,246,0.7); }
 .page-landing .lp-btn-ghost { background: rgba(255,255,255,0.03); color: var(--lp-text); border-color: var(--lp-line-strong); }
 .page-landing .lp-btn-ghost:hover { background: rgba(255,255,255,0.08); border-color: var(--lp-accent-2); }
 .page-landing .lp-btn-lg { padding: 14px 26px; font-size: 15px; border-radius: 11px; }
@@ -6685,7 +6635,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
 .page-landing .hero-inner { max-width: 920px; margin: 0 auto; }
 .page-landing .hero-badge {
   display: inline-flex; align-items: center; gap: 8px; padding: 7px 16px 7px 13px; margin-bottom: 26px;
-  background: rgba(0,229,207,0.1); border: 1px solid rgba(0,229,207,0.3); border-radius: 100px;
+  background: rgba(139,92,246,0.1); border: 1px solid rgba(139,92,246,0.3); border-radius: 100px;
   font-size: 13px; font-weight: 500; color: var(--lp-accent-3); letter-spacing: -0.01em;
 }
 .page-landing .hero-badge::before { content: ''; width: 7px; height: 7px; background: #4ade80; border-radius: 50%; box-shadow: 0 0 10px #4ade80; }
@@ -6706,12 +6656,12 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
 .page-landing .lp-stage {
   position: relative; aspect-ratio: 16/9; border-radius: 18px; overflow: hidden;
   border: 1px solid var(--lp-line-strong);
-  box-shadow: 0 50px 130px -40px rgba(0,229,207,0.45), 0 0 0 1px rgba(255,255,255,0.03) inset;
+  box-shadow: 0 50px 130px -40px rgba(139,92,246,0.45), 0 0 0 1px rgba(255,255,255,0.03) inset;
   background: #000;
 }
 .page-landing .lp-stage-bg {
   position: absolute; inset: 0; transition: background 0.8s ease;
-  background: radial-gradient(ellipse at 50% 40%, var(--cc-bg-elevated), var(--cc-bg-canvas) 75%);
+  background: radial-gradient(ellipse at 50% 40%, #1a1530, #07060d 75%);
 }
 .page-landing .lp-stage-bar {
   position: absolute; top: 0; left: 0; right: 0; z-index: 4; height: 40px;
@@ -6746,10 +6696,10 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
 .page-landing .lp-style-btn:hover { color: var(--lp-text); border-color: var(--lp-accent-2); }
 .page-landing .lp-style-btn.active {
   background: linear-gradient(120deg, var(--lp-accent), var(--lp-accent-2)); color: #fff; border-color: transparent;
-  box-shadow: 0 4px 16px -4px rgba(0,229,207,0.6);
+  box-shadow: 0 4px 16px -4px rgba(139,92,246,0.6);
 }
 .page-landing .lp-stage-hint { text-align: center; margin-top: 14px; font-size: 13px; color: var(--lp-text-faint); }
-.page-landing .lp-video { position: relative; width: 100%; aspect-ratio: 16 / 9; border-radius: 16px; overflow: hidden; border: 1px solid var(--lp-line-strong); box-shadow: 0 28px 64px -28px rgba(0,229,207,0.45); background: #000; }
+.page-landing .lp-video { position: relative; width: 100%; aspect-ratio: 16 / 9; border-radius: 16px; overflow: hidden; border: 1px solid var(--lp-line-strong); box-shadow: 0 28px 64px -28px rgba(139,92,246,0.45); background: #000; }
 .page-landing .lp-video iframe, .page-landing .lp-video #lp-yt-player { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
 .page-landing .lp-video-shield { position: absolute; inset: 0; z-index: 1; cursor: pointer; background: transparent; }
 .page-landing .lp-video-unmute { position: absolute; bottom: 16px; right: 16px; z-index: 2; display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.25); background: rgba(15,15,20,0.72); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); color: #fff; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.18s, transform 0.18s, opacity 0.25s; box-shadow: 0 4px 16px -4px rgba(0,0,0,0.5); }
@@ -6800,7 +6750,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
 .page-landing .lp-depo-name { font-size: 14px; font-weight: 600; color: var(--lp-text); }
 .page-landing .lp-depo-role { font-size: 13px; color: var(--lp-text-dim); margin-top: 3px; }
 .page-landing .feature-card:hover { transform: translateY(-4px); border-color: var(--lp-line-strong); }
-.page-landing .feature-icon { width: 44px; height: 44px; border-radius: 12px; background: linear-gradient(135deg, rgba(0,229,207,0.25), rgba(0,229,207,0.05)); border: 1px solid rgba(0,229,207,0.3); display: flex; align-items: center; justify-content: center; color: var(--lp-accent-3); margin-bottom: 18px; }
+.page-landing .feature-icon { width: 44px; height: 44px; border-radius: 12px; background: linear-gradient(135deg, rgba(139,92,246,0.25), rgba(139,92,246,0.05)); border: 1px solid rgba(139,92,246,0.3); display: flex; align-items: center; justify-content: center; color: var(--lp-accent-3); margin-bottom: 18px; }
 .page-landing .feature-title { font-size: 17px; font-weight: 600; letter-spacing: -0.02em; margin-bottom: 8px; }
 .page-landing .feature-desc { font-size: 14px; color: var(--lp-text-dim); line-height: 1.6; }
 
@@ -6808,8 +6758,8 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
 .page-landing .lp-pricing-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 18px; margin-top: 44px; }
 .page-landing .lp-price-card { background: var(--lp-surface); border: 1px solid var(--lp-line); border-radius: 18px; padding: 34px 28px; position: relative; display: flex; flex-direction: column; transition: transform 0.25s; }
 .page-landing .lp-price-card:hover { transform: translateY(-4px); }
-.page-landing .lp-price-card.featured { border-color: var(--lp-accent); background: linear-gradient(180deg, rgba(0,229,207,0.12), var(--lp-surface) 55%); box-shadow: 0 0 0 1px var(--lp-accent), 0 28px 64px -28px rgba(0,229,207,0.55); }
-.page-landing .lp-price-badge { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: linear-gradient(120deg, var(--lp-accent), var(--lp-accent-2)); color: #fff; font-size: 11px; font-weight: 700; letter-spacing: 0.04em; padding: 5px 16px; border-radius: 100px; box-shadow: 0 6px 18px -4px rgba(0,229,207,0.6); }
+.page-landing .lp-price-card.featured { border-color: var(--lp-accent); background: linear-gradient(180deg, rgba(139,92,246,0.12), var(--lp-surface) 55%); box-shadow: 0 0 0 1px var(--lp-accent), 0 28px 64px -28px rgba(139,92,246,0.55); }
+.page-landing .lp-price-badge { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: linear-gradient(120deg, var(--lp-accent), var(--lp-accent-2)); color: #fff; font-size: 11px; font-weight: 700; letter-spacing: 0.04em; padding: 5px 16px; border-radius: 100px; box-shadow: 0 6px 18px -4px rgba(139,92,246,0.6); }
 .page-landing .lp-price-name { font-family: 'Sora',sans-serif; font-size: 19px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 6px; }
 .page-landing .lp-price-value { font-family: 'Sora',sans-serif; font-size: 42px; font-weight: 800; letter-spacing: -0.04em; line-height: 1; margin-bottom: 4px; }
 .page-landing .lp-price-value small { font-size: 15px; font-weight: 500; color: var(--lp-text-dim); }
@@ -6823,8 +6773,8 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
 .page-landing .lp-price-card.featured .lp-price-btn { background: linear-gradient(120deg, var(--lp-accent), var(--lp-accent-2)); border-color: transparent; color: #fff; }
 .page-landing .lp-price-card.featured .lp-price-btn:hover { transform: translateY(-2px); }
 /* Destaque sutil (diferente do roxo sólido do Pro Plus) para Começar grátis e Assinar Pro */
-.page-landing .lp-price-btn-destaque { border-color: var(--lp-accent); color: #fff; background: rgba(0,229,207,0.14); box-shadow: 0 0 0 1px rgba(0,229,207,0.35), 0 6px 20px -8px rgba(0,229,207,0.5); }
-.page-landing .lp-price-btn-destaque:hover { background: rgba(0,229,207,0.24); border-color: var(--lp-accent-2); transform: translateY(-2px); box-shadow: 0 0 0 1px var(--lp-accent-2), 0 10px 26px -8px rgba(0,229,207,0.6); }
+.page-landing .lp-price-btn-destaque { border-color: var(--lp-accent); color: #fff; background: rgba(139,92,246,0.14); box-shadow: 0 0 0 1px rgba(139,92,246,0.35), 0 6px 20px -8px rgba(139,92,246,0.5); }
+.page-landing .lp-price-btn-destaque:hover { background: rgba(139,92,246,0.24); border-color: var(--lp-accent-2); transform: translateY(-2px); box-shadow: 0 0 0 1px var(--lp-accent-2), 0 10px 26px -8px rgba(139,92,246,0.6); }
 .page-landing .lp-pricing-foot { text-align: center; margin-top: 28px; font-size: 13px; color: var(--lp-text-faint); }
 
 /* ---------- POSITIONING ---------- */
@@ -6838,7 +6788,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
 
 /* ---------- FINAL CTA ---------- */
 .page-landing .lp-cta { max-width: 1120px; margin: 0 auto; padding: 0 32px 96px; }
-.page-landing .lp-cta-inner { position: relative; overflow: hidden; background: radial-gradient(ellipse at 50% 0%, rgba(0,229,207,0.2), var(--lp-surface) 70%); border: 1px solid var(--lp-line-strong); border-radius: 22px; padding: 76px 32px; text-align: center; }
+.page-landing .lp-cta-inner { position: relative; overflow: hidden; background: radial-gradient(ellipse at 50% 0%, rgba(139,92,246,0.2), var(--lp-surface) 70%); border: 1px solid var(--lp-line-strong); border-radius: 22px; padding: 76px 32px; text-align: center; }
 .page-landing .lp-cta h2 { font-family: 'Sora',sans-serif; font-size: clamp(30px,3.6vw,44px); font-weight: 700; letter-spacing: -0.03em; margin-bottom: 14px; }
 .page-landing .lp-cta p { font-size: 17px; color: var(--lp-text-dim); margin-bottom: 32px; letter-spacing: -0.01em; }
 
@@ -6873,7 +6823,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
   .modal-overlay { padding: 10px; align-items: center; }
   .modal { max-width: 100%; width: 100%; max-height: 90vh; max-height: 90dvh; border-radius: 18px; position: relative; }
   /* alça de arrastar no topo do modal (mobile) */
-  .modal::before { content: ''; position: absolute; top: 8px; left: 50%; transform: translateX(-50%); width: 40px; height: 4px; border-radius: 999px; background: var(--border-strong); z-index: 3; pointer-events: none; }
+  .modal::before { content: ''; position: absolute; top: 8px; left: 50%; transform: translateX(-50%); width: 40px; height: 4px; border-radius: 999px; background: var(--border-strong, #3a3a4a); z-index: 3; pointer-events: none; }
   .modal-header { padding: 22px 18px 14px; }
   /* botão de fechar maior e mais fácil de tocar */
   .modal-header .icon-btn { width: 40px; height: 40px; }
@@ -7141,14 +7091,14 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
         <span data-i18n="tb.myProjects">Meus projetos</span>
       </button>
-      <button class="btn btn-sm" id="btn-videoaulas" data-tooltip="Videoaulas" style="background:var(--cc-accent-pro-gradient); color:#fff; border:1px solid transparent; box-shadow:0 2px 10px rgba(0,229,207,0.35);">
+      <button class="btn btn-sm" id="btn-videoaulas" data-tooltip="Videoaulas" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9); color:#fff; border:1px solid transparent; box-shadow:0 2px 10px rgba(139,92,246,0.35);">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><polygon points="10 9 15 12 10 15 10 9" fill="currentColor" stroke="none"/></svg>
         <span data-i18n="tb.videos">Videoaulas</span>
       </button>
-      <button class="btn btn-sm" id="btn-comparafontes" data-tooltip="Comparar fontes (Pro Plus)" style="background: var(--cc-accent-cyan); color: var(--cc-bg-canvas); border:1px solid transparent; box-shadow:0 2px 10px rgba(0,229,207,0.32); font-weight:600;">
+      <button class="btn btn-sm" id="btn-comparafontes" data-tooltip="Comparar fontes (Pro Plus)" style="background:linear-gradient(135deg,#34e0ff,#8a7bff); color:#04121a; border:1px solid transparent; box-shadow:0 2px 10px rgba(52,224,255,0.32); font-weight:600;">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg>
         <span data-i18n="tb.compareFonts">Comparar fontes</span>
-        <span style="margin-left:6px; background:rgba(4,18,26,0.28); color:#121212; font-size:9px; font-weight:800; letter-spacing:.04em; padding:2px 6px; border-radius:6px; line-height:1;">Pro Plus</span>
+        <span style="margin-left:6px; background:rgba(4,18,26,0.28); color:#04121a; font-size:9px; font-weight:800; letter-spacing:.04em; padding:2px 6px; border-radius:6px; line-height:1;">Pro Plus</span>
       </button>
       <div style="width:1px; height:20px; background:var(--border-default); margin: 0 4px;"></div>
       <button class="btn btn-ghost btn-sm icon-only" id="btn-undo" disabled data-tooltip="Desfazer (Ctrl+Z)">
@@ -7162,7 +7112,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
       </button>
       </div><!-- /topbar-scroll: daqui pra frente fica FIXO (créditos, Salvar, Exportar) -->
       <div style="width:1px; height:20px; background:var(--border-default); margin: 0 4px;"></div>
-      <div id="wm-credits-badge" data-i18n-attr="title:ed.creditsTip" title="Créditos disponíveis neste mês" style="display:inline-flex; align-items:center; gap:6px; padding:5px 12px; border-radius:20px; background:rgba(0,229,207,0.12); border:1px solid rgba(0,229,207,0.3); color:var(--cc-accent-pro); font-size:13px; font-weight:600; cursor:default;">
+      <div id="wm-credits-badge" data-i18n-attr="title:ed.creditsTip" title="Créditos disponíveis neste mês" style="display:inline-flex; align-items:center; gap:6px; padding:5px 12px; border-radius:20px; background:rgba(139,92,246,0.12); border:1px solid rgba(139,92,246,0.3); color:#c4b5fd; font-size:13px; font-weight:600; cursor:default;">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
         <span id="wm-credits-text">—</span>
       </div>
@@ -7174,9 +7124,9 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
         <span data-i18n="tb.saveTemplate">Salvar template</span>
       </button>
-      <button class="btn btn-secondary btn-sm" id="btn-create-template-from-slide" style="display:none;border-color:#00E5CF;" data-tooltip="[Admin] Criar template oficial a partir deste slide">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--cc-accent-pro)" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-        <span style="color:var(--cc-accent-pro);">Criar template do slide</span>
+      <button class="btn btn-secondary btn-sm" id="btn-create-template-from-slide" style="display:none;border-color:#8b5cf6;" data-tooltip="[Admin] Criar template oficial a partir deste slide">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#c4b5fd" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        <span style="color:#c4b5fd;">Criar template do slide</span>
       </button>
       <button class="btn btn-primary btn-sm" id="btn-export" data-tooltip="Exportar vídeo (MP4)">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -7610,10 +7560,10 @@ Digno de toda honra"></textarea>
             <div class="color-swatch selected" data-color="#f4f4f7" style="background:#f4f4f7"></div>
             <div class="color-swatch" data-color="#ffffff" style="background:#ffffff"></div>
             <div class="color-swatch" data-color="#d4a857" style="background:#d4a857"></div>
-            <div class="color-swatch" data-color="#00E5CF" style="background:#00E5CF"></div>
+            <div class="color-swatch" data-color="#8b5cf6" style="background:#8b5cf6"></div>
             <div class="color-swatch" data-color="#60a5fa" style="background:#60a5fa"></div>
             <div class="color-swatch" data-color="#f472b6" style="background:#f472b6"></div>
-            <div class="color-swatch" data-color="#121212" style="background:#121212"></div>
+            <div class="color-swatch" data-color="#0f0f17" style="background:#0f0f17"></div>
             <label class="color-swatch color-swatch-custom" data-color-custom="text" title="Escolher cor personalizada">
               <input type="color" id="text-color-custom" value="#ffffff" style="position:absolute; opacity:0; pointer-events:none; width:0; height:0;" />
             </label>
@@ -7631,13 +7581,13 @@ Digno de toda honra"></textarea>
         <div class="panel-section">
           <div class="panel-section-title" data-i18n="rp.glowColor">Cor do brilho</div>
           <div class="color-swatches" id="glow-swatches">
-            <div class="color-swatch selected" data-glow-color="#00E5CF" style="background:#00E5CF"></div>
+            <div class="color-swatch selected" data-glow-color="#8b5cf6" style="background:#8b5cf6"></div>
             <div class="color-swatch" data-glow-color="#d4a857" style="background:#d4a857"></div>
             <div class="color-swatch" data-glow-color="#60a5fa" style="background:#60a5fa"></div>
             <div class="color-swatch" data-glow-color="#ffffff" style="background:#ffffff"></div>
             <div class="color-swatch" data-glow-color="#f472b6" style="background:#f472b6"></div>
             <label class="color-swatch color-swatch-custom" data-color-custom="glow" title="Escolher cor personalizada">
-              <input type="color" id="glow-color-custom" value="#00E5CF" style="position:absolute; opacity:0; pointer-events:none; width:0; height:0;" />
+              <input type="color" id="glow-color-custom" value="#8b5cf6" style="position:absolute; opacity:0; pointer-events:none; width:0; height:0;" />
             </label>
           </div>
         </div>
@@ -7652,8 +7602,8 @@ Digno de toda honra"></textarea>
             <div class="color-swatch selected" data-outline-color="#000000" style="background:#000000; border:1px solid var(--border-default);"></div>
             <div class="color-swatch" data-outline-color="#ffffff" style="background:#ffffff"></div>
             <div class="color-swatch" data-outline-color="#d4a857" style="background:#d4a857"></div>
-            <div class="color-swatch" data-outline-color="#00E5CF" style="background:#00E5CF"></div>
-            <div class="color-swatch" data-outline-color="var(--error)" style="background:var(--error)"></div>
+            <div class="color-swatch" data-outline-color="#8b5cf6" style="background:#8b5cf6"></div>
+            <div class="color-swatch" data-outline-color="#ef4444" style="background:#ef4444"></div>
             <div class="color-swatch" data-outline-color="#60a5fa" style="background:#60a5fa"></div>
             <label class="color-swatch color-swatch-custom" data-color-custom="outline" title="Cor personalizada">
               <input type="color" id="outline-color-custom" value="#000000" style="position:absolute; opacity:0; pointer-events:none; width:0; height:0;" />
@@ -7683,9 +7633,9 @@ Digno de toda honra"></textarea>
           </div>
           <div class="color-swatches" id="shadow-swatches" style="grid-template-columns: repeat(7, 1fr);">
             <div class="color-swatch selected" data-shadow-color="#000000" style="background:#000000; border:1px solid var(--border-default);"></div>
-            <div class="color-swatch" data-shadow-color="#1E1E1E" style="background:#1E1E1E"></div>
+            <div class="color-swatch" data-shadow-color="#1e1b4b" style="background:#1e1b4b"></div>
             <div class="color-swatch" data-shadow-color="#7c2d12" style="background:#7c2d12"></div>
-            <div class="color-swatch" data-shadow-color="#00E5CF" style="background:#00E5CF"></div>
+            <div class="color-swatch" data-shadow-color="#8b5cf6" style="background:#8b5cf6"></div>
             <div class="color-swatch" data-shadow-color="#d4a857" style="background:#d4a857"></div>
             <div class="color-swatch" data-shadow-color="#ffffff" style="background:#ffffff"></div>
             <label class="color-swatch color-swatch-custom" data-color-custom="shadow" title="Cor personalizada">
@@ -7714,15 +7664,15 @@ Digno de toda honra"></textarea>
         <div class="panel-section">
           <div class="panel-section-title" data-i18n="bg.title">Background</div>
           <div class="color-swatches" id="bg-swatches" style="grid-template-columns: repeat(5, 1fr);">
-            <div class="color-swatch" data-bg="brand" style="background: var(--gradient-divine)"></div>
-            <div class="color-swatch" data-bg="divine" style="background: linear-gradient(135deg, #d4a857, #00E5CF)"></div>
-            <div class="color-swatch" data-bg="midnight" style="background: linear-gradient(135deg, var(--cc-bg-canvas), #1E1E1E)"></div>
+            <div class="color-swatch" data-bg="brand" style="background: linear-gradient(135deg, #8b5cf6, #3b82f6)"></div>
+            <div class="color-swatch" data-bg="divine" style="background: linear-gradient(135deg, #d4a857, #8b5cf6)"></div>
+            <div class="color-swatch" data-bg="midnight" style="background: linear-gradient(135deg, #0f0f17, #1e1b4b)"></div>
             <div class="color-swatch" data-bg="warm" style="background: linear-gradient(135deg, #7c2d12, #d4a857)"></div>
-            <div class="color-swatch selected" data-bg="black" style="background: var(--cc-bg-canvas); border:1px solid var(--border-default);"></div>
+            <div class="color-swatch selected" data-bg="black" style="background: #050507; border:1px solid var(--border-default);"></div>
           </div>
 
           
-          <div id="stanza-bg-indicator" style="display:none; margin-top: 10px; padding: 9px 12px; background: linear-gradient(135deg, rgba(0, 229, 207, 0.15), rgba(99, 102, 241, 0.08)); border: 1px solid rgba(0, 229, 207, 0.35); border-radius: 7px; align-items: center; gap: 8px;">
+          <div id="stanza-bg-indicator" style="display:none; margin-top: 10px; padding: 9px 12px; background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(99, 102, 241, 0.08)); border: 1px solid rgba(139, 92, 246, 0.35); border-radius: 7px; align-items: center; gap: 8px;">
             <span style="flex: 1; font-size: 11px; color: var(--text-primary);" id="stanza-bg-text">
               Estrofe <strong id="stanza-bg-num">1</strong> tem fundo próprio
             </span>
@@ -7792,14 +7742,14 @@ Digno de toda honra"></textarea>
 
           <label class="label" style="font-size: 10px; margin-bottom: var(--space-1); display:block;" data-i18n="emp.color">Cor</label>
           <div id="emphasis-color-swatches" class="color-swatches" style="margin-bottom: var(--space-3);">
-            <button class="color-swatch selected" data-emp-color="var(--gold)" style="background:var(--gold)" title="Dourado"></button>
+            <button class="color-swatch selected" data-emp-color="#fbbf24" style="background:#fbbf24" title="Dourado"></button>
             <button class="color-swatch" data-emp-color="#ffffff" style="background:#ffffff" title="Branco"></button>
             <button class="color-swatch" data-emp-color="#f87171" style="background:#f87171" title="Vermelho"></button>
-            <button class="color-swatch" data-emp-color="var(--success)" style="background:var(--success)" title="Verde"></button>
+            <button class="color-swatch" data-emp-color="#34d399" style="background:#34d399" title="Verde"></button>
             <button class="color-swatch" data-emp-color="#60a5fa" style="background:#60a5fa" title="Azul"></button>
             <button class="color-swatch" data-emp-color="#f472b6" style="background:#f472b6" title="Rosa"></button>
             <label class="color-swatch color-swatch-custom" style="position:relative;">
-              <input type="color" id="emphasis-color-custom" value="var(--gold)" style="position:absolute; inset:0; opacity:0; cursor:pointer;">
+              <input type="color" id="emphasis-color-custom" value="#fbbf24" style="position:absolute; inset:0; opacity:0; cursor:pointer;">
               <span style="font-size:10px;">+</span>
             </label>
           </div>
@@ -8116,12 +8066,12 @@ Digno de toda honra"></textarea>
   <div class="modal" style="max-width: 440px;">
     <div class="modal-body" style="padding: 28px; text-align: center;">
       <div style="width:56px; height:56px; margin:0 auto 16px; border-radius:16px; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg,#34e0ff,#8a7bff); box-shadow:0 8px 24px -8px rgba(52,224,255,0.5);">
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#121212" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg>
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#04121a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg>
       </div>
       <div style="display:inline-block; font-size:10px; font-weight:800; letter-spacing:.06em; color:#8a7bff; background:rgba(138,123,255,0.12); padding:4px 10px; border-radius:8px; margin-bottom:12px;" data-i18n="md.proPlusBadge">RECURSO PRO PLUS</div>
       <h2 style="margin:0 0 8px; font-size:20px; font-weight:700; color:var(--text-primary);" data-i18n="md.compareUpTitle">Comparar fontes é do Pro Plus</h2>
       <p style="margin:0 0 22px; font-size:14px; line-height:1.6; color:var(--text-secondary);" data-i18n="md.compareUpText">Visualize e compare todas as fontes lado a lado, incluindo as 123 fontes exclusivas do pack. Faça upgrade pro Pro Plus e desbloqueie esse e outros recursos.</p>
-      <button id="comparafontes-upsell-cta" class="btn btn-primary" style="width:100%; padding:13px; font-weight:700; background:var(--cc-accent-pro-gradient); border:none; color:#fff;" data-i18n="md.seePlans">Ver planos</button>
+      <button id="comparafontes-upsell-cta" class="btn btn-primary" style="width:100%; padding:13px; font-weight:700; background:linear-gradient(135deg,#8b5cf6,#6d28d9); border:none; color:#fff;" data-i18n="md.seePlans">Ver planos</button>
       <button id="comparafontes-upsell-close" class="btn btn-ghost btn-sm" style="width:100%; margin-top:8px;" data-i18n="md.notNow">Agora não</button>
     </div>
   </div>
@@ -8130,13 +8080,13 @@ Digno de toda honra"></textarea>
 <div class="modal-overlay" id="tpl-upsell-overlay">
   <div class="modal" style="max-width: 440px;">
     <div class="modal-body" style="padding: 28px; text-align: center;">
-      <div style="width:56px; height:56px; margin:0 auto 16px; border-radius:16px; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg,#00E5CF,#d4a857); box-shadow:0 8px 24px -8px rgba(0,229,207,0.5);">
+      <div style="width:56px; height:56px; margin:0 auto 16px; border-radius:16px; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg,#8b5cf6,#d4a857); box-shadow:0 8px 24px -8px rgba(139,92,246,0.5);">
         <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
       </div>
       <div style="display:inline-block; font-size:10px; font-weight:800; letter-spacing:.06em; color:#8a7bff; background:rgba(138,123,255,0.12); padding:4px 10px; border-radius:8px; margin-bottom:12px;">RECURSO PRO PLUS</div>
       <h2 style="margin:0 0 8px; font-size:20px; font-weight:700; color:var(--text-primary);">Templates Inteligentes são exclusivos do Pro Plus</h2>
       <p style="margin:0 0 22px; font-size:14px; line-height:1.6; color:var(--text-secondary);">Não comece cada slide do zero. Escolha uma composição profissional e transforme sua letra em segundos.</p>
-      <button id="tpl-upsell-cta" class="btn btn-primary" style="width:100%; padding:13px; font-weight:700; background:var(--cc-accent-pro-gradient); border:none; color:#fff;">Conhecer o Pro Plus</button>
+      <button id="tpl-upsell-cta" class="btn btn-primary" style="width:100%; padding:13px; font-weight:700; background:linear-gradient(135deg,#8b5cf6,#6d28d9); border:none; color:#fff;">Conhecer o Pro Plus</button>
       <button id="tpl-upsell-close" class="btn btn-ghost btn-sm" style="width:100%; margin-top:8px;">Agora não</button>
     </div>
   </div>
@@ -8175,7 +8125,7 @@ Digno de toda honra"></textarea>
               <div id="export-slide-checklist" style="max-height:180px; overflow-y:auto; border:1px solid var(--border-default); border-radius:8px; padding:6px; display:flex; flex-direction:column; gap:2px;"></div>
               <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px;">
                 <div style="display:flex; gap:10px;">
-                  <button type="button" id="export-slides-all" style="background:none; border:none; color:var(--accent); font-size:11px; cursor:pointer; padding:0;" data-i18n="ex.markAll">Marcar todos</button>
+                  <button type="button" id="export-slides-all" style="background:none; border:none; color:var(--accent, #8b5cf6); font-size:11px; cursor:pointer; padding:0;" data-i18n="ex.markAll">Marcar todos</button>
                   <button type="button" id="export-slides-none" style="background:none; border:none; color:var(--text-tertiary); font-size:11px; cursor:pointer; padding:0;" data-i18n="ex.clear">Limpar</button>
                 </div>
                 <span id="export-slides-count" style="font-size:11px; color:var(--text-tertiary);">0 selecionados</span>
@@ -8244,7 +8194,7 @@ Digno de toda honra"></textarea>
           <svg viewBox="0 0 120 120">
             <defs>
               <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#00E5CF"/>
+                <stop offset="0%" stop-color="#8b5cf6"/>
                 <stop offset="100%" stop-color="#3b82f6"/>
               </linearGradient>
             </defs>
@@ -8259,7 +8209,7 @@ Digno de toda honra"></textarea>
 
         <div style="margin-top:14px;padding:10px 14px;background:rgba(251,191,36,0.12);border:1px solid rgba(251,191,36,0.4);border-radius:8px;display:flex;align-items:center;gap:10px;max-width:340px;">
           <span style="font-size:18px;">⚠️</span>
-          <span style="font-size:12px;color:var(--gold);line-height:1.4;text-align:left;">Mantenha esta aba aberta e visível durante a exportação. Trocar de aba pode deixar o processo muito mais lento.</span>
+          <span style="font-size:12px;color:#fbbf24;line-height:1.4;text-align:left;">Mantenha esta aba aberta e visível durante a exportação. Trocar de aba pode deixar o processo muito mais lento.</span>
         </div>
 
         
@@ -14634,11 +14584,11 @@ window.WM_TEMPLATES = {
    ============================================================ */
 
 const BG_GRADIENTS = {
-  brand:    { type: 'linear', angle: 135, stops: [['#00E5CF', 0], ['#6366f1', 0.5], ['#3b82f6', 1]] },
-  divine:   { type: 'linear', angle: 135, stops: [['#d4a857', 0], ['#00E5CF', 1]] },
-  midnight: { type: 'linear', angle: 135, stops: [['#121212', 0], ['#1E1E1E', 1]] },
+  brand:    { type: 'linear', angle: 135, stops: [['#8b5cf6', 0], ['#6366f1', 0.5], ['#3b82f6', 1]] },
+  divine:   { type: 'linear', angle: 135, stops: [['#d4a857', 0], ['#8b5cf6', 1]] },
+  midnight: { type: 'linear', angle: 135, stops: [['#0f0f17', 0], ['#1e1b4b', 1]] },
   warm:     { type: 'linear', angle: 135, stops: [['#7c2d12', 0], ['#d4a857', 1]] },
-  black:    { type: 'solid',  color: '#121212' },
+  black:    { type: 'solid',  color: '#050507' },
 };
 
 const CanvasRenderer = {
@@ -15284,12 +15234,12 @@ const CanvasRenderer = {
 
     // 1. Base escura — igual --bg-canvas
     ctx.globalAlpha = 1;
-    ctx.fillStyle = '#121212';
+    ctx.fillStyle = '#0f0f17';
     ctx.fillRect(0, 0, W, H);
 
     if (cfg.type === 'solid') {
       // Preto puro: apenas a base
-      if (cfg.color !== '#121212' && cfg.color !== '#121212') {
+      if (cfg.color !== '#050507' && cfg.color !== '#0f0f17') {
         ctx.fillStyle = cfg.color;
         ctx.fillRect(0, 0, W, H);
       }
@@ -16387,7 +16337,7 @@ const CanvasRenderer = {
       const baseGlow = style?.glow || 0;
       const effectiveGlow = userGlow !== null ? userGlow : baseGlow;
       if (effectiveGlow > 0) {
-        const glowColor = wordStyleOverride?.glowColor || style?.glowColor || '#00E5CF';
+        const glowColor = wordStyleOverride?.glowColor || style?.glowColor || '#8b5cf6';
         ctx.shadowColor = glowColor;
         ctx.shadowBlur = effectiveGlow;
       }
@@ -16539,7 +16489,7 @@ const CanvasRenderer = {
     const hasUserShadow = userShadowBlur > 0 || userShadowOffsetX !== 0 || userShadowOffsetY !== 0;
 
     const baseGlow = style?.glow || 0;
-    const baseGlowColor = style?.glowColor || '#00E5CF';
+    const baseGlowColor = style?.glowColor || '#8b5cf6';
     const glowIntensity = state.glowIntensity || 1;
 
     // === SOMBRA GLOBAL (drop shadow estilizado, separado do glow) ===
@@ -16558,7 +16508,7 @@ const CanvasRenderer = {
       ctx.shadowOffsetY = userShadowOffsetY * scale;
     } else if (hasUserGlow) {
       // Glow do usuário (sem offset)
-      ctx.shadowColor = _hexToRgba(wordStyleOverride.glowColor || '#00E5CF', 0.8);
+      ctx.shadowColor = _hexToRgba(wordStyleOverride.glowColor || '#8b5cf6', 0.8);
       ctx.shadowBlur = userGlow * 1.5 * scale;
       ctx.shadowOffsetX = 0;
       ctx.shadowOffsetY = 0;
@@ -16589,7 +16539,7 @@ const CanvasRenderer = {
     // como base — mas ainda permite transição p/ cor de destaque se emphasized.
     const baseTextColor = wordStyleOverride?.color || style?.color || '#f4f4f7';
     // Cor de destaque configurável (default dourado)
-    const empColor = style?.emphasisColor || 'var(--gold)';
+    const empColor = style?.emphasisColor || '#fbbf24';
     let textColor;
     if (word.emphasized && colorProgress > 0) {
       textColor = _mixColors(baseTextColor, empColor, colorProgress);
@@ -17151,7 +17101,7 @@ class VideoExporter {
       desynchronized: true,
       willReadFrequently: false,
     });
-    this.ctx.fillStyle = '#121212';
+    this.ctx.fillStyle = '#050507';
     this.ctx.fillRect(0, 0, this.W, this.H);
   }
 
@@ -18436,7 +18386,7 @@ class RenderEngineV2 {
       color: '#f4f4f7',
       textAlign: 'center',
       glow: 0,
-      glowColor: '#00E5CF',
+      glowColor: '#8b5cf6',
       // Outline (contorno do texto)
       outline: 0,                  // 0 = sem outline, 1-8 = espessura
       outlineColor: '#000000',
@@ -18449,7 +18399,7 @@ class RenderEngineV2 {
       textTransform: 'uppercase',
       backgroundType: 'gradient',
       // Estilo das palavras destacadas (emphasized)
-      emphasisColor: 'var(--gold)',          // cor dourada default
+      emphasisColor: '#fbbf24',          // cor dourada default
       emphasisSizeScale: 1.0,            // multiplicador do tamanho (0.8 a 2.0)
       emphasisBold: false,               // negrito extra
       emphasisGlow: 0,                   // brilho extra (0 a 30)
@@ -18946,13 +18896,13 @@ class RenderEngineV2 {
     stanzaEl.style.textTransform = s.textTransform;
 
     // Variáveis CSS pra estilo das palavras destacadas (.is-emphasized)
-    stanzaEl.style.setProperty('--wm-emphasis-color', s.emphasisColor || 'var(--gold)');
+    stanzaEl.style.setProperty('--wm-emphasis-color', s.emphasisColor || '#fbbf24');
     stanzaEl.style.setProperty('--wm-emphasis-scale', String(s.emphasisSizeScale || 1.0));
     stanzaEl.style.setProperty('--wm-emphasis-weight', s.emphasisBold ? String(Math.min(900, (s.fontWeight || 600) + 200)) : String(s.fontWeight || 600));
     // Brilho extra: monta text-shadow
     const eGlow = s.emphasisGlow || 0;
     if (eGlow > 0) {
-      const eColor = s.emphasisColor || 'var(--gold)';
+      const eColor = s.emphasisColor || '#fbbf24';
       stanzaEl.style.setProperty('--wm-emphasis-shadow',
         `0 0 ${eGlow}px ${eColor}, 0 0 ${eGlow * 2}px ${eColor}`);
     } else {
@@ -18982,7 +18932,7 @@ class RenderEngineV2 {
     // PEDIDO DO USUÁRIO ("sobra azul nas palavras, parece estranho
     // com fundo preto"): esse filtro genérico (pensado pro texto
     // NORMAL, não-frame-exact) usa a cor de brilho PADRÃO do app
-    // (#00E5CF, o mesmo roxo/azul do gradiente "brand") — pra
+    // (#8b5cf6, o mesmo roxo/azul do gradiente "brand") — pra
     // estrofes frame-exact, cada efeito já desenha seu PRÓPRIO brilho
     // certo direto no canvas (calibrado pra bater com o vídeo de
     // referência de cada um). Aplicar ESSE filtro genérico por cima
@@ -19018,7 +18968,7 @@ class RenderEngineV2 {
   }
 
   _hexToRgba(hex, alpha = 1) {
-    const h = (hex || '#00E5CF').replace('#', '');
+    const h = (hex || '#8b5cf6').replace('#', '');
     const r = parseInt(h.substring(0, 2), 16);
     const g = parseInt(h.substring(2, 4), 16);
     const b = parseInt(h.substring(4, 6), 16);
@@ -19168,7 +19118,7 @@ class RenderEngineV2 {
                             (typeof ws.shadowOffsetY === 'number' && ws.shadowOffsetY !== 0);
 
           if (hasGlow) {
-            const gc = ws.glowColor || '#00E5CF';
+            const gc = ws.glowColor || '#8b5cf6';
             const gp = ws.glow;
             // Halo: blur grande com cor + blur menor mais denso
             textShadows.push(`0 0 ${gp * 1.5}px ${gc}`);
@@ -26864,7 +26814,7 @@ function initEditor() {
 
         <div class="word-emphasis-row">
           <div class="word-emphasis-label">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="${info.word.emphasized ? 'var(--gold)' : 'none'}" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="${info.word.emphasized ? '#fbbf24' : 'none'}" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
             <span>${window.WM_T?window.WM_T("wp.emphasizeWord"):"Destacar palavra"}</span>
           </div>
           <label class="switch-mini">
@@ -27306,8 +27256,8 @@ function initEditor() {
 
     function applyGlowPreset(name) {
       const presets = {
-        soft:   { glow: 8,  glowColor: '#00E5CF', shadowBlur: 0, shadowOffsetX: 0, shadowOffsetY: 0 },
-        strong: { glow: 24, glowColor: '#00E5CF', shadowBlur: 0, shadowOffsetX: 0, shadowOffsetY: 0 },
+        soft:   { glow: 8,  glowColor: '#8b5cf6', shadowBlur: 0, shadowOffsetX: 0, shadowOffsetY: 0 },
+        strong: { glow: 24, glowColor: '#8b5cf6', shadowBlur: 0, shadowOffsetX: 0, shadowOffsetY: 0 },
         gold:   { glow: 16, glowColor: '#d4a857', shadowBlur: 0, shadowOffsetX: 0, shadowOffsetY: 0 },
         shadow: { glow: 0,  shadowBlur: 8, shadowOffsetX: 3, shadowOffsetY: 4, shadowColor: 'rgba(0,0,0,0.6)' },
         clear:  { glow: null, glowColor: null, shadowBlur: null, shadowOffsetX: null, shadowOffsetY: null, shadowColor: null },
@@ -27677,7 +27627,7 @@ function initEditor() {
   // Estrela SVG reutilizável — preenchida quando favorita
   function favStarSVG(filled) {
     return filled
-      ? `<svg viewBox="0 0 24 24" fill="var(--gold)" stroke="var(--gold)" stroke-width="1.5" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`
+      ? `<svg viewBox="0 0 24 24" fill="#fbbf24" stroke="#fbbf24" stroke-width="1.5" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`
       : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
   }
 
@@ -29201,11 +29151,11 @@ function initEditor() {
 
   // background
   const BG_PRESETS = {
-    brand:    'linear-gradient(135deg, #00E5CF 0%, #6366f1 50%, #3b82f6 100%)',
-    divine:   'linear-gradient(135deg, #d4a857 0%, #00E5CF 100%)',
-    midnight: 'linear-gradient(135deg, #121212 0%, #1E1E1E 100%)',
+    brand:    'linear-gradient(135deg, #8b5cf6 0%, #6366f1 50%, #3b82f6 100%)',
+    divine:   'linear-gradient(135deg, #d4a857 0%, #8b5cf6 100%)',
+    midnight: 'linear-gradient(135deg, #0f0f17 0%, #1e1b4b 100%)',
     warm:     'linear-gradient(135deg, #7c2d12 0%, #d4a857 100%)',
-    black:    '#121212',
+    black:    '#050507',
   };
 
   /**
@@ -29395,7 +29345,7 @@ function initEditor() {
     // CAUSA RAIZ DO BUG "fundo vermelho sai azul": antes usávamos
     // opacity 0.55 no preview (efeito estético do tema), mas isso
     // misturava o fundo escolhido com o cinza-azulado de baixo
-    // (--cc-bg-canvas, #121212), distorcendo as cores — cores quentes
+    // (--bg-canvas, #050507), distorcendo as cores — cores quentes
     // (vermelho, marrom) viravam tons frios. No export, o fundo é
     // desenhado com opacidade plena. Pra preview = export, opacity 1.0.
     canvasBg.style.opacity = (key === 'black') ? '0' : '1';
@@ -30059,9 +30009,9 @@ function initEditor() {
 
     // Gradient pra parecer profissional
     const grad = ctx.createLinearGradient(0, 0, 0, rect.height);
-    grad.addColorStop(0, 'rgba(0, 229, 207, 0.7)');
-    grad.addColorStop(0.5, 'rgba(0, 229, 207, 0.85)');
-    grad.addColorStop(1, 'rgba(0, 229, 207, 0.7)');
+    grad.addColorStop(0, 'rgba(139, 92, 246, 0.7)');
+    grad.addColorStop(0.5, 'rgba(139, 92, 246, 0.85)');
+    grad.addColorStop(1, 'rgba(139, 92, 246, 0.7)');
 
     ctx.fillStyle = grad;
     audioPeaks.forEach((peak, i) => {
@@ -30471,7 +30421,7 @@ function initEditor() {
 
   // Cores por estrofe (cíclicas)
   const STANZA_COLORS = [
-    'rgba(0, 229, 207, 0.85)',   // roxo
+    'rgba(139, 92, 246, 0.85)',   // roxo
     'rgba(96, 165, 250, 0.85)',   // azul
     'rgba(212, 168, 87, 0.85)',   // dourado
     'rgba(244, 114, 182, 0.85)',  // rosa
@@ -31141,7 +31091,7 @@ function initEditor() {
       const x = i * barW;
       ctx.fillStyle = (x < playedX)
         ? 'rgba(167, 139, 250, 0.95)'   // já tocado: vivo
-        : 'rgba(0, 229, 207, 0.32)';   // a tocar: apagado
+        : 'rgba(139, 92, 246, 0.32)';   // a tocar: apagado
       // Cantos levemente arredondados nas barras (acabamento)
       const w = Math.max(1.5, barW - 1.5);
       const y = centerY - h / 2;
@@ -32401,25 +32351,25 @@ function initEditor() {
       + '</div>'
       + '<div style="display:flex;flex-direction:column;gap:14px;">'
       + '  <div style="background:linear-gradient(135deg,#1e2230,#262b3d);border:1px solid #3a4256;border-radius:10px;padding:18px;text-align:center;">'
-      + '    <div style="width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#00E5CF,#6366f1);display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:700;color:#fff;margin:0 auto 12px;">' + inicial + '</div>'
+      + '    <div style="width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#8b5cf6,#6366f1);display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:700;color:#fff;margin:0 auto 12px;">' + inicial + '</div>'
       + '    <div style="font-weight:600;font-size:14px;word-break:break-all;">' + email + '</div>'
       + '    <div style="font-size:12px;color:#7a8499;margin-top:4px;">Conectado</div>'
       + '  </div>'
-      + '  <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:rgba(0,229,207,0.1);border:1px solid rgba(0,229,207,0.25);border-radius:10px;">'
+      + '  <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.25);border-radius:10px;">'
       + '    <span style="font-size:13px;color:#9aa;">Plano</span>'
-      + '    <span style="font-size:14px;font-weight:700;color:var(--cc-accent-pro);">' + nomePlano + '</span>'
+      + '    <span style="font-size:14px;font-weight:700;color:#c4b5fd;">' + nomePlano + '</span>'
       + '  </div>'
       + '  <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:rgba(255,255,255,0.04);border-radius:10px;">'
       + '    <span style="font-size:13px;color:#9aa;">'+(window.WM_T?window.WM_T('dyn.creditsMonth'):'Créditos este mês')+'</span>'
       + '    <span style="font-size:14px;font-weight:700;">' + creditos + '</span>'
       + '  </div>'
       + (ehGratis
-        ? '  <button id="wm-acc-upgrade" style="width:100%;padding:12px;background:linear-gradient(135deg,#00E5CF,#6366f1);border:none;color:#fff;border-radius:10px;cursor:pointer;font-family:inherit;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:4px;box-shadow:0 4px 14px rgba(0,229,207,0.35);">'
+        ? '  <button id="wm-acc-upgrade" style="width:100%;padding:12px;background:linear-gradient(135deg,#8b5cf6,#6366f1);border:none;color:#fff;border-radius:10px;cursor:pointer;font-family:inherit;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:4px;box-shadow:0 4px 14px rgba(139,92,246,0.35);">'
           + '    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9 12 2"/></svg>'
           + '    Fazer upgrade'
           + '  </button>'
         : (planoCodigo === 'pro'
-          ? '  <button id="wm-acc-proplus" style="width:100%;padding:12px;background:linear-gradient(135deg,#00E5CF,#6366f1);border:none;color:#fff;border-radius:10px;cursor:pointer;font-family:inherit;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:4px;box-shadow:0 4px 14px rgba(0,229,207,0.35);">'
+          ? '  <button id="wm-acc-proplus" style="width:100%;padding:12px;background:linear-gradient(135deg,#8b5cf6,#6366f1);border:none;color:#fff;border-radius:10px;cursor:pointer;font-family:inherit;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:4px;box-shadow:0 4px 14px rgba(139,92,246,0.35);">'
             + '    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9 12 2"/></svg>'
             + '    Mudar para Pro Plus'
             + '  </button>'
@@ -32513,8 +32463,8 @@ function initEditor() {
       + '    <button class="wm-btn-assinar" data-plano="pro" style="width:100%;padding:13px;background:#2a2a38;border:1px solid #4a4a5a;color:#fff;border-radius:10px;cursor:pointer;font-family:inherit;font-size:15px;font-weight:700;">Assinar Pro</button>'
       + '  </div>'
       // PRO PLUS
-      + '  <div style="border:2px solid #00E5CF;border-radius:14px;padding:22px;position:relative;background:linear-gradient(180deg,rgba(0,229,207,0.08),transparent);">'
-      + '    <div style="position:absolute;top:-11px;left:50%;transform:translateX(-50%);background:#00E5CF;color:#fff;font-size:11px;font-weight:700;padding:3px 12px;border-radius:10px;">MAIS POPULAR</div>'
+      + '  <div style="border:2px solid #8b5cf6;border-radius:14px;padding:22px;position:relative;background:linear-gradient(180deg,rgba(139,92,246,0.08),transparent);">'
+      + '    <div style="position:absolute;top:-11px;left:50%;transform:translateX(-50%);background:#8b5cf6;color:#fff;font-size:11px;font-weight:700;padding:3px 12px;border-radius:10px;">MAIS POPULAR</div>'
       + '    <div style="font-size:18px;font-weight:700;margin-bottom:4px;">Pro Plus</div>'
       + '    <div style="font-size:30px;font-weight:800;margin-bottom:2px;">R$67<span style="font-size:14px;font-weight:500;color:#9aa;">/mês</span></div>'
       + '    <div style="font-size:13px;color:#9aa;margin-bottom:16px;">~20 produções por mês</div>'
@@ -32527,7 +32477,7 @@ function initEditor() {
       + '      <li>✓ Compara Fontes</li>'
       + '      <li>✓ e muito mais...</li>'
       + '    </ul>'
-      + '    <button class="wm-btn-assinar" data-plano="pro_plus" style="width:100%;padding:13px;background:linear-gradient(135deg,#00E5CF,#6366f1);border:none;color:#fff;border-radius:10px;cursor:pointer;font-family:inherit;font-size:15px;font-weight:700;">Assinar Pro Plus</button>'
+      + '    <button class="wm-btn-assinar" data-plano="pro_plus" style="width:100%;padding:13px;background:linear-gradient(135deg,#8b5cf6,#6366f1);border:none;color:#fff;border-radius:10px;cursor:pointer;font-family:inherit;font-size:15px;font-weight:700;">Assinar Pro Plus</button>'
       + '  </div>'
       + '</div>'
       + '<p style="margin:18px 0 0;text-align:center;color:#777;font-size:12px;">Pagamento seguro via Hotmart · Pix ou cartão · Cancele quando quiser</p>';
@@ -33818,7 +33768,7 @@ function initEditor() {
       isPremium: !!ehPremium,
       requiredPlan: ehPremium ? 'pro_plus' : 'free',
       isActive: true,
-      accent: '#00E5CF',
+      accent: '#8b5cf6',
       config: {
         // SEM lyrics real, SEM bg original, SEM áudio, SEM ID do projeto —
         // só a composição visual/tipográfica/de animação.
@@ -33844,7 +33794,7 @@ function initEditor() {
     const ov = document.createElement('div');
     ov.style.cssText = 'position:fixed;inset:0;z-index:999999;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;padding:24px;';
     const box = document.createElement('div');
-    box.style.cssText = 'background:var(--bg-secondary,#1a1a2e);color:var(--text-primary,#f4f4f7);border:1px solid #00E5CF;border-radius:12px;max-width:680px;width:100%;max-height:85vh;overflow:auto;padding:24px;font-family:system-ui,sans-serif;';
+    box.style.cssText = 'background:var(--bg-secondary,#1a1a2e);color:var(--text-primary,#f4f4f7);border:1px solid #8b5cf6;border-radius:12px;max-width:680px;width:100%;max-height:85vh;overflow:auto;padding:24px;font-family:system-ui,sans-serif;';
     box.innerHTML =
       '<h3 style="margin:0 0 8px;font-size:18px;">✓ Template oficial "' + escapeHtml(nome) + '" criado (' + lineCount + ' ' + (lineCount === 1 ? 'linha' : 'linhas') + ')</h3>'
       + '<p style="margin:0 0 16px;font-size:13px;color:var(--text-tertiary,#999);line-height:1.5;">'
@@ -33913,7 +33863,7 @@ function initEditor() {
       name: nome,
       description: desc || 'Template personalizado.',
       tags: ['meu'],
-      accent: (cfg.style && cfg.style.glowColor) || '#00E5CF',
+      accent: (cfg.style && cfg.style.glowColor) || '#8b5cf6',
       config: cfg,
     };
 
@@ -34081,7 +34031,7 @@ function initEditor() {
         const elapsed = (Date.now() - inicio) % duracaoMs;
         ctx.setTransform(1, 0, 0, 1, 0, 0);
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = '#121212';
+        ctx.fillStyle = '#050507';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.save();
         ctx.scale(escalaX, escalaY);
@@ -34207,11 +34157,11 @@ function initEditor() {
   function renderTemplateGrid() {
     const grid = $('#template-grid');
     const BG_CSS = {
-      brand: 'linear-gradient(135deg, #00E5CF, #3b82f6)',
-      divine: 'linear-gradient(135deg, #d4a857, #00E5CF)',
-      midnight: 'linear-gradient(135deg, #121212, #1E1E1E)',
+      brand: 'linear-gradient(135deg, #8b5cf6, #3b82f6)',
+      divine: 'linear-gradient(135deg, #d4a857, #8b5cf6)',
+      midnight: 'linear-gradient(135deg, #0f0f17, #1e1b4b)',
       warm: 'linear-gradient(135deg, #7c2d12, #d4a857)',
-      black: '#121212',
+      black: '#050507',
     };
 
     _wmUpdateTplLineInfo();
@@ -34848,7 +34798,7 @@ function initEditor() {
         + '<p style="margin:0 0 8px;font-size:13px;color:#ccc;line-height:1.5;">'
         + 'Mas ' + (escopo === 'todas' ? 'estrofe(s) do projeto' : 'a estrofe atual') + ' tem:'
         + '</p>'
-        + '<div style="font:13px/1.5 monospace;color:#fb0;margin-bottom:16px;padding:10px;background:#121212;border-radius:6px;">'
+        + '<div style="font:13px/1.5 monospace;color:#fb0;margin-bottom:16px;padding:10px;background:#0a0a0f;border-radius:6px;">'
         + detalhes + maisEstrofes
         + '</div>'
         + '<p style="margin:0 0 16px;font-size:12px;color:#888;line-height:1.4;">'
@@ -35458,8 +35408,8 @@ function initEditor() {
       + '    <div style="font-size:12px;color:#a0a0aa;line-height:1.4;">Aplica fontes individuais, posições, tamanhos, animação, cor e efeitos do template <b>apenas na estrofe selecionada</b>. Outras estrofes ficam intactas. <b>Fundo não é aplicado</b>.</div>'
       + '  </button>'
       + (mostrarLote
-        ? '  <button id="tpl-mode-compativeis" style="text-align:left;padding:14px;background:#2a2a35;border:1px solid #00E5CF;border-radius:8px;color:#f4f4f7;cursor:pointer;font-family:inherit;">'
-        + '    <div style="font-weight:600;font-size:14px;margin-bottom:4px;color:var(--cc-accent-pro);">Aplicar em slides semelhantes (' + compatIdxs.length + ')</div>'
+        ? '  <button id="tpl-mode-compativeis" style="text-align:left;padding:14px;background:#2a2a35;border:1px solid #8b5cf6;border-radius:8px;color:#f4f4f7;cursor:pointer;font-family:inherit;">'
+        + '    <div style="font-weight:600;font-size:14px;margin-bottom:4px;color:#c4b5fd;">Aplicar em slides semelhantes (' + compatIdxs.length + ')</div>'
         + '    <div style="font-size:12px;color:#a0a0aa;line-height:1.4;">Aplica em todos os ' + compatIdxs.length + ' slides com ' + tplLineCount + ' ' + (tplLineCount === 1 ? 'linha' : 'linhas') + '. Slides com outra quantidade de linhas não são alterados.</div>'
         + '  </button>'
         : '')
@@ -35484,8 +35434,8 @@ function initEditor() {
       const btn = card.querySelector('#' + id);
       if (!btn) return;
       const isPrincipal = (id === 'tpl-mode-estrofe');
-      const baseBorder = isPrincipal ? '#4a8' : (id === 'tpl-mode-compativeis' ? '#00E5CF' : '#444');
-      const hoverBorder = isPrincipal ? '#5fa' : (id === 'tpl-mode-compativeis' ? 'var(--cc-accent-pro)' : '#666');
+      const baseBorder = isPrincipal ? '#4a8' : (id === 'tpl-mode-compativeis' ? '#8b5cf6' : '#444');
+      const hoverBorder = isPrincipal ? '#5fa' : (id === 'tpl-mode-compativeis' ? '#a78bfa' : '#666');
       btn.addEventListener('mouseenter', () => {
         btn.style.background = '#3a3a48';
         btn.style.borderColor = hoverBorder;
@@ -35543,13 +35493,13 @@ function initEditor() {
       const overlay = document.createElement('div');
       overlay.style.cssText = 'position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
       const card = document.createElement('div');
-      card.style.cssText = 'background:#1a1a1f;border:1px solid #00E5CF;border-radius:12px;padding:24px;max-width:440px;width:90%;color:#f4f4f7;font-family:Inter,sans-serif;box-shadow:0 20px 60px rgba(0,0,0,0.5);';
+      card.style.cssText = 'background:#1a1a1f;border:1px solid #8b5cf6;border-radius:12px;padding:24px;max-width:440px;width:90%;color:#f4f4f7;font-family:Inter,sans-serif;box-shadow:0 20px 60px rgba(0,0,0,0.5);';
       const linhaTxt = lineCount === 1 ? 'linha' : 'linhas';
       card.innerHTML = '<h3 style="margin:0 0 12px;font-size:17px;font-weight:600;">Aplicar em ' + n + ' slides</h3>'
         + '<p style="margin:0 0 20px;font-size:14px;color:#ccc;line-height:1.5;">Este template será aplicado em <b>' + n + ' slides de ' + lineCount + ' ' + linhaTxt + '</b>. Os demais slides não serão alterados.</p>'
         + '<div style="display:flex;gap:8px;justify-content:flex-end;">'
         + '  <button id="ba-cancel" style="padding:10px 16px;background:transparent;border:1px solid #444;border-radius:8px;color:#a0a0aa;cursor:pointer;font-family:inherit;font-size:13px;">Cancelar</button>'
-        + '  <button id="ba-ok" style="padding:10px 16px;background:#00E5CF;border:none;border-radius:8px;color:#fff;cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;">Aplicar em ' + n + ' slides</button>'
+        + '  <button id="ba-ok" style="padding:10px 16px;background:#8b5cf6;border:none;border-radius:8px;color:#fff;cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;">Aplicar em ' + n + ' slides</button>'
         + '</div>';
       overlay.appendChild(card);
       document.body.appendChild(overlay);
@@ -37095,7 +37045,7 @@ function initEditor() {
     setTimeout(parseAndRender, 200);
   }
 
-  console.log('%cWorshipMotion Editor', 'color:#00E5CF; font-weight: bold; font-size: 14px;');
+  console.log('%cWorshipMotion Editor', 'color:#8b5cf6; font-weight: bold; font-size: 14px;');
   console.log('Pressione Espaço para reproduzir, ← → para navegar, Ctrl+S para salvar');
 }
 
@@ -38004,7 +37954,7 @@ window.__wmMostrarDiag = function (forcar) {
 
   const btnCopiar = document.createElement('button');
   btnCopiar.textContent = 'Copiar diagnóstico';
-  btnCopiar.style.cssText = 'display:block;width:100%;margin-bottom:8px;padding:11px;background:var(--gradient-divine);color:#fff;border:none;border-radius:10px;font-size:13.5px;font-weight:600;cursor:pointer;';
+  btnCopiar.style.cssText = 'display:block;width:100%;margin-bottom:8px;padding:11px;background:linear-gradient(135deg,#8b5cf6,#3b82f6);color:#fff;border:none;border-radius:10px;font-size:13.5px;font-weight:600;cursor:pointer;';
   btnCopiar.onclick = function () {
     const done = function () { btnCopiar.textContent = '✓ Copiado — cole aqui na conversa'; };
     try {
@@ -38153,7 +38103,7 @@ window.__wmMostrarRecuperacao = function (itens) {
   box.style.cssText = [
     'position:fixed', 'top:16px', 'left:50%', 'transform:translateX(-50%)',
     'z-index:99999', 'width:calc(100% - 32px)', 'max-width:400px',
-    'background:#16162a', 'border:1px solid rgba(0,229,207,0.6)',
+    'background:#16162a', 'border:1px solid rgba(139,92,246,0.6)',
     'border-radius:14px', 'box-shadow:0 12px 40px rgba(0,0,0,0.5)',
     'padding:16px', 'color:#e9e9f2', 'font-family:inherit'
   ].join(';');
@@ -38181,7 +38131,7 @@ window.__wmMostrarRecuperacao = function (itens) {
     const btn = document.createElement('button');
     btn.style.cssText = [
       'display:block', 'width:100%', 'margin-bottom:8px', 'padding:12px 14px',
-      'background:var(--gradient-divine)', 'color:#fff',
+      'background:linear-gradient(135deg,#8b5cf6,#3b82f6)', 'color:#fff',
       'border:none', 'border-radius:10px', 'font-size:14px', 'font-weight:600',
       'cursor:pointer', 'text-align:center'
     ].join(';');
