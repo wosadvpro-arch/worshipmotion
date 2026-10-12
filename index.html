@@ -7176,7 +7176,7 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
     <div class="panel-tabs">
       <button class="panel-tab active" data-panel="lyrics" data-i18n="panel.lyrics">Letra</button>
       <button class="panel-tab" data-panel="animations" data-i18n="panel.animations">Animações</button>
-      <button class="panel-tab" data-panel="transitions" data-i18n="panel.transitions">Transições</button>
+      <button class="panel-tab" data-panel="transitions" data-i18n="panel.transitions" style="display:none;">Transições</button>
     </div>
 
     <div class="panel-body">
@@ -7435,7 +7435,7 @@ Digno de toda honra"></textarea>
   
   <aside class="editor-right">
     <div class="panel-tabs">
-      <button class="panel-tab active" data-rpanel="style" data-i18n="rp.effects">Efeitos</button>
+      <button class="panel-tab active" data-rpanel="style" data-i18n="rp.effects" style="display:none;">Efeitos</button>
       <button class="panel-tab" data-rpanel="bg" data-i18n="rp.bgMotion">Fundo &amp; Movimento</button>
       <button class="panel-tab" data-rpanel="motion" style="display:none;" data-i18n="rp.motion">Motion</button>
       <button class="panel-tab" data-rpanel="scenes" style="display:none;" data-i18n="rp.scenes">Cenas</button>
@@ -19727,7 +19727,7 @@ class RenderEngineV2 {
           if (typeof window.selectWord === 'function') window.selectWord(wordId);
         }
         const tab = document.querySelector('.panel-tab[data-rpanel="style"]');
-        if (tab) tab.click();
+        if (tab && tab.style.display !== 'none') tab.click();
       });
     }
     const ctx = canvas.getContext('2d');
@@ -22586,7 +22586,7 @@ function initEditor() {
         dragState._lineSelected = true;
         if (navigator.vibrate) { try { navigator.vibrate(25); } catch (e) {} }
         const tab = $('.panel-tab[data-rpanel="style"]');
-        if (tab) tab.click();
+        if (tab && tab.style.display !== 'none') tab.click();
       }
     }, 450);
     // Mobile: no 1º movimento o renderStanza RECRIA os .lyric-word pra entrar
@@ -22783,7 +22783,7 @@ function initEditor() {
       }
       // A aba Palavra foi unida à Efeitos — abre Efeitos ao selecionar.
       const tab = $('.panel-tab[data-rpanel="style"]');
-      if (tab) tab.click();
+      if (tab && tab.style.display !== 'none') tab.click();
     }
 
     cleanupDrag();
@@ -32754,7 +32754,7 @@ function initEditor() {
         }
         case 3: { // Fontes → painel direito aba "style" (onde ficam as fontes)
           const tab = $('.panel-tab[data-rpanel="style"]');
-          if (tab) tab.click();
+          if (tab && tab.style.display !== 'none') tab.click();
           // Foca o campo de busca de fonte pra deixar claro onde está
           const fontSearch = $('#font-search');
           if (fontSearch) setTimeout(() => fontSearch.focus(), 50);
@@ -35772,7 +35772,7 @@ function initEditor() {
     // Abre a aba de Efeitos (Palavra) pra já poder editar a seleção,
     // igual ao fluxo de selecionar uma palavra.
     const tab = $('.panel-tab[data-rpanel="style"]');
-    if (tab) tab.click();
+    if (tab && tab.style.display !== 'none') tab.click();
   });
 
   $('#btn-save-project').addEventListener('click', () => {
