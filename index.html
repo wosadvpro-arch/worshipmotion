@@ -7176,7 +7176,8 @@ body.wm-select-mode .stanza-item { cursor: pointer; }
     <div class="panel-tabs">
       <button class="panel-tab active" data-panel="lyrics" data-i18n="panel.lyrics">Letra</button>
       <button class="panel-tab" data-panel="animations" data-i18n="panel.animations">Animações</button>
-          </div>
+      <button class="panel-tab" data-panel="transitions" data-i18n="panel.transitions">Transições</button>
+    </div>
 
     <div class="panel-body">
       
@@ -7275,7 +7276,27 @@ Digno de toda honra"></textarea>
         </div>
       </div>
 
+      <div class="panel-content" data-panel-content="transitions" style="display:none;">
+        <div class="panel-section">
+          <div class="panel-section-title" data-i18n="sp.transition">Transição entre estrofes</div>
+          <select id="transition-type" class="input" style="width:100%; font-size:11px; padding:6px 8px;">
+            <option value="cut" data-i18n="sp.trCut">Cut (instantâneo)</option>
+            <option value="crossfade" data-i18n="sp.trCrossfade">Crossfade (fade)</option>
+            <option value="slide-left" data-i18n="sp.trSlideLeft">Slide ← (vem da direita)</option>
+            <option value="slide-right" data-i18n="sp.trSlideRight">Slide → (vem da esquerda)</option>
+            <option value="slide-up" data-i18n="sp.trSlideUp">Slide ↑ (sobe)</option>
+            <option value="slide-down" data-i18n="sp.trSlideDown">Slide ↓ (desce)</option>
+            <option value="zoom-in" data-i18n="sp.trZoomIn">Zoom In</option>
+            <option value="zoom-out" data-i18n="sp.trZoomOut">Zoom Out</option>
+          </select>
+          <label class="label" style="font-size: 10px; margin-top: var(--space-2); margin-bottom: var(--space-1); display:block;" data-i18n="sp.duration">Duração</label>
+          <div style="display: flex; align-items: center; gap: var(--space-3);">
+            <input type="range" class="range" id="transition-duration" min="2" max="15" value="5" style="flex:1">
+            <span class="value-display" id="transition-duration-val">0.5s</span>
           </div>
+        </div>
+      </div>
+    </div>
   </aside>
 
   
@@ -7414,7 +7435,8 @@ Digno de toda honra"></textarea>
   
   <aside class="editor-right">
     <div class="panel-tabs">
-      <button class="panel-tab active" data-rpanel="bg" data-i18n="rp.bgMotion">Fundo &amp; Movimento</button>
+      <button class="panel-tab active" data-rpanel="style" data-i18n="rp.effects">Efeitos</button>
+      <button class="panel-tab" data-rpanel="bg" data-i18n="rp.bgMotion">Fundo &amp; Movimento</button>
       <button class="panel-tab" data-rpanel="motion" style="display:none;" data-i18n="rp.motion">Motion</button>
       <button class="panel-tab" data-rpanel="scenes" style="display:none;" data-i18n="rp.scenes">Cenas</button>
       <button class="panel-tab" data-rpanel="word" style="display:none;" data-i18n="rp.word">Palavra</button>
@@ -7422,7 +7444,221 @@ Digno de toda honra"></textarea>
 
     <div class="panel-body">
       
-      
+      <div class="panel-content" data-rpanel-content="style">
+        <div class="panel-section" style="display:none;">
+          <div class="panel-section-title" data-i18n="rp.font">Fonte</div>
+
+          
+          <div class="font-tabs" id="font-tabs">
+            <button class="font-tab active" data-font-tab="brand">WorshipMotion</button>
+            <button class="font-tab" data-font-tab="local">Computador</button>
+          </div>
+
+          
+          <input type="text" id="font-search" placeholder="Buscar fonte..." class="font-search-input" />
+
+          
+          <div class="font-tab-content" data-font-tab-content="brand">
+            <div class="font-grid" id="font-grid">
+              <div class="font-option selected" data-font="Montserrat">
+                <div class="font-option-sample" style="font-family: 'Montserrat'">Aa</div>
+                <div class="font-option-name">Montserrat</div>
+              </div>
+              <div class="font-option" data-font="Sora">
+                <div class="font-option-sample" style="font-family: 'Sora'">Aa</div>
+                <div class="font-option-name">Sora</div>
+              </div>
+              <div class="font-option" data-font="Inter">
+                <div class="font-option-sample" style="font-family: 'Inter'">Aa</div>
+                <div class="font-option-name">Inter</div>
+              </div>
+              <div class="font-option" data-font="Manrope">
+                <div class="font-option-sample" style="font-family: 'Manrope'">Aa</div>
+                <div class="font-option-name">Manrope</div>
+              </div>
+              <div class="font-option" data-font="Plus Jakarta Sans">
+                <div class="font-option-sample" style="font-family: 'Plus Jakarta Sans'">Aa</div>
+                <div class="font-option-name">Jakarta</div>
+              </div>
+              <div class="font-option" data-font="Space Grotesk">
+                <div class="font-option-sample" style="font-family: 'Space Grotesk'">Aa</div>
+                <div class="font-option-name">Grotesk</div>
+              </div>
+            </div>
+          </div>
+
+          
+          <div class="font-tab-content" data-font-tab-content="local" style="display: none;">
+            <div id="local-fonts-empty" class="font-empty-message">
+              Carregando fontes do computador...
+            </div>
+            <button id="btn-request-local-fonts" class="btn btn-secondary btn-sm" style="width: 100%; display: none; margin-bottom: 8px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              Permitir acesso a todas as fontes
+            </button>
+            
+            <div class="font-grid" id="custom-font-grid" style="margin-bottom: 8px;"></div>
+            <div class="font-grid font-grid-scroll" id="local-font-grid"></div>
+            <div id="local-fonts-info" class="font-info-message"></div>
+            
+            <input type="file" id="custom-font-input" accept=".ttf,.otf,.woff,.woff2" style="display:none" multiple />
+          </div>
+        </div>
+
+        <div class="panel-section" style="display:none;">
+          <div class="panel-section-title" data-i18n="rp.case">Caixa</div>
+          <div class="text-case-grid">
+            <button class="text-case-btn" data-case="none" title="Como digitou">
+              <span class="text-case-sample">Ab</span>
+              <span class="text-case-label" data-i18n="rp.caseOriginal">Original</span>
+            </button>
+            <button class="text-case-btn active" data-case="uppercase" title="Tudo maiúscula">
+              <span class="text-case-sample">AB</span>
+              <span class="text-case-label" data-i18n="rp.caseUpper">MAIÚSCULAS</span>
+            </button>
+            <button class="text-case-btn" data-case="lowercase" title="Tudo minúscula">
+              <span class="text-case-sample">ab</span>
+              <span class="text-case-label" data-i18n="rp.caseLower">minúsculas</span>
+            </button>
+            <button class="text-case-btn" data-case="capitalize" title="Primeira letra de cada palavra">
+              <span class="text-case-sample">Ab Cd</span>
+              <span class="text-case-label" data-i18n="rp.caseTitle">Cada Palavra</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="panel-section" style="display:none;">
+          <div class="panel-section-title" data-i18n="rp.size">Tamanho</div>
+          <div style="display: flex; align-items: center; gap: var(--space-3);">
+            <input type="range" class="range" id="font-size" min="20" max="140" value="64" style="flex:1">
+            <span class="value-display" id="font-size-val">64</span>
+          </div>
+        </div>
+
+        <div class="panel-section" style="display:none;">
+          <div class="panel-section-title" data-i18n="rp.weight">Peso</div>
+          <div class="segmented" style="width:100%; display:flex;">
+            <button data-weight="400" style="flex:1; padding:6px 4px;" title="Regular (400)">Reg</button>
+            <button data-weight="500" style="flex:1; padding:6px 4px;" title="Medium (500)">Med</button>
+            <button class="active" data-weight="600" style="flex:1; padding:6px 4px;" title="Semibold (600)">Semi</button>
+            <button data-weight="700" style="flex:1; padding:6px 4px;" title="Bold (700)">Bold</button>
+            <button data-weight="800" style="flex:1; padding:6px 4px;" title="Heavy (800)">Heavy</button>
+          </div>
+        </div>
+
+        <div class="panel-section" style="display:none;">
+          <div class="panel-section-title" data-i18n="rp.style">Estilo</div>
+          <div class="segmented" style="width:100%; display:flex;">
+            <button class="active" id="style-roman-btn" style="flex:1; padding:6px 4px;" title="Normal" data-i18n="rp.styleNormal">Normal</button>
+            <button id="style-italic-btn" style="flex:1; padding:6px 4px; font-style:italic;" title="Itálico" data-i18n="rp.styleItalic">Itálico</button>
+          </div>
+        </div>
+
+        <div class="panel-section" style="display:none;">
+          <div class="panel-section-title" data-i18n="rp.textColor">Cor do texto</div>
+          <div class="color-swatches" id="color-swatches">
+            <div class="color-swatch selected" data-color="#f4f4f7" style="background:#f4f4f7"></div>
+            <div class="color-swatch" data-color="#ffffff" style="background:#ffffff"></div>
+            <div class="color-swatch" data-color="#d4a857" style="background:#d4a857"></div>
+            <div class="color-swatch" data-color="#8b5cf6" style="background:#8b5cf6"></div>
+            <div class="color-swatch" data-color="#60a5fa" style="background:#60a5fa"></div>
+            <div class="color-swatch" data-color="#f472b6" style="background:#f472b6"></div>
+            <div class="color-swatch" data-color="#0f0f17" style="background:#0f0f17"></div>
+            <label class="color-swatch color-swatch-custom" data-color-custom="text" title="Escolher cor personalizada">
+              <input type="color" id="text-color-custom" value="#ffffff" style="position:absolute; opacity:0; pointer-events:none; width:0; height:0;" />
+            </label>
+          </div>
+        </div>
+
+        <div class="panel-section">
+          <div class="panel-section-title" data-i18n="rp.glow">Brilho (Glow)</div>
+          <div style="display: flex; align-items: center; gap: var(--space-3);">
+            <input type="range" class="range" id="glow" min="0" max="60" value="12" style="flex:1">
+            <span class="value-display" id="glow-val">12</span>
+          </div>
+        </div>
+
+        <div class="panel-section">
+          <div class="panel-section-title" data-i18n="rp.glowColor">Cor do brilho</div>
+          <div class="color-swatches" id="glow-swatches">
+            <div class="color-swatch selected" data-glow-color="#8b5cf6" style="background:#8b5cf6"></div>
+            <div class="color-swatch" data-glow-color="#d4a857" style="background:#d4a857"></div>
+            <div class="color-swatch" data-glow-color="#60a5fa" style="background:#60a5fa"></div>
+            <div class="color-swatch" data-glow-color="#ffffff" style="background:#ffffff"></div>
+            <div class="color-swatch" data-glow-color="#f472b6" style="background:#f472b6"></div>
+            <label class="color-swatch color-swatch-custom" data-color-custom="glow" title="Escolher cor personalizada">
+              <input type="color" id="glow-color-custom" value="#8b5cf6" style="position:absolute; opacity:0; pointer-events:none; width:0; height:0;" />
+            </label>
+          </div>
+        </div>
+
+        <div class="panel-section">
+          <div class="panel-section-title" data-i18n="rp.outline">Contorno (Outline)</div>
+          <div style="display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-3);">
+            <input type="range" class="range" id="outline" min="0" max="8" step="0.5" value="0" style="flex:1">
+            <span class="value-display" id="outline-val">0</span>
+          </div>
+          <div class="color-swatches" id="outline-swatches" style="grid-template-columns: repeat(7, 1fr);">
+            <div class="color-swatch selected" data-outline-color="#000000" style="background:#000000; border:1px solid var(--border-default);"></div>
+            <div class="color-swatch" data-outline-color="#ffffff" style="background:#ffffff"></div>
+            <div class="color-swatch" data-outline-color="#d4a857" style="background:#d4a857"></div>
+            <div class="color-swatch" data-outline-color="#8b5cf6" style="background:#8b5cf6"></div>
+            <div class="color-swatch" data-outline-color="#ef4444" style="background:#ef4444"></div>
+            <div class="color-swatch" data-outline-color="#60a5fa" style="background:#60a5fa"></div>
+            <label class="color-swatch color-swatch-custom" data-color-custom="outline" title="Cor personalizada">
+              <input type="color" id="outline-color-custom" value="#000000" style="position:absolute; opacity:0; pointer-events:none; width:0; height:0;" />
+            </label>
+          </div>
+        </div>
+
+        <div class="panel-section">
+          <div class="panel-section-title" data-i18n="rp.dropShadow">Sombra projetada</div>
+          <div style="display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-3);">
+            <input type="range" class="range" id="shadow" min="0" max="30" value="0" style="flex:1">
+            <span class="value-display" id="shadow-val">0</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--space-2); margin-bottom: var(--space-3);">
+            <div>
+              <label class="label" style="font-size: 9px; margin-bottom: 2px; display:block;">X</label>
+              <input type="number" class="input" id="shadow-x" min="-30" max="30" value="4" style="font-size: 11px; padding: 4px;">
+            </div>
+            <div>
+              <label class="label" style="font-size: 9px; margin-bottom: 2px; display:block;">Y</label>
+              <input type="number" class="input" id="shadow-y" min="-30" max="30" value="4" style="font-size: 11px; padding: 4px;">
+            </div>
+            <div>
+              <label class="label" style="font-size: 9px; margin-bottom: 2px; display:block;">Blur</label>
+              <input type="number" class="input" id="shadow-blur" min="0" max="50" value="8" style="font-size: 11px; padding: 4px;">
+            </div>
+          </div>
+          <div class="color-swatches" id="shadow-swatches" style="grid-template-columns: repeat(7, 1fr);">
+            <div class="color-swatch selected" data-shadow-color="#000000" style="background:#000000; border:1px solid var(--border-default);"></div>
+            <div class="color-swatch" data-shadow-color="#1e1b4b" style="background:#1e1b4b"></div>
+            <div class="color-swatch" data-shadow-color="#7c2d12" style="background:#7c2d12"></div>
+            <div class="color-swatch" data-shadow-color="#8b5cf6" style="background:#8b5cf6"></div>
+            <div class="color-swatch" data-shadow-color="#d4a857" style="background:#d4a857"></div>
+            <div class="color-swatch" data-shadow-color="#ffffff" style="background:#ffffff"></div>
+            <label class="color-swatch color-swatch-custom" data-color-custom="shadow" title="Cor personalizada">
+              <input type="color" id="shadow-color-custom" value="#000000" style="position:absolute; opacity:0; pointer-events:none; width:0; height:0;" />
+            </label>
+          </div>
+        </div>
+
+        <div class="panel-section" style="display:none;">
+          <div class="panel-section-title" data-i18n="rp.spacing">Espaçamento</div>
+          <label class="label" style="font-size: 10px; margin-bottom: var(--space-1); display:block;"><span data-i18n="rp.letterSpacing">Entre letras</span> <span data-i18n="rp.wholeStanza" style="color:var(--text-tertiary); font-weight:400;">(estrofe toda)</span></label>
+          <div style="display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-3);">
+            <input type="range" class="range" id="letter-spacing" min="-5" max="20" value="-2" style="flex:1">
+            <span class="value-display" id="letter-spacing-val">-0.02em</span>
+          </div>
+          <label class="label" style="font-size: 10px; margin-bottom: var(--space-1); display:block;" data-i18n="rp.lineSpacing">Entre linhas</label>
+          <div style="display: flex; align-items: center; gap: var(--space-3);">
+            <input type="range" class="range" id="line-height" min="100" max="200" value="112" style="flex:1">
+            <span class="value-display" id="line-height-val">1.12</span>
+          </div>
+        </div>
+      </div>
+
       
       <div class="panel-content" data-rpanel-content="bg" style="display:none;">
         <div class="panel-section">
@@ -8269,7 +8505,8 @@ window.__WM_BUILD = 'export-quebra-linha-30jul';
     // ================= EDITOR — abas dos painéis =================
     'panel.lyrics':     { pt: 'Letra', en: 'Lyrics', es: 'Letra' },
     'panel.animations': { pt: 'Animações', en: 'Animations', es: 'Animaciones' },
-    
+    'panel.transitions': { pt: 'Transições', en: 'Transitions', es: 'Transiciones' },
+
     // ================= EDITOR — painel de LETRA =================
     'ly.paste':         { pt: 'Cole sua letra', en: 'Paste your lyrics', es: 'Pega tu letra' },
     'ly.placeholder':   { pt: 'Tu és Santo\nTu és Santo\nTu és Santo, Senhor\n\n[Refrão]\nGlória, glória ao Cordeiro\nAleluia, aleluia\nSanto, Santo, Santo\nDigno de toda honra', en: 'Holy are You\nHoly are You\nHoly are You, Lord\n\n[Chorus]\nGlory, glory to the Lamb\nHallelujah, hallelujah\nHoly, Holy, Holy\nWorthy of all honor', es: 'Santo eres Tú\nSanto eres Tú\nSanto eres Tú, Señor\n\n[Coro]\nGloria, gloria al Cordero\nAleluya, aleluya\nSanto, Santo, Santo\nDigno de toda honra' },
@@ -8298,7 +8535,8 @@ window.__WM_BUILD = 'export-quebra-linha-30jul';
     'an.applyAll':      { pt: 'Aplicar esta animação em todos os slides', en: 'Apply this animation to all slides', es: 'Aplicar esta animación a todas las diapositivas' },
 
     // ================= EDITOR — painel direito (abas + estilo) =================
-        'rp.bgMotion':      { pt: 'Fundo & Movimento', en: 'Background & Motion', es: 'Fondo y Movimiento' },
+    'rp.effects':       { pt: 'Efeitos', en: 'Effects', es: 'Efectos' },
+    'rp.bgMotion':      { pt: 'Fundo & Movimento', en: 'Background & Motion', es: 'Fondo y Movimiento' },
     'rp.motion':        { pt: 'Motion', en: 'Motion', es: 'Movimiento' },
     'rp.scenes':        { pt: 'Cenas', en: 'Scenes', es: 'Escenas' },
     'rp.word':          { pt: 'Palavra', en: 'Word', es: 'Palabra' },
@@ -19488,7 +19726,7 @@ class RenderEngineV2 {
         } else {
           if (typeof window.selectWord === 'function') window.selectWord(wordId);
         }
-        const tab = document.querySelector('.panel-tab[data-rpanel="bg"]');
+        const tab = document.querySelector('.panel-tab[data-rpanel="style"]');
         if (tab) tab.click();
       });
     }
@@ -22347,7 +22585,7 @@ function initEditor() {
         selectWholeLineOf(wordId);
         dragState._lineSelected = true;
         if (navigator.vibrate) { try { navigator.vibrate(25); } catch (e) {} }
-        const tab = $('.panel-tab[data-rpanel="bg"]');
+        const tab = $('.panel-tab[data-rpanel="style"]');
         if (tab) tab.click();
       }
     }, 450);
@@ -22543,8 +22781,8 @@ function initEditor() {
       } else {
         setSelection([wid]);
       }
-      // Abre a aba de Fundo & Movimento ao selecionar palavra.
-      const tab = $('.panel-tab[data-rpanel="bg"]');
+      // A aba Palavra foi unida à Efeitos — abre Efeitos ao selecionar.
+      const tab = $('.panel-tab[data-rpanel="style"]');
       if (tab) tab.click();
     }
 
@@ -28411,17 +28649,16 @@ function initEditor() {
   //  - COM seleção: aumenta só a(s) palavra(s) selecionada(s).
   // Durante o arraste (input) mexemos direto no DOM (leve, sem piscar);
   // ao soltar (change) gravamos nos overrides e reflui (caso seleção).
-  const _fontSizeSlider = $('#font-size');
-  if (typeof window.__lastFontSize !== 'number') window.__lastFontSize = (_fontSizeSlider ? parseInt(_fontSizeSlider.value, 10) : 0) || 64;
+  if (typeof window.__lastFontSize !== 'number') window.__lastFontSize = parseInt($('#font-size').value, 10) || 64;
   let _fsDragBase = null;        // fontSize no início do arraste
   let _fsSelBaseScales = null;   // fontSizeScale base de cada palavra selecionada
 
   const _fsTemSelecao = () => (typeof selectedWordIds !== 'undefined'
     && selectedWordIds && selectedWordIds.size > 0);
 
-  if (_fontSizeSlider) _fontSizeSlider.addEventListener('input', e => {
+  $('#font-size').addEventListener('input', e => {
     const v = parseInt(e.target.value, 10);
-    const _fsv = $('#font-size-val'); if (_fsv) _fsv.textContent = v;
+    $('#font-size-val').textContent = v;
     const stz = (typeof getStanzaEl === 'function') ? getStanzaEl() : null;
     if (!stz) return;
 
@@ -28482,9 +28719,9 @@ function initEditor() {
     }
   });
 
-  if (_fontSizeSlider) _fontSizeSlider.addEventListener('change', e => {
+  $('#font-size').addEventListener('change', e => {
     const v = parseInt(e.target.value, 10);
-    const _fsv = $('#font-size-val'); if (_fsv) _fsv.textContent = v;
+    $('#font-size-val').textContent = v;
 
     // IMPORTANTE: o caminho é decidido pelo CONTEXTO DO ARRASTE (capturado
     // no início), NUNCA pela seleção atual. Se decidisse pela seleção
@@ -28773,18 +29010,15 @@ function initEditor() {
     });
   }
 
-  // glow intensity (elementos removidos — protegido com null-check)
-  const _glowSlider = $('#glow');
-  if (_glowSlider) {
-    _glowSlider.addEventListener('input', e => {
-      const v = parseInt(e.target.value, 10);
-      const _gv = $('#glow-val'); if (_gv) _gv.textContent = v;
-      aplicarEstiloSensivel('glow', v, { leve: true, cssProp: () => {} });
-    });
-    _glowSlider.addEventListener('change', e => {
-      aplicarEstiloSensivel('glow', parseInt(e.target.value, 10));
-    });
-  }
+  // glow intensity
+  $('#glow').addEventListener('input', e => {
+    const v = parseInt(e.target.value, 10);
+    $('#glow-val').textContent = v;
+    aplicarEstiloSensivel('glow', v, { leve: true, cssProp: () => {} });
+  });
+  $('#glow').addEventListener('change', e => {
+    aplicarEstiloSensivel('glow', parseInt(e.target.value, 10));
+  });
 
   // glow color (swatches predefinidos)
   $$('#glow-swatches .color-swatch').forEach(sw => {
@@ -28816,7 +29050,7 @@ function initEditor() {
   if (outlineSlider) {
     outlineSlider.addEventListener('input', e => {
       const v = parseFloat(e.target.value);
-      const _ov = $('#outline-val'); if (_ov) _ov.textContent = v;
+      $('#outline-val').textContent = v;
       aplicarEstiloSensivel('outline', v, { leve: true, afetaLargura: true });
     });
     outlineSlider.addEventListener('change', e => {
@@ -28850,7 +29084,7 @@ function initEditor() {
   if (shadowSlider) {
     shadowSlider.addEventListener('input', e => {
       const v = parseInt(e.target.value, 10);
-      const _sv = $('#shadow-val'); if (_sv) _sv.textContent = v;
+      $('#shadow-val').textContent = v;
       aplicarEstiloSensivel({ global: 'shadow', word: 'shadowBlur' }, v, { leve: true, cssProp: () => {} });
     });
     shadowSlider.addEventListener('change', e => {
@@ -28895,28 +29129,23 @@ function initEditor() {
     });
   }
 
-  // letter spacing (elementos removidos — protegido com null-check)
-  const _letterSpacingSlider = $('#letter-spacing');
-  if (_letterSpacingSlider) {
-    _letterSpacingSlider.addEventListener('input', e => {
-      const raw = parseInt(e.target.value, 10);
-      const em = raw / 100;
-      const _lsv = $('#letter-spacing-val'); if (_lsv) _lsv.textContent = `${em.toFixed(2)}em`;
-      aplicarEstiloSensivel('letterSpacing', em, { leve: true, afetaLargura: true });
-    });
-    _letterSpacingSlider.addEventListener('change', e => {
-      const em = (parseInt(e.target.value, 10)) / 100;
-      aplicarEstiloSensivel('letterSpacing', em, { afetaLargura: true });
-    });
-  }
+  // letter spacing
+  $('#letter-spacing').addEventListener('input', e => {
+    const raw = parseInt(e.target.value, 10);
+    const em = raw / 100;
+    $('#letter-spacing-val').textContent = `${em.toFixed(2)}em`;
+    aplicarEstiloSensivel('letterSpacing', em, { leve: true, afetaLargura: true });
+  });
+  $('#letter-spacing').addEventListener('change', e => {
+    const em = (parseInt(e.target.value, 10)) / 100;
+    aplicarEstiloSensivel('letterSpacing', em, { afetaLargura: true });
+  });
 
-  // line height (elementos removidos — protegido com null-check)
-  const _lineHeightSlider = $('#line-height');
-  if (_lineHeightSlider) {
-    _lineHeightSlider.addEventListener('input', e => {
-      const raw = parseInt(e.target.value, 10);
-      const lh = raw / 100;
-      const _lhv = $('#line-height-val'); if (_lhv) _lhv.textContent = lh.toFixed(2);
+  // line height
+  $('#line-height').addEventListener('input', e => {
+    const raw = parseInt(e.target.value, 10);
+    const lh = raw / 100;
+    $('#line-height-val').textContent = lh.toFixed(2);
     engine.setStyle({ lineHeight: lh });
   });
 
@@ -32523,9 +32752,12 @@ function initEditor() {
           if (typeof openModal === 'function') openModal('templates');
           break;
         }
-        case 3: { // Fontes → painel direito aba "bg"
-          const tab = $('.panel-tab[data-rpanel="bg"]');
+        case 3: { // Fontes → painel direito aba "style" (onde ficam as fontes)
+          const tab = $('.panel-tab[data-rpanel="style"]');
           if (tab) tab.click();
+          // Foca o campo de busca de fonte pra deixar claro onde está
+          const fontSearch = $('#font-search');
+          if (fontSearch) setTimeout(() => fontSearch.focus(), 50);
           break;
         }
         case 4: { // Backgrounds → painel direito aba "bg" (Fundo)
@@ -32665,18 +32897,18 @@ function initEditor() {
       // sincroniza UI dos controles de estilo
       const s = project.style;
       $$('.font-option').forEach(o => o.classList.toggle('selected', o.dataset.font === s.fontFamily));
-      if (s.fontSize) { const _fs = $('#font-size'); if (_fs) _fs.value = s.fontSize; const _fsv = $('#font-size-val'); if (_fsv) _fsv.textContent = s.fontSize; window.__lastFontSize = s.fontSize; }
+      if (s.fontSize) { $('#font-size').value = s.fontSize; $('#font-size-val').textContent = s.fontSize; window.__lastFontSize = s.fontSize; }
       // Sincroniza botão de caixa ativo (padrão = MAIÚSCULAS)
       const tcase = s.textTransform || 'uppercase';
       $$('.text-case-btn').forEach(b => b.classList.toggle('active', b.dataset.case === tcase));
       $$('.segmented button[data-weight]').forEach(b => b.classList.toggle('active', parseInt(b.dataset.weight) === s.fontWeight));
       $$('#color-swatches .color-swatch').forEach(sw => sw.classList.toggle('selected', sw.dataset.color === s.color));
-      if (s.glow !== undefined) { const _g = $('#glow'); if (_g) _g.value = s.glow; const _gv = $('#glow-val'); if (_gv) _gv.textContent = s.glow; }
+      if (s.glow !== undefined) { $('#glow').value = s.glow; $('#glow-val').textContent = s.glow; }
       $$('#glow-swatches .color-swatch').forEach(sw => sw.classList.toggle('selected', sw.dataset.glowColor === s.glowColor));
       if (s.letterSpacing !== undefined) {
         const raw = Math.round(s.letterSpacing * 100);
-        const _ls = $('#letter-spacing'); if (_ls) _ls.value = raw;
-        const _lsv = $('#letter-spacing-val'); if (_lsv) _lsv.textContent = `${s.letterSpacing.toFixed(2)}em`;
+        $('#letter-spacing').value = raw;
+        $('#letter-spacing-val').textContent = `${s.letterSpacing.toFixed(2)}em`;
       }
       if (s.lineHeight !== undefined) {
         // Usa o valor JÁ SANEADO pelo setStyle (engine.style.lineHeight),
@@ -32685,8 +32917,8 @@ function initEditor() {
         // que está sendo renderizado (1.3), não o lixo salvo (4.0).
         const lhReal = (engine.style && typeof engine.style.lineHeight === 'number')
           ? engine.style.lineHeight : 1.3;
-        const _lh = $('#line-height'); if (_lh) _lh.value = Math.round(lhReal * 100);
-        const _lhv = $('#line-height-val'); if (_lhv) _lhv.textContent = lhReal.toFixed(2);
+        $('#line-height').value = Math.round(lhReal * 100);
+        $('#line-height-val').textContent = lhReal.toFixed(2);
       }
       // Sync emphasis visual
       if (s.emphasisColor) {
@@ -35537,8 +35769,9 @@ function initEditor() {
   $('#btn-redo')?.addEventListener('click', () => performRedo());
   $('#btn-select-all')?.addEventListener('click', () => {
     selectAllWords();
-    // Abre a aba de Fundo & Movimento ao selecionar tudo.
-    const tab = $('.panel-tab[data-rpanel="bg"]');
+    // Abre a aba de Efeitos (Palavra) pra já poder editar a seleção,
+    // igual ao fluxo de selecionar uma palavra.
+    const tab = $('.panel-tab[data-rpanel="style"]');
     if (tab) tab.click();
   });
 
