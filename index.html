@@ -28421,7 +28421,7 @@ function initEditor() {
 
   if (_fontSizeSlider) _fontSizeSlider.addEventListener('input', e => {
     const v = parseInt(e.target.value, 10);
-    $('#font-size-val').textContent = v;
+    const _fsv = $('#font-size-val'); if (_fsv) _fsv.textContent = v;
     const stz = (typeof getStanzaEl === 'function') ? getStanzaEl() : null;
     if (!stz) return;
 
@@ -28484,7 +28484,7 @@ function initEditor() {
 
   if (_fontSizeSlider) _fontSizeSlider.addEventListener('change', e => {
     const v = parseInt(e.target.value, 10);
-    const fsv = $('#font-size-val'); if (fsv) fsv.textContent = v;
+    const _fsv = $('#font-size-val'); if (_fsv) _fsv.textContent = v;
 
     // IMPORTANTE: o caminho é decidido pelo CONTEXTO DO ARRASTE (capturado
     // no início), NUNCA pela seleção atual. Se decidisse pela seleção
@@ -28778,7 +28778,7 @@ function initEditor() {
   if (_glowSlider) {
     _glowSlider.addEventListener('input', e => {
       const v = parseInt(e.target.value, 10);
-      const gv = $('#glow-val'); if (gv) gv.textContent = v;
+      const _gv = $('#glow-val'); if (_gv) _gv.textContent = v;
       aplicarEstiloSensivel('glow', v, { leve: true, cssProp: () => {} });
     });
     _glowSlider.addEventListener('change', e => {
@@ -28901,7 +28901,7 @@ function initEditor() {
     _letterSpacingSlider.addEventListener('input', e => {
       const raw = parseInt(e.target.value, 10);
       const em = raw / 100;
-      const lv = $('#letter-spacing-val'); if (lv) lv.textContent = `${em.toFixed(2)}em`;
+      const _lsv = $('#letter-spacing-val'); if (_lsv) _lsv.textContent = `${em.toFixed(2)}em`;
       aplicarEstiloSensivel('letterSpacing', em, { leve: true, afetaLargura: true });
     });
     _letterSpacingSlider.addEventListener('change', e => {
@@ -28916,10 +28916,9 @@ function initEditor() {
     _lineHeightSlider.addEventListener('input', e => {
       const raw = parseInt(e.target.value, 10);
       const lh = raw / 100;
-      const lv = $('#line-height-val'); if (lv) lv.textContent = lh.toFixed(2);
-      engine.setStyle({ lineHeight: lh });
-    });
-  }
+      const _lhv = $('#line-height-val'); if (_lhv) _lhv.textContent = lh.toFixed(2);
+    engine.setStyle({ lineHeight: lh });
+  });
 
   // background
   const BG_PRESETS = {
