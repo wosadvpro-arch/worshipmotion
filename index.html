@@ -2715,6 +2715,16 @@ body.timeline-collapsed .timeline-collapse-btn {
 .track-content-fx    { background: rgba(251,191,36,0.08); }
 .track-content-audio { background: rgba(16,185,129,0.08); }
 
+/* Zoom da timeline: controla largura dos clipes via --tl-zoom (default 1.0) */
+:root { --tl-zoom: 1; }
+.track-content .timeline-clip {
+  min-width: calc(120px * var(--tl-zoom));
+  max-width: calc(300px * var(--tl-zoom));
+}
+.track-content .timeline-clip-text {
+  max-width: calc(200px * var(--tl-zoom));
+}
+
 /* clips genéricos */
 .tl-clip {
   display: inline-flex;
@@ -2777,10 +2787,23 @@ body.timeline-collapsed .timeline-collapse-btn {
   flex: 1;
   position: relative;
   height: 36px;
+  min-height: 36px;
   border-radius: 6px;
   overflow: hidden;
   background: rgba(16,185,129,0.12);
+  cursor: pointer;
+  user-select: none;
 }
+/* Herda estilos de scrubbing/loading quando aplicados via JS ao wrap */
+.tl-audio-waveform-wrap.is-scrubbing { cursor: grabbing; }
+.tl-audio-waveform-wrap.is-scrubbing .timeline-playhead {
+  width: 3px; background: #fbbf24;
+  box-shadow: 0 0 12px rgba(251,191,36,0.8); transition: none;
+}
+.tl-audio-waveform-wrap.is-scrubbing .timeline-playhead::before {
+  background: #fbbf24; box-shadow: 0 0 16px rgba(251,191,36,1);
+}
+.tl-audio-waveform-wrap:hover .timeline-playhead { background: #a78bfa; }
 .tl-audio-waveform-wrap .timeline-waveform {
   width: 100%;
   height: 100%;
@@ -8059,6 +8082,7 @@ Digno de toda honra"></textarea>
         </button>
         <span class="tl-timecode">
           <span id="timeline-time">00:00.000</span>
+          <span id="timeline-duration" style="color:var(--text-tertiary);margin-left:6px;font-weight:400;"></span>
         </span>
       </div>
       <div class="timeline-zoom-controls">
@@ -21933,13 +21957,17 @@ function initEditor() {
   }
 
   function renderTimeline(parsed) {
-    const track = $('#timeline-track');
-    if (parsed.stanzas.length === 0) {
-      track.innerHTML = '<div class="timeline-empty" data-i18n="ed.emptyTimeline">' + (window.WM_T?window.WM_T('ed.emptyTimeline'):'Gere uma lyric para ver a timeline') + '</div>';
+    // === FAIXA MULTI-TRACK DE TEXTO (visível) ===
+    const textTrack = $('#timeline-track-text');
+    const legacyTrack = $('#timeline-track');
+
+    if (!parsed || !parsed.stanzas || parsed.stanzas.length === 0) {
+      if (textTrack) textTrack.innerHTML = '<div class="timeline-empty" data-i18n="ed.emptyTimeline">' + (window.WM_T?window.WM_T('ed.emptyTimeline'):'Gere uma lyric para ver a timeline') + '</div>';
+      if (legacyTrack) legacyTrack.innerHTML = '<div class="timeline-empty" data-i18n="ed.emptyTimeline">' + (window.WM_T?window.WM_T('ed.emptyTimeline'):'Gere uma lyric para ver a timeline') + '</div>';
       return;
     }
 
-    track.innerHTML = parsed.stanzas.map((s, i) => {
+    const clipsHtml = parsed.stanzas.map((s, i) => {
       const firstWords = s.lines[0]?.words.slice(0, 4).map(w => w.text).join(' ') || '';
       return `
         <div class="timeline-clip" data-index="${i}">
@@ -21955,7 +21983,17 @@ function initEditor() {
       `;
     }).join('');
 
-    $$('.timeline-clip').forEach(el => {
+    // Popula a faixa multi-track visível
+    if (textTrack) textTrack.innerHTML = clipsHtml;
+    // Mantém o legacy track sincronizado pra compatibilidade
+    if (legacyTrack) legacyTrack.innerHTML = clipsHtml;
+
+    // Wire events em AMBOS os containers (multi-track + legacy)
+    const allClips = document.querySelectorAll('.timeline-clip');
+    allClips.forEach(el => {
+      // Evita duplicar listeners
+      if (el._wmWired) return;
+      el._wmWired = true;
       el.addEventListener('click', (ev) => {
         if (ev.target.closest('[data-delete-stanza]')) return;
         const idx = parseInt(el.dataset.index, 10);
@@ -21966,7 +22004,9 @@ function initEditor() {
       });
     });
 
-    $$('.timeline-clip [data-delete-stanza]').forEach(btn => {
+    document.querySelectorAll('.timeline-clip [data-delete-stanza]').forEach(btn => {
+      if (btn._wmWired) return;
+      btn._wmWired = true;
       btn.addEventListener('click', (ev) => {
         ev.stopPropagation();
         const idx = parseInt(btn.dataset.deleteStanza, 10);
@@ -21974,14 +22014,13 @@ function initEditor() {
       });
     });
 
-    // Duração exibida: a REAL da música carregada. (Antes era um valor
-    // "mockado": nº de estrofes × 6s — por isso mostrava 5:18 com 53 estrofes
-    // e não mudava ao trocar o MP3.) Sem música, cai na estimativa por estrofe.
+    // Duração exibida: a REAL da música carregada.
     const _aud = (typeof audioElement !== 'undefined') ? audioElement : null;
     const totalSec = (_aud && _aud.duration > 0)
       ? _aud.duration
       : parsed.stanzas.length * 6;
-    $('#timeline-duration').textContent = formatTime(totalSec);
+    const durEl = $('#timeline-duration');
+    if (durEl) durEl.textContent = formatTime(totalSec);
   }
 
   // ============ SCENES PANEL (config individual por estrofe) ============
@@ -30235,12 +30274,14 @@ function initEditor() {
     const canvas = $('#timeline-waveform');
     if (!canvas || !audioPeaks) return;
 
-    const track = $('#timeline-audio-track');
-    if (!track) return;
+    // Usa a faixa multi-track visível; fallback pro legacy track oculto
+    const wrap = $('#timeline-audio-waveform-wrap') || $('#timeline-audio-track');
+    if (!wrap) return;
 
     // Ajusta canvas pro tamanho real (HiDPI aware)
     const dpr = window.devicePixelRatio || 1;
-    const rect = track.getBoundingClientRect();
+    const rect = wrap.getBoundingClientRect();
+    if (rect.width === 0 || rect.height === 0) return;
     canvas.width = rect.width * dpr;
     canvas.height = rect.height * dpr;
     canvas.style.width = rect.width + 'px';
@@ -30294,7 +30335,8 @@ function initEditor() {
   function updatePlayhead() {
     const audio = getAudioElement();
     const playhead = $('#timeline-playhead');
-    const track = $('#timeline-audio-track');
+    // Usa a faixa multi-track visível; fallback pro legacy track oculto
+    const track = $('#timeline-audio-waveform-wrap') || $('#timeline-audio-track');
     if (!playhead || !track || !audio || !audio.duration) return;
     const pct = audio.currentTime / audio.duration;
     if (_cachedTrackWidth === null) {
@@ -30479,7 +30521,8 @@ function initEditor() {
    * Permite clicar OU arrastar o ponteiro na timeline pra fazer seek (scrub).
    */
   function setupTimelineSeek() {
-    const track = $('#timeline-audio-track');
+    // Usa a faixa multi-track visível (waveform wrap); fallback pro legacy track
+    const track = $('#timeline-audio-waveform-wrap') || $('#timeline-audio-track');
     if (!track || track._seekBound) return;
     track._seekBound = true;
 
@@ -30572,16 +30615,19 @@ function initEditor() {
    * Mostra a faixa de áudio na timeline e processa o blob pra waveform.
    */
   async function showAudioTrack(blob) {
-    const track = $('#timeline-audio-track');
-    if (!track) return;
-    track.style.display = 'block';
-    track.classList.add('is-loading');
+    // Mostra o waveform wrap na faixa multi-track visível
+    const wrap = $('#timeline-audio-waveform-wrap');
+    const emptyPlaceholder = $('#tl-audio-empty');
+    const legacyTrack = $('#timeline-audio-track');
+    if (wrap) wrap.style.display = 'block';
+    if (emptyPlaceholder) emptyPlaceholder.style.display = 'none';
+    if (legacyTrack) { legacyTrack.style.display = 'block'; legacyTrack.classList.add('is-loading'); }
     setupTimelineSeek();
     ensureTrackResizeObserver();
 
     try {
       audioPeaks = await extractWaveformPeaks(blob, 400);
-      track.classList.remove('is-loading');
+      if (legacyTrack) legacyTrack.classList.remove('is-loading');
       // 2 frames de delay pra garantir que o display:block já pintou
       requestAnimationFrame(() => requestAnimationFrame(() => {
         drawWaveform();
@@ -30590,14 +30636,19 @@ function initEditor() {
       }));
     } catch (e) {
       console.warn('Falha ao extrair waveform:', e);
-      track.classList.remove('is-loading');
+      if (legacyTrack) legacyTrack.classList.remove('is-loading');
       // Sem waveform visível mas áudio ainda funciona
     }
   }
 
   function hideAudioTrack() {
-    const track = $('#timeline-audio-track');
-    if (track) track.style.display = 'none';
+    // Esconde o waveform wrap na faixa multi-track visível
+    const wrap = $('#timeline-audio-waveform-wrap');
+    const emptyPlaceholder = $('#tl-audio-empty');
+    const legacyTrack = $('#timeline-audio-track');
+    if (wrap) wrap.style.display = 'none';
+    if (emptyPlaceholder) emptyPlaceholder.style.display = '';
+    if (legacyTrack) legacyTrack.style.display = 'none';
     audioPeaks = null;
     _waveformDrawn = false;
     // Fecha painel se aberto
@@ -30620,9 +30671,11 @@ function initEditor() {
   let _trackResizeObserver = null;
   function ensureTrackResizeObserver() {
     if (_trackResizeObserver || typeof ResizeObserver === 'undefined') return;
-    const track = $('#timeline-audio-track');
+    // Observa a faixa multi-track visível (waveform wrap); fallback pro legacy track
+    const track = $('#timeline-audio-waveform-wrap') || $('#timeline-audio-track');
     if (!track) return;
     _trackResizeObserver = new ResizeObserver(() => {
+      _cachedTrackWidth = null; // invalida cache de largura
       if (audioPeaks) {
         requestAnimationFrame(drawWaveform);
       }
@@ -30859,7 +30912,8 @@ function initEditor() {
       const word = parsed.stanzas[si]?.lines[li]?.words[wi];
       if (!word || typeof word.tStart !== 'number') return;
 
-      const track = $('#timeline-audio-track');
+      // Usa a faixa multi-track visível (waveform wrap); fallback pro legacy track
+      const track = $('#timeline-audio-waveform-wrap') || $('#timeline-audio-track');
       const trackWidth = track ? track.getBoundingClientRect().width : 0;
       const duration = audioElement?.duration || 0;
       if (!trackWidth || !duration) return;
@@ -36293,6 +36347,37 @@ function initEditor() {
       e.stopPropagation(); // a setinha sempre alterna (não dispara o clique-pra-expandir)
       toggleTimeline();
     });
+
+    // === HANDLERS DE ZOOM DA TIMELINE ===
+    // Controlam a largura dos clipes na faixa de texto via CSS variable --tl-zoom.
+    // Zoom in = clipes mais largos (mais detalhe); zoom out = clipes menores (mais visão geral).
+    {
+      let tlZoomLevel = 1.0;
+      const TL_ZOOM_MIN = 0.3;
+      const TL_ZOOM_MAX = 4.0;
+      const TL_ZOOM_STEP = 0.25;
+
+      const applyTlZoom = () => {
+        document.documentElement.style.setProperty('--tl-zoom', tlZoomLevel.toFixed(2));
+        // Re-renderiza waveform e markers pois as posições dependem da largura
+        _cachedTrackWidth = null;
+        if (audioPeaks && typeof drawWaveform === 'function') requestAnimationFrame(drawWaveform);
+        if (typeof renderTimelineMarkers === 'function') renderTimelineMarkers();
+      };
+
+      const btnZoomIn = document.getElementById('btn-timeline-zoom-in');
+      const btnZoomOut = document.getElementById('btn-timeline-zoom-out');
+      if (btnZoomIn) btnZoomIn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        tlZoomLevel = Math.min(TL_ZOOM_MAX, tlZoomLevel + TL_ZOOM_STEP);
+        applyTlZoom();
+      });
+      if (btnZoomOut) btnZoomOut.addEventListener('click', (e) => {
+        e.stopPropagation();
+        tlZoomLevel = Math.max(TL_ZOOM_MIN, tlZoomLevel - TL_ZOOM_STEP);
+        applyTlZoom();
+      });
+    }
 
     // Clicar em QUALQUER lugar da timeline a alterna — colapsada expande,
     // aberta colapsa. Mais fácil de ativar/desativar durante a edição sem
