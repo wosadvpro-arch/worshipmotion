@@ -2695,8 +2695,6 @@ body.timeline-collapsed .timeline-collapse-btn {
   white-space: nowrap;
 }
 .track-label-text  { color: #c4b5fd; }
-.track-label-bg    { color: #93c5fd; }
-.track-label-fx    { color: #fbbf24; }
 .track-label-audio { color: #6ee7b7; }
 
 /* conteúdo da faixa (clips) */
@@ -2711,8 +2709,6 @@ body.timeline-collapsed .timeline-collapse-btn {
   overflow-x: auto;
 }
 .track-content-text  { background: rgba(139,92,246,0.08); }
-.track-content-bg    { background: rgba(59,130,246,0.08); }
-.track-content-fx    { background: rgba(251,191,36,0.08); }
 .track-content-audio { background: rgba(16,185,129,0.08); }
 
 /* Zoom da timeline: controla largura dos clipes via --tl-zoom (default 1.0) */
@@ -2755,22 +2751,6 @@ body.timeline-collapsed .timeline-collapse-btn {
   background: rgba(139,92,246,0.6);
   border-color: #a78bfa;
   color: #fff;
-}
-
-/* clip Fundo */
-.tl-clip-bg {
-  flex: 1;
-  background: rgba(59,130,246,0.22);
-  border: 1px solid rgba(59,130,246,0.35);
-  color: #bfdbfe;
-}
-
-/* clip Efeitos */
-.tl-clip-fx {
-  flex: 1;
-  background: rgba(180,120,40,0.35);
-  border: 1px solid rgba(251,191,36,0.3);
-  color: #fde68a;
 }
 
 /* clip Áudio placeholder */
@@ -8144,24 +8124,6 @@ Digno de toda honra"></textarea>
         <div class="track-label track-label-text">Texto</div>
         <div class="track-content track-content-text" id="timeline-track-text">
           <div class="timeline-empty" id="timeline-text-empty" data-i18n="ed.emptyTimeline">Gere uma lyric para ver a timeline</div>
-        </div>
-      </div>
-      <!-- Faixa FUNDO -->
-      <div class="timeline-track-row" data-track="background">
-        <div class="track-label track-label-bg">Fundo</div>
-        <div class="track-content track-content-bg" id="timeline-track-background">
-          <div class="tl-clip tl-clip-bg" id="tl-clip-bg">
-            <span class="tl-clip-label">Vídeo de fundo</span>
-          </div>
-        </div>
-      </div>
-      <!-- Faixa EFEITOS -->
-      <div class="timeline-track-row" data-track="effects">
-        <div class="track-label track-label-fx">Efeitos</div>
-        <div class="track-content track-content-fx" id="timeline-track-effects">
-          <div class="tl-clip tl-clip-fx" id="tl-clip-fx">
-            <span class="tl-clip-label">Entrada · Movimento · Saída</span>
-          </div>
         </div>
       </div>
       <!-- Faixa ÁUDIO -->
