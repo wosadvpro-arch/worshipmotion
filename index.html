@@ -8134,8 +8134,8 @@ Digno de toda honra"></textarea>
             <canvas id="timeline-waveform" class="timeline-waveform"></canvas>
             <div class="timeline-playhead" id="timeline-playhead"></div>
           </div>
-          <div class="tl-clip tl-clip-audio-placeholder" id="tl-audio-empty">
-            <span class="tl-clip-label">Nenhum áudio adicionado</span>
+          <div class="tl-clip tl-clip-audio-placeholder" id="tl-audio-empty" style="cursor:pointer;" title="Clique para adicionar áudio">
+            <span class="tl-clip-label">Clique aqui para adicionar áudio</span>
           </div>
         </div>
       </div>
@@ -32141,6 +32141,12 @@ function initEditor() {
       showToast((window.WM_T?window.WM_T('msg.audioLoadFail'):'Não consegui carregar esse áudio. Tenta outro.'));
     }
   }
+
+  // Clique no placeholder da faixa de áudio abre o seletor de arquivo
+  $('#tl-audio-empty')?.addEventListener('click', (e) => {
+    e.stopPropagation(); // evita colapsar a timeline
+    $('#audio-file-input')?.click();
+  });
 
   $('#btn-audio-upload')?.addEventListener('click', () => {
     $('#audio-file-input')?.click();
