@@ -26640,6 +26640,8 @@ function initEditor() {
     // Chrome/Edge); se não rolar, abre o seletor de arquivo .ttf/.otf.
     const fUpload = document.getElementById('ctx-fonts-upload');
     if (fUpload) fUpload.addEventListener('click', async () => {
+      // Tenta API nativa primeiro (Chrome/Edge com permissão)
+      let apiOk = false;
       try {
         if (window.WM_LOCAL_FONTS && typeof window.WM_LOCAL_FONTS.tryQueryApi === 'function') {
           const apiFonts = await window.WM_LOCAL_FONTS.tryQueryApi();
@@ -26648,13 +26650,34 @@ function initEditor() {
             if (typeof _allLocalFonts !== 'undefined') _allLocalFonts = families;
             if (typeof renderLocalFontsGrid === 'function') renderLocalFontsGrid(families);
             if (typeof window._repopularFontesCtx === 'function') window._repopularFontesCtx();
-            return; // conseguiu as fontes do sistema
+            // Atualiza também o painel lateral aberto
+            if (typeof renderListaFontes === 'function') renderListaFontes(document.getElementById('ctx-fonts-search')?.value || '');
+            apiOk = true;
           }
         }
       } catch (e) {}
-      // Fallback: seletor de arquivo de fonte.
+      if (apiOk) return;
+      // Fallback: abre o seletor de arquivo de fonte (.ttf/.otf/.woff/.woff2)
       const inp = document.getElementById('custom-font-input');
-      if (inp) inp.click();
+      if (inp) {
+        // Garante que o listener de change atualize o painel lateral após upload
+        inp.onchange = async (ev) => {
+          const files = Array.from(ev.target.files || []);
+          ev.target.value = '';
+          if (files.length === 0 || !window.WM_CUSTOM_FONTS) return;
+          for (const file of files) {
+            try {
+              await window.WM_CUSTOM_FONTS.upload(file);
+            } catch (e) {
+              if (typeof showToast === 'function') showToast(`Não pude carregar "${file.name}"`);
+            }
+          }
+          if (typeof refreshCustomFontGrid === 'function') await refreshCustomFontGrid();
+          if (typeof window._repopularFontesCtx === 'function') window._repopularFontesCtx();
+          if (typeof renderListaFontes === 'function') renderListaFontes(document.getElementById('ctx-fonts-search')?.value || '');
+        };
+        inp.click();
+      }
     });
 
     syncCtxToolbar();
