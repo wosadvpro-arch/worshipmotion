@@ -21138,7 +21138,15 @@ function initEditor() {
     // esse guard consome UMA re-execução (a que o input debounced dispararia) e
     // se auto-desliga na mesma hora, pra nunca ficar preso e travar edições
     // futuras da letra.
-    if (window._suppressReparse) { window._suppressReparse = false; return; }
+    if (window._suppressReparse) {
+  window._suppressReparse = false;
+  // SAFEGUARD: se _suppressReparse ficou travado, força um re-parse após 100ms
+  // pra garantir que a timeline atualize mesmo se o guard bloqueou indevidamente.
+  setTimeout(() => {
+    if ($('#lyrics-input')?.value.trim()) parseAndRender();
+  }, 100);
+  return;
+}
     // PRESERVA/SEGUE O SLIDE: usado pela edição AO VIVO (digitando na caixa
     // de letra) pra não "pular" pro slide 1 a cada re-parse. Pode ser `true`
     // (mantém o slide atual do engine) ou um NÚMERO (o slide sob o cursor,
@@ -21156,7 +21164,11 @@ function initEditor() {
       engine.setParsed({ stanzas: [] });
       $('#stanza-count').textContent = '0';
       $('#stanza-list').innerHTML = '<div style="font-size: var(--text-xs); color: var(--text-tertiary); text-align: center; padding: var(--space-6) 0;">Digite uma letra primeiro</div>';
-      const _tl = $('#timeline-track'); if (_tl) _tl.innerHTML = '<div class="timeline-empty" data-i18n="ed.emptyTimeline">' + (window.WM_T?window.WM_T('ed.emptyTimeline'):'Gere uma lyric para ver a timeline') + '</div>';
+      // Limpa AMBAS as faixas de timeline (visível e legacy) pra não ficar
+      // mostrando clipes antigos ou mensagem errada.
+      const _emptyMsg = '<div class="timeline-empty" data-i18n="ed.emptyTimeline">' + (window.WM_T?window.WM_T('ed.emptyTimeline'):'Gere uma lyric para ver a timeline') + '</div>';
+      const _tlVisible = $('#timeline-track-text'); if (_tlVisible) _tlVisible.innerHTML = _emptyMsg;
+      const _tlLegacy = $('#timeline-track'); if (_tlLegacy) _tlLegacy.innerHTML = _emptyMsg;
       if (typeof canvas !== 'undefined' && canvas) canvas.innerHTML = '';
       if (typeof markDirty === 'function') markDirty();
       return;
@@ -21937,8 +21949,8 @@ function initEditor() {
       return;
     }
 
+    // CORREÇÃO: força atualização imediata da timeline com os clipes da letra
     const clipsHtml = parsed.stanzas.map((s, i) => {
-      // Exibe todas as linhas da estrofe com suas palavras completas
       const linesHtml = (s.lines || []).map(line => {
         const lineText = (line.words || []).map(w => w.text).join(' ');
         if (!lineText.trim()) return '';
@@ -21958,15 +21970,12 @@ function initEditor() {
       `;
     }).join('');
 
-    // Popula a faixa multi-track visível
+    // Popula AMBAS as faixas (visível e legacy)
     if (textTrack) textTrack.innerHTML = clipsHtml;
-    // Mantém o legacy track sincronizado pra compatibilidade
     if (legacyTrack) legacyTrack.innerHTML = clipsHtml;
 
-    // Wire events em AMBOS os containers (multi-track + legacy)
-    const allClips = document.querySelectorAll('.timeline-clip');
-    allClips.forEach(el => {
-      // Evita duplicar listeners
+    // Wire events nos clipes
+    document.querySelectorAll('.timeline-clip').forEach(el => {
       if (el._wmWired) return;
       el._wmWired = true;
       el.addEventListener('click', (ev) => {
@@ -21989,14 +21998,14 @@ function initEditor() {
       });
     });
 
-    // Duração exibida: a REAL da música carregada.
+    // Duração exibida
     const _aud = (typeof audioElement !== 'undefined') ? audioElement : null;
-    const totalSec = (_aud && _aud.duration > 0)
-      ? _aud.duration
-      : parsed.stanzas.length * 6;
+    const totalSec = (_aud && _aud.duration > 0) ? _aud.duration : parsed.stanzas.length * 6;
     const durEl = $('#timeline-duration');
     if (durEl) durEl.textContent = formatTime(totalSec);
   }
+
+  
 
   // ============ SCENES PANEL (config individual por estrofe) ============
 
@@ -49631,3 +49640,4 @@ function wmSampleAnimState(anim, progress) {
 </body>
 
 </html>
+
