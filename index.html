@@ -7622,21 +7622,21 @@ Digno de toda honra"></textarea>
         <div class="panel-section">
           <div class="panel-section-title" data-i18n="rp.glow">Brilho (Glow)</div>
           <div style="display: flex; align-items: center; gap: var(--space-3);">
-            <input type="range" class="range" id="glow" min="0" max="60" value="12" style="flex:1">
-            <span class="value-display" id="glow-val">12</span>
+            <input type="range" class="range" id="glow" min="0" max="60" value="0" style="flex:1">
+            <span class="value-display" id="glow-val">0</span>
           </div>
         </div>
 
         <div class="panel-section">
           <div class="panel-section-title" data-i18n="rp.glowColor">Cor do brilho</div>
           <div class="color-swatches" id="glow-swatches">
-            <div class="color-swatch selected" data-glow-color="#8b5cf6" style="background:#8b5cf6"></div>
+            <div class="color-swatch selected" data-glow-color="rgba(255,255,255,0.6)" style="background:rgba(255,255,255,0.6)"></div>
             <div class="color-swatch" data-glow-color="#d4a857" style="background:#d4a857"></div>
             <div class="color-swatch" data-glow-color="#60a5fa" style="background:#60a5fa"></div>
             <div class="color-swatch" data-glow-color="#ffffff" style="background:#ffffff"></div>
             <div class="color-swatch" data-glow-color="#f472b6" style="background:#f472b6"></div>
             <label class="color-swatch color-swatch-custom" data-color-custom="glow" title="Escolher cor personalizada">
-              <input type="color" id="glow-color-custom" value="#8b5cf6" style="position:absolute; opacity:0; pointer-events:none; width:0; height:0;" />
+              <input type="color" id="glow-color-custom" value="#ffffff" style="position:absolute; opacity:0; pointer-events:none; width:0; height:0;" />
             </label>
           </div>
         </div>
@@ -7684,7 +7684,7 @@ Digno de toda honra"></textarea>
             <div class="color-swatch selected" data-shadow-color="#000000" style="background:#000000; border:1px solid var(--border-default);"></div>
             <div class="color-swatch" data-shadow-color="#1e1b4b" style="background:#1e1b4b"></div>
             <div class="color-swatch" data-shadow-color="#7c2d12" style="background:#7c2d12"></div>
-            <div class="color-swatch" data-shadow-color="#8b5cf6" style="background:#8b5cf6"></div>
+            <div class="color-swatch" data-shadow-color="rgba(255,255,255,0.6)" style="background:rgba(255,255,255,0.6)"></div>
             <div class="color-swatch" data-shadow-color="#d4a857" style="background:#d4a857"></div>
             <div class="color-swatch" data-shadow-color="#ffffff" style="background:#ffffff"></div>
             <label class="color-swatch color-swatch-custom" data-color-custom="shadow" title="Cor personalizada">
@@ -16374,7 +16374,7 @@ const CanvasRenderer = {
       const baseGlow = style?.glow || 0;
       const effectiveGlow = userGlow !== null ? userGlow : baseGlow;
       if (effectiveGlow > 0) {
-        const glowColor = wordStyleOverride?.glowColor || style?.glowColor || '#8b5cf6';
+        const glowColor = wordStyleOverride?.glowColor || style?.glowColor || '#ffffff';
         ctx.shadowColor = glowColor;
         ctx.shadowBlur = effectiveGlow;
       }
@@ -16526,7 +16526,7 @@ const CanvasRenderer = {
     const hasUserShadow = userShadowBlur > 0 || userShadowOffsetX !== 0 || userShadowOffsetY !== 0;
 
     const baseGlow = style?.glow || 0;
-    const baseGlowColor = style?.glowColor || '#8b5cf6';
+    const baseGlowColor = style?.glowColor || '#ffffff';
     const glowIntensity = state.glowIntensity || 1;
 
     // === SOMBRA GLOBAL (drop shadow estilizado, separado do glow) ===
@@ -16545,7 +16545,7 @@ const CanvasRenderer = {
       ctx.shadowOffsetY = userShadowOffsetY * scale;
     } else if (hasUserGlow) {
       // Glow do usuário (sem offset)
-      ctx.shadowColor = _hexToRgba(wordStyleOverride.glowColor || '#8b5cf6', 0.8);
+      ctx.shadowColor = _hexToRgba(wordStyleOverride.glowColor || '#ffffff', 0.8);
       ctx.shadowBlur = userGlow * 1.5 * scale;
       ctx.shadowOffsetX = 0;
       ctx.shadowOffsetY = 0;
@@ -18423,7 +18423,7 @@ class RenderEngineV2 {
       color: '#f4f4f7',
       textAlign: 'center',
       glow: 0,
-      glowColor: '#8b5cf6',
+      glowColor: '#ffffff',
       // Outline (contorno do texto)
       outline: 0,                  // 0 = sem outline, 1-8 = espessura
       outlineColor: '#000000',
@@ -19155,7 +19155,7 @@ class RenderEngineV2 {
                             (typeof ws.shadowOffsetY === 'number' && ws.shadowOffsetY !== 0);
 
           if (hasGlow) {
-            const gc = ws.glowColor || '#8b5cf6';
+            const gc = ws.glowColor || '#ffffff';
             const gp = ws.glow;
             // Halo: blur grande com cor + blur menor mais denso
             textShadows.push(`0 0 ${gp * 1.5}px ${gc}`);
@@ -27335,8 +27335,8 @@ function initEditor() {
 
     function applyGlowPreset(name) {
       const presets = {
-        soft:   { glow: 8,  glowColor: '#8b5cf6', shadowBlur: 0, shadowOffsetX: 0, shadowOffsetY: 0 },
-        strong: { glow: 24, glowColor: '#8b5cf6', shadowBlur: 0, shadowOffsetX: 0, shadowOffsetY: 0 },
+        soft:   { glow: 8,  glowColor: '#ffffff', shadowBlur: 0, shadowOffsetX: 0, shadowOffsetY: 0 },
+        strong: { glow: 24, glowColor: '#ffffff', shadowBlur: 0, shadowOffsetX: 0, shadowOffsetY: 0 },
         gold:   { glow: 16, glowColor: '#d4a857', shadowBlur: 0, shadowOffsetX: 0, shadowOffsetY: 0 },
         shadow: { glow: 0,  shadowBlur: 8, shadowOffsetX: 3, shadowOffsetY: 4, shadowColor: 'rgba(0,0,0,0.6)' },
         clear:  { glow: null, glowColor: null, shadowBlur: null, shadowOffsetX: null, shadowOffsetY: null, shadowColor: null },
@@ -34042,7 +34042,7 @@ function initEditor() {
       name: nome,
       description: desc || 'Template personalizado.',
       tags: ['meu'],
-      accent: (cfg.style && cfg.style.glowColor) || '#8b5cf6',
+      accent: (cfg.style && cfg.style.glowColor) || '#ffffff',
       config: cfg,
     };
 
@@ -37290,8 +37290,8 @@ function initEditor() {
     }
   })();
 
-  // glow inicial — antes do render
-  engine.setStyle({ glow: 12 });
+  // glow inicial — antes do render (sem glow/sombra padrão)
+  engine.setStyle({ glow: 0 });
 
   // tenta carregar último projeto
   const lastProjectId = WM_STORAGE.getCurrent();
@@ -46909,7 +46909,7 @@ window.WM_ANIM_ENGINE = (function () {
     // Word Reveal). Unificado: os dois agora usam a mesma escala (×6),
     // um brilho visível mas sem espalhar tanto a ponto de invadir a
     // palavra vizinha num layout apertado.
-    if (state.glowIntensity > 0.001) f.push(`drop-shadow(0 0 ${state.glowIntensity * 6}px currentColor)`);
+    if (state.glowIntensity > 0.001) f.push(`drop-shadow(0 0 ${state.glowIntensity * 6}px rgba(255,255,255,0.7))`);
     el.style.filter = f.join(' ');
     if (state.letterSpacing) el.style.letterSpacing = `${state.letterSpacing}px`;
   }
@@ -46943,7 +46943,7 @@ window.WM_ANIM_ENGINE = (function () {
     // some junto com o texto, não depois) e é cortado de vez abaixo de
     // um limiar bem baixo, garantindo sumiço total como as outras colunas.
     if (state.glowIntensity > 0.001 && state.opacity > 0.02) {
-      ctx.shadowColor = ctx.fillStyle;
+      ctx.shadowColor = 'rgba(255,255,255,0.7)';
       ctx.shadowBlur = state.glowIntensity * 6 * state.opacity; // mesma escala do DOM (×6) agora
     }
     // NOTA: chromatic (RGB split) ainda não está implementado no adaptador
