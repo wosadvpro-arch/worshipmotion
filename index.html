@@ -36,6 +36,9 @@
 
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <title>WorshipMotion — Letras animadas para igrejas</title>
   <meta name="description" content="Crie letras animadas profissionais para o telão da sua igreja em poucos minutos. Escolha o estilo, personalize e exporte o vídeo em MP4.">
   <link rel="canonical" href="https://worshipmotion.com.br/">
@@ -2002,6 +2005,16 @@ body.wm-recording-mode::after {
 }
 .ctx-fonts-buypack:hover { filter: brightness(1.08); }
 .ctx-fonts-buypack:active { transform: scale(0.99); }
+/* Botão "Carregar fontes do computador" — estilo distinto */
+#btn-ctx-load-system-fonts {
+  background: var(--surface-2, #1e2235) !important;
+  border: 1px solid var(--border, #2a2f45) !important;
+  color: var(--text-primary, #e2e8f0) !important;
+}
+#btn-ctx-load-system-fonts:hover {
+  background: var(--surface-3, #252a40) !important;
+  filter: none !important;
+}
 
 /* === Videoaulas === */
 .videoaulas-player-wrap {
@@ -7400,6 +7413,11 @@ Digno de toda honra"></textarea>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
         <span data-i18n="fp.buyFontPack">Adquirir Pack de Fontes</span>
       </button>
+      <!-- BOTÃO CARREGAR FONTES DO COMPUTADOR - v20261014 -->
+      <button id="btn-ctx-load-system-fonts" class="ctx-fonts-buypack" style="margin-top: 6px; background: var(--surface-2, #1e2235) !important; border: 1px solid var(--border, #2a2f45) !important; color: var(--text-primary, #e2e8f0) !important;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <span>Carregar fontes do computador</span>
+      </button>
       <div class="ctx-fonts-list" id="ctx-fonts-list"></div>
     </div>
     <div class="editor-canvas" id="editor-canvas">
@@ -7523,6 +7541,10 @@ Digno de toda honra"></textarea>
             <button id="btn-load-system-fonts" class="btn btn-secondary btn-sm" style="width: 100%; margin-bottom: 8px; display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
               Carregar fontes do computador
+            </button>
+            <button id="btn-upload-local-font" class="btn btn-secondary btn-sm" style="width: 100%; margin-bottom: 8px; display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              Carregar fonte do computador
             </button>
 
             <div class="font-grid" id="custom-font-grid" style="margin-bottom: 8px;"></div>
@@ -25974,6 +25996,53 @@ function initEditor() {
       });
     });
   }
+  // Handler do botão "Carregar fontes do computador" no painel lateral de fontes
+  $('#btn-ctx-load-system-fonts')?.addEventListener('click', async () => {
+    const btn = $('#btn-ctx-load-system-fonts');
+    if (!btn) return;
+    const originalHTML = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation:spin 1s linear infinite"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> <span>Carregando…</span>';
+    try {
+      let familias = [];
+      if (window.WM_LOCAL_FONTS) {
+        const apiState = window.WM_LOCAL_FONTS.getApiState();
+        if (apiState === 'available' || apiState === 'granted') {
+          const apiFonts = await window.WM_LOCAL_FONTS.tryQueryApi();
+          if (apiFonts && apiFonts.length > 0) {
+            familias = apiFonts.map(f => f.family);
+          } else {
+            familias = window.WM_LOCAL_FONTS.detectCommon();
+          }
+        } else {
+          familias = window.WM_LOCAL_FONTS.detectCommon();
+        }
+      } else if (typeof detectCommonFontsSync === 'function') {
+        familias = detectCommonFontsSync();
+      }
+      // Registra cada fonte como .font-option invisível no DOM para que
+      // _ctxListaFontes as encontre na próxima renderização.
+      const existingGrid = document.querySelector('[data-font-tab-content="local"]') || document.body;
+      familias.forEach(f => {
+        if (!document.querySelector(`.font-option[data-font="${CSS.escape(f)}"]`)) {
+          const opt = document.createElement('div');
+          opt.className = 'font-option';
+          opt.dataset.font = f;
+          opt.style.display = 'none';
+          existingGrid.appendChild(opt);
+        }
+      });
+      // Re-renderiza a lista do painel lateral com as novas fontes
+      renderListaFontes(document.getElementById('ctx-fonts-search')?.value || '');
+      if (typeof repopularFontesCtx === 'function') repopularFontesCtx();
+    } catch (e) {
+      console.warn('Erro ao carregar fontes do sistema:', e);
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = originalHTML;
+    }
+  });
+
   function abrirPainelFontes() {
     const panel = document.getElementById('ctx-fonts-panel');
     if (!panel) return;
@@ -28609,8 +28678,61 @@ function initEditor() {
     $('#custom-font-input')?.click();
   });
 
-  // REMOVIDO: Listener global conflitante.
-  // $('#custom-font-input')?.addEventListener('change', ...);
+  // Botão "Carregar fonte do computador" na aba Computador — abre seletor de arquivo
+  $('#btn-upload-local-font')?.addEventListener('click', () => {
+    $('#custom-font-input')?.click();
+  });
+
+  // Listener do input de arquivo — processa fontes selecionadas pelo usuário
+  $('#custom-font-input')?.addEventListener('change', async (e) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    const btn = $('#btn-upload-local-font');
+    const originalHTML = btn ? btn.innerHTML : '';
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation:spin 1s linear infinite"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Carregando...';
+    }
+    let successCount = 0;
+    let errorMessages = [];
+    for (const file of files) {
+      try {
+        if (typeof uploadFont === 'function') {
+          await uploadFont(file);
+          successCount++;
+        } else if (window.WM_CUSTOM_FONTS && typeof window.WM_CUSTOM_FONTS.upload === 'function') {
+          await window.WM_CUSTOM_FONTS.upload(file);
+          successCount++;
+        } else {
+          errorMessages.push('Função de upload não disponível');
+        }
+      } catch (err) {
+        errorMessages.push(file.name + ': ' + (err.message || err));
+      }
+    }
+    // Reseta o input para permitir re-seleção do mesmo arquivo
+    e.target.value = '';
+    // Atualiza a grid de fontes custom
+    if (typeof refreshCustomFontGrid === 'function') refreshCustomFontGrid();
+    if (typeof window._refreshCustomFontGrid === 'function') window._refreshCustomFontGrid();
+    // Re-renderiza lista do painel lateral
+    if (typeof renderListaFontes === 'function') {
+      renderListaFontes(document.getElementById('ctx-fonts-search')?.value || '');
+    }
+    if (typeof repopularFontesCtx === 'function') repopularFontesCtx();
+    // Feedback visual
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = originalHTML;
+    }
+    const info = $('#local-fonts-info');
+    if (info) {
+      let msg = '';
+      if (successCount > 0) msg += '<strong>' + successCount + ' fonte(s)</strong> carregada(s) com sucesso.';
+      if (errorMessages.length > 0) msg += '<br><span style="color:#f87171;">' + errorMessages.join('<br>') + '</span>';
+      info.innerHTML = msg;
+    }
+  });
 
   // Botão "Carregar fontes do computador" — dispara queryLocalFonts ou fallback de detecção
   $('#btn-load-system-fonts')?.addEventListener('click', async () => {
