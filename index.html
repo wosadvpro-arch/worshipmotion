@@ -1993,14 +1993,6 @@ body.wm-recording-mode::after {
 .ctx-font-item:hover { background: rgba(255,255,255,0.05); }
 .ctx-font-item.selected { background: rgba(139,92,246,0.18); border-color: var(--accent, #8b5cf6); }
 .ctx-font-item .ctx-font-name { font-size: 14px; line-height: 1.1; }
-.ctx-fonts-upload {
-  width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;
-  padding: 9px; margin-bottom: 12px; border-radius: 8px;
-  background: var(--bg-base, #0a0a0f); color: var(--text, #e8e8ee);
-  border: 1px dashed var(--border-default, rgba(255,255,255,0.2));
-  font-size: 12px; cursor: pointer; transition: background 0.15s, border-color 0.15s;
-}
-.ctx-fonts-upload:hover { background: rgba(139,92,246,0.1); border-color: var(--accent, #8b5cf6); }
 .ctx-fonts-buypack {
   width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;
   padding: 10px; margin-bottom: 12px; border-radius: 8px;
@@ -7402,11 +7394,7 @@ Digno de toda honra"></textarea>
         <button class="ctx-btn ctx-mini" id="ctx-fonts-close" aria-label="Fechar">×</button>
       </div>
       <input type="text" class="ctx-fonts-search" id="ctx-fonts-search" placeholder="Buscar fonte…" data-i18n-attr="placeholder:fp.searchFont">
-      <button class="ctx-fonts-upload" id="ctx-fonts-upload">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-        <span data-i18n="fp.loadFont">Carregar fonte do computador</span>
-      </button>
-      <button class="ctx-fonts-buypack" id="ctx-fonts-buypack"
+            <button class="ctx-fonts-buypack" id="ctx-fonts-buypack"
         onclick="if(window.WM_FONT_PACK_URL){window.open(window.WM_FONT_PACK_URL,'_blank');}else{(window.wmAlert||window.alert)((window.WM_T?window.WM_T('fp.packSoon'):'Link do pack em breve!'));}">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
         <span data-i18n="fp.buyFontPack">Adquirir Pack de Fontes</span>
@@ -7536,8 +7524,7 @@ Digno de toda honra"></textarea>
             <div class="font-grid font-grid-scroll" id="local-font-grid"></div>
             <div id="local-fonts-info" class="font-info-message"></div>
             
-            <input type="file" id="custom-font-input" accept=".ttf,.otf,.woff,.woff2" style="display:none" multiple />
-          </div>
+            </div>
         </div>
 
         <div class="panel-section" style="display:none;">
@@ -8861,8 +8848,7 @@ window.__WM_BUILD = 'export-quebra-linha-30jul';
     'md.videosTitle':   { pt: 'Videoaulas', en: 'Tutorials', es: 'Videotutoriales' },
     'md.videosSub':     { pt: 'Aprenda a usar o app, adicionar fontes, backgrounds e loops', en: 'Learn to use the app, add fonts, backgrounds and loops', es: 'Aprende a usar la app, añadir fuentes, fondos y loops' },
     'fp.searchFont':    { pt: 'Buscar fonte…', en: 'Search font…', es: 'Buscar fuente…' },
-    'fp.loadFont':      { pt: 'Carregar fonte do computador', en: 'Load font from computer', es: 'Cargar fuente de la computadora' },
-    'fp.buyFontPack':   { pt: 'Adquirir Pack de Fontes', en: 'Get Font Pack', es: 'Obtener Pack de Fuentes' },
+        'fp.buyFontPack':   { pt: 'Adquirir Pack de Fontes', en: 'Get Font Pack', es: 'Obtener Pack de Fuentes' },
     'fp.addBg':         { pt: 'Adicionar background (imagem ou vídeo)', en: 'Add background (image or video)', es: 'Añadir fondo (imagen o video)' },
     'fp.buyLoopPack':   { pt: 'Adquirir Pack de Loops', en: 'Get Loop Pack', es: 'Obtener Pack de Loops' },
     'fp.packSoon':      { pt: 'Link do pack em breve!', en: 'Pack link coming soon!', es: '¡Enlace del pack muy pronto!' },
@@ -13060,7 +13046,7 @@ window.WM_CUSTOM_FONTS = {
 //      detecta o plano pro_plus e carrega as fontes da pasta 'fontes/'
 //      (publicada no GitHub, ao lado do index.html). Sem download, sem zip.
 //  (2) FREE/PRO: compram o pack avulso pelo botão na aba Fontes; a Hotmart
-//      entrega o fontes.zip pra baixar e subir via "Carregar fonte do computador".
+//      entrega o fontes.zip pra baixar e subir manualmente.
 // >>> Pra (1) funcionar, a pasta 'fontes/' PRECISA estar publicada no repo. <<<
 //
 // >>> COLE AQUI O LINK DE COMPRA DA HOTMART (entre as aspas): <<<
@@ -26001,12 +25987,13 @@ function initEditor() {
   }
 
   // Fecha o painel de fontes automaticamente ao clicar fora dele
-  // (mas não no botão que o abre, nem dentro do próprio painel).
+  // (mas não no botão que o abre, nem dentro do próprio painel, nem no botão de upload).
   if (!window.__wmFontsOutsideWired) {
     window.__wmFontsOutsideWired = true;
     document.addEventListener('mousedown', (e) => {
       const panel = document.getElementById('ctx-fonts-panel');
       if (!panel || panel.style.display === 'none') return;
+      // Ignora cliques dentro do painel e no botão que abre
       if (e.target.closest && (e.target.closest('#ctx-fonts-panel') || e.target.closest('#ctx-font-btn'))) return;
       fecharPainelFontes();
     });
@@ -26635,51 +26622,7 @@ function initEditor() {
     const fClose = document.getElementById('ctx-fonts-close');
     if (fClose) fClose.addEventListener('click', fecharPainelFontes);
 
-    // Botão "Carregar fonte do computador": primeiro tenta acessar TODAS
-    // as fontes do sistema (se o navegador suportar queryLocalFonts, ex.
-    // Chrome/Edge); se não rolar, abre o seletor de arquivo .ttf/.otf.
-    const fUpload = document.getElementById('ctx-fonts-upload');
-    if (fUpload) fUpload.addEventListener('click', async () => {
-      // Tenta API nativa primeiro (Chrome/Edge com permissão)
-      let apiOk = false;
-      try {
-        if (window.WM_LOCAL_FONTS && typeof window.WM_LOCAL_FONTS.tryQueryApi === 'function') {
-          const apiFonts = await window.WM_LOCAL_FONTS.tryQueryApi();
-          if (apiFonts && apiFonts.length > 0) {
-            const families = apiFonts.map(f => f.family);
-            if (typeof _allLocalFonts !== 'undefined') _allLocalFonts = families;
-            if (typeof renderLocalFontsGrid === 'function') renderLocalFontsGrid(families);
-            if (typeof window._repopularFontesCtx === 'function') window._repopularFontesCtx();
-            // Atualiza também o painel lateral aberto
-            if (typeof renderListaFontes === 'function') renderListaFontes(document.getElementById('ctx-fonts-search')?.value || '');
-            apiOk = true;
-          }
-        }
-      } catch (e) {}
-      if (apiOk) return;
-      // Fallback: abre o seletor de arquivo de fonte (.ttf/.otf/.woff/.woff2)
-      const inp = document.getElementById('custom-font-input');
-      if (inp) {
-        // Garante que o listener de change atualize o painel lateral após upload
-        inp.onchange = async (ev) => {
-          const files = Array.from(ev.target.files || []);
-          ev.target.value = '';
-          if (files.length === 0 || !window.WM_CUSTOM_FONTS) return;
-          for (const file of files) {
-            try {
-              await window.WM_CUSTOM_FONTS.upload(file);
-            } catch (e) {
-              if (typeof showToast === 'function') showToast(`Não pude carregar "${file.name}"`);
-            }
-          }
-          if (typeof refreshCustomFontGrid === 'function') await refreshCustomFontGrid();
-          if (typeof window._repopularFontesCtx === 'function') window._repopularFontesCtx();
-          if (typeof renderListaFontes === 'function') renderListaFontes(document.getElementById('ctx-fonts-search')?.value || '');
-        };
-        inp.click();
-      }
-    });
-
+    
     syncCtxToolbar();
   }
   function syncCtxToolbar() {
@@ -28661,20 +28604,8 @@ function initEditor() {
     $('#custom-font-input')?.click();
   });
 
-  $('#custom-font-input')?.addEventListener('change', async (ev) => {
-    const files = Array.from(ev.target.files || []);
-    ev.target.value = '';
-    if (files.length === 0 || !window.WM_CUSTOM_FONTS) return;
-
-    for (const file of files) {
-      try {
-        await window.WM_CUSTOM_FONTS.upload(file);
-      } catch (e) {
-        showToast(`Não pude carregar "${file.name}"`);
-      }
-    }
-    await refreshCustomFontGrid();
-  });
+  // REMOVIDO: Listener global conflitante.
+  // $('#custom-font-input')?.addEventListener('change', ...);
 
   // Delete de fonte importada
   document.body.addEventListener('click', async (ev) => {
@@ -49383,6 +49314,10 @@ function wmSampleAnimState(anim, progress) {
   select.addEventListener('change', () => { if (rafId) cancelAnimationFrame(rafId); });
 })();
 </script>
+
+<!-- Input de upload de fonte — fora de containers ocultos para garantir .click() programático -->
+<!-- opacity:0 + position off-screen é mais seguro que display:none para .click() programático -->
+<input type="file" id="custom-font-input" accept=".ttf,.otf,.woff,.woff2" style="position:absolute;left:-9999px;top:-9999px;opacity:0;width:1px;height:1px;overflow:hidden;" multiple />
 
 </body>
 
