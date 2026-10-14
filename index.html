@@ -3617,6 +3617,7 @@ body.wm-audio-dragging .audio-drop-overlay { display: flex; }
   display: inline-block;
 }
 @keyframes wm-audio-spin { to { transform: rotate(360deg); } }
+@keyframes spin { to { transform: rotate(360deg); } }
 
 /* ============ MARQUEE SELECTION (caixa de seleção) ============ */
 .marquee-selection {
@@ -7519,7 +7520,11 @@ Digno de toda honra"></textarea>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
               Permitir acesso a todas as fontes
             </button>
-            
+            <button id="btn-load-system-fonts" class="btn btn-secondary btn-sm" style="width: 100%; margin-bottom: 8px; display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Carregar fontes do computador
+            </button>
+
             <div class="font-grid" id="custom-font-grid" style="margin-bottom: 8px;"></div>
             <div class="font-grid font-grid-scroll" id="local-font-grid"></div>
             <div id="local-fonts-info" class="font-info-message"></div>
@@ -28606,6 +28611,59 @@ function initEditor() {
 
   // REMOVIDO: Listener global conflitante.
   // $('#custom-font-input')?.addEventListener('change', ...);
+
+  // Botão "Carregar fontes do computador" — dispara queryLocalFonts ou fallback de detecção
+  $('#btn-load-system-fonts')?.addEventListener('click', async () => {
+    const btn = $('#btn-load-system-fonts');
+    if (!btn) return;
+    const originalHTML = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation:spin 1s linear infinite"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Carregando...';
+    try {
+      if (window.WM_LOCAL_FONTS) {
+        const apiState = window.WM_LOCAL_FONTS.getApiState();
+        if (apiState === 'available' || apiState === 'granted') {
+          const apiFonts = await window.WM_LOCAL_FONTS.tryQueryApi();
+          if (apiFonts && apiFonts.length > 0) {
+            const families = apiFonts.map(f => f.family);
+            _allLocalFonts = families;
+            renderLocalFontsGrid(families);
+            const info = $('#local-fonts-info');
+            if (info) info.innerHTML = `<strong>${families.length} fontes</strong> do seu computador disponíveis.`;
+            const btnRequest = $('#btn-request-local-fonts');
+            if (btnRequest) btnRequest.style.display = 'none';
+          } else {
+            const fallback = window.WM_LOCAL_FONTS.detectCommon();
+            _allLocalFonts = fallback;
+            renderLocalFontsGrid(fallback);
+            const info = $('#local-fonts-info');
+            if (info) info.innerHTML = `Permissão negada ou nenhuma fonte encontrada. Usando ${fallback.length} fontes detectadas.`;
+          }
+        } else if (apiState === 'unsupported') {
+          const fonts = window.WM_LOCAL_FONTS.detectCommon();
+          _allLocalFonts = fonts;
+          renderLocalFontsGrid(fonts);
+          const info = $('#local-fonts-info');
+          if (info) info.innerHTML = `Detectadas ${fonts.length} fontes comuns. Seu navegador não permite ver todas as fontes — use <strong>Chrome ou Edge</strong> pra acesso completo.`;
+        } else {
+          // Fallback: tenta initLocalFontsTab que já tem toda a lógica
+          await initLocalFontsTab();
+        }
+      } else {
+        // Sem WM_LOCAL_FONTS — fallback via canvas detection se disponível
+        if (typeof initLocalFontsTab === 'function') {
+          await initLocalFontsTab();
+        }
+      }
+    } catch (e) {
+      console.warn('Erro ao carregar fontes do sistema:', e);
+      const info = $('#local-fonts-info');
+      if (info) info.textContent = 'Erro ao carregar fontes: ' + e.message;
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = originalHTML;
+    }
+  });
 
   // Delete de fonte importada
   document.body.addEventListener('click', async (ev) => {
