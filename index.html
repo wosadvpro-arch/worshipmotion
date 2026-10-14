@@ -16556,9 +16556,9 @@ const CanvasRenderer = {
       ctx.shadowBlur = globalShadowBlur * scale;
       ctx.shadowOffsetX = globalShadowOffsetX * scale;
       ctx.shadowOffsetY = globalShadowOffsetY * scale;
-    } else if (baseGlow > 0 || glowIntensity > 1) {
-      // Glow global do style
-      const glowPx = (baseGlow || 8) * 0.5 * scale * glowIntensity;
+    } else if (baseGlow > 0 && glowIntensity > 0) {
+      // Glow global do style — só aplica se houver glow base configurado
+      const glowPx = baseGlow * 0.5 * scale * glowIntensity;
       ctx.shadowColor = _hexToRgba(baseGlowColor, 0.6);
       const empMult = word.emphasized ? (1 + 0.4 * colorProgress) : 1;
       ctx.shadowBlur = glowPx * empMult;
@@ -33071,6 +33071,12 @@ function initEditor() {
 
     // estilo
     if (project.style) {
+      // SANITIZAÇÃO: remove glow/sombra azulada padrão herdada de versões
+      // anteriores que definiam glow:12 como valor inicial. Projetos novos
+      // já nascem com glow:0; projetos antigos são corrigidos aqui ao carregar.
+      if (typeof project.style.glow !== 'number' || project.style.glow > 0) {
+        project.style.glow = 0;
+      }
       engine.setStyle(project.style);
 
       // sincroniza UI dos controles de estilo
@@ -33162,12 +33168,24 @@ function initEditor() {
     // (ex: modo "manter" do template híbrido), preserva o que tem.
     if (project.sceneOverrides !== undefined) {
       engine.sceneOverrides = { ...(project.sceneOverrides || {}) };
+      // SANITIZAÇÃO: remove glow herdado de versões anteriores em cada estrofe
+      Object.values(engine.sceneOverrides).forEach(ov => {
+        if (ov && ov.style && typeof ov.style.glow === 'number' && ov.style.glow > 0) {
+          ov.style.glow = 0;
+        }
+      });
     }
 
     // word overrides (animação individual por palavra)
     // Mesma lógica do sceneOverrides — só mexe se a propriedade existe.
     if (project.wordOverrides !== undefined) {
       engine.wordOverrides = { ...(project.wordOverrides || {}) };
+      // SANITIZAÇÃO: remove glow herdado de versões anteriores em cada palavra
+      Object.values(engine.wordOverrides).forEach(ov => {
+        if (ov && ov.style && typeof ov.style.glow === 'number' && ov.style.glow > 0) {
+          ov.style.glow = 0;
+        }
+      });
     }
 
     // áudio: restaura referência e carrega do IndexedDB
@@ -46909,7 +46927,9 @@ window.WM_ANIM_ENGINE = (function () {
     // Word Reveal). Unificado: os dois agora usam a mesma escala (×6),
     // um brilho visível mas sem espalhar tanto a ponto de invadir a
     // palavra vizinha num layout apertado.
-    if (state.glowIntensity > 0.001) f.push(`drop-shadow(0 0 ${state.glowIntensity * 6}px rgba(255,255,255,0.7))`);
+    // Só aplica drop-shadow se houver glow base configurado; glowIntensity de animação sozinho não cria sombra
+    const _domBaseGlow = typeof engine?.currentStyle?.glow === 'number' ? engine.currentStyle.glow : 0;
+    if (_domBaseGlow > 0 && state.glowIntensity > 0.001) f.push(`drop-shadow(0 0 ${state.glowIntensity * 6}px rgba(255,255,255,0.7))`);
     el.style.filter = f.join(' ');
     if (state.letterSpacing) el.style.letterSpacing = `${state.letterSpacing}px`;
   }
