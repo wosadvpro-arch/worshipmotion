@@ -9473,12 +9473,12 @@ const ANIMATIONS_V2 = [
     id: 'blur-shrink',
     name: 'Blur Shrink',
     category: 'entrance', style: 'cinematic',
-    duration: 0.4, easing: 'cubic-bezier(0.25, 1, 0.5, 1)',
-    charStagger: 0.08,
+    duration: 0.28, easing: 'cubic-bezier(0.16, 1, 0.3, 1)',
+    charStagger: 0.06,
     keyframes: [
-      { at: 0, opacity: 0, scale: 1.2, blur: 15 },
-      { at: 0.4, opacity: 0.6, scale: 1.08, blur: 6 },
-      { at: 0.8, opacity: 0.9, scale: 1.02, blur: 1 },
+      { at: 0, opacity: 0, scale: 1.35, blur: 12 },
+      { at: 0.3, opacity: 0.55, scale: 1.12, blur: 5 },
+      { at: 0.7, opacity: 0.92, scale: 1.02, blur: 1 },
       { at: 1, opacity: 1, scale: 1, blur: 0 },
     ],
   },{
@@ -47338,16 +47338,16 @@ window.WM_ANIM_ENGINE = (function () {
       ],
     },
   });
-  registerRecipe({ // = 'blur-shrink', reconstrução FINAL com GLOW (sincronizado com ANIMATIONS_V2)
+  registerRecipe({ // = 'blur-shrink', reconstrução FINAL sincronizada com ANIMATIONS_V2 (stagger restaurado após validação frame a frame)
     id: 'blur-shrink-v2',
     entrance: {
-      engine: 'keyframes', duration: 0.35, easing: 'easeBezier25_1_50_1',
-      // charStagger removido para sincronizar com ANIMATIONS_V2 (bloco único)
+      engine: 'keyframes', duration: 0.28, easing: 'easeBezier16_1_3_1',
+      charStagger: 0.06,
       keyframes: [
-        { at: 0,   opacity: 0,   scale: 1.3,  blur: 20 },
-        { at: 0.4, opacity: 0.6, scale: 1.1,  blur: 8  },
-        { at: 0.8, opacity: 0.9, scale: 1.02, blur: 2  },
-        { at: 1,   opacity: 1,   scale: 1,    blur: 0  },
+        { at: 0,   opacity: 0,    scale: 1.35, blur: 12 },
+        { at: 0.3, opacity: 0.55, scale: 1.12, blur: 5  },
+        { at: 0.7, opacity: 0.92, scale: 1.02, blur: 1  },
+        { at: 1,   opacity: 1,    scale: 1,    blur: 0  },
       ],
     },
   });
