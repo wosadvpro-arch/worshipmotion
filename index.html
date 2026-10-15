@@ -9454,6 +9454,37 @@ const ANIMATIONS_V2 = [
       { at: 1, opacity: 1, scale: 1,    blur: 0 },
     ],
   },{
+    // ============================================================
+    // BLUR SHRINK — reconstrução nativa da referência
+    // WorshipMotion-Referencias/27_27_text_in_Blur_Shrink
+    // Vídeo: 216×216, 25fps, 0.8s, 20 frames.
+    // Comportamento observado quadro a quadro:
+    //   - Cada letra entra individualmente da esquerda para a direita
+    //     (charStagger ≈ 0.06s entre letras).
+    //   - No instante de entrada a letra está muito desfocada (blur ~12px)
+    //     e ampliada (scale ~1.35), com opacidade baixa (~0).
+    //   - Rapidamente (≈0.25s por letra) o blur vai a 0, o scale volta
+    //     a 1 e a opacidade chega a 1 — efeito de "foco + encolhimento".
+    //   - Sem translateX/Y significativo: a letra aparece praticamente
+    //     no lugar final, apenas desfocada e maior.
+    //   - Easing acelerado no início, desacelerando no final
+    //     (cubic-bezier aproximado de ease-out forte).
+    // Duração total do vídeo = 0.8s; com 4 letras e stagger 0.06s,
+    // a última letra termina em ≈ 0.06*3 + 0.25 = 0.43s, deixando
+    // margem de permanência estática até 0.8s.
+    // ============================================================
+    id: 'blur-shrink',
+    name: 'Blur Shrink',
+    category: 'entrance', style: 'cinematic',
+    duration: 0.28, easing: 'cubic-bezier(0.16, 1, 0.3, 1)',
+    charStagger: 0.06,
+    keyframes: [
+      { at: 0,   opacity: 0,    scale: 1.35, blur: 12 },
+      { at: 0.3, opacity: 0.55, scale: 1.12, blur: 5  },
+      { at: 0.7, opacity: 0.92, scale: 1.02, blur: 1  },
+      { at: 1,   opacity: 1,    scale: 1,    blur: 0  },
+    ],
+  },{
     id: 'horizon-rise',
     name: 'Horizonte',
     category: 'entrance', style: 'cinematic',
@@ -47306,6 +47337,19 @@ window.WM_ANIM_ENGINE = (function () {
       ],
     },
   });
+  registerRecipe({ // = 'blur-shrink', reconstrução nativa da referência 27_27_text_in_Blur_Shrink
+    id: 'blur-shrink-v2',
+    entrance: {
+      engine: 'keyframes', duration: 0.28, easing: 'easeBezier16_1_3_1',
+      charStagger: 0.06,
+      keyframes: [
+        { at: 0,   opacity: 0,    scale: 1.35, blur: 12 },
+        { at: 0.3, opacity: 0.55, scale: 1.12, blur: 5  },
+        { at: 0.7, opacity: 0.92, scale: 1.02, blur: 1  },
+        { at: 1,   opacity: 1,    scale: 1,    blur: 0  },
+      ],
+    },
+  });
   registerRecipe({ // = 'divine-light', migração automática Etapa 5 (validada: paridade numérica)
     id: 'divine-light-v2',
     entrance: {
@@ -49054,6 +49098,7 @@ window.WM_ENGINE_V2_ID_MAP = {
   'silk-flow': 'silk-flow-v2',
   'film-fade': 'film-fade-v2',
   'focus-pull': 'focus-pull-v2',
+  'blur-shrink': 'blur-shrink-v2',
   'sacred-pulse': 'sacred-pulse-v2',
   'mask-up': 'mask-up-v2',
   'spring-in': 'spring-in-v2',
