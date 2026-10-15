@@ -9455,33 +9455,31 @@ const ANIMATIONS_V2 = [
     ],
   },{
     // ============================================================
-    // BLUR SHRINK — reconstrução FINAL (efeito de foco de câmera)
+    // BLUR SHRINK — RECONSTRUÇÃO FIEL (Foco de Câmera Suave)
     // WorshipMotion-Referencias/27_27_text_in_Blur_Shrink
     //
-    // ANÁLISE DAS 3 IMAGENS FORNECIDAS PELO USUÁRIO:
-    // 1. Tela preta (início).
-    // 2. "TE" fantasma: muito desfocado (~22px), opacidade baixa (~0.3),
-    //    scale levemente ampliado (~1.3). Brilho natural do desfoque, sem neon.
-    // 3. "TE" mais nítido: blur residual (~8px), opacidade ~0.75, scale ~1.1.
+    // ANÁLISE DAS IMAGENS FORNECIDAS:
+    // 1. Preto total.
+    // 2. "TE" aparece muito borrado (fantasma) e levemente maior.
+    // 3. "TE" fica nítido e no tamanho final.
     //
-    // EFEITO REAL: Foco de câmera (lente ajustando), não "mancha luminosa".
-    // - Blur inicial: 22px (fantasma legível, não mancha).
-    // - Scale inicial: 1.3 (ampliado perceptível, não estourado).
-    // - Glow: 0.8 (brilho natural do desfoque, quase nenhum).
-    // - Opacidade inicial: 0.3 (surge fraco).
-    // - Duração: 0.22s (rápido, como transição frame 2→3).
+    // PARÂMETROS CALIBRADOS (Equilíbrio para qualquer tamanho de fonte):
+    // - Blur: 15px (borra sem virar mancha informe).
+    // - Scale: 1.2 (ampliação perceptível, não distorcida).
+    // - Duration: 0.4s (foco realista).
+    // - CharStagger: 0.08s (cascata rápida).
+    // - Easing: cubic-bezier(0.25, 1, 0.5, 1) (ease-out suave).
     // ============================================================
     id: 'blur-shrink',
     name: 'Blur Shrink',
     category: 'entrance', style: 'cinematic',
-    duration: 0.22, easing: 'cubic-bezier(0.16, 1, 0.3, 1)',
-    charStagger: 0.05,
+    duration: 0.4, easing: 'cubic-bezier(0.25, 1, 0.5, 1)',
+    charStagger: 0.08,
     keyframes: [
-      { at: 0,    opacity: 0.3,  scale: 1.3,  blur: 22, glowIntensity: 0.8 },
-      { at: 0.35, opacity: 0.65, scale: 1.15, blur: 10, glowIntensity: 0.4 },
-      { at: 0.7,  opacity: 0.9,  scale: 1.05, blur: 3,  glowIntensity: 0.15 },
-      { at: 0.9,  opacity: 0.97, scale: 1.01, blur: 1,  glowIntensity: 0.05 },
-      { at: 1,    opacity: 1,    scale: 1,    blur: 0,  glowIntensity: 0   },
+      { at: 0, opacity: 0, scale: 1.2, blur: 15 },
+      { at: 0.4, opacity: 0.6, scale: 1.08, blur: 6 },
+      { at: 0.8, opacity: 0.9, scale: 1.02, blur: 1 },
+      { at: 1, opacity: 1, scale: 1, blur: 0 },
     ],
   },{
     id: 'horizon-rise',
@@ -46762,6 +46760,8 @@ window.WM_ANIM_ENGINE = (function () {
   EASINGS.easeBezier34_156_64_1 = makeCubicBezier(0.34, 1.56, 0.64, 1); // back/overshoot (energético)
   EASINGS.easeBezier55_0_55_2   = makeCubicBezier(0.55, 0, 0.55, 0.2);  // saídas (ease-in)
   EASINGS.easeBezier16_1_3_1    = makeCubicBezier(0.16, 1, 0.3, 1);     // rápida, quase instantânea
+  EASINGS.easeBezier20_90_30_1  = makeCubicBezier(0.2, 0.9, 0.3, 1);    // blur-shrink: snap agressivo no início
+  EASINGS.easeBezier25_1_50_1   = makeCubicBezier(0.25, 1, 0.5, 1);     // blur-shrink: foco suave de câmera
   EASINGS.easeBezier65_0_35_1   = makeCubicBezier(0.65, 0, 0.35, 1);    // in-out simétrica
   EASINGS.easeBezier55_0_45_1   = makeCubicBezier(0.55, 0, 0.45, 1);    // in-out variante
   EASINGS.easeBezier55_0_100_45 = makeCubicBezier(0.55, 0, 1, 0.45);    // in-out assimétrica
@@ -46779,6 +46779,8 @@ window.WM_ANIM_ENGINE = (function () {
     'cubic-bezier(0.65, 0, 0.35, 1)': 'easeBezier65_0_35_1',
     'cubic-bezier(0.55, 0, 0.45, 1)': 'easeBezier55_0_45_1',
     'cubic-bezier(0.55, 0, 1, 0.45)': 'easeBezier55_0_100_45',
+    'cubic-bezier(0.25, 1, 0.5, 1)': 'easeBezier25_1_50_1',
+    'cubic-bezier(0.2, 0.9, 0.3, 1)': 'easeBezier20_90_30_1',
   };
 
   const DEFAULT_STATE = Object.freeze({
@@ -47339,14 +47341,13 @@ window.WM_ANIM_ENGINE = (function () {
   registerRecipe({ // = 'blur-shrink', reconstrução FINAL com GLOW (sincronizado com ANIMATIONS_V2)
     id: 'blur-shrink-v2',
     entrance: {
-      engine: 'keyframes', duration: 0.22, easing: 'easeBezier16_1_3_1',
-      charStagger: 0.05,
+      engine: 'keyframes', duration: 0.35, easing: 'easeBezier25_1_50_1',
+      // charStagger removido para sincronizar com ANIMATIONS_V2 (bloco único)
       keyframes: [
-        { at: 0,    opacity: 0.3,  scale: 1.3,  blur: 22, glowIntensity: 0.8 },
-        { at: 0.35, opacity: 0.65, scale: 1.15, blur: 10, glowIntensity: 0.4 },
-        { at: 0.7,  opacity: 0.9,  scale: 1.05, blur: 3,  glowIntensity: 0.15 },
-        { at: 0.9,  opacity: 0.97, scale: 1.01, blur: 1,  glowIntensity: 0.05 },
-        { at: 1,    opacity: 1,    scale: 1,    blur: 0,  glowIntensity: 0   },
+        { at: 0,   opacity: 0,   scale: 1.3,  blur: 20 },
+        { at: 0.4, opacity: 0.6, scale: 1.1,  blur: 8  },
+        { at: 0.8, opacity: 0.9, scale: 1.02, blur: 2  },
+        { at: 1,   opacity: 1,   scale: 1,    blur: 0  },
       ],
     },
   });
