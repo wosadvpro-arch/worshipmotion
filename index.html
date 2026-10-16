@@ -10959,6 +10959,7 @@ const ANIMATIONS_V2 = [
   category: 'entrance',
   style: 'energetic',
   duration: 1.0,
+  ignoreGlobalSpeed: true, // Preserva duração absoluta da referência MP4 (1.0s)
   easing: 'linear',
   keyframes: [
     { at: 0.0, opacity: 0, translateY: 300.0, scale: 0.4 },
@@ -14961,7 +14962,10 @@ const CanvasRenderer = {
         }
 
         // Calcula progresso de entrada
-        const entDur = entrance ? entrance.duration * 1000 * durationScale : 0;
+        // EXCEÇÃO: efeitos com ignoreGlobalSpeed preservam duração absoluta (fidelidade à referência MP4).
+        const entDur = entrance
+          ? entrance.duration * 1000 * (entrance.ignoreGlobalSpeed ? 1 : durationScale)
+          : 0;
         let entProgress = 0;
         if (entrance) {
           if (elapsedMs < delayMs) entProgress = 0;
@@ -15198,7 +15202,8 @@ const CanvasRenderer = {
           // palavra usa uma isolada como override, também nunca é estática.
           if (woEnt.isolatedEngine || woEnt.charStagger) { entDur = Infinity; return; }
           const scale = (wo && typeof wo.durationScale === 'number') ? wo.durationScale : 1;
-          const woDur = woEnt.duration * 1000 * scale;
+          // EXCEÇÃO: efeitos com ignoreGlobalSpeed preservam duração absoluta (fidelidade à referência MP4).
+          const woDur = woEnt.duration * 1000 * (woEnt.ignoreGlobalSpeed ? 1 : scale);
           if (woDur > entDur) entDur = woDur;
           const finishMs = delayMs + woDur;
           if (finishMs > maxWordFinishMs) maxWordFinishMs = finishMs;
@@ -20509,7 +20514,11 @@ class RenderEngineV2 {
       // Duração final = duração base do preset × velocidade global do
       // slide × multiplicador específico da palavra (se houver). Os dois
       // controles se combinam naturalmente.
-      const effectiveDuration = animForEl.duration * globalSpeedScale * durationScale;
+      // EXCEÇÃO: efeitos com ignoreGlobalSpeed preservam a duração base
+      // absoluta (fidelidade temporal à referência MP4 original).
+      const effectiveDuration = animForEl.ignoreGlobalSpeed
+        ? animForEl.duration * durationScale
+        : animForEl.duration * globalSpeedScale * durationScale;
 
       // === CHAR-BY-CHAR ANIMATION (charStagger) ===
       if (animForEl.charStagger && el.classList.contains('lyric-word')) {
