@@ -9457,31 +9457,7 @@ const ANIMATIONS_V2 = [
     // ============================================================
     // BLUR SHRINK — RECONSTRUÇÃO FIEL (Foco de Câmera Suave)
     // WorshipMotion-Referencias/27_27_text_in_Blur_Shrink
-    //
-    // ANÁLISE DAS IMAGENS FORNECIDAS:
-    // 1. Preto total.
-    // 2. "TE" aparece muito borrado (fantasma) e levemente maior.
-    // 3. "TE" fica nítido e no tamanho final.
-    //
-    // PARÂMETROS CALIBRADOS (Equilíbrio para qualquer tamanho de fonte):
-    // - Blur: 15px (borra sem virar mancha informe).
-    // - Scale: 1.2 (ampliação perceptível, não distorcida).
-    // - Duration: 0.4s (foco realista).
-    // - CharStagger: 0.08s (cascata rápida).
-    // - Easing: cubic-bezier(0.25, 1, 0.5, 1) (ease-out suave).
-    // ============================================================
-    id: 'blur-shrink',
-    name: 'Blur Shrink',
-    category: 'entrance', style: 'cinematic',
-    duration: 0.28, easing: 'cubic-bezier(0.16, 1, 0.3, 1)',
-    charStagger: 0.06,
-    keyframes: [
-      { at: 0, opacity: 0, scale: 1.35, blur: 12 },
-      { at: 0.3, opacity: 0.55, scale: 1.12, blur: 5 },
-      { at: 0.7, opacity: 0.92, scale: 1.02, blur: 1 },
-      { at: 1, opacity: 1, scale: 1, blur: 0 },
-    ],
-  },{
+    },{
     id: 'horizon-rise',
     name: 'Horizonte',
     category: 'entrance', style: 'cinematic',
@@ -10967,6 +10943,50 @@ const ANIMATIONS_V2 = [
       { at: 1,   glowIntensity: 1.0 },
     ],
   },
+// ============================================================
+// ENTRANCES — EXPERIMENTAL (Bounce_In_Up from Fase 13 reconstruction)
+// Source: WorshipMotion-Analise/bounce_in_up_reconstruction_v1/motion-data.json
+// Easing: UNRESOLVED — using dense keyframes with linear interpolation
+// to preserve observed positions without easing assumptions.
+// Overshoot: Scale peaks at 1.23x (frame 16, t=0.60s), returns to 1.0x
+// Status: PARTIALLY_VERIFIED — trajectory, overshoot, stabilization confirmed;
+// easing curve shape unknown at 25fps.
+// ============================================================
+{
+  id: 'bounce-in-up-experimental',
+  name: 'Bounce In Up (Experimental)',
+  category: 'entrance',
+  style: 'energetic',
+  duration: 1.0,
+  easing: 'linear',
+  keyframes: [
+    { at: 0.0, opacity: 0, translateY: 300.0, scale: 0.4 },
+    { at: 0.041667, opacity: 0.1111, translateY: 303.36, scale: 0.4 },
+    { at: 0.083333, opacity: 0.2222, translateY: 279.71, scale: 0.4 },
+    { at: 0.125, opacity: 0.3333, translateY: 279.41, scale: 0.4 },
+    { at: 0.166667, opacity: 0.4444, translateY: 279.65, scale: 0.4 },
+    { at: 0.208333, opacity: 0.5556, translateY: 279.35, scale: 0.4 },
+    { at: 0.25, opacity: 0.6667, translateY: 279.59, scale: 0.4 },
+    { at: 0.291667, opacity: 0.7778, translateY: 279.28, scale: 0.4 },
+    { at: 0.333333, opacity: 0.8889, translateY: 279.53, scale: 0.4 },
+    { at: 0.375, opacity: 1, translateY: 287.5, scale: 0.4 },
+    { at: 0.416667, opacity: 1, translateY: 266.67, scale: 0.605 },
+    { at: 0.458333, opacity: 1, translateY: 248.61, scale: 0.81 },
+    { at: 0.5, opacity: 1, translateY: 229.17, scale: 0.935 },
+    { at: 0.541667, opacity: 1, translateY: 211.11, scale: 1.06 },
+    { at: 0.583333, opacity: 1, translateY: 194.44, scale: 1.145 },
+    { at: 0.625, opacity: 1, translateY: 172.22, scale: 1.23 },
+    { at: 0.666667, opacity: 1, translateY: 131.94, scale: 1.19 },
+    { at: 0.708333, opacity: 1, translateY: 93.06, scale: 1.15 },
+    { at: 0.75, opacity: 1, translateY: 52.78, scale: 1.1 },
+    { at: 0.791667, opacity: 1, translateY: 12.5, scale: 1.05 },
+    { at: 0.833333, opacity: 1, translateY: 1.39, scale: 1 },
+    { at: 0.875, opacity: 1, translateY: 2.78, scale: 1 },
+    { at: 0.916667, opacity: 1, translateY: -4.17, scale: 1 },
+    { at: 0.958333, opacity: 1, translateY: -4.17, scale: 1 },
+    { at: 1.0, opacity: 1, translateY: -4.17, scale: 1 }
+  ],
+},
 ];
 
 /* ============================================================
@@ -46760,8 +46780,8 @@ window.WM_ANIM_ENGINE = (function () {
   EASINGS.easeBezier34_156_64_1 = makeCubicBezier(0.34, 1.56, 0.64, 1); // back/overshoot (energético)
   EASINGS.easeBezier55_0_55_2   = makeCubicBezier(0.55, 0, 0.55, 0.2);  // saídas (ease-in)
   EASINGS.easeBezier16_1_3_1    = makeCubicBezier(0.16, 1, 0.3, 1);     // rápida, quase instantânea
-  EASINGS.easeBezier20_90_30_1  = makeCubicBezier(0.2, 0.9, 0.3, 1);    // blur-shrink: snap agressivo no início
-  EASINGS.easeBezier25_1_50_1   = makeCubicBezier(0.25, 1, 0.5, 1);     // blur-shrink: foco suave de câmera
+  EASINGS.easeBezier20_90_30_1  = makeCubicBezier(0.2, 0.9, 0.3, 1);    // snap agressivo no início
+  EASINGS.easeBezier25_1_50_1   = makeCubicBezier(0.25, 1, 0.5, 1);     // foco suave de câmera
   EASINGS.easeBezier65_0_35_1   = makeCubicBezier(0.65, 0, 0.35, 1);    // in-out simétrica
   EASINGS.easeBezier55_0_45_1   = makeCubicBezier(0.55, 0, 0.45, 1);    // in-out variante
   EASINGS.easeBezier55_0_100_45 = makeCubicBezier(0.55, 0, 1, 0.45);    // in-out assimétrica
@@ -47335,19 +47355,6 @@ window.WM_ANIM_ENGINE = (function () {
       keyframes: [
         { at: 0, opacity: 0, translateY: 80, blur: 6 },
         { at: 1, opacity: 1, translateY: 0, blur: 0 },
-      ],
-    },
-  });
-  registerRecipe({ // = 'blur-shrink', reconstrução FINAL sincronizada com ANIMATIONS_V2 (stagger restaurado após validação frame a frame)
-    id: 'blur-shrink-v2',
-    entrance: {
-      engine: 'keyframes', duration: 0.28, easing: 'easeBezier16_1_3_1',
-      charStagger: 0.06,
-      keyframes: [
-        { at: 0,   opacity: 0,    scale: 1.35, blur: 12 },
-        { at: 0.3, opacity: 0.55, scale: 1.12, blur: 5  },
-        { at: 0.7, opacity: 0.92, scale: 1.02, blur: 1  },
-        { at: 1,   opacity: 1,    scale: 1,    blur: 0  },
       ],
     },
   });
@@ -49099,7 +49106,6 @@ window.WM_ENGINE_V2_ID_MAP = {
   'silk-flow': 'silk-flow-v2',
   'film-fade': 'film-fade-v2',
   'focus-pull': 'focus-pull-v2',
-  'blur-shrink': 'blur-shrink-v2',
   'sacred-pulse': 'sacred-pulse-v2',
   'mask-up': 'mask-up-v2',
   'spring-in': 'spring-in-v2',
