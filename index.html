@@ -27994,6 +27994,10 @@ function initEditor() {
     if (grid._wmAnimTimer) { clearInterval(grid._wmAnimTimer); grid._wmAnimTimer = null; }
     const rootEl = grid.closest('.editor-left') || grid.closest('.editor-right');
     const tocarVisiveis = () => {
+      // === DIAGNÓSTICO TEMPORAL (bounce-in-up-experimental) ===
+      if (window.WM_PREVIEW_DIAG) {
+        console.log('[WM-PREVIEW-DIAG] tocarVisiveis fired', performance.now().toFixed(3));
+      }
       // Se o grid ainda não tem cards renderizados, tenta renderizar agora
       if (grid.children.length === 0 && typeof renderAnimGrid === 'function') {
         renderAnimGrid(currentAnimCategory || 'entrance');
@@ -28023,6 +28027,19 @@ function initEditor() {
   function previewAnimInCard(animId, container) {
     const animDef = WM_ANIMATIONS.get(animId);
     if (!animDef) return;
+
+    // === DIAGNÓSTICO TEMPORAL (bounce-in-up-experimental) ===
+    // Ativar via console: window.WM_PREVIEW_DIAG = true
+    // Registra eventos de animação e recriações de DOM no console
+    // sem alterar duração, easing, keyframes ou relógio do preview.
+    const _diag = (window.WM_PREVIEW_DIAG && animId === 'bounce-in-up-experimental');
+    if (_diag) {
+      console.group('[WM-PREVIEW-DIAG] previewAnimInCard', animId);
+      console.log('timestamp_start:', performance.now().toFixed(3));
+      console.log('duration_css:', animDef.duration);
+      console.log('easing_css:', animDef.easing);
+      console.log('keyframes_count:', animDef.keyframes ? animDef.keyframes.length : 0);
+    }
 
     container.innerHTML = '';
 
@@ -28115,6 +28132,25 @@ function initEditor() {
         word.style.animation = `wm-anim-${animDef.id} ${duration}s ${easing} 0s infinite`;
       } else {
         word.style.animation = `wm-anim-${animDef.id} ${duration}s ${easing} 0s both`;
+      }
+
+      // === DIAGNÓSTICO TEMPORAL (bounce-in-up-experimental) ===
+      if (_diag) {
+        console.log('animation_applied:', {
+          name: `wm-anim-${animDef.id}`,
+          duration_css: duration,
+          easing_css: easing,
+          timestamp_apply: performance.now().toFixed(3)
+        });
+        word.addEventListener('animationstart', () => {
+          console.log('[WM-PREVIEW-DIAG] animationstart', performance.now().toFixed(3));
+        }, { once: true });
+        word.addEventListener('animationend', () => {
+          console.log('[WM-PREVIEW-DIAG] animationend', performance.now().toFixed(3),
+            'elapsed:', (performance.now() - parseFloat(word.dataset._diagStart)).toFixed(3) + 'ms');
+        }, { once: true });
+        word.dataset._diagStart = performance.now().toFixed(3);
+        console.groupEnd();
       }
     }
   }
